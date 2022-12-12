@@ -10,34 +10,34 @@ void ActionStack::PushString(const StringRef acString)
     const uint32_t stringLength = static_cast<uint32_t>(std::strlen(acString.data()));
 
     // store strlen first.
-    *reinterpret_cast<size_t*>(&m_pArgStack[m_argofs]) = stringLength;
+    *reinterpret_cast<size_t*>(&m_pStackBuffer[m_itemOffset]) = stringLength;
 
     // increment by aligned size..
-    m_argofs += sizeof(size_t);
+    m_itemOffset += sizeof(size_t);
 
     // the whole stack is zero'd by default, so we just move the aligned offset
-    memcpy(&m_pArgStack[m_argofs], acString.data(), stringLength);
+    memcpy(&m_pStackBuffer[m_itemOffset], acString.data(), stringLength);
 
     // adjust the offset aligned.
-    m_argofs += stringLength;
-    m_argofs += CalculatePadding(m_argofs, stringLength);
+    m_itemOffset += stringLength;
+    m_itemOffset += CalculatePadding(m_itemOffset, stringLength);
 
     // store type info
-    m_pArgTypeStack[m_ArgCount] = ArgType::kString;
-    m_ArgCount++;
+    m_pTypeInfo[m_itemCount] = ArgType::kString;
+    m_itemCount++;
 }
 
 void ActionStack::PopString(TiltedPhoques::String& aOutString)
 {
-    const uint32_t stringLength = *reinterpret_cast<uint32_t*>(&m_pArgStack[m_argofs]);
+    const uint32_t stringLength = *reinterpret_cast<uint32_t*>(&m_pStackBuffer[m_itemOffset]);
 
     // simulate aligned read.
-    m_argofs += sizeof(size_t);
+    m_itemOffset += sizeof(size_t);
 
-    aOutString.assign((const char*)&m_pArgStack[m_argofs], stringLength);
+    aOutString.assign((const char*)&m_pStackBuffer[m_itemOffset], stringLength);
 
     // adjust offset aligned.
-    m_argofs += stringLength;
-    m_argofs += CalculatePadding(m_argofs, stringLength);
+    m_itemOffset += stringLength;
+    m_itemOffset += CalculatePadding(m_itemOffset, stringLength);
 }
 } // namespace PluginAPI

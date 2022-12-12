@@ -51,7 +51,7 @@ void PluginCollection::CollectPlugins(const std::filesystem::path& acPath)
 
 bool PluginCollection::TryLoadPlugin(const std::filesystem::path& aPath)
 {
-    auto doLoadPlugin = [this](void* apHandle, const uint8_t* apExport)
+    auto doLoadPlugin = [&](void* apHandle, const uint8_t* apExport)
     {
         if (*reinterpret_cast<const uint32_t*>(apExport) != PluginAPI::kPluginMagic)
         {
@@ -64,6 +64,39 @@ bool PluginCollection::TryLoadPlugin(const std::filesystem::path& aPath)
         {
             spdlog::error("TT_PLUGIN export is invalid (unknown size)");
             return false;
+        }
+
+        // validate infoblock records.
+        for (const PluginAPI::InfoBlock& infoBlock : pDescriptor->infoblocks)
+        {
+            switch (infoBlock.magic)
+            {
+            case PluginAPI::ScriptInfoBlock::kMagic:
+            {
+                // entitlement check.
+                if (!pDescriptor->IsScriptPlugin())
+                {
+                    spdlog::error("Plugin {} is not a script plugin, but has a script info block", aPath.string());
+                    return false;
+                }
+
+                if (!infoBlock.ptr)
+                {
+                    spdlog::error("Plugin \"{}\": Failed to fetch ScriptInfoBlock because the plugin returned a nullptr.", pDescriptor->name.data());
+                    return false;
+                }
+
+                if (infoBlock.structSize != sizeof(PluginAPI::ScriptInfoBlock))
+                {
+                    spdlog::error(
+                        "Plugin \"{}\": Failed to fetch ScriptInfoBlock because the plugin returned an invalid "
+                        "struct size (expected {}, got {}).",
+                        pDescriptor->name.data(), sizeof(PluginAPI::ScriptInfoBlock), infoBlock.structSize);
+                    return false;
+                }
+                break;
+            }
+            }
         }
 
         m_pluginData.emplace_back(

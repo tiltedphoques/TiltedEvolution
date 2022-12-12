@@ -183,69 +183,59 @@ GameServer::~GameServer()
 
 GameServer* GameServer::Get() noexcept { return s_pInstance; }
 
+#include "PluginAPI/SmallFunction.h"
+
 void GameServer::Initialize()
 {
     if (!CheckMoPo())
         return;
 
     BindServerCommands();
+    InitializeResources();
+}
 
+void GameServer::InitializeResources()
+{
     m_pPlugins->InitializePlugins();
-
-    //
-    //
-    // m_pResources->CollectResources(); ctor already does this.
-
-    // begin executing scripts
+    // register runtimes for each file extension.
     m_pPlugins->ForEachPlugin(
         [this](const PluginAPI::PluginDescriptor& aPlugin, PluginAPI::IPluginInterface& aPluginInterface)
         {
             if (!aPlugin.IsScriptPlugin())
                 return;
-
-            for (const PluginAPI::InfoBlock& infoBlock : aPlugin.infoblocks)
+            auto* pScriptInfo = aPlugin.GetScriptInfoBlock();
+            for (int i = 0; i < pScriptInfo->supportedExtensionCount; i++)
             {
-                if (infoBlock.magic != PluginAPI::ScriptInfoBlock::kMagic)
-                    continue;
-
-                if (!infoBlock.ptr)
-                {
-                    spdlog::error("Plugin \"{}\": Failed to fetch ScriptInfoBlock because the plugin returned a nullptr.", aPlugin.name.data());
-                    continue;
-                }
-
-                if (infoBlock.structSize != sizeof(PluginAPI::ScriptInfoBlock))
-                {
-                    spdlog::error(
-                        "Plugin \"{}\": Failed to fetch ScriptInfoBlock because the plugin returned an invalid "
-                        "struct size (expected {}, got {}).",
-                        aPlugin.name.data(), sizeof(PluginAPI::ScriptInfoBlock), infoBlock.structSize);
-                    continue;
-                }
-
-                auto* pScriptInfo = reinterpret_cast<PluginAPI::ScriptInfoBlock*>(infoBlock.ptr);
-                for (int i = 0; i < pScriptInfo->supportedExtensionCount; i++)
-                {
-                    if (const char* pExtension = pScriptInfo->supportedExtensions[i])
-                    {
-                        m_pWorld->GetScriptExecutor().RegisterRuntime(pExtension, &aPluginInterface);
-                    }
-                }
+                if (const char* pExtension = pScriptInfo->supportedExtensions[i])
+                    m_pWorld->GetScriptExecutor().RegisterRuntime(pExtension, &aPluginInterface);
             }
         });
-
+    // mount resources.
     m_pResources->ForEachManifest(
         [&](const Resources::Manifest001& aManifest)
         {
             if (aManifest.entryPoint.empty())
                 return;
-
-            // setup the modules.
             auto path = m_pResources->GetResourceFolderPath() / aManifest.folderName / aManifest.entryPoint;
             m_pWorld->GetScriptExecutor().LoadFile(path, aManifest);
         });
-
+    // bind script functions.
+    BindGameServerScriptCommands();
+    // kick off script threads.
     m_pWorld->GetScriptExecutor().StartScripts();
+}
+
+void GameServer::BindGameServerScriptCommands()
+{
+    m_pWorld->GetScriptExecutor().FancyBind<bool, int, int>("KillGameServer", [&](int a, int b) { 
+        this->Kill();
+        return false;
+    });
+
+    m_pWorld->GetScriptExecutor().CallFunction("KillGameServer", 1337, 1337);
+    
+    // KillGameServer has returned two values.
+    
 }
 
 void GameServer::Kill()

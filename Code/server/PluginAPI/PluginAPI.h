@@ -70,6 +70,15 @@ struct PluginDescriptor
     // these are for managing the lifetime of the plugin instance on your own heap.
     IPluginInterface* (*pCreatePlugin)();      // < allocate from your plugin
     void (*pDestroyPlugin)(IPluginInterface*); // < free from your plugin
+
+    // helpers
+    ScriptInfoBlock* GetScriptInfoBlock() const noexcept
+    {
+        for (auto& m : infoblocks)
+            if (m.magic == ScriptInfoBlock::kMagic)
+                return reinterpret_cast<ScriptInfoBlock*>(m.ptr);
+        return nullptr;
+    }
 };
 // constexpr auto x = sizeof(PluginDescriptor);
 static_assert(sizeof(PluginDescriptor) == 104, "PluginDescriptor size mismatch");

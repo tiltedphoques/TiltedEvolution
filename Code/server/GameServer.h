@@ -47,8 +47,11 @@ struct GameServer final : Server
     void Kill();
 
     bool CheckMoPo();
+
+    void InitializeResources();
     void BindMessageHandlers();
     void BindServerCommands();
+    void BindGameServerScriptCommands();
 
     void UpdateInfo();
     void UpdateTimeScale();

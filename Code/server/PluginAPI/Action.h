@@ -2,12 +2,12 @@
 // For licensing information see LICENSE at the root of this distribution.
 #pragma once
 
-#include <PluginAPI/Slice.h>
 #include <PluginAPI/APIBoundary.h>
+#include <PluginAPI/Slice.h>
 
 namespace PluginAPI
 {
-enum class ArgType
+enum class ArgType : uint8_t
 {
     kUnknown,
     kBool,
@@ -35,8 +35,30 @@ constexpr const char* ArgTypeToString(ArgType type)
     }
 }
 
-// This function takes the offset of the first member and the size of the second member, and calculates the number of bytes of padding that should be inserted between them. It does this by finding the next multiple of the size that is greater than or equal to the offset, and then subtracting the
-// offset from that value.
+template <class _Ty, class... _Types>
+static constexpr bool IsAnyOf = // true if and only if _Ty is in _Types
+    std::disjunction_v<std::is_same<_Ty, _Types>...>;
+
+template <typename T> static constexpr ArgType ToArgType()
+{
+    if constexpr (std::is_same_v<T, bool>)
+        return ArgType::kBool;
+    if constexpr (std::is_same_v<T, uint32_t>)
+        return ArgType::kU32;
+    if constexpr (std::is_same_v<T, int32_t>)
+        return ArgType::KI32;
+    if constexpr (std::is_same_v<T, uint64_t>)
+        return ArgType::kU64;
+    if constexpr (std::is_same_v<T, int64_t>)
+        return ArgType::kI64;
+    if constexpr (std::is_same_v<T, float>)
+        return ArgType::kF32;
+    return ArgType::kUnknown;
+}
+
+// This function takes the offset of the first member and the size of the second member, and calculates the number of
+// bytes of padding that should be inserted between them. It does this by finding the next multiple of the size that is
+// greater than or equal to the offset, and then subtracting the offset from that value.
 inline constexpr uint32_t CalculatePadding(uint32_t offset, uint32_t size)
 {
     // Calculate the next multiple of size that is greater than or equal to offset.
@@ -66,43 +88,50 @@ inline constexpr uint32_t CalculatePadding(uint32_t offset, uint32_t size)
 class ActionStack
 {
 public:
-    ActionStack(const size_t aArgCount)
+    ActionStack(const size_t aArgCount) : m_maxItemCount(static_cast<uint8_t>(aArgCount))
     {
+        // assert(aArgCount <= 255);
+
+        // dont bother setting up a stack.
         if (aArgCount == 0)
-        {
-            m_pArgTypeStack = nullptr;
-            m_pArgStack = nullptr;
-            m_argofs = 0;
             return;
-        }
 
-        m_pArgTypeStack = (ArgType*)malloc(aArgCount * sizeof(ArgType));
+        m_pTypeInfo = (ArgType*)malloc(aArgCount * sizeof(ArgType));
 
-        m_pArgStack = (uint8_t*)malloc(1024);
-        memset(m_pArgTypeStack, 0, aArgCount * sizeof(ArgType));
-        memset(m_pArgStack, 0, 1024);
-        m_argofs = 0;
+        m_pStackBuffer = (uint8_t*)malloc(1024);
+        memset(m_pTypeInfo, 0, aArgCount * sizeof(ArgType));
+        memset(m_pStackBuffer, 0, 1024);
     }
 
     ~ActionStack()
     {
-        if (m_pArgTypeStack)
-            free(m_pArgTypeStack);
-        if (m_pArgStack)
-            free(m_pArgStack);
+        if (m_pTypeInfo)
+            free(m_pTypeInfo);
+        if (m_pStackBuffer)
+            free(m_pStackBuffer);
     }
-
-    inline ArgType Type() const { return m_pArgTypeStack[m_ArgCount]; }
 
     inline ArgType GetArgType(uint32_t aIndex) const noexcept
     {
-        if (aIndex > m_ArgCount || aIndex < 0)
+        if (aIndex > m_itemCount || aIndex < 0)
         {
             return ArgType::kUnknown;
         }
-        return m_pArgTypeStack[aIndex];
+        return m_pTypeInfo[aIndex];
     }
 
+    // for user facing code, always use this.
+    template <typename... Ts> inline void PushN(const Ts... args)
+    {
+        (PushScalar(ToArgType<Ts>(), args), ...);
+    }
+
+    template <typename... Ts> inline void PopN(Ts&... args)
+    {
+        (PopScalar(ToArgType<Ts>(), args), ...);
+    }
+
+    // this are mainly for internal use, but can be used for user facing code if you know what you're doing.
     inline void Push(bool b) { PushScalar(ArgType::kBool, b); }
     inline bool PopBool() { return PopScalar<bool>(); }
 
@@ -126,39 +155,56 @@ public:
     // TODO: string is an unstable interfac.e..
     SERVER_API_CXX void PopString(TiltedPhoques::String& aOutString);
 
-    inline uint32_t count() const { return m_ArgCount; }
-    inline void Finish() { m_argofs = 0; }
+    inline uint32_t GetCount() const
+    {
+        return m_itemCount;
+    }
 
-    auto GetOffset() { return m_argofs; }
+    // end clears the offset, so you can start popping, but doesn't empty the buffer
+    inline void End()
+    {
+        m_itemOffset = 0;
+    }
+
+    inline void Clear()
+    {
+        std::memset(m_pTypeInfo, 0, m_maxItemCount * sizeof(ArgType));
+        std::memset(m_pStackBuffer, 0, 1024);
+    }
+
+    auto GetOffset()
+    {
+        return m_itemOffset;
+    }
 
 private:
     template <typename T> constexpr void PushScalar(const ArgType aType, const T acValue)
     {
-        m_pArgTypeStack[m_ArgCount] = aType;
-        *reinterpret_cast<T*>(&m_pArgStack[m_argofs]) = acValue;
+        m_pTypeInfo[m_itemCount] = aType;
+        *reinterpret_cast<T*>(&m_pStackBuffer[m_itemOffset]) = acValue;
 
-        m_argofs += sizeof(T);
-        m_argofs += CalculatePadding(m_argofs, sizeof(T));
+        m_itemOffset += sizeof(T);
+        m_itemOffset += CalculatePadding(m_itemOffset, sizeof(T));
 
-        m_ArgCount++;
+        m_itemCount++;
     }
 
     template <typename T> T PopScalar()
     {
-        T value = *reinterpret_cast<T*>(&m_pArgStack[m_argofs]);
-        m_argofs += sizeof(T);
-        m_argofs += CalculatePadding(m_argofs, sizeof(T));
+        T value = *reinterpret_cast<T*>(&m_pStackBuffer[m_itemOffset]);
+        m_itemOffset += sizeof(T);
+        m_itemOffset += CalculatePadding(m_itemOffset, sizeof(T));
 
-        m_ArgCount--;
+        m_itemCount--;
         return value;
     }
 
 protected:
-    uint8_t* m_pReturnValues{nullptr};
-    uint8_t* m_pArgStack{nullptr};
-    ArgType* m_pArgTypeStack{nullptr};
-    uint32_t m_ArgCount{0};
-    uint32_t m_argofs{0};
+    uint8_t* m_pStackBuffer{nullptr};
+    ArgType* m_pTypeInfo{nullptr};
+    uint8_t m_itemCount{};
+    uint8_t m_maxItemCount{};
+    uint16_t m_itemOffset{};
 };
 
 using MethodHandler = void (*)(ActionStack& acContext);

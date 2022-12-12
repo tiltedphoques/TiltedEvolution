@@ -20,8 +20,6 @@ public:
     void Shutdown() override;
 
 private:
-    std::unique_ptr<pybind11::scoped_interpreter> pz;
-
     // Inherited via PluginInterface001
     void OnTick() override;
 
@@ -31,12 +29,15 @@ private:
     PluginResult BindMethod(Handle aHandle, const StringRef acActionName, const Slice<const ArgType> aArgs, MethodHandler aMethod) override;
     PluginResult CallMethod(Handle aHandle, const StringRef acActionName, ActionStack& acStack) override;
 
+private:
+    bool m_bInitialized = false;
+    Handle m_NextHandle = 0;
     struct PythonModule
     {
-        TiltedPhoques::UniquePtr<py::scoped_interpreter> m_pInterpreter;
+        Handle m_Handle;
         py::module_ m_Module; // the entry point module
     };
-    TiltedPhoques::Vector<PythonModule> m_Modules;
+    TiltedPhoques::UniquePtr<TiltedPhoques::Vector<PythonModule>> m_Modules;
 };
 
 } // namespace PythonScripting

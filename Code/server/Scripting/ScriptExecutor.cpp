@@ -56,7 +56,12 @@ void ScriptExecutor::LoadFile(const std::filesystem::path& aPath, const Resource
                 return;
             }
 
-            m_handles.push_back(scriptHandle);
+            HandleRef ref;
+            ref.plugin = 0;
+            ref.module = 0;
+            ref.internal = scriptHandle;
+
+            m_handles.push_back(ref);
             return;
         }
     }
@@ -66,6 +71,7 @@ void ScriptExecutor::LoadFile(const std::filesystem::path& aPath, const Resource
 
 void ScriptExecutor::BindMethod(const std::string_view acName, const PluginAPI::ArgType* apArgList, size_t aArgCount, PluginAPI::MethodHandler apCallback)
 {
+#if 0
     // TODO: this doesnt make too much sense right now.
     for (const auto& c : m_scriptExtToPlugin)
     {
@@ -77,10 +83,16 @@ void ScriptExecutor::BindMethod(const std::string_view acName, const PluginAPI::
             }
         }
     }
+#endif
+}
+
+void ScriptExecutor::CallMethod(const std::string_view acName, PluginAPI::ActionStack& aStack)
+{
 }
 
 void ScriptExecutor::StartScripts()
 {
+#if 0
     const PluginAPI::ArgType Types[] = {PluginAPI::ArgType::kBool, PluginAPI::ArgType::kBool};
     BindMethod(
         "test_func", Types, 2,
@@ -102,4 +114,5 @@ void ScriptExecutor::StartScripts()
             }
         }
     }
+#endif
 }

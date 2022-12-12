@@ -20,11 +20,41 @@ PythonRuntime::~PythonRuntime() noexcept
 
 bool PythonRuntime::Initialize()
 {
+    try
+    {
+        // try to create the global main interpreter.
+        py::initialize_interpreter();
+
+        m_Modules = TiltedPhoques::MakeUnique<TiltedPhoques::Vector<PythonModule>>();
+    }
+    catch (std::exception& ex)
+    {
+        PLUGINAPI_LOG_ERROR("Failed to create python interpreter: %s", ex.what());
+        return false;
+    }
+
+    m_bInitialized = true;
     PLUGINAPI_LOG_INFO("Initialized python runtime");
     return true;
 }
 
-void PythonRuntime::Shutdown() { PLUGINAPI_LOG_INFO("Shutting down python"); }
+void PythonRuntime::Shutdown()
+{
+    if (m_bInitialized)
+    {
+        PLUGINAPI_LOG_INFO("Shutting down python");
+
+        // free bound resources first.
+        m_Modules.reset(nullptr);
+
+        py::finalize_interpreter();
+
+        PLUGINAPI_LOG_INFO("Sucessfully shut down python");
+    }
+
+    if (m_NextHandle > 0)
+        m_NextHandle = 0;
+}
 
 void PythonRuntime::OnTick() {}
 
@@ -39,19 +69,7 @@ PluginInterface001::Handle PythonRuntime::LoadFile(const PluginAPI::StringRef ac
         return 0;
     }
 
-    auto& moduleEntry = m_Modules.emplace_back();
-
-    // keep in mind we can only create one real scoped_interpreter.
-    try
-    {
-        // create an interpreter
-        moduleEntry.m_pInterpreter = TiltedPhoques::MakeUnique<py::scoped_interpreter>();
-    }
-    catch (std::exception& ex)
-    {
-        PLUGINAPI_LOG_ERROR("Failed to create python interpreter: %s", ex.what());
-        return 0;
-    }
+    auto& moduleEntry = m_Modules->emplace_back();
 
     // must have the interpreter constructed first.
     AddPath(path.c_str());
@@ -66,12 +84,16 @@ PluginInterface001::Handle PythonRuntime::LoadFile(const PluginAPI::StringRef ac
         return 0;
     }
 
-    return m_Modules.size();
+    // we have 65k "slots" before we overflow, and that is per runtime, so the universe dies before we load 65k modules
+    moduleEntry.m_Handle = m_NextHandle;
+    m_NextHandle++;
+
+    return moduleEntry.m_Handle;
 }
 
 PluginResult PythonRuntime::BindMethod(Handle aHandle, const PluginAPI::StringRef acActionName, const Slice<const ArgType> aArgs, MethodHandler aMethod)
 {
-    auto& moduleEntry = m_Modules[aHandle - 1];
+    auto& moduleEntry = (*m_Modules)[aHandle - 1];
 
     if (!PythonScripting::RegisterMethod(*moduleEntry.m_Module.ptr(), acActionName, aArgs.data(), aArgs.size(), aMethod))
     {
@@ -84,7 +106,7 @@ PluginResult PythonRuntime::BindMethod(Handle aHandle, const PluginAPI::StringRe
 
 PluginResult PythonRuntime::CallMethod(Handle aHandle, const StringRef acActionName, ActionStack& aStack)
 {
-    auto& moduleEntry = m_Modules[aHandle - 1];
+    auto& moduleEntry = (*m_Modules)[aHandle - 1];
 
     if (!PythonScripting::CallMethod(*moduleEntry.m_Module.ptr(), acActionName, aStack))
     {
