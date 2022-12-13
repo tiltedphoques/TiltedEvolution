@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Wolflike.h>
 
-
-
-AnimationGraphDescriptor_Wolflike::AnimationGraphDescriptor_Wolflike(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Wolflike::AnimationGraphDescriptor_Wolflike(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -148,7 +145,8 @@ AnimationGraphDescriptor_Wolflike::AnimationGraphDescriptor_Wolflike(
 
     uint64_t key = 884686398289769216;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbIsMoving,
@@ -196,6 +194,5 @@ AnimationGraphDescriptor_Wolflike::AnimationGraphDescriptor_Wolflike(
                 kiSyncCombatState,
                 kiSyncTurnState,
                 kiSyncWalkPose,
-            }
-        ));
+            }));
 }

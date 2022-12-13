@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_WerewolfBehavior.h>
 
-
-
 AnimationGraphDescriptor_WerewolfBehavior::AnimationGraphDescriptor_WerewolfBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -77,29 +75,33 @@ AnimationGraphDescriptor_WerewolfBehavior::AnimationGraphDescriptor_WerewolfBeha
         kIsNPC = 67,
     };
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, m_key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, m_key,
         AnimationGraphDescriptor(
-        {kbEquipOk,
-            kbAnimationDriven,
-            kIsAttackReady,
-            kbAllowRotation,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbHeadTracking,
-            kbDelayMoveStart,
-            kbFailMoveStart,
-            kbVoiceReady,
-            kbNoStagger,
+            {
+                kbEquipOk,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kbAllowRotation,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kbHeadTracking,
+                kbDelayMoveStart,
+                kbFailMoveStart,
+                kbVoiceReady,
+                kbNoStagger,
             },
-        {kSpeed,
-            kTurnDelta,
-            kDirection,
-            kSpeedSampled,
-            kSampledSpeed,
+            {
+                kSpeed,
+                kTurnDelta,
+                kDirection,
+                kSpeedSampled,
+                kSampledSpeed,
             },
-        {kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiAttackState,
+            {
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiAttackState,
             }));
 }

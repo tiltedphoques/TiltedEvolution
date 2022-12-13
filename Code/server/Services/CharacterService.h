@@ -25,8 +25,8 @@ struct DialogueRequest;
 struct SubtitleRequest;
 
 /**
-* @brief Manages player and actor state.
-*/
+ * @brief Manages player and actor state.
+ */
 struct CharacterService
 {
     CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -37,7 +37,6 @@ struct CharacterService
     static void Serialize(World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept;
 
 protected:
-
     void OnUpdate(const UpdateEvent& acEvent) const noexcept;
     void OnCharacterExteriorCellChange(const CharacterExteriorCellChangeEvent& acEvent) const noexcept;
     void OnCharacterInteriorCellChange(const CharacterInteriorCellChangeEvent& acEvent) const noexcept;
@@ -64,7 +63,6 @@ protected:
     void ProcessMovementChanges() const noexcept;
 
 private:
-
     World& m_world;
 
     entt::scoped_connection m_updateConnection;

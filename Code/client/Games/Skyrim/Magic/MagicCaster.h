@@ -13,9 +13,7 @@ struct Projectile;
 struct MagicCaster
 {
     virtual ~MagicCaster();
-    virtual uint64_t CastSpellImmediate(MagicItem* apSpell, bool abLoadCast, TESObjectREFR* apDesiredTarget,
-                                       float afEffectivenessMult, bool abAdjustOnlyHostileEffectiveness,
-                                       float afMagnitudeOverride);
+    virtual uint64_t CastSpellImmediate(MagicItem* apSpell, bool abLoadCast, TESObjectREFR* apDesiredTarget, float afEffectivenessMult, bool abAdjustOnlyHostileEffectiveness, float afMagnitudeOverride);
     virtual uint64_t FindTouchTarget();
     virtual char RequestCastImpl();
     virtual bool StartChargeImpl();
@@ -24,8 +22,7 @@ struct MagicCaster
     virtual void FinishCastImpl();
     virtual uint64_t InterruptCastImpl(bool abRefund);
     virtual uint64_t SpellCast(bool abSuccess, uint32_t auiTargetCount, MagicItem* apSpell);
-    virtual uint64_t CheckCast(MagicItem* apSpell, bool abDualCast, float* afEffectStrength,
-                              MagicSystem::CannotCastReason* apReason, bool abUseBaseMagicka);
+    virtual uint64_t CheckCast(MagicItem* apSpell, bool abDualCast, float* afEffectStrength, MagicSystem::CannotCastReason* apReason, bool abUseBaseMagicka);
     virtual uint64_t GetCasterStatsObject();
     virtual uint64_t GetCasterAsActor();
     virtual uint64_t GetCasterObjectReference(Actor** appCasterActor);
@@ -43,13 +40,11 @@ struct MagicCaster
     virtual uint64_t LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual uint64_t FinishLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void PrepareSound(MagicSystem::SoundID aeID, MagicItem* apSpell);
-    virtual uint64_t AdjustActiveEffect(ActiveEffect* apActiveEffect, float afEffectStrength,
-                                       bool abAdjustOnlyHostileEffectiveness);
+    virtual uint64_t AdjustActiveEffect(ActiveEffect* apActiveEffect, float afEffectStrength, bool abAdjustOnlyHostileEffectiveness);
 
     bool CastSpell(MagicItem* apSpell, TESObjectREFR* apDesiredTarget, bool abLoadCast) noexcept;
     void InterruptCast() noexcept;
-    void FindTargets(const NiPoint3& arLocation, Projectile* apProjectile, TESObjectREFR* apCollidee,
-                     float afPowerScale, float afAreaOverride, bool abAreaOverrideInWorldUnits, bool abApplyAll);
+    void FindTargets(const NiPoint3& arLocation, Projectile* apProjectile, TESObjectREFR* apCollidee, float afPowerScale, float afAreaOverride, bool abAreaOverrideInWorldUnits, bool abApplyAll);
 
     enum State
     {
@@ -78,4 +73,3 @@ struct MagicCaster
 };
 
 static_assert(sizeof(MagicCaster) == 0x48);
-

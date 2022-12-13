@@ -6,24 +6,18 @@
 
 namespace script_extender
 {
-    class SEMemoryBlock final 
-    {
-    public:
-        SEMemoryBlock();
-        ~SEMemoryBlock();
+class SEMemoryBlock final
+{
+public:
+    SEMemoryBlock();
+    ~SEMemoryBlock();
 
-        inline bool Good()
-        {
-            return m_pBlock;
-        }
+    inline bool Good() { return m_pBlock; }
 
-        inline uintptr_t LastRip() const
-        {
-            return m_lastCanidate;
-        }
-    
-    private:
-      void* m_pBlock = nullptr;
-      uintptr_t m_lastCanidate = 0;
-    };
-}
+    inline uintptr_t LastRip() const { return m_lastCanidate; }
+
+private:
+    void* m_pBlock = nullptr;
+    uintptr_t m_lastCanidate = 0;
+};
+} // namespace script_extender

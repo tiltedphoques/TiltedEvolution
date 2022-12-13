@@ -48,7 +48,6 @@ struct AdminApp : Platform::Application, TiltedPhoques::Client
     void SendShutdownRequest();
 
 protected:
-
     void drawServerUi();
 
     bool Send(const ClientAdminMessage& acMessage) const noexcept;

@@ -15,7 +15,6 @@ USVFSSentinel::USVFSSentinel()
 
     if (m_usvfsHandle)
     {
-    
     }
 }
 

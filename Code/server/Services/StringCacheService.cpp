@@ -6,8 +6,8 @@
 #include <Game/Player.h>
 
 StringCacheService::StringCacheService(World& aWorld, entt::dispatcher& aDispatcher)
-    : m_world(aWorld),
-      m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&StringCacheService::HandleUpdate>(this))
+    : m_world(aWorld)
+    , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&StringCacheService::HandleUpdate>(this))
 {
 }
 

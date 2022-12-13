@@ -17,8 +17,8 @@ static void Assert(const char* apExpression, const char* apMessage)
 }
 } // namespace base
 
-#define BASE_ASSERT(Expr, Msg, ...)                                                                                    \
-    if (!(Expr))                                                                                                       \
-    {                                                                                                                  \
-        ::base::Assert(#Expr, fmt::format(Msg, ## __VA_ARGS__).c_str());                                               \
+#define BASE_ASSERT(Expr, Msg, ...)                                     \
+    if (!(Expr))                                                        \
+    {                                                                   \
+        ::base::Assert(#Expr, fmt::format(Msg, ##__VA_ARGS__).c_str()); \
     }

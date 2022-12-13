@@ -37,7 +37,7 @@ struct UIMessage
 
 class UI
 {
-  public:
+public:
     static UI* Get();
 
     bool GetMenuOpen(const BSFixedString& acName) const;
@@ -47,7 +47,7 @@ class UI
     IMenu* FindMenuByName(const BSFixedString& acName);
     BSFixedString* LookupMenuNameByInstance(IMenu* apMenu);
 
-  public:
+public:
     using TCreate = IMenu*(UIMessage*);
 
     struct UIMenuEntry

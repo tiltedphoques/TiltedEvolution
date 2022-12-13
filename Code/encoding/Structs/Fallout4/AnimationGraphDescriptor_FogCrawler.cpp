@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_FogCrawler.h>
 
-
-
-AnimationGraphDescriptor_FogCrawler::AnimationGraphDescriptor_FogCrawler(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_FogCrawler::AnimationGraphDescriptor_FogCrawler(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -79,7 +76,8 @@ AnimationGraphDescriptor_FogCrawler::AnimationGraphDescriptor_FogCrawler(
     };
     uint64_t key = 453515791105675987;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kIsAttackReady,
@@ -107,6 +105,5 @@ AnimationGraphDescriptor_FogCrawler::AnimationGraphDescriptor_FogCrawler(
                 kiDynamicAnimSelector,
                 kiSyncIdleLocomotion,
                 kiSyncForwardState,
-            }
-        ));
+            }));
 }

@@ -67,11 +67,7 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         if (ownedComponent.GetOwner() == pPlayer)
             continue;
 
-        const auto cellIt = std::find_if(std::begin(message.Cells), std::end(message.Cells),
-            [Cells = message.Cells, CharacterCell = characterCellComponent.Cell](auto playerCell)
-        {
-           return playerCell == CharacterCell;
-        });
+        const auto cellIt = std::find_if(std::begin(message.Cells), std::end(message.Cells), [Cells = message.Cells, CharacterCell = characterCellComponent.Cell](auto playerCell) { return playerCell == CharacterCell; });
 
         if (cellIt == std::end(message.Cells))
         {

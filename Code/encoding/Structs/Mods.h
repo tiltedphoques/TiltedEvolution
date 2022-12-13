@@ -13,15 +13,9 @@ struct Mods
         uint16_t Id;
         bool IsLite;
 
-        bool operator==(const Entry& acRhs) const noexcept
-        {
-            return Filename == acRhs.Filename && Id == acRhs.Id && IsLite == acRhs.IsLite;
-        }
+        bool operator==(const Entry& acRhs) const noexcept { return Filename == acRhs.Filename && Id == acRhs.Id && IsLite == acRhs.IsLite; }
 
-        bool operator!=(const Entry& acRhs) const noexcept
-        {
-            return !this->operator==(acRhs);
-        }
+        bool operator!=(const Entry& acRhs) const noexcept { return !this->operator==(acRhs); }
     };
 
     Vector<Entry> ModList{};

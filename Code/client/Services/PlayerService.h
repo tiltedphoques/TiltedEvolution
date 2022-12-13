@@ -17,8 +17,8 @@ struct PartyLeftEvent;
 struct NotifyPlayerRespawn;
 
 /**
-* @brief Handles logic related to the local player.
-*/
+ * @brief Handles logic related to the local player.
+ */
 struct PlayerService
 {
     PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
@@ -27,7 +27,6 @@ struct PlayerService
     TP_NOCOPYMOVE(PlayerService);
 
 protected:
-
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
     void OnConnected(const ConnectedEvent& acEvent) noexcept;
     void OnDisconnected(const DisconnectedEvent& acEvent) noexcept;
@@ -41,15 +40,14 @@ protected:
     void OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept;
 
 private:
-
     /**
-    * @brief Run the respawn timer, and if it hits 0, respawn the player.
-    */
+     * @brief Run the respawn timer, and if it hits 0, respawn the player.
+     */
     void RunRespawnUpdates(const double acDeltaTime) noexcept;
     void RunPostDeathUpdates(const double acDeltaTime) noexcept;
     /**
-    * @brief Make sure difficulty doesn't get changed while connected
-    */
+     * @brief Make sure difficulty doesn't get changed while connected
+     */
     void RunDifficultyUpdates() const noexcept;
     void RunLevelUpdates() const noexcept;
 

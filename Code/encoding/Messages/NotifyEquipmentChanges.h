@@ -8,7 +8,8 @@ struct NotifyEquipmentChanges final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyEquipmentChanges;
 
-    NotifyEquipmentChanges() : ServerMessage(Opcode)
+    NotifyEquipmentChanges()
+        : ServerMessage(Opcode)
     {
     }
 
@@ -17,16 +18,9 @@ struct NotifyEquipmentChanges final : ServerMessage
 
     bool operator==(const NotifyEquipmentChanges& acRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() &&
-               ServerId == acRhs.ServerId &&
-               ItemId == acRhs.ItemId &&
-               EquipSlotId == acRhs.EquipSlotId &&
-               Count == acRhs.Count &&
-               Unequip == acRhs.Unequip &&
-               IsSpell == acRhs.IsSpell &&
-               IsShout == acRhs.IsShout;
+        return GetOpcode() == acRhs.GetOpcode() && ServerId == acRhs.ServerId && ItemId == acRhs.ItemId && EquipSlotId == acRhs.EquipSlotId && Count == acRhs.Count && Unequip == acRhs.Unequip && IsSpell == acRhs.IsSpell && IsShout == acRhs.IsShout;
     }
-    
+
     uint32_t ServerId{};
     GameId ItemId{};
     GameId EquipSlotId{};

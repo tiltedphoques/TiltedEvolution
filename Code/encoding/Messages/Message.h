@@ -3,14 +3,15 @@
 #include "../Opcodes.h"
 #include "../ChatMessageTypes.h"
 
-using TiltedPhoques::String;
 using TiltedPhoques::Serialization;
+using TiltedPhoques::String;
 
 struct ClientMessage : TiltedPhoques::AllocatorCompatible
 {
     ClientMessage(ClientOpcode aOpcode)
         : m_opcode(aOpcode)
-    {}
+    {
+    }
 
     virtual ~ClientMessage() = default;
 
@@ -19,7 +20,7 @@ struct ClientMessage : TiltedPhoques::AllocatorCompatible
     virtual void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     // Serialize values that are dependent on previous states
     virtual void SerializeDifferential(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
-    // Deserialize values that are dependent on previous states, this function will already be called 
+    // Deserialize values that are dependent on previous states, this function will already be called
     virtual void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept;
     virtual void DeserializeDifferential(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
@@ -33,7 +34,8 @@ struct ServerMessage : TiltedPhoques::AllocatorCompatible
 {
     ServerMessage(ServerOpcode aOpcode)
         : m_opcode(aOpcode)
-    {}
+    {
+    }
 
     virtual ~ServerMessage() = default;
 

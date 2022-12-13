@@ -1,6 +1,5 @@
 #include "AdminSessionOpen.h"
 
-
 void AdminSessionOpen::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
 }

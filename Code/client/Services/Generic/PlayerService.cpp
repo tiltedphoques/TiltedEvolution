@@ -30,8 +30,10 @@
 #include <AI/AIProcess.h>
 #include <EquipManager.h>
 
-PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
-    : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
+PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
+    : m_world(aWorld)
+    , m_dispatcher(aDispatcher)
+    , m_transport(aTransport)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&PlayerService::OnUpdate>(this);
     m_connectedConnection = m_dispatcher.sink<ConnectedEvent>().connect<&PlayerService::OnConnected>(this);
@@ -196,7 +198,7 @@ void PlayerService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
         pWorldEncountersEnabled->f = 1.f;
     }
 #elif TP_FALLOUT4
-        // TODO: ft
+    // TODO: ft
 #endif
 }
 
@@ -210,7 +212,7 @@ void PlayerService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
         pWorldEncountersEnabled->f = 0.f;
     }
 #elif TP_FALLOUT4
-        // TODO: ft
+    // TODO: ft
 #endif
 }
 

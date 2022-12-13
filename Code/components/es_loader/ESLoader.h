@@ -10,13 +10,11 @@ struct RecordCollection;
 
 struct PluginData
 {
-    [[nodiscard]] bool IsLite() const noexcept
-    {
-        return m_isLite;
-    }
+    [[nodiscard]] bool IsLite() const noexcept { return m_isLite; }
 
     String m_filename;
-    union {
+    union
+    {
         uint8_t m_standardId;
         uint16_t m_liteId;
     };
@@ -29,17 +27,14 @@ String ReadWString(Buffer::Reader& aReader) noexcept;
 
 class ESLoader
 {
-  public:
+public:
     ESLoader();
 
     UniquePtr<RecordCollection> BuildRecordCollection() noexcept;
 
-    PluginCollection& GetLoadOrder() noexcept
-    {
-        return m_loadOrder;
-    }
+    PluginCollection& GetLoadOrder() noexcept { return m_loadOrder; }
 
-  private:
+private:
     bool LoadLoadOrder();
     UniquePtr<RecordCollection> LoadFiles();
 

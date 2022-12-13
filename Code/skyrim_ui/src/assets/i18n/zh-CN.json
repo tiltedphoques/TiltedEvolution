@@ -39,7 +39,7 @@
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "接受{{name}}的邀请。",
-      "LAUNCH_PARTY" : "组建团队",
+      "LAUNCH_PARTY": "组建团队",
       "INVITES": "邀请",
       "NO_INVITES": "您没有收到任何邀请",
       "EXPERIENCE_WARNING": "为保证最优的任务体验，请阅读<b>skyrim-together.com</b>上的游玩指导。其摘要如下：",
@@ -124,7 +124,7 @@
       "LANGUAGE": "语言",
       "DEBUG": "调试",
       "SHOW_DEBUG_INFO": "显示调试信息",
-	  "FONT_SIZE": "字体大小",
+      "FONT_SIZE": "字体大小",
       "FONT_SIZES": {
         "XS": "特小",
         "S": "小",
@@ -141,7 +141,7 @@
       "CONNECTED": "成功连接至服务器。",
       "DISCONNECTED": "与服务器断开连接。"
     },
-	"COMMANDS": {
+    "COMMANDS": {
       "AVAILABLE_COMMANDS": "可用的聊天指令：{{cmds}}",
       "COMMAND_NOT_FOUND": "未能识别指令：“{{cmd}}”"
     },

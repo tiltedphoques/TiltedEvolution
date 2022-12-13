@@ -20,10 +20,7 @@ DECLARE_TLS_VARS(7096);
 
 struct TlsToucher
 {
-    TlsToucher()
-    {
-        *reinterpret_cast<int*>(&tls[4]) = static_cast<int>(GetTickCount64());
-    }
+    TlsToucher() { *reinterpret_cast<int*>(&tls[4]) = static_cast<int>(GetTickCount64()); }
 };
 
 TlsToucher toucher;

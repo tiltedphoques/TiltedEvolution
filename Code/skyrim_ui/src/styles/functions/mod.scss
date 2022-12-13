@@ -1,7 +1,11 @@
 @function mod($color, $amount: 0.5, $negative: false) {
-  @return mix($color, if(
-    lightness($color) > 50,
-    if($negative, #FFF, #000),
-    if($negative, #000, #FFF)
-  ), (1 - $amount) * 100);
+  @return mix(
+    $color,
+    if(
+      lightness($color) > 50,
+      if($negative, #fff, #000),
+      if($negative, #000, #fff)
+    ),
+    (1 - $amount) * 100
+  );
 }

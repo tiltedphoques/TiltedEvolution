@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Stingwing.h>
 
-
-
-AnimationGraphDescriptor_Stingwing::AnimationGraphDescriptor_Stingwing(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Stingwing::AnimationGraphDescriptor_Stingwing(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -88,7 +85,8 @@ AnimationGraphDescriptor_Stingwing::AnimationGraphDescriptor_Stingwing(
     };
     uint64_t key = 1567904913354835406;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbSupportedDeathAnim,
@@ -111,6 +109,5 @@ AnimationGraphDescriptor_Stingwing::AnimationGraphDescriptor_Stingwing(
                 kiSyncTurnState,
                 kiSyncIdleLocomotion,
                 kiRecoilSelector,
-            }
-        ));
+            }));
 }

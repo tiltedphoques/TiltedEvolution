@@ -27,7 +27,6 @@ BSFixedString& BSFixedString::operator=(BSFixedString&& aRhs) noexcept
     return *this;
 }
 
-
 void BSFixedString::Release() noexcept
 {
     TP_THIS_FUNCTION(TConstructor, void, BSFixedString);

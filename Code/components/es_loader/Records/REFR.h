@@ -13,4 +13,3 @@ public:
 
     void ParseChunks(REFR& aSourceRecord, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
 };
-

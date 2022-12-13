@@ -20,6 +20,5 @@ struct ValueModifierEffect : public ActiveEffect
     uint32_t actorValueIndex;
     char pad_0094[4];
     ActorValueInfo* actorValueInfo;
-    
 };
 static_assert(sizeof(ValueModifierEffect) == 0xA0);

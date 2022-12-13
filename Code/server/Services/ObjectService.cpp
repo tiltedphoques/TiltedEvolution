@@ -15,7 +15,8 @@
 #include <Messages/ScriptAnimationRequest.h>
 #include <Messages/NotifyScriptAnimation.h>
 
-ObjectService::ObjectService(World &aWorld, entt::dispatcher &aDispatcher) : m_world(aWorld)
+ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher)
+    : m_world(aWorld)
 {
     m_leaveCellConnection = aDispatcher.sink<PlayerLeaveCellEvent>().connect<&ObjectService::OnPlayerLeaveCellEvent>(this);
     m_assignObjectConnection = aDispatcher.sink<PacketEvent<AssignObjectsRequest>>().connect<&ObjectService::OnAssignObjectsRequest>(this);
@@ -64,11 +65,13 @@ void ObjectService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsReques
 
     for (const ObjectData& object : acMessage.Packet.Objects)
     {
-        const auto iter = std::find_if(std::begin(view), std::end(view), [view, id = object.Id](auto entity)
-        {
-            const auto& formIdComponent = view.get<FormIdComponent>(entity);
-            return formIdComponent.Id == id;
-        });
+        const auto iter = std::find_if(
+            std::begin(view), std::end(view),
+            [view, id = object.Id](auto entity)
+            {
+                const auto& formIdComponent = view.get<FormIdComponent>(entity);
+                return formIdComponent.Id == id;
+            });
 
         if (iter != std::end(view))
         {
@@ -138,11 +141,13 @@ void ObjectService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage
 
     auto objectView = m_world.view<FormIdComponent, ObjectComponent>();
 
-    const auto iter = std::find_if(std::begin(objectView), std::end(objectView), [objectView, id = acMessage.Packet.Id](auto entity)
-    {
-        const auto& formIdComponent = objectView.get<FormIdComponent>(entity);
-        return formIdComponent.Id == id;
-    });
+    const auto iter = std::find_if(
+        std::begin(objectView), std::end(objectView),
+        [objectView, id = acMessage.Packet.Id](auto entity)
+        {
+            const auto& formIdComponent = objectView.get<FormIdComponent>(entity);
+            return formIdComponent.Id == id;
+        });
 
     if (iter != std::end(objectView))
     {
@@ -170,7 +175,7 @@ void ObjectService::OnScriptAnimationRequest(const PacketEvent<ScriptAnimationRe
     message.Animation = packet.Animation;
     message.EventName = packet.EventName;
 
-    for(Player* pPlayer : m_world.GetPlayerManager())
+    for (Player* pPlayer : m_world.GetPlayerManager())
     {
         pPlayer->Send(message);
     }

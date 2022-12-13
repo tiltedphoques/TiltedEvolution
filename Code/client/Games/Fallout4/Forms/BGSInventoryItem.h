@@ -28,7 +28,7 @@ struct BGSInventoryItem
         Flag usFlags;
 
         // TODO(cosideci): impl range based loop
-    #if 0
+#if 0
         struct Iterator 
         {
             Iterator(Stack* apEntry) : m_pEntry(apEntry) {}
@@ -48,7 +48,7 @@ struct BGSInventoryItem
         {
             return Iterator(nullptr);
         }
-    #endif
+#endif
     };
 
     TESBoundObject* pObject;

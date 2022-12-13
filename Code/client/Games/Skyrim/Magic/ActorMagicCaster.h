@@ -19,7 +19,7 @@ struct ActorMagicCaster : MagicCaster
     Actor* pCasterActor;
     NiNode* pMagicNode;
     NiPointer<uint64_t> spLight; // NiPointer<BSLight> spLight;
-    void (__fastcall *pfInterruptHandler)(Actor *);
+    void(__fastcall* pfInterruptHandler)(Actor*);
     uint64_t LoadGameSubBuffer; // BGSLoadGameSubBuffer LoadGameSubBuffer;
     BGSArtObject* pWaitingForCastingArt;
     WeaponEnchantmentController* pWeaponEnchantmentController;

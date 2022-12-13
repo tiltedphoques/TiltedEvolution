@@ -10,4 +10,3 @@ struct BGSModelMaterialSwap : TESModel
 };
 
 static_assert(sizeof(BGSModelMaterialSwap) == 0x20);
-

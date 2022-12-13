@@ -11,4 +11,3 @@ struct BGSObjectInstance
     TESForm* pObject;
     TBO_InstanceData* spInstanceData;
 };
-

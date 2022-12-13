@@ -8,7 +8,6 @@
 #include <D3D11Hook.hpp>
 #include <d3d11.h>
 
-
 RenderSystemD3D11::RenderSystemD3D11(OverlayService& aOverlay, ImguiService& aImguiService)
     : m_pSwapChain(nullptr)
     , m_overlay(aOverlay)
@@ -19,7 +18,7 @@ RenderSystemD3D11::RenderSystemD3D11(OverlayService& aOverlay, ImguiService& aIm
     m_createConnection = d3d11.OnCreate.Connect(std::bind(&RenderSystemD3D11::OnDeviceCreation, this, std::placeholders::_1));
     m_resetConnection = d3d11.OnLost.Connect(std::bind(&RenderSystemD3D11::OnReset, this, std::placeholders::_1));
 
-    //m_renderConnection = d3d11.OnPresent.Connect(std::bind(&RenderSystemD3D11::OnRender, this, std::placeholders::_1));
+    // m_renderConnection = d3d11.OnPresent.Connect(std::bind(&RenderSystemD3D11::OnRender, this, std::placeholders::_1));
 }
 
 RenderSystemD3D11::~RenderSystemD3D11()
@@ -27,7 +26,7 @@ RenderSystemD3D11::~RenderSystemD3D11()
     auto& d3d11 = TiltedPhoques::D3D11Hook::Get();
 
     d3d11.OnCreate.Disconnect(m_createConnection);
-   // d3d11.OnPresent.Disconnect(m_renderConnection);
+    // d3d11.OnPresent.Disconnect(m_renderConnection);
     d3d11.OnLost.Disconnect(m_resetConnection);
 }
 
@@ -36,7 +35,7 @@ HWND RenderSystemD3D11::GetWindow() const
     DXGI_SWAP_CHAIN_DESC desc{};
     desc.OutputWindow = nullptr;
 
-    if(m_pSwapChain)
+    if (m_pSwapChain)
         m_pSwapChain->GetDesc(&desc);
 
     return desc.OutputWindow;

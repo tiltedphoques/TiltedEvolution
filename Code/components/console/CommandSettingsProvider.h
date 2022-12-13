@@ -7,4 +7,4 @@ namespace Console
 class ConsoleRegistry;
 
 void LoadSettingsFromCommand(ConsoleRegistry& aReg, int argc, char** argv);
-} // namespace base
+} // namespace Console

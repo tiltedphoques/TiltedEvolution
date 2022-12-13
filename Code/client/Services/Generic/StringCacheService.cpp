@@ -7,7 +7,6 @@
 #include <Services/StringCacheService.h>
 #include "StringCache.h"
 
-
 StringCacheService::StringCacheService(entt::dispatcher& aDispatcher) noexcept
 {
     m_connectedConnection = aDispatcher.sink<ConnectedEvent>().connect<&StringCacheService::HandleConnected>(this);

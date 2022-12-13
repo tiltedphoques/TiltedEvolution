@@ -2,8 +2,8 @@
 
 namespace creation
 {
-    struct BSCRC16
-    {
-        static uint16_t* GetCRCTable();
-    };
-}
+struct BSCRC16
+{
+    static uint16_t* GetCRCTable();
+};
+} // namespace creation

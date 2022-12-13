@@ -10,4 +10,3 @@ struct ExtraCount : BSExtraData
 };
 
 static_assert(sizeof(ExtraCount) == 0x18);
-

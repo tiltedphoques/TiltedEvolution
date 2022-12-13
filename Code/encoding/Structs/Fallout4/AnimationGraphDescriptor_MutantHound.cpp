@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_MutantHound.h>
 
-
-
-AnimationGraphDescriptor_MutantHound::AnimationGraphDescriptor_MutantHound(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_MutantHound::AnimationGraphDescriptor_MutantHound(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -122,7 +119,8 @@ AnimationGraphDescriptor_MutantHound::AnimationGraphDescriptor_MutantHound(
     };
     uint64_t key = 13422174473106868592;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kLookAtOutOfRange,
@@ -133,25 +131,8 @@ AnimationGraphDescriptor_MutantHound::AnimationGraphDescriptor_MutantHound(
                 kIsAttackReady,
             },
             {
-                kHeadXTwist,
-                kHeadZTwist,
-                kTurnDelta,
-                kSpeedSmoothed,
-                kSpineXTwist,
-                kstaggerDirection,
-                kTurnDeltaSmoothed,
-                kHeadYTwist,
-                kSpeed,
-                krunSpeedMult,
-                kSpineZTwist,
-                kfHitReactionEndTimer,
-                ktrotSpeedMult,
-                kfTimeStep,
-                kfHeadTwistGainAdj,
-                kSpineYTwist,
-                kfSpineTwistGainAdj,
-                kDirection,
-                kwalkForwardSpeedMult,
+                kHeadXTwist,           kHeadZTwist,    kTurnDelta, kSpeedSmoothed,     kSpineXTwist, kstaggerDirection,   kTurnDeltaSmoothed, kHeadYTwist,           kSpeed, krunSpeedMult, kSpineZTwist,
+                kfHitReactionEndTimer, ktrotSpeedMult, kfTimeStep, kfHeadTwistGainAdj, kSpineYTwist, kfSpineTwistGainAdj, kDirection,         kwalkForwardSpeedMult,
             },
             {
                 kiDynamicAnimSelector,
@@ -161,6 +142,5 @@ AnimationGraphDescriptor_MutantHound::AnimationGraphDescriptor_MutantHound(
                 kiSyncIdleLocomotion,
                 kiCombatState,
                 kiLocomotionState,
-            }
-        ));
+            }));
 }

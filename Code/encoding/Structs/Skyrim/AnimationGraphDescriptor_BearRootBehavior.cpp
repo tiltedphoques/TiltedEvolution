@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_BearRootBehavior.h>
 
-
-
 AnimationGraphDescriptor_BearRootBehavior::AnimationGraphDescriptor_BearRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -117,33 +115,37 @@ AnimationGraphDescriptor_BearRootBehavior::AnimationGraphDescriptor_BearRootBeha
 
     uint64_t key = 12283352931604624777;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbHeadTrackingOn,
-            kbAnimationDriven,
-            kbAllowRotation,
-            kbHeadTracking,
-            kbDisableHeadTrack,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbSkeeverLunge,
-            kbFootIKEnable,
-            kisMoving,
+            {
+                kbHeadTrackingOn,
+                kbAnimationDriven,
+                kbAllowRotation,
+                kbHeadTracking,
+                kbDisableHeadTrack,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kbSkeeverLunge,
+                kbFootIKEnable,
+                kisMoving,
             },
-        {kSpeed,
-            kTurnDelta,
-            kturnSpeedMult,
-            kDirection,
-            kTurnDeltaDamped,
-            kSpeedSampled,
-            kwalkBackSpeedMult,
+            {
+                kSpeed,
+                kTurnDelta,
+                kturnSpeedMult,
+                kDirection,
+                kTurnDeltaDamped,
+                kSpeedSampled,
+                kwalkBackSpeedMult,
             },
-        {kiSyncSprintState,
-            kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiSyncForwardState,
-            kiMovementSpeed,
-            kiCombatStance,
+            {
+                kiSyncSprintState,
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiSyncForwardState,
+                kiMovementSpeed,
+                kiCombatStance,
             }));
 }

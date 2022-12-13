@@ -1,4 +1,4 @@
-@import "env";
+@import 'env';
 
 :host {
   position: fixed;
@@ -17,5 +17,3 @@
     max-height: calc(100vh - #{2 * $-size-gap});
   }
 }
-
-

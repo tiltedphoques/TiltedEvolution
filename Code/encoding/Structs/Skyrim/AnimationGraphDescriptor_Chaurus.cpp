@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_Chaurus.h>
 
-
-
 AnimationGraphDescriptor_Chaurus::AnimationGraphDescriptor_Chaurus(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -90,22 +88,6 @@ AnimationGraphDescriptor_Chaurus::AnimationGraphDescriptor_Chaurus(AnimationGrap
 
     uint64_t key = 6432093022549018934;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
-        AnimationGraphDescriptor(
-        {kIsAttackReady,
-            kbAllowRotation,
-            kbAnimationDriven,
-            kbMLh_Ready,
-            kbEquipOk,
-            kIsRecoiling},
-        {kDirection,
-            kSpeed,
-            kTurnDelta,
-            kturnSpeedMult,
-            kSpeedSampled,
-            kspeedMultRight,
-            kspeedMultLeft,
-            kspeedMultForward},
-        {kiSyncTurnState,
-            kiSyncIdleLocomotion}));
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key, AnimationGraphDescriptor({kIsAttackReady, kbAllowRotation, kbAnimationDriven, kbMLh_Ready, kbEquipOk, kIsRecoiling}, {kDirection, kSpeed, kTurnDelta, kturnSpeedMult, kSpeedSampled, kspeedMultRight, kspeedMultLeft, kspeedMultForward}, {kiSyncTurnState, kiSyncIdleLocomotion}));
 }

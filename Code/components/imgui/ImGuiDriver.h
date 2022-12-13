@@ -6,13 +6,13 @@ namespace ImGuiImpl
 {
 class ImGuiDriver
 {
-  public:
+public:
     ImGuiDriver();
     ~ImGuiDriver();
 
     void Initialize(void* apNativeHandle);
 
-  private:
+private:
     // No user data yet. TBD later
 };
 } // namespace ImGuiImpl

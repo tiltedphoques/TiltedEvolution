@@ -59,6 +59,3 @@ void ServerAdminMessage::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) co
 void ServerAdminMessage::SerializeDifferential(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
 }
-
-
-

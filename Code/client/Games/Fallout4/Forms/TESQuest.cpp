@@ -21,7 +21,7 @@ void TESQuest::SetStopped()
     MarkChanged(2);
 }
 
-bool TESQuest::EnsureQuestStarted(bool &success, bool force)
+bool TESQuest::EnsureQuestStarted(bool& success, bool force)
 {
     TP_THIS_FUNCTION(TSetRunning, bool, TESQuest, bool*, bool);
     POINTER_FALLOUT4(TSetRunning, SetRunning, 966434);

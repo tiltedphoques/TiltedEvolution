@@ -16,7 +16,7 @@
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/ServerMessageFactory.h>
 #include <Structs/Vector2_NetQuantize.h>
- 
+
 #include <TiltedCore/Math.hpp>
 #include <TiltedCore/Platform.hpp>
 
@@ -260,7 +260,7 @@ TEST_CASE("Differential structures", "[encoding.differential]")
         Buffer buff(1000);
         Buffer::Writer writer(&buff);
 
-        sendMods.ModList.push_back({ "Hello", 42 });
+        sendMods.ModList.push_back({"Hello", 42});
         sendMods.ModList.push_back({"Hi", 14});
         sendMods.ModList.push_back({"Test", 8});
         sendMods.ModList.push_back({"Toast", 49});
@@ -473,7 +473,6 @@ TEST_CASE("Packets", "[encoding.packets]")
         recvMessage.DeserializeRaw(reader);
 
         REQUIRE(recvMessage.Updates[1].UpdatedMovement == sendMessage.Updates[1].UpdatedMovement);
-        
     }
 }
 

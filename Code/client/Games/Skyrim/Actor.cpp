@@ -63,35 +63,33 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
     aWriter.WriteBytes((uint8_t*)&flags1, 4);
 
     //     if (!handlerId
-//         && (uint8_t)AIProcess::GetBoolInSubStructure(pProcess))
-//     {
-//         Actor::SaveSkinFar(this);
-//     }
-
+    //         && (uint8_t)AIProcess::GetBoolInSubStructure(pProcess))
+    //     {
+    //         Actor::SaveSkinFar(this);
+    //     }
 
     TESObjectREFR::Save_Reversed(aChangeFlags, aWriter);
 
-    if (pProcess); // Skyrim saves the process manager state, but we don't give a shit so skip !
+    if (pProcess)
+        ; // Skyrim saves the process manager state, but we don't give a shit so skip !
 
     aWriter.WriteBytes((uint8_t*)&unk194, 4);
     aWriter.WriteBytes((uint8_t*)&headTrackingUpdateDelay, 4);
     aWriter.WriteBytes((uint8_t*)&unk9C, 4);
-	// We skip 0x180 as it's not something we care about, some timer related data
-   
-
+    // We skip 0x180 as it's not something we care about, some timer related data
 
     aWriter.WriteBytes((uint8_t*)&unk98, 4);
-	// skip A8 - related to timers 
-	// skip AC - related to timers as well
+    // skip A8 - related to timers
+    // skip AC - related to timers as well
     aWriter.WriteBytes((uint8_t*)&unkB0, 4);
-	// skip E4 - never seen this used
-	// skip E8 - same as E4
+    // skip E4 - never seen this used
+    // skip E8 - same as E4
     aWriter.WriteBytes((uint8_t*)&unk84, 4);
     aWriter.WriteBytes((uint8_t*)&unkA4, 4);
-	// skip baseForm->weight
-	// skip 12C
+    // skip baseForm->weight
+    // skip 12C
 
-	// Save actor state sub_6F0FB0
+    // Save actor state sub_6F0FB0
 }
 
 #endif
@@ -103,8 +101,8 @@ TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, ExtraDa
 TP_THIS_FUNCTION(TPickUpObject, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
 TP_THIS_FUNCTION(TDropObject, void*, Actor, void* apResult, TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation);
 
-using TGetLocation = TESForm *(TESForm *);
-static TGetLocation *FUNC_GetActorLocation;
+using TGetLocation = TESForm*(TESForm*);
+static TGetLocation* FUNC_GetActorLocation;
 
 TCharacterConstructor* RealCharacterConstructor;
 TCharacterConstructor2* RealCharacterConstructor2;
@@ -138,7 +136,7 @@ Actor* TP_MAKE_THISCALL(HookCharacterDestructor, Actor)
 
     auto pExtension = apThis->GetExtension();
 
-    if(pExtension)
+    if (pExtension)
     {
         pExtension->~ActorExtension();
     }
@@ -177,7 +175,6 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 
         else if (aSlotId == 1 && pMiddleProcess->rightEquippedObject)
             return pMiddleProcess->rightEquippedObject->pObject;
-
     }
 
     return nullptr;
@@ -223,7 +220,7 @@ bool Actor::IsPlayerSummon() const noexcept
     return pCommandingActor && pCommandingActor->formID == 0x14;
 }
 
-TESForm *Actor::GetCurrentLocation()
+TESForm* Actor::GetCurrentLocation()
 {
     // we use the safe function which also
     // checks the form type
@@ -452,7 +449,7 @@ void Actor::SetPlayerTeammate(bool aSet) noexcept
 
 void Actor::UnEquipAll() noexcept
 {
-    // For each change 
+    // For each change
     const auto pContainerChanges = GetContainerChanges()->entries;
     for (auto pChange : *pContainerChanges)
     {
@@ -574,8 +571,7 @@ void Actor::Respawn() noexcept
 TP_THIS_FUNCTION(TForceState, void, Actor, const NiPoint3&, float, float, TESObjectCELL*, TESWorldSpace*, bool);
 static TForceState* RealForceState = nullptr;
 
-void TP_MAKE_THISCALL(HookForceState, Actor, const NiPoint3& acPosition, float aX, float aZ,
-                      TESObjectCELL* apCell, TESWorldSpace* apWorldSpace, bool aUnkBool)
+void TP_MAKE_THISCALL(HookForceState, Actor, const NiPoint3& acPosition, float aX, float aZ, TESObjectCELL* apCell, TESWorldSpace* apWorldSpace, bool aUnkBool)
 {
     /*const auto pNpc = Cast<TESNPC>(apThis->baseForm);
     if (pNpc)
@@ -584,8 +580,8 @@ void TP_MAKE_THISCALL(HookForceState, Actor, const NiPoint3& acPosition, float a
                      apPosition->m_z);
     }*/
 
-   // if (apThis != PlayerCharacter::Get())
-   //     return;
+    // if (apThis != PlayerCharacter::Get())
+    //     return;
 
     return TiltedPhoques::ThisCall(RealForceState, apThis, acPosition, aX, aZ, apCell, apWorldSpace, aUnkBool);
 }
@@ -783,8 +779,7 @@ void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLoca
     TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
     if (!pObject)
     {
-        spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId,
-                     arEntry.BaseId.BaseId);
+        spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
         return;
     }
 
@@ -862,8 +857,7 @@ static TSpeakSoundFunction* RealSpeakSoundFunction = nullptr;
 
 bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14)
 {
-    spdlog::debug("a3: {:X}, a4: {}, a5: {}, a6: {}, a7: {}, a8: {:X}, a9: {:X}, a10: {}, a11: {:X}, a12: {}, a13: {}, a14: {}",
-                  (uint64_t)a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+    spdlog::debug("a3: {:X}, a4: {}, a5: {}, a6: {}, a7: {}, a8: {:X}, a9: {:X}, a10: {}, a11: {:X}, a12: {}, a13: {}, a14: {}", (uint64_t)a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 
     if (apThis->GetExtension()->IsLocal())
         World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
@@ -878,56 +872,57 @@ void Actor::SpeakSound(const char* pFile)
     TiltedPhoques::ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
 }
 
-static TiltedPhoques::Initializer s_actorHooks([]()
-{
-    POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 40245);
-    POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 40246);
-    POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 37175);
-    POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 19812);
-    POINTER_SKYRIMSE(TForceState, s_ForceState, 37313);
-    POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 19742);
-    POINTER_SKYRIMSE(TDamageActor, s_damageActor, 37335);
-    POINTER_SKYRIMSE(TApplyActorEffect, s_applyActorEffect, 35086);
-    POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 37448);
-    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 37525);
-    POINTER_SKYRIMSE(TPickUpObject, s_pickUpObject, 37521);
-    POINTER_SKYRIMSE(TDropObject, s_dropObject, 40454);
-    POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 42704);
-    POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 39643);
-    POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 37905);
-    POINTER_SKYRIMSE(TUnequipObject, s_unequipObject, 37975);
-    POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
+static TiltedPhoques::Initializer s_actorHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 40245);
+        POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 40246);
+        POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 37175);
+        POINTER_SKYRIMSE(TGetLocation, s_GetActorLocation, 19812);
+        POINTER_SKYRIMSE(TForceState, s_ForceState, 37313);
+        POINTER_SKYRIMSE(TSpawnActorInWorld, s_SpawnActorInWorld, 19742);
+        POINTER_SKYRIMSE(TDamageActor, s_damageActor, 37335);
+        POINTER_SKYRIMSE(TApplyActorEffect, s_applyActorEffect, 35086);
+        POINTER_SKYRIMSE(TRegenAttributes, s_regenAttributes, 37448);
+        POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 37525);
+        POINTER_SKYRIMSE(TPickUpObject, s_pickUpObject, 37521);
+        POINTER_SKYRIMSE(TDropObject, s_dropObject, 40454);
+        POINTER_SKYRIMSE(TUpdateDetectionState, s_updateDetectionState, 42704);
+        POINTER_SKYRIMSE(TProcessResponse, s_processResponse, 39643);
+        POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 37905);
+        POINTER_SKYRIMSE(TUnequipObject, s_unequipObject, 37975);
+        POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
 
-    FUNC_GetActorLocation = s_GetActorLocation.Get();
-    RealCharacterConstructor = s_characterCtor.Get();
-    RealCharacterConstructor2 = s_characterCtor2.Get();
-    RealForceState = s_ForceState.Get();
-    RealSpawnActorInWorld = s_SpawnActorInWorld.Get();
-    RealDamageActor = s_damageActor.Get();
-    RealApplyActorEffect = s_applyActorEffect.Get();
-    RealRegenAttributes = s_regenAttributes.Get();
-    RealAddInventoryItem = s_addInventoryItem.Get();
-    RealPickUpObject = s_pickUpObject.Get();
-    RealDropObject = s_dropObject.Get();
-    RealUpdateDetectionState = s_updateDetectionState.Get();
-    RealProcessResponse = s_processResponse.Get();
-    RealInitiateMountPackage = s_initiateMountPackage.Get();
-    RealUnequipObject = s_unequipObject.Get();
-    RealSpeakSoundFunction = s_speakSoundFunction.Get();
+        FUNC_GetActorLocation = s_GetActorLocation.Get();
+        RealCharacterConstructor = s_characterCtor.Get();
+        RealCharacterConstructor2 = s_characterCtor2.Get();
+        RealForceState = s_ForceState.Get();
+        RealSpawnActorInWorld = s_SpawnActorInWorld.Get();
+        RealDamageActor = s_damageActor.Get();
+        RealApplyActorEffect = s_applyActorEffect.Get();
+        RealRegenAttributes = s_regenAttributes.Get();
+        RealAddInventoryItem = s_addInventoryItem.Get();
+        RealPickUpObject = s_pickUpObject.Get();
+        RealDropObject = s_dropObject.Get();
+        RealUpdateDetectionState = s_updateDetectionState.Get();
+        RealProcessResponse = s_processResponse.Get();
+        RealInitiateMountPackage = s_initiateMountPackage.Get();
+        RealUnequipObject = s_unequipObject.Get();
+        RealSpeakSoundFunction = s_speakSoundFunction.Get();
 
-    TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
-    TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
-    TP_HOOK(&RealForceState, HookForceState);
-    TP_HOOK(&RealSpawnActorInWorld, HookSpawnActorInWorld);
-    TP_HOOK(&RealDamageActor, HookDamageActor);
-    TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
-    TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
-    TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
-    TP_HOOK(&RealPickUpObject, HookPickUpObject);
-    TP_HOOK(&RealDropObject, HookDropObject);
-    TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
-    TP_HOOK(&RealProcessResponse, HookProcessResponse);
-    TP_HOOK(&RealInitiateMountPackage, HookInitiateMountPackage);
-    TP_HOOK(&RealUnequipObject, HookUnequipObject);
-    TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
-});
+        TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
+        TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
+        TP_HOOK(&RealForceState, HookForceState);
+        TP_HOOK(&RealSpawnActorInWorld, HookSpawnActorInWorld);
+        TP_HOOK(&RealDamageActor, HookDamageActor);
+        TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
+        TP_HOOK(&RealRegenAttributes, HookRegenAttributes);
+        TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
+        TP_HOOK(&RealPickUpObject, HookPickUpObject);
+        TP_HOOK(&RealDropObject, HookDropObject);
+        TP_HOOK(&RealUpdateDetectionState, HookUpdateDetectionState);
+        TP_HOOK(&RealProcessResponse, HookProcessResponse);
+        TP_HOOK(&RealInitiateMountPackage, HookInitiateMountPackage);
+        TP_HOOK(&RealUnequipObject, HookUnequipObject);
+        TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
+    });

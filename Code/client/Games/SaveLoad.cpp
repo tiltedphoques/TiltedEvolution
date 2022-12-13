@@ -34,7 +34,6 @@ BGSSaveFormBuffer::BGSSaveFormBuffer()
     position = 0;
 }
 
-
 void BGSSaveFormBuffer::WriteId(uint32_t aId) noexcept
 {
     uint32_t modId = 0;
@@ -53,7 +52,6 @@ void BGSSaveFormBuffer::WriteId(uint32_t aId) noexcept
     position += writer.Size() & 0xFFFFFFFF;
 }
 
-
 BGSLoadFormBuffer::BGSLoadFormBuffer(const uint32_t aChangeFlags)
 {
     TP_THIS_FUNCTION(CtorT, BGSLoadFormBuffer*, BGSLoadFormBuffer);
@@ -69,11 +67,11 @@ BGSLoadFormBuffer::BGSLoadFormBuffer(const uint32_t aChangeFlags)
     maybeMoreFlags = 0;
 
 #if TP_PLATFORM_64
-#   if TP_FALLOUT4
+#if TP_FALLOUT4
     unk1C = 1;
-#   else
+#else
     unk1C = -1;
-#   endif
+#endif
 #endif
 }
 
@@ -107,7 +105,6 @@ void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteId, BGSSaveFormBuffer, uint64_t aId
     apThis->WriteId(aId & 0xFFFFFFFF);
 }
 
-
 bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t& aFormId)
 {
     if (!ScopedSaveLoadOverride::IsOverriden())
@@ -125,7 +122,7 @@ bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t&
 
     aFormId = 0;
 
-    if(modId != 0 || baseId != 0)
+    if (modId != 0 || baseId != 0)
         aFormId = World::Get().GetModSystem().GetGameId(modId, baseId);
 
     apThis->position += reader.Size() & 0xFFFFFFFF;
@@ -133,7 +130,8 @@ bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t&
     return true;
 }
 
-static TiltedPhoques::Initializer s_saveLoadHooks([]()
+static TiltedPhoques::Initializer s_saveLoadHooks(
+    []()
     {
         POINTER_FALLOUT4(TBGSLoadFormBuffer_ReadFormId, s_readFormId, 601669);
         POINTER_SKYRIMSE(TBGSLoadFormBuffer_ReadFormId, s_readFormId, 36000);
