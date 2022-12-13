@@ -61,15 +61,9 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
         return pHandler;
     }
 
-    [[nodiscard]] HWND GetWindow() override
-    {
-        return m_pRenderSystem->GetWindow();
-    }
+    [[nodiscard]] HWND GetWindow() override { return m_pRenderSystem->GetWindow(); }
 
-    [[nodiscard]] IDXGISwapChain* GetSwapChain() const noexcept override
-    {
-        return m_pRenderSystem->GetSwapChain();
-    }
+    [[nodiscard]] IDXGISwapChain* GetSwapChain() const noexcept override { return m_pRenderSystem->GetSwapChain(); }
 
 private:
     RenderSystemD3D11* m_pRenderSystem;

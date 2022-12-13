@@ -164,10 +164,7 @@ bool TESFile::ReadGroupOrRecord(Buffer::Reader& aReader, RecordCollection& aReco
 }
 
 template <typename T>
-concept ExpectsGRUP = requires(T t)
-{
-    &T::ParseGRUP;
-};
+concept ExpectsGRUP = requires(T t) { &T::ParseGRUP; };
 
 template <class T> T TESFile::CopyAndParseRecord(Record* pRecordHeader)
 {

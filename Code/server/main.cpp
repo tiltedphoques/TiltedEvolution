@@ -93,17 +93,17 @@ GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegist
 
 GS_EXPORT void SetDefaultLogger(std::shared_ptr<spdlog::logger> aLogger)
 {
-    //#ifdef _WIN32
+    // #ifdef _WIN32
     spdlog::set_default_logger(std::move(aLogger));
-    //#endif
+    // #endif
 }
 
 GS_EXPORT void RegisterLogger(std::shared_ptr<spdlog::logger> aLogger)
 {
-    //#ifdef _WIN32
-    // yes this needs to be here, else the dedirunner dies
+    // #ifdef _WIN32
+    //  yes this needs to be here, else the dedirunner dies
     spdlog::register_logger(std::move(aLogger));
-    //#endif
+    // #endif
 }
 
 #ifdef _WIN32
