@@ -52,8 +52,8 @@ Vector<Script::Npc> ScriptService::GetNpcs() const
 
 void ScriptService::Initialize() noexcept
 {
-    auto path = TiltedPhoques::GetPath() / "scripts"; 
-    //LoadFullScripts(path);
+    auto path = TiltedPhoques::GetPath() / "scripts";
+    // LoadFullScripts(path);
 }
 
 std::tuple<bool, String> ScriptService::HandleMove(const Script::Npc& aNpc) noexcept
@@ -72,25 +72,13 @@ void ScriptService::HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisc
 
     switch (aReason)
     {
-    case Server::EDisconnectReason::Quit:
-        reason = "Quit";
-        break;
-    case Server::EDisconnectReason::Kicked:
-        reason = "Kicked";
-        break;
-    case Server::EDisconnectReason::Banned:
-        reason = "Banned";
-        break;
-    case Server::EDisconnectReason::BadConnection:
-        reason = "Connection lost";
-        break;
-    case Server::EDisconnectReason::TimedOut:
-        reason = "Timed out";
-        break;
+    case Server::EDisconnectReason::Quit: reason = "Quit"; break;
+    case Server::EDisconnectReason::Kicked: reason = "Kicked"; break;
+    case Server::EDisconnectReason::Banned: reason = "Banned"; break;
+    case Server::EDisconnectReason::BadConnection: reason = "Connection lost"; break;
+    case Server::EDisconnectReason::TimedOut: reason = "Timed out"; break;
     case Server::EDisconnectReason::Unknown:
-    default:
-        reason = "Unknown";
-        break;
+    default: reason = "Unknown"; break;
     }
 
     CallEvent("onPlayerQuit", aConnectionId, reason);

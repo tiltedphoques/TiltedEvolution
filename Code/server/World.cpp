@@ -48,7 +48,7 @@ World::World()
         ctx().emplace<ModsComponent>().AddServerMod(it);
     }
 
-     // late initialize the ScriptService to ensure all components are valid
+    // late initialize the ScriptService to ensure all components are valid
     m_pScriptService = TiltedPhoques::MakeUnique<ScriptService>(*this, m_dispatcher);
 }
 

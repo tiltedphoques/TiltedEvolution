@@ -9,10 +9,10 @@ struct PlayerEnterWorldEvent;
 
 namespace Script
 {
-    struct Npc;
-    struct Player;
-    struct Quest;
-}
+struct Npc;
+struct Player;
+struct Quest;
+} // namespace Script
 
 struct ScriptService
 {
@@ -33,15 +33,14 @@ struct ScriptService
     void HandleQuestStop(const Script::Player& aPlayer, uint32_t aformId) noexcept;
 
 protected:
-
-    //void RegisterExtensions(ScriptContext& aContext) override;
+    // void RegisterExtensions(ScriptContext& aContext) override;
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
     void OnPlayerEnterWorld(const PlayerEnterWorldEvent& acEvent) noexcept;
     void OnRpcCalls(const PacketEvent<ClientRpcCalls>& acRpcCalls) noexcept;
 
-    //void BindStaticFunctions(ScriptContext& aContext) noexcept;
-    //void BindTypes(ScriptContext& aContext) noexcept;
+    // void BindStaticFunctions(ScriptContext& aContext) noexcept;
+    // void BindTypes(ScriptContext& aContext) noexcept;
 
     void AddEventHandler(std::string acName, sol::function acFunction) noexcept;
     void CancelEvent(std::string aReason) noexcept;
@@ -49,14 +48,11 @@ protected:
     [[nodiscard]] Vector<Script::Player> GetPlayers() const;
     [[nodiscard]] Vector<Script::Npc> GetNpcs() const;
 
-    template<typename... Args>
-    std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args) noexcept;
+    template <typename... Args> std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args) noexcept;
 
-    template<typename... Args> void CallEvent(const String& acName, Args&&... args) noexcept;
+    template <typename... Args> void CallEvent(const String& acName, Args&&... args) noexcept;
 
 private:
-
-
     using TCallbacks = Vector<sol::function>;
 
     World& m_world;
