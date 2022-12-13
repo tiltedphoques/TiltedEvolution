@@ -15,7 +15,6 @@ namespace Resources
 // if it is set, every number starts at 2097151 instead of 0, but we only store the delta of (max) 2097151
 struct SemanticVersion
 {
-public:
     using underlying_type = uint64_t;
 
     static constexpr uint32_t k21BitMax = 2097151;

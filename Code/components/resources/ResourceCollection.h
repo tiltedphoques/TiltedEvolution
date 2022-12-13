@@ -11,7 +11,6 @@ namespace Resources
 {
 struct ResourceCollection
 {
-public:
     ResourceCollection();
     ~ResourceCollection();
 
