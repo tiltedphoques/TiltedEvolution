@@ -75,32 +75,62 @@ bool ScriptService::LoadScript(const std::filesystem::path& aPath)
 
 void ScriptService::BindInbuiltFunctions()
 {
-    #if 0
-    // load in game bindings
-    m_globals["print"] = [](sol::variadic_args aArgs, sol::this_state aState) {
-        std::ostringstream oss;
-        sol::state_view s(aState);
-        for (auto it = aArgs.cbegin(); it != aArgs.cend(); ++it)
-        {
-            if (it != aArgs.cbegin())
-            {
-                oss << " ";
-            }
-            std::string str = s["tostring"]((*it).get<sol::object>());
-            oss << str;
-        }
-
-        spdlog::get("scripting")->info(oss.str());
-    };
-    #endif
     auto lua = m_lua.Lock();
     auto& luaVm = lua.Get();
 
+    // git build information
     {
         auto table = luaVm.create_named_table("BuildInfo");
         table["Commit"] = BUILD_COMMIT;
         table["Branch"] = BUILD_BRANCH;
     }
+
+    // game time information
+    {
+        auto cal = luaVm.new_usertype<CalendarService>("Calendar", sol::no_constructor);
+        
+    }
+
+    {
+        auto playerType = luaVm.new_usertype<Player>("Player", sol::no_constructor);
+        playerType["id"] = sol::readonly_property(&Player::GetId);
+        playerType["party"] = sol::readonly_property(&Player::GetParty);
+    }
+
+    {
+        auto worldType = luaVm.new_usertype<World>("World", sol::no_constructor);
+        worldType["get"] = [this]() { return &m_world; };
+        //worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
+        worldType["players"] = sol::readonly_property([this]() { return GetPlayers(); });
+    }
+
+    {
+        auto upTime = luaVm.new_usertype<GameServer::UpTime>("UpTime", sol::no_constructor);
+        upTime["weeks"] = sol::readonly_property(&GameServer::UpTime::GetWeeks);
+        upTime["days"] = sol::readonly_property(&GameServer::UpTime::GetDays);
+        upTime["hours"] = sol::readonly_property(&GameServer::UpTime::GetHours);
+        upTime["minutes"] = sol::readonly_property(&GameServer::UpTime::GetMintutes);
+        
+  
+        auto server = luaVm.new_usertype<GameServer>("GameServer", sol::no_constructor);
+        server["get"] = [this]() { return GameServer::Get(); };
+        //server["GetServerName"] = &GameServer::GetServerName;
+        /*
+        *     struct Info
+    {
+        String name;
+        String desc;
+        String icon_url;
+        String tagList;
+        uint16_t tick_rate;
+    };
+
+        */
+        server["GetUptime"] = &GameServer::GetUptime;
+        server["Close"] = &GameServer::Kill;
+    }
+
+    
 }
 
 

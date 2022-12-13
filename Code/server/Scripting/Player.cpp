@@ -37,7 +37,8 @@ const uint64_t Player::GetDiscordId() const
 
 const glm::vec3& Player::GetPosition() const
 {
-    return {};
+    auto& movementComponent = m_pWorld->get<MovementComponent>(m_entity);
+    return movementComponent.Position;
 }
 
 const glm::vec3& Player::GetRotation() const

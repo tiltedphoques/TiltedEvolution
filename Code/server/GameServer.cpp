@@ -273,6 +273,13 @@ void GameServer::BindMessageHandlers()
 
 void GameServer::BindServerCommands()
 {
+    m_commands.RegisterCommand<>("uptime", "Show how long the server has been running for", [this](Console::ArgStack&) {
+        UpTime uptime = GetUptime();
+        spdlog::get("ConOut")->info("Server uptime: {}w {}d {}h {}m", uptime.weeks, uptime.days, uptime.hours,
+                                    uptime.minutes);
+    });
+
+
     m_commands.RegisterCommand<>(
         "players", "List all players on this server",
         [&](Console::ArgStack&)
@@ -350,6 +357,9 @@ void GameServer::BindServerCommands()
             }
         });
 }
+
+
+
 /* Update Info fields from user facing CVARS.*/
 void GameServer::UpdateInfo()
 {
@@ -840,6 +850,19 @@ void GameServer::UpdateSettings()
     notify.Settings = GetSettings();
 
     SendToPlayers(notify);
+}
+
+GameServer::UpTime GameServer::GetUptime() const noexcept
+{
+    auto duration = std::chrono::high_resolution_clock::now() - m_startTime;
+    auto weeks = std::chrono::duration_cast<std::chrono::weeks>(duration);
+    duration -= weeks;
+    auto days = std::chrono::duration_cast<std::chrono::days>(duration);
+    duration -= days;
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);
+    duration -= hours;
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);
+    return {weeks.count(), days.count(), hours.count(), minutes.count()};
 }
 
 void GameServer::UpdateTitle() const
