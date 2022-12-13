@@ -13,10 +13,13 @@ namespace Resources
 // 3 * 21 bits = 63 bits used for all three version numbers
 // the empty bit is used to double the range of each version number from 2097151 to 4194302
 // if it is set, every number starts at 2097151 instead of 0, but we only store the delta of (max) 2097151
-class SemanticVersion
+struct SemanticVersion
 {
 public:
     using underlying_type = uint64_t;
+
+    static constexpr uint32_t k21BitMax = 2097151;
+    static constexpr uint32_t k42BitMax = 4194302;
 
     SemanticVersion() = default;
     SemanticVersion(const underlying_type aVersionBits) noexcept
@@ -28,7 +31,7 @@ public:
 
     bool From(uint32_t major, uint32_t minor, uint32_t patch) noexcept
     {
-        if (major > 4194302 || minor > 4194302 || patch > 4194302)
+        if (major > k42BitMax || minor > k42BitMax || patch > k42BitMax)
             return false;
 
         bool dirty = false;
@@ -36,14 +39,14 @@ public:
 
         uint32_t vers[3] = {major, minor, patch};
         for (auto i = 0; i < 3; i++)
-            if (vers[i] > 2097151)
+            if (vers[i] > k21BitMax)
                 dirty = true;
 
         if (dirty)
         {
             m_versionBits |= 1ULL << 63;
             for (auto i = 0; i < 3; i++)
-                vers[i] -= 2097151;
+                vers[i] -= k21BitMax;
         }
 
         m_versionBits |= (uint64_t(vers[0]) << 42) + (uint64_t(vers[1]) << 21) + vers[2];
@@ -80,15 +83,15 @@ public:
 
     std::tuple<uint32_t, uint32_t, uint32_t> ToTuple() const noexcept
     {
-        uint32_t major = (m_versionBits >> 42) & 2097151;
-        uint32_t minor = (m_versionBits >> 21) & 2097151;
-        uint32_t patch = m_versionBits & 2097151;
+        uint32_t major = (m_versionBits >> 42) & k21BitMax;
+        uint32_t minor = (m_versionBits >> 21) & k21BitMax;
+        uint32_t patch = m_versionBits & k21BitMax;
 
         if (m_versionBits & (1ULL << 63))
         {
-            major += 2097151;
-            minor += 2097151;
-            patch += 2097151;
+            major += k21BitMax;
+            minor += k21BitMax;
+            patch += k21BitMax;
         }
         return {major, minor, patch};
     }
@@ -101,11 +104,11 @@ public:
 
     const underlying_type GetVersionBits() const noexcept { return m_versionBits; }
 
-    const uint32_t GetMajor() const noexcept { return (m_versionBits >> 42) & 2097151; }
+    const uint32_t GetMajor() const noexcept { return (m_versionBits >> 42) & k21BitMax; }
 
-    const uint32_t GetMinor() const noexcept { return (m_versionBits >> 21) & 2097151; }
+    const uint32_t GetMinor() const noexcept { return (m_versionBits >> 21) & k21BitMax; }
 
-    const uint32_t GetPatch() const noexcept { return m_versionBits & 2097151; }
+    const uint32_t GetPatch() const noexcept { return m_versionBits & k21BitMax; }
 
     bool IsExtended() const noexcept { return m_versionBits & (1ULL << 63); }
 

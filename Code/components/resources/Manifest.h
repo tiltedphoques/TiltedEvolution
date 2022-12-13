@@ -13,22 +13,25 @@ namespace fs = std::filesystem;
 
 struct Manifest001
 {
-    /// name @ version
-    using DependencyTuple = std::pair<TiltedPhoques::String, SemanticVersion>;
+    struct DependencyTuple
+    {
+        TiltedPhoques::String Name;
+        SemanticVersion Version;
+    };
 
-    SemanticVersion apiSet;                              // < version of the manifest spec
-    SemanticVersion resourceVersion;                     // < user defined version of the resource
-    TiltedPhoques::String name;                          // < name of the resource
-    TiltedPhoques::String description;                   // < description of the resource
-    TiltedPhoques::String keywords;                      // < keywords for the resource
-    TiltedPhoques::String license;                       // < license of the resource
-    TiltedPhoques::String repository;                    // < repository of the resource
-    TiltedPhoques::String homepage;                      // < homepage of the resource
-    TiltedPhoques::String author;                        // < author of the resource
-    TiltedPhoques::String entryPoint;                    // < entry point of the resource
-    TiltedPhoques::Vector<DependencyTuple> dependencies; // < dependencies of the resource
-    fs::path folderName;
-    bool isTombstone = false; // < if true, this manifest is a tombstone and should be ignored, this is only relevant
+    SemanticVersion ApiSet;                              // < version of the manifest spec
+    SemanticVersion ResourceVersion;                     // < user defined version of the resource
+    TiltedPhoques::String Name;                          // < name of the resource
+    TiltedPhoques::String Description;                   // < description of the resource
+    TiltedPhoques::String Keywords;                      // < keywords for the resource
+    TiltedPhoques::String License;                       // < license of the resource
+    TiltedPhoques::String Repository;                    // < repository of the resource
+    TiltedPhoques::String Homepage;                      // < homepage of the resource
+    TiltedPhoques::String Author;                        // < author of the resource
+    TiltedPhoques::String EntryPoint;                    // < entry point of the resource
+    TiltedPhoques::Vector<DependencyTuple> Dependencies; // < dependencies of the resource
+    fs::path FolderName;
+    bool IsTombstone = false; // < if true, this manifest is a tombstone and should be ignored, this is only relevant
                               // during dependency resolving & loading
 };
 

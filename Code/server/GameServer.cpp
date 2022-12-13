@@ -322,7 +322,7 @@ void GameServer::BindServerCommands()
             }
 
             out->info("<------Resources-({})--->", m_pResources->GetManifests().size());
-            m_pResources->ForEachManifest([&](const auto& aManifest) { out->info("{} -> {}", aManifest.name.c_str(), aManifest.description.c_str()); });
+            m_pResources->ForEachManifest([&](const auto& aManifest) { out->info("{} -> {}", aManifest.Name.c_str(), aManifest.Description.c_str()); });
         });
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });

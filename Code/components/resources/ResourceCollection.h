@@ -9,7 +9,7 @@
 
 namespace Resources
 {
-class ResourceCollection
+struct ResourceCollection
 {
 public:
     ResourceCollection();
