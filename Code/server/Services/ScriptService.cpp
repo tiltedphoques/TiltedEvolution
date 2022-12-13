@@ -16,12 +16,93 @@
 #include <Components.h>
 #include <GameServer.h>
 
+#include <resources/ResourceCollection.h>
+
 ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
     , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this))
     , m_playerEnterWorldConnection(aDispatcher.sink<PlayerEnterWorldEvent>().connect<&ScriptService::OnPlayerEnterWorld>(this))
 {
 }
+
+void ScriptService::Initialize(Resources::ResourceCollection& aCollection) noexcept
+{
+    auto lua = m_lua.Lock();
+    auto& luaVm = lua.Get();
+    m_globals = luaVm.globals();
+    
+    luaVm.open_libraries(sol::lib::base, sol::lib::string, sol::lib::io, sol::lib::math, sol::lib::package,
+                         sol::lib::os, sol::lib::table, sol::lib::bit32);
+
+    // make sure to set package path to current directory scope
+    // as this could get overriden by LUA_PATH environment variable
+    luaVm["package"]["path"] = "./?.lua";
+
+    BindInbuiltFunctions();
+    
+    aCollection.ForEachManifest([&](const Resources::Manifest001& aManifest) {
+        if (aManifest.EntryPoint.empty())
+            return;
+        auto entryPointPath = aCollection.GetResourceFolderPath() / aManifest.FolderName / aManifest.EntryPoint;
+        LoadScript(entryPointPath);
+    });
+}
+
+bool ScriptService::LoadScript(const std::filesystem::path& aPath)
+{
+    try
+    {
+        auto lua = m_lua.Lock();
+        auto& luaVm = lua.Get();
+        
+        const auto result = luaVm.script_file(aPath.string());
+
+        if (!result.valid())
+        {
+            const sol::error error = result;
+            spdlog::error("Failed to load script file: {}", error.what());
+            return false;
+        }
+    }
+    catch (std::exception& exception)
+    {
+        spdlog::error("Failed to load script file: {}", exception.what());
+        return false;
+    }
+
+    return true;
+}
+
+void ScriptService::BindInbuiltFunctions()
+{
+    #if 0
+    // load in game bindings
+    m_globals["print"] = [](sol::variadic_args aArgs, sol::this_state aState) {
+        std::ostringstream oss;
+        sol::state_view s(aState);
+        for (auto it = aArgs.cbegin(); it != aArgs.cend(); ++it)
+        {
+            if (it != aArgs.cbegin())
+            {
+                oss << " ";
+            }
+            std::string str = s["tostring"]((*it).get<sol::object>());
+            oss << str;
+        }
+
+        spdlog::get("scripting")->info(oss.str());
+    };
+    #endif
+    auto lua = m_lua.Lock();
+    auto& luaVm = lua.Get();
+
+    {
+        auto table = luaVm.create_named_table("BuildInfo");
+        table["Commit"] = BUILD_COMMIT;
+        table["Branch"] = BUILD_BRANCH;
+    }
+}
+
 
 Vector<Script::Player> ScriptService::GetPlayers() const
 {
@@ -48,12 +129,6 @@ Vector<Script::Npc> ScriptService::GetNpcs() const
     }*/
 
     return npcs;
-}
-
-void ScriptService::Initialize() noexcept
-{
-    auto path = TiltedPhoques::GetPath() / "scripts";
-    // LoadFullScripts(path);
 }
 
 std::tuple<bool, String> ScriptService::HandleMove(const Script::Npc& aNpc) noexcept

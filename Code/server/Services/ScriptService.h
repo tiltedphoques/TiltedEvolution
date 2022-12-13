@@ -1,7 +1,8 @@
 #pragma once
 
-#include <Events/UpdateEvent.h>
 #include <Events/PacketEvent.h>
+#include <Events/UpdateEvent.h>
+#include <TiltedCore/Lockable.hpp>
 
 struct World;
 struct ClientRpcCalls;
@@ -14,6 +15,11 @@ struct Player;
 struct Quest;
 } // namespace Script
 
+namespace Resources
+{
+struct ResourceCollection;
+}
+
 struct ScriptService
 {
     ScriptService(World& aWorld, entt::dispatcher& aDispatcher);
@@ -21,7 +27,8 @@ struct ScriptService
 
     TP_NOCOPYMOVE(ScriptService);
 
-    void Initialize() noexcept;
+    void Initialize(Resources::ResourceCollection& aCollection) noexcept;
+    bool LoadScript(const std::filesystem::path& aPath);
 
     std::tuple<bool, String> HandlePlayerJoin(const Script::Player& aPlayer) noexcept;
     std::tuple<bool, String> HandleMove(const Script::Npc& aNpc) noexcept;
@@ -32,7 +39,7 @@ struct ScriptService
     void HandleQuestStage(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept;
     void HandleQuestStop(const Script::Player& aPlayer, uint32_t aformId) noexcept;
 
-protected:
+  protected:
     // void RegisterExtensions(ScriptContext& aContext) override;
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
@@ -48,14 +55,21 @@ protected:
     [[nodiscard]] Vector<Script::Player> GetPlayers() const;
     [[nodiscard]] Vector<Script::Npc> GetNpcs() const;
 
-    template <typename... Args> std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args) noexcept;
+    template <typename... Args>
+    std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args) noexcept;
 
     template <typename... Args> void CallEvent(const String& acName, Args&&... args) noexcept;
 
-private:
+  private:
+    void BindInbuiltFunctions();
+
+  private:
     using TCallbacks = Vector<sol::function>;
 
     World& m_world;
+
+    sol::table m_globals{};
+    TiltedPhoques::Lockable<sol::state, std::recursive_mutex> m_lua;
 
     bool m_eventCanceled{};
     String m_cancelReason;

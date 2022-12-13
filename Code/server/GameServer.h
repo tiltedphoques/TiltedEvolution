@@ -15,7 +15,7 @@ struct PartyComponent;
 
 namespace Resources
 {
-class ResourceCollection;
+struct ResourceCollection;
 }
 
 namespace Console
