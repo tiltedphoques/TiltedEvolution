@@ -183,6 +183,7 @@ void GameServer::Initialize()
         return;
 
     BindServerCommands();
+    m_pWorld->GetScriptService().Initialize();
 }
 
 void GameServer::Kill()

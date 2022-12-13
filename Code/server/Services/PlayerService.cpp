@@ -170,7 +170,7 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
 
             GameId goldId(0, 0xF);
             int32_t goldCount = inventoryComponent.Content.GetEntryCountById(goldId);
-            int32_t goldToRemove = goldCount * goldLossFactor;
+            int32_t goldToRemove = static_cast<int32_t>(goldCount * goldLossFactor);
 
             Inventory::Entry entry{};
             entry.BaseId = goldId;

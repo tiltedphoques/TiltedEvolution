@@ -7,6 +7,7 @@
 #include <Services/CharacterService.h>
 #include <Services/CalendarService.h>
 #include <Services/QuestService.h>
+#include <Services/ScriptService.h>
 
 #include "Game/PlayerManager.h"
 
@@ -36,6 +37,7 @@ struct World : entt::registry
     const QuestService& GetQuestService() const noexcept { return ctx().at<const QuestService>(); }
     PlayerManager& GetPlayerManager() noexcept { return m_playerManager; }
     const PlayerManager& GetPlayerManager() const noexcept { return m_playerManager; }
+    ScriptService& GetScriptService() const noexcept { return *m_pScriptService; }
 
     // Null checked at start when MoPo is on!
     ESLoader::RecordCollection* GetRecordCollection() noexcept
@@ -54,6 +56,7 @@ private:
     entt::dispatcher m_dispatcher;
 
     TiltedPhoques::SharedPtr<AdminService> m_spAdminService;
+    TiltedPhoques::UniquePtr<ScriptService> m_pScriptService;
     PlayerManager m_playerManager;
     UniquePtr<ESLoader::RecordCollection> m_recordCollection;
 };
