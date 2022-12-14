@@ -41,9 +41,14 @@ void ScriptService::Initialize(Resources::ResourceCollection& aCollection) noexc
     BindInbuiltFunctions();
     
     aCollection.ForEachManifest([&](const Resources::Manifest001& aManifest) {
-        if (aManifest.EntryPoint.empty())
+        if (aManifest.EntryPoint.empty()) // just a dependency?
             return;
         auto entryPointPath = aCollection.GetResourceFolderPath() / aManifest.FolderName / aManifest.EntryPoint;
+        if (!std::filesystem::exists(entryPointPath))
+        {
+            spdlog::warn("Script entry point {} does not exist", entryPointPath.string());
+            return;
+        }
         LoadScript(entryPointPath);
     });
 }
@@ -85,16 +90,27 @@ void ScriptService::BindInbuiltFunctions()
         table["Branch"] = BUILD_BRANCH;
     }
 
+
+    // https://github.com/tiltedphoques/TiltedRevolution/blob/master/Code/server/Services/ScriptService.cpp
+    {
+        luaVm.set_function("addEventHandler", [this](std::string acName, sol::function aFunction) {
+            AddEventHandler(std::move(acName), std::move(aFunction));
+        });
+        luaVm.set_function("cancelEvent", [this](std::string acReason) { CancelEvent(std::move(acReason)); });
+    }
+
     // game time information
     {
         auto cal = luaVm.new_usertype<CalendarService>("Calendar", sol::no_constructor);
-        
+        //cal["GetGameTime"] = &CalendarService::GetGameTime;
     }
 
     {
-        auto playerType = luaVm.new_usertype<Player>("Player", sol::no_constructor);
-        playerType["id"] = sol::readonly_property(&Player::GetId);
-        playerType["party"] = sol::readonly_property(&Player::GetParty);
+        auto playerType = luaVm.new_usertype<Script::Player>("Player", sol::no_constructor);
+        playerType["id"] = sol::readonly_property(&Script::Player::GetId);
+        playerType["discordId"] = sol::readonly_property(&Script::Player::GetDiscordId);
+        playerType["party"] = sol::readonly_property(&Script::Player::GetParty);
+        playerType["name"] = sol::readonly_property(&Script::Player::GetName);
     }
 
     {
@@ -114,35 +130,30 @@ void ScriptService::BindInbuiltFunctions()
   
         auto server = luaVm.new_usertype<GameServer>("GameServer", sol::no_constructor);
         server["get"] = [this]() { return GameServer::Get(); };
-        //server["GetServerName"] = &GameServer::GetServerName;
-        /*
-        *     struct Info
-    {
-        String name;
-        String desc;
-        String icon_url;
-        String tagList;
-        uint16_t tick_rate;
-    };
-
-        */
+        upTime["name"] = sol::readonly_property([]() { return GameServer::Get()->GetInfo().name; });
+        upTime["tags"] = sol::readonly_property([]() { return GameServer::Get()->GetInfo().tagList; });
+        upTime["tickrate"] = sol::readonly_property([]() { return GameServer::Get()->GetInfo().tick_rate; });
         server["GetUptime"] = &GameServer::GetUptime;
         server["Close"] = &GameServer::Kill;
     }
 
-    
-}
+    {
+        auto server = luaVm.new_usertype<GameServer>("Chat", sol::no_constructor);
+        server["get"] = [this]() { return GameServer::Get(); };
+        upTime["name"] = sol::readonly_property([]() { return GameServer::Get()->GetInfo().name; });
+
+        GameServer::Get()->SendToPlayers(notifyMessage);
+
+    }
 
 
 Vector<Script::Player> ScriptService::GetPlayers() const
 {
     Vector<Script::Player> players;
 
-    /* auto playerView = m_world.view<PlayerComponent>();
-    for(auto entity : playerView)
-    {
-        players.push_back(Script::Player(entity, m_world));
-    }*/
+    auto &playerManager = m_world.GetPlayerManager();
+    playerManager.ForEach(
+        [&](const Player* aPlayer) { players.emplace_back(Script::Player(aPlayer->GetId(), *aPlayer->GetCharacter(), m_world)); });
 
     return players;
 }
@@ -270,20 +281,6 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
     clockType["GetDate"] = &EnvironmentService::GetDate;
     clockType["GetTimeScale"] = &EnvironmentService::GetTimeScale;
     clockType["GetRealTime"] = &EnvironmentService::GetRealTime;
-}
-#endif
-
-#if 0
-void ScriptService::BindStaticFunctions(ScriptContext& aContext) noexcept
-{
-    aContext.set_function("addEventHandler", [this](std::string acName, sol::function aFunction) 
-    { 
-        AddEventHandler(std::move(acName), std::move(aFunction)); 
-    });
-    aContext.set_function("cancelEvent", [this](std::string acReason)
-    { 
-        CancelEvent(std::move(acReason)); 
-    });
 }
 #endif
 

@@ -8,13 +8,10 @@
 #include <World.h>
 #include <Components.h>
 
+#include <Game/PlayerManager.h>
+
 namespace Script
 {
-Player::Player(entt::entity aEntity, World& aWorld)
-    : EntityHandle(aEntity, aWorld)
-{
-}
-
 const Vector<String>& Player::GetMods() const
 {
     return {};
@@ -27,12 +24,12 @@ const String& Player::GetIp() const
 
 const String& Player::GetName() const
 {
-    return {};
+    return PlayerManager::Get()->GetById(m_playerObjectRefId)->GetUsername();
 }
 
 const uint64_t Player::GetDiscordId() const
 {
-    return {};
+    return PlayerManager::Get()->GetById(m_playerObjectRefId)->GetDiscordId();
 }
 
 const glm::vec3& Player::GetPosition() const
@@ -43,7 +40,8 @@ const glm::vec3& Player::GetPosition() const
 
 const glm::vec3& Player::GetRotation() const
 {
-    return {};
+    auto& movementComponent = m_pWorld->get<MovementComponent>(m_entity);
+    return movementComponent.Rotation;
 }
 
 float Player::GetSpeed() const
@@ -69,6 +67,11 @@ sol::optional<Quest> Player::AddQuest(const std::string aModName, uint32_t aform
 sol::optional<Vector<Quest>> Player::GetQuests() const noexcept
 {
     return sol::nullopt;
+}
+
+void Player::SendChatMessage(const String& acMessage) noexcept
+{
+    
 }
 
 sol::optional<Party> Player::GetParty() const noexcept

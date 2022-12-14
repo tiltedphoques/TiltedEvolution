@@ -4,6 +4,9 @@
 
 struct QuestLogComponent;
 
+// non Script player
+struct Player;
+
 namespace Script
 {
 struct Quest;
@@ -11,7 +14,10 @@ struct Party;
 
 struct Player : EntityHandle
 {
-    Player(entt::entity aEntity, World& aWorld);
+    inline Player(uint32_t m_playerObjectRefId /*playermanager id*/ , entt::entity aEntity, World& aWorld)
+        : m_playerObjectRefId(m_playerObjectRefId), EntityHandle(aEntity, aWorld)
+    {
+    }
 
     const Vector<String>& GetMods() const;
     const String& GetIp() const;
@@ -32,10 +38,19 @@ struct Player : EntityHandle
     bool HasMod(const std::string& aModName) const noexcept;
 
     bool RemoveQuest(uint32_t aformId);
+
+    void SendChatMessage(const String& acMessage) noexcept;
+    
     sol::optional<Quest> AddQuest(std::string aModName, uint32_t aformId);
     sol::optional<Vector<Quest>> GetQuests() const noexcept;
     sol::optional<Party> GetParty() const noexcept;
 
-    inline entt::entity GetEntityHandle() const { return m_entity; }
+    inline entt::entity GetEntityHandle() const
+    {
+        return m_entity;
+    }
+
+  private:
+    uint32_t m_playerObjectRefId = 0;
 };
 } // namespace Script

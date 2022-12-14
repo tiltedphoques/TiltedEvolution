@@ -26,7 +26,9 @@ struct PlayerManager
     };
 
     PlayerManager();
-    ~PlayerManager() noexcept = default;
+    ~PlayerManager() noexcept;
+
+    static PlayerManager* Get() noexcept;
 
     TP_NOCOPYMOVE(PlayerManager);
 

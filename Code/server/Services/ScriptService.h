@@ -44,8 +44,6 @@ struct ScriptService
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
     void OnPlayerEnterWorld(const PlayerEnterWorldEvent& acEvent) noexcept;
-    void OnRpcCalls(const PacketEvent<ClientRpcCalls>& acRpcCalls) noexcept;
-
     // void BindStaticFunctions(ScriptContext& aContext) noexcept;
     // void BindTypes(ScriptContext& aContext) noexcept;
 

@@ -1,7 +1,5 @@
 
 #include <TiltedReverse/Code/reverse/include/Debug.hpp>
-#include <BranchInfo.h>
-
 #include "TargetConfig.h"
 #include "launcher.h"
 

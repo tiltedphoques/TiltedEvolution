@@ -17,6 +17,7 @@ struct Player
     [[nodiscard]] std::optional<entt::entity> GetCharacter() const noexcept { return m_character; }
     [[nodiscard]] PartyComponent& GetParty() noexcept { return m_party; }
     [[nodiscard]] const String& GetUsername() const noexcept { return m_username; }
+    [[nodiscard]] const uint64_t GetDiscordId() const noexcept { return m_discordId; }
     [[nodiscard]] const uint32_t GetStringCacheId() const noexcept { return m_stringCacheId; }
     [[nodiscard]] const uint16_t GetLevel() const noexcept { return m_level; }
 
