@@ -30,27 +30,28 @@ void ScriptService::Initialize(Resources::ResourceCollection& aCollection) noexc
     auto lua = m_lua.Lock();
     auto& luaVm = lua.Get();
     m_globals = luaVm.globals();
-    
-    luaVm.open_libraries(sol::lib::base, sol::lib::string, sol::lib::io, sol::lib::math, sol::lib::package,
-                         sol::lib::os, sol::lib::table, sol::lib::bit32);
+
+    luaVm.open_libraries(sol::lib::base, sol::lib::string, sol::lib::io, sol::lib::math, sol::lib::package, sol::lib::os, sol::lib::table, sol::lib::bit32);
 
     // make sure to set package path to current directory scope
     // as this could get overriden by LUA_PATH environment variable
     luaVm["package"]["path"] = "./?.lua";
 
     BindInbuiltFunctions();
-    
-    aCollection.ForEachManifest([&](const Resources::Manifest001& aManifest) {
-        if (aManifest.EntryPoint.empty()) // just a dependency?
-            return;
-        auto entryPointPath = aCollection.GetResourceFolderPath() / aManifest.FolderName / aManifest.EntryPoint;
-        if (!std::filesystem::exists(entryPointPath))
+
+    aCollection.ForEachManifest(
+        [&](const Resources::Manifest001& aManifest)
         {
-            spdlog::warn("Script entry point {} does not exist", entryPointPath.string());
-            return;
-        }
-        LoadScript(entryPointPath);
-    });
+            if (aManifest.EntryPoint.empty()) // just a dependency?
+                return;
+            auto entryPointPath = aCollection.GetResourceFolderPath() / aManifest.FolderName / aManifest.EntryPoint;
+            if (!std::filesystem::exists(entryPointPath))
+            {
+                spdlog::warn("Script entry point {} does not exist", entryPointPath.string());
+                return;
+            }
+            LoadScript(entryPointPath);
+        });
 }
 
 bool ScriptService::LoadScript(const std::filesystem::path& aPath)
@@ -59,7 +60,7 @@ bool ScriptService::LoadScript(const std::filesystem::path& aPath)
     {
         auto lua = m_lua.Lock();
         auto& luaVm = lua.Get();
-        
+
         const auto result = luaVm.script_file(aPath.string());
 
         if (!result.valid())
@@ -92,9 +93,7 @@ void ScriptService::BindInbuiltFunctions()
 
     // https://github.com/tiltedphoques/TiltedRevolution/blob/master/Code/server/Services/ScriptService.cpp
     {
-        luaVm.set_function("addEventHandler", [this](std::string acName, sol::function aFunction) {
-            AddEventHandler(std::move(acName), std::move(aFunction));
-        });
+        luaVm.set_function("addEventHandler", [this](std::string acName, sol::function aFunction) { AddEventHandler(std::move(acName), std::move(aFunction)); });
         luaVm.set_function("cancelEvent", [this](std::string acReason) { CancelEvent(std::move(acReason)); });
     }
 
@@ -124,7 +123,10 @@ void ScriptService::BindInbuiltFunctions()
 
     {
         auto worldType = luaVm.new_usertype<World>("World", sol::no_constructor);
-        worldType["get"] = [this]() { return &m_world; };
+        worldType["get"] = [this]()
+        {
+            return &m_world;
+        };
         // worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
         worldType["players"] = sol::readonly_property([this]() { return GetPlayers(); });
         worldType["playerCount"] = sol::readonly_property([this]() { return m_world.GetPlayerManager().Count(); });
@@ -132,38 +134,38 @@ void ScriptService::BindInbuiltFunctions()
 
     {
 
-        {
-            auto upTime = luaVm.new_usertype<GameServer::UpTime>("UpTime", sol::no_constructor);
-            upTime["weeks"] = sol::readonly_property(&GameServer::UpTime::GetWeeks);
-            upTime["days"] = sol::readonly_property(&GameServer::UpTime::GetDays);
-            upTime["hours"] = sol::readonly_property(&GameServer::UpTime::GetHours);
-            upTime["minutes"] = sol::readonly_property(&GameServer::UpTime::GetMintutes);
-        }
-
-        {
-            auto server = luaVm.new_usertype<GameServer>("GameServer", sol::no_constructor);
-            server["get"] = [this]() { return GameServer::Get(); };
-            server["name"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().name; });
-            server["tags"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tagList; });
-            server["tickrate"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tick_rate; });
-            server["GetUptime"] = &GameServer::GetUptime;
-            server["Close"] = &GameServer::Kill;
-        }
-    }
-
-    {
-        // upTime["SendGlobalMessage"] = sol::readonly_property([]() { return GameServer::Get()->GetInfo().name; });
-    }
+        {auto upTime = luaVm.new_usertype<GameServer::UpTime>("UpTime", sol::no_constructor);
+    upTime["weeks"] = sol::readonly_property(&GameServer::UpTime::GetWeeks);
+    upTime["days"] = sol::readonly_property(&GameServer::UpTime::GetDays);
+    upTime["hours"] = sol::readonly_property(&GameServer::UpTime::GetHours);
+    upTime["minutes"] = sol::readonly_property(&GameServer::UpTime::GetMintutes);
 }
 
+{
+    auto server = luaVm.new_usertype<GameServer>("GameServer", sol::no_constructor);
+    server["get"] = [this]()
+    {
+        return GameServer::Get();
+    };
+    server["name"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().name; });
+    server["tags"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tagList; });
+    server["tickrate"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tick_rate; });
+    server["GetUptime"] = &GameServer::GetUptime;
+    server["Close"] = &GameServer::Kill;
+}
+}
+
+{
+    // upTime["SendGlobalMessage"] = sol::readonly_property([]() { return GameServer::Get()->GetInfo().name; });
+}
+}
 
 Vector<Script::Player> ScriptService::GetPlayers() const
 {
     Vector<Script::Player> players;
 
-    auto &playerManager = m_world.GetPlayerManager();
-    playerManager.ForEach(
-        [&](const Player* aPlayer) { players.emplace_back(aPlayer->GetId(), *aPlayer->GetCharacter(), m_world); });
+    auto& playerManager = m_world.GetPlayerManager();
+    playerManager.ForEach([&](const Player* aPlayer) { players.emplace_back(aPlayer->GetId(), *aPlayer->GetCharacter(), m_world); });
 
     return players;
 }
@@ -207,7 +209,7 @@ void ScriptService::HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisc
     default: reason = "Unknown"; break;
     }
 
-    //CallEvent("onPlayerQuit", aConnectionId, reason);
+    // CallEvent("onPlayerQuit", aConnectionId, reason);
 }
 
 void ScriptService::HandleQuestStart(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept

@@ -32,7 +32,7 @@ struct ScriptService
 
     std::tuple<bool, String> HandlePlayerJoin(const Script::Player& aPlayer) noexcept;
     std::tuple<bool, String> HandleMove(const Script::Npc& aNpc) noexcept;
-    //bool HandleChatMessage();
+    // bool HandleChatMessage();
 
     void HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisconnectReason aReason) noexcept;
 
@@ -40,7 +40,7 @@ struct ScriptService
     void HandleQuestStage(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept;
     void HandleQuestStop(const Script::Player& aPlayer, uint32_t aformId) noexcept;
 
-  protected:
+protected:
     // void RegisterExtensions(ScriptContext& aContext) override;
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
@@ -54,15 +54,14 @@ struct ScriptService
     [[nodiscard]] Vector<Script::Player> GetPlayers() const;
     [[nodiscard]] Vector<Script::Npc> GetNpcs() const;
 
-    template <typename... Args>
-    std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args) noexcept;
+    template <typename... Args> std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args) noexcept;
 
     template <typename... Args> void CallEvent(const String& acName, Args&&... args) noexcept;
 
-  private:
+private:
     void BindInbuiltFunctions();
 
-  private:
+private:
     using TCallbacks = Vector<sol::function>;
 
     World& m_world;

@@ -14,8 +14,9 @@ struct Party;
 
 struct Player : EntityHandle
 {
-    inline Player(uint32_t m_playerObjectRefId /*playermanager id*/ , entt::entity aEntity, World& aWorld)
-        : m_playerObjectRefId(m_playerObjectRefId), EntityHandle(aEntity, aWorld)
+    inline Player(uint32_t m_playerObjectRefId /*playermanager id*/, entt::entity aEntity, World& aWorld)
+        : m_playerObjectRefId(m_playerObjectRefId)
+        , EntityHandle(aEntity, aWorld)
     {
     }
 
@@ -41,17 +42,14 @@ struct Player : EntityHandle
 
     bool Kick() noexcept;
     bool SendChatMessage(const std::string& acMessage) noexcept;
-    
+
     sol::optional<Quest> AddQuest(std::string aModName, uint32_t aformId);
     sol::optional<Vector<Quest>> GetQuests() const noexcept;
     sol::optional<Party> GetParty() const noexcept;
 
-    inline entt::entity GetEntityHandle() const
-    {
-        return m_entity;
-    }
+    inline entt::entity GetEntityHandle() const { return m_entity; }
 
-  private:
+private:
     uint32_t m_playerObjectRefId = 0;
 };
 } // namespace Script

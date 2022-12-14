@@ -58,26 +58,14 @@ struct GameServer final : Server
     void Send(ConnectionId_t aConnectionId, const ServerAdminMessage& acServerMessage) const;
     void SendToLoaded(const ServerMessage& acServerMessage) const;
     void SendToPlayers(const ServerMessage& acServerMessage, const Player* apExcludeSender = nullptr) const;
-    void SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
-                              const Player* apExcludeSender = nullptr) const;
-    void SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
-                     const Player* apExcludeSender = nullptr) const;
-    void SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
-                            const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
+    void SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
+    void SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apExcludeSender = nullptr) const;
+    void SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
 
-    const Info& GetInfo() const noexcept
-    {
-        return m_info;
-    }
+    const Info& GetInfo() const noexcept { return m_info; }
 
-    bool IsRunning() const noexcept
-    {
-        return !m_requestStop;
-    }
-    bool IsPasswordProtected() const noexcept
-    {
-        return m_isPasswordProtected;
-    }
+    bool IsRunning() const noexcept { return !m_requestStop; }
+    bool IsPasswordProtected() const noexcept { return m_isPasswordProtected; }
 
     template <class T> void ForEachAdmin(const T& aFunctor)
     {
@@ -93,34 +81,18 @@ struct GameServer final : Server
         int minutes;
 
         // for Scripting
-        int GetWeeks() const
-        {
-            return weeks;
-        }
-        int GetDays() const
-        {
+        int GetWeeks() const { return weeks; }
+        int GetDays() const { return days; }
 
-            return days;
-        }
+        int GetHours() const { return hours; }
 
-        int GetHours() const
-        {
-            return hours;
-        }
-
-        int GetMintutes() const
-        {
-            return minutes;
-        }
+        int GetMintutes() const { return minutes; }
     };
     UpTime GetUptime() const noexcept;
 
-    World& GetWorld() const noexcept
-    {
-        return *m_pWorld;
-    }
+    World& GetWorld() const noexcept { return *m_pWorld; }
 
-  protected:
+protected:
     bool ValidateAuthParams(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
     void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
 
@@ -130,10 +102,10 @@ struct GameServer final : Server
     void OnConnection(ConnectionId_t aHandle) override;
     void OnDisconnection(ConnectionId_t aConnectionId, EDisconnectReason aReason) override;
 
-  private:
+private:
     void UpdateTitle() const;
 
-  private:
+private:
     std::chrono::high_resolution_clock::time_point m_startTime;
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
     std::function<void(UniquePtr<ClientMessage>&, ConnectionId_t)> m_messageHandlers[kClientOpcodeMax];

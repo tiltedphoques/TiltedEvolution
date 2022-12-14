@@ -275,12 +275,13 @@ void GameServer::BindMessageHandlers()
 
 void GameServer::BindServerCommands()
 {
-    m_commands.RegisterCommand<>("uptime", "Show how long the server has been running for", [this](Console::ArgStack&) {
-        UpTime uptime = GetUptime();
-        spdlog::get("ConOut")->info("Server uptime: {}w {}d {}h {}m", uptime.weeks, uptime.days, uptime.hours,
-                                    uptime.minutes);
-    });
-
+    m_commands.RegisterCommand<>(
+        "uptime", "Show how long the server has been running for",
+        [this](Console::ArgStack&)
+        {
+            UpTime uptime = GetUptime();
+            spdlog::get("ConOut")->info("Server uptime: {}w {}d {}h {}m", uptime.weeks, uptime.days, uptime.hours, uptime.minutes);
+        });
 
     m_commands.RegisterCommand<>(
         "players", "List all players on this server",
@@ -359,8 +360,6 @@ void GameServer::BindServerCommands()
             }
         });
 }
-
-
 
 /* Update Info fields from user facing CVARS.*/
 void GameServer::UpdateInfo()
@@ -783,7 +782,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             playerModsIds.push_back(entry.Id);
             responseList.ModList.push_back(entry);
         }
-        
+
         Player* pPlayer = m_pWorld->GetPlayerManager().Create(aConnectionId);
         pPlayer->SetEndpoint(remoteAddress);
         pPlayer->SetDiscordId(acRequest->DiscordId);
@@ -792,8 +791,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         pPlayer->SetModIds(playerModsIds);
         pPlayer->SetLevel(acRequest->Level);
 
-        auto [canceled, reason] = m_pWorld->GetScriptService().HandlePlayerJoin(
-            Script::Player(pPlayer->GetId(), *pPlayer->GetCharacter(), *m_pWorld));
+        auto [canceled, reason] = m_pWorld->GetScriptService().HandlePlayerJoin(Script::Player(pPlayer->GetId(), *pPlayer->GetCharacter(), *m_pWorld));
         if (canceled)
         {
             spdlog::info("New player {:x} has a been rejected because \"{}\".", aConnectionId, reason.c_str());

@@ -63,7 +63,7 @@ const glm::vec3& Player::GetPosition() const
     {
         return kNullVec;
     }
-    
+
     return movementComponent->Position;
 }
 

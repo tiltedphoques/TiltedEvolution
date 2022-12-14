@@ -161,7 +161,8 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
         return UnescapeAndStrip(pValue);
     };
 
-    auto readStringOptional = [&](const char* apName) -> TiltedPhoques::String {
+    auto readStringOptional = [&](const char* apName) -> TiltedPhoques::String
+    {
         const char* pValue = ini.GetValue("Resource", apName, nullptr);
         if (pValue == nullptr)
         {
