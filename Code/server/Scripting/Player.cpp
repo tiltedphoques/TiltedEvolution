@@ -1,17 +1,24 @@
 #include <stdafx.h>
 
-#include <Scripting/Player.h>
 #include <Scripting/Npc.h>
-#include <Scripting/Quest.h>
 #include <Scripting/Party.h>
+#include <Scripting/Player.h>
+#include <Scripting/Quest.h>
 
-#include <World.h>
 #include <Components.h>
+#include <World.h>
 
 #include <Game/PlayerManager.h>
+#include <GameServer.h>
+
+#include <regex>
+#include <Messages/NotifyChatMessageBroadcast.h>
 
 namespace Script
 {
+static String kNullString{};
+static glm::vec3 kNullVec{};
+
 const Vector<String>& Player::GetMods() const
 {
     return {};
@@ -19,29 +26,61 @@ const Vector<String>& Player::GetMods() const
 
 const String& Player::GetIp() const
 {
-    return {};
+    if (auto* pPlayerObject = PlayerManager::Get()->GetById(m_playerObjectRefId))
+    {
+        return pPlayerObject->GetEndPoint();
+    }
+    return kNullString;
 }
 
 const String& Player::GetName() const
 {
-    return PlayerManager::Get()->GetById(m_playerObjectRefId)->GetUsername();
+    if (auto* pPlayerObject = PlayerManager::Get()->GetById(m_playerObjectRefId))
+    {
+        return pPlayerObject->GetUsername();
+    }
+    return kNullString;
 }
 
 const uint64_t Player::GetDiscordId() const
 {
-    return PlayerManager::Get()->GetById(m_playerObjectRefId)->GetDiscordId();
+    if (auto* pPlayerObject = PlayerManager::Get()->GetById(m_playerObjectRefId))
+    {
+        return pPlayerObject->GetDiscordId();
+    }
+    return 0;
 }
 
 const glm::vec3& Player::GetPosition() const
 {
-    auto& movementComponent = m_pWorld->get<MovementComponent>(m_entity);
-    return movementComponent.Position;
+    if (!GameServer::Get()->GetWorld().valid(m_entity))
+    {
+        return kNullVec;
+    }
+
+    auto* movementComponent = GameServer::Get()->GetWorld().try_get<MovementComponent>(m_entity);
+    if (!movementComponent)
+    {
+        return kNullVec;
+    }
+    
+    return movementComponent->Position;
 }
 
 const glm::vec3& Player::GetRotation() const
 {
-    auto& movementComponent = m_pWorld->get<MovementComponent>(m_entity);
-    return movementComponent.Rotation;
+    if (!m_pWorld->valid(m_entity))
+    {
+        return kNullVec;
+    }
+
+    auto* movementComponent = m_pWorld->try_get<MovementComponent>(m_entity);
+    if (!movementComponent)
+    {
+        return kNullVec;
+    }
+
+    return movementComponent->Rotation;
 }
 
 float Player::GetSpeed() const
@@ -69,9 +108,30 @@ sol::optional<Vector<Quest>> Player::GetQuests() const noexcept
     return sol::nullopt;
 }
 
-void Player::SendChatMessage(const String& acMessage) noexcept
+bool Player::SendChatMessage(const std::string& acMessage) noexcept
 {
-    
+    if (auto* pPlayerObject = PlayerManager::Get()->GetById(m_playerObjectRefId))
+    {
+        NotifyChatMessageBroadcast notifyMessage{};
+
+        std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
+        notifyMessage.MessageType = ChatMessageType::kLocalChat;
+        notifyMessage.PlayerName = "[Server]";
+        notifyMessage.ChatMessage = std::regex_replace(acMessage, escapeHtml, "");
+        GameServer::Get()->Send(pPlayerObject->GetConnectionId(), notifyMessage);
+        return true;
+    }
+    return false;
+}
+
+bool Player::Kick() noexcept
+{
+    if (auto* pPlayerObject = PlayerManager::Get()->GetById(m_playerObjectRefId))
+    {
+        GameServer::Get()->Kick(pPlayerObject->GetConnectionId());
+        return true;
+    }
+    return false;
 }
 
 sol::optional<Party> Player::GetParty() const noexcept

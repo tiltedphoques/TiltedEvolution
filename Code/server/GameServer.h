@@ -115,6 +115,11 @@ struct GameServer final : Server
     };
     UpTime GetUptime() const noexcept;
 
+    World& GetWorld() const noexcept
+    {
+        return *m_pWorld;
+    }
+
   protected:
     bool ValidateAuthParams(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
     void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);

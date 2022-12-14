@@ -39,7 +39,8 @@ struct Player : EntityHandle
 
     bool RemoveQuest(uint32_t aformId);
 
-    void SendChatMessage(const String& acMessage) noexcept;
+    bool Kick() noexcept;
+    bool SendChatMessage(const std::string& acMessage) noexcept;
     
     sol::optional<Quest> AddQuest(std::string aModName, uint32_t aformId);
     sol::optional<Vector<Quest>> GetQuests() const noexcept;

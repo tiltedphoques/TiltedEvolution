@@ -22,6 +22,8 @@
 #include <console/ConsoleRegistry.h>
 #include <resources/ResourceCollection.h>
 
+#include <Scripting/Player.h>
+
 constexpr size_t kMaxServerNameLength = 128u;
 
 // -- Cvars --
@@ -456,6 +458,8 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
     spdlog::info("Connection ended {:x} - '{}' disconnected", aConnectionId, (pPlayer != NULL ? pPlayer->GetUsername().c_str() : "NULL"));
 
+    m_pWorld->GetScriptService().HandlePlayerQuit(aConnectionId, aReason);
+
     if (pPlayer)
     {
         if (const auto& cell = pPlayer->GetCellComponent())
@@ -779,14 +783,24 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             playerModsIds.push_back(entry.Id);
             responseList.ModList.push_back(entry);
         }
-
-        auto* pPlayer = m_pWorld->GetPlayerManager().Create(aConnectionId);
+        
+        Player* pPlayer = m_pWorld->GetPlayerManager().Create(aConnectionId);
         pPlayer->SetEndpoint(remoteAddress);
         pPlayer->SetDiscordId(acRequest->DiscordId);
         pPlayer->SetUsername(std::move(acRequest->Username));
         pPlayer->SetMods(playerMods);
         pPlayer->SetModIds(playerModsIds);
         pPlayer->SetLevel(acRequest->Level);
+
+        auto [canceled, reason] = m_pWorld->GetScriptService().HandlePlayerJoin(
+            Script::Player(pPlayer->GetId(), *pPlayer->GetCharacter(), *m_pWorld));
+        if (canceled)
+        {
+            spdlog::info("New player {:x} has a been rejected because \"{}\".", aConnectionId, reason.c_str());
+            Kick(aConnectionId);
+            m_pWorld->GetPlayerManager().Remove(pPlayer);
+            return;
+        }
 
         serverResponse.PlayerId = pPlayer->GetId();
 

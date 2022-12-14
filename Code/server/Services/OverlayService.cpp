@@ -60,6 +60,14 @@ void sendPlayerMessage(const ChatMessageType acType, const String acContent, Pla
 
 void OverlayService::HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept
 {
+    #if 0
+    auto [canceled, reason] = m_world.GetScriptService().HandleMove(npc);
+    if (canceled)
+    {
+        return;
+    }
+    #endif
+
     sendPlayerMessage(acMessage.Packet.MessageType, acMessage.Packet.ChatMessage, acMessage.pPlayer);
 }
 
