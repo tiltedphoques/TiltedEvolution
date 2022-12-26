@@ -16,6 +16,7 @@
 #include "Games/Skyrim/Interface/MenuControls.h"
 
 static OverlayService* s_pOverlay = nullptr;
+static UINT s_currentACP = CP_ACP;
 
 void ForceKillAllInput()
 {
@@ -312,6 +313,24 @@ void ProcessMouseWheel(uint16_t aX, uint16_t aY, int16_t aZ)
     }
 }
 
+UINT GetRealACP()
+{
+    // Get the keyboard layout for the current thread.
+    HKL keybdLayout = GetKeyboardLayout(0);
+
+    // Extract the language ID from it, contained in its low-order word.
+    int langID = LOWORD(keybdLayout);
+
+    // Call the GetLocaleInfo function to retrieve the default ANSI code page
+    // associated with that language ID.
+    UINT acp = CP_ACP;
+    GetLocaleInfo(MAKELCID(langID, SORT_DEFAULT),
+        LOCALE_IDEFAULTANSICODEPAGE | LOCALE_RETURN_NUMBER,
+        (LPTSTR) &acp,
+        sizeof(acp) / sizeof(TCHAR));
+    return acp;
+}
+
 LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     const auto pApp = s_pOverlay->GetOverlayApp();
@@ -414,7 +433,20 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     }
     else if (uMsg == WM_CHAR)
     {
-        ProcessKeyboard(static_cast<uint16_t>(wParam), (lParam >> 16) & 0xFF, KEYEVENT_CHAR, false, false);
+        uint16_t scancode = (lParam >> 16) & 0xFF;
+        uint16_t virtualKey = static_cast<uint16_t>(wParam);
+        if (!IsWindowUnicode(hwnd))
+        {
+            wchar_t wch;
+            ::MultiByteToWideChar(s_currentACP, MB_PRECOMPOSED, (char*) &virtualKey, 2, &wch, sizeof(wchar_t));
+            virtualKey = wch;
+        }
+        ProcessKeyboard(virtualKey, scancode, KEYEVENT_CHAR, false, false);
+    }
+    else if (uMsg == WM_INPUTLANGCHANGE)
+    {
+        s_currentACP = GetRealACP();
+        spdlog::info("Input language changed, current ACP: {}", s_currentACP);
     }
 
 #if TP_FALLOUT
@@ -429,6 +461,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 InputService::InputService(OverlayService& aOverlay) noexcept
 {
     s_pOverlay = &aOverlay;
+    s_currentACP = GetRealACP();
 }
 
 InputService::~InputService() noexcept
