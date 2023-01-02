@@ -52,4 +52,7 @@ World::World()
     m_pScriptService = TiltedPhoques::MakeUnique<ScriptService>(*this, m_dispatcher);
 }
 
-World::~World() noexcept = default;
+World::~World()
+{
+    m_pScriptService.reset();
+}

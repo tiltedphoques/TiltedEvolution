@@ -23,7 +23,7 @@ struct ResourceCollection;
 struct ScriptService
 {
     ScriptService(World& aWorld, entt::dispatcher& aDispatcher);
-    ~ScriptService() noexcept = default;
+    ~ScriptService();
 
     TP_NOCOPYMOVE(ScriptService);
 
@@ -40,7 +40,7 @@ struct ScriptService
     void HandleQuestStage(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept;
     void HandleQuestStop(const Script::Player& aPlayer, uint32_t aformId) noexcept;
 
-protected:
+  protected:
     // void RegisterExtensions(ScriptContext& aContext) override;
 
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
@@ -54,28 +54,31 @@ protected:
     [[nodiscard]] Vector<Script::Player> GetPlayers() const;
     [[nodiscard]] Vector<Script::Npc> GetNpcs() const;
 
-    template <typename... Args> std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args) noexcept;
+    template <typename... Args>
+    std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args) noexcept;
 
     template <typename... Args> void CallEvent(const String& acName, Args&&... args) noexcept;
 
-private:
+  private:
     void BindInbuiltFunctions();
 
-private:
+  private:
     using TCallbacks = Vector<sol::function>;
 
     World& m_world;
-
-    sol::table m_globals{};
-    TiltedPhoques::Lockable<sol::state, std::recursive_mutex> m_lua;
-
     bool m_eventCanceled{};
     String m_cancelReason;
-    Map<String, TCallbacks> m_callbacks;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_rpcCallsRequest;
     entt::scoped_connection m_playerEnterWorldConnection;
+
+    // NOTE(Vince): keep in mind that cxx specifies construction and deconstruction order,
+    // so do not touch this order of member variables
+    TiltedPhoques::Lockable<sol::state, std::recursive_mutex> m_lua;
+    Map<String, TCallbacks> m_callbacks;
+    TiltedPhoques::Vector<sol::environment> m_sandboxes;
+    sol::table m_globals{};
 };
 
 #include "ScriptService.inl"

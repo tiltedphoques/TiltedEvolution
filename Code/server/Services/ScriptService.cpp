@@ -1,28 +1,39 @@
 #include <stdafx.h>
 
-#include <Services/ScriptService.h>
 #include <Services/CalendarService.h>
+#include <Services/ScriptService.h>
 #include <World.h>
 
 #include <Scripting/Npc.h>
+#include <Scripting/Party.h>
 #include <Scripting/Player.h>
 #include <Scripting/Quest.h>
-#include <Scripting/Party.h>
 
-#include <Events/UpdateEvent.h>
 #include <Events/PlayerEnterWorldEvent.h>
+#include <Events/UpdateEvent.h>
 
-#include <TiltedCore/Filesystem.hpp>
 #include <Components.h>
 #include <GameServer.h>
+#include <TiltedCore/Filesystem.hpp>
 
 #include <resources/ResourceCollection.h>
 
 ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher)
-    : m_world(aWorld)
-    , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this))
-    , m_playerEnterWorldConnection(aDispatcher.sink<PlayerEnterWorldEvent>().connect<&ScriptService::OnPlayerEnterWorld>(this))
+    : m_world(aWorld), m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this)),
+      m_playerEnterWorldConnection(
+          aDispatcher.sink<PlayerEnterWorldEvent>().connect<&ScriptService::OnPlayerEnterWorld>(this))
 {
+}
+
+ScriptService::~ScriptService()
+{
+    auto &lockedState = m_lua.Lock().Get();
+    for (auto& m : m_sandboxes)
+    {
+        m.clear();
+    }
+ 
+    lockedState.collect_garbage();
 }
 
 void ScriptService::Initialize(Resources::ResourceCollection& aCollection) noexcept
@@ -31,7 +42,8 @@ void ScriptService::Initialize(Resources::ResourceCollection& aCollection) noexc
     auto& luaVm = lua.Get();
     m_globals = luaVm.globals();
 
-    luaVm.open_libraries(sol::lib::base, sol::lib::string, sol::lib::io, sol::lib::math, sol::lib::package, sol::lib::os, sol::lib::table, sol::lib::bit32);
+    luaVm.open_libraries(sol::lib::base, sol::lib::string, sol::lib::io, sol::lib::math, sol::lib::package,
+                         sol::lib::os, sol::lib::table, sol::lib::bit32);
 
     // make sure to set package path to current directory scope
     // as this could get overriden by LUA_PATH environment variable
@@ -39,19 +51,17 @@ void ScriptService::Initialize(Resources::ResourceCollection& aCollection) noexc
 
     BindInbuiltFunctions();
 
-    aCollection.ForEachManifest(
-        [&](const Resources::Manifest001& aManifest)
+    aCollection.ForEachManifest([&](const Resources::Manifest001& aManifest) {
+        if (aManifest.EntryPoint.empty()) // just a dependency?
+            return;
+        auto entryPointPath = aCollection.GetResourceFolderPath() / aManifest.FolderName / aManifest.EntryPoint;
+        if (!std::filesystem::exists(entryPointPath))
         {
-            if (aManifest.EntryPoint.empty()) // just a dependency?
-                return;
-            auto entryPointPath = aCollection.GetResourceFolderPath() / aManifest.FolderName / aManifest.EntryPoint;
-            if (!std::filesystem::exists(entryPointPath))
-            {
-                spdlog::warn("Script entry point {} does not exist", entryPointPath.string());
-                return;
-            }
-            LoadScript(entryPointPath);
-        });
+            spdlog::warn("Script entry point {} does not exist", entryPointPath.string());
+            return;
+        }
+        LoadScript(entryPointPath);
+    });
 }
 
 bool ScriptService::LoadScript(const std::filesystem::path& aPath)
@@ -61,8 +71,9 @@ bool ScriptService::LoadScript(const std::filesystem::path& aPath)
         auto lua = m_lua.Lock();
         auto& luaVm = lua.Get();
 
-        const auto result = luaVm.script_file(aPath.string());
-
+        auto &env = m_sandboxes.emplace_back(luaVm, sol::create, luaVm.globals());
+        
+        const sol::protected_function_result result = luaVm.script_file(aPath.string(), env);
         if (!result.valid())
         {
             const sol::error error = result;
@@ -93,7 +104,9 @@ void ScriptService::BindInbuiltFunctions()
 
     // https://github.com/tiltedphoques/TiltedRevolution/blob/master/Code/server/Services/ScriptService.cpp
     {
-        luaVm.set_function("addEventHandler", [this](std::string acName, sol::function aFunction) { AddEventHandler(std::move(acName), std::move(aFunction)); });
+        luaVm.set_function("addEventHandler", [this](std::string acName, sol::function aFunction) {
+            AddEventHandler(std::move(acName), std::move(aFunction));
+        });
         luaVm.set_function("cancelEvent", [this](std::string acReason) { CancelEvent(std::move(acReason)); });
     }
 
@@ -123,10 +136,7 @@ void ScriptService::BindInbuiltFunctions()
 
     {
         auto worldType = luaVm.new_usertype<World>("World", sol::no_constructor);
-        worldType["get"] = [this]()
-        {
-            return &m_world;
-        };
+        worldType["get"] = [this]() { return &m_world; };
         // worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
         worldType["players"] = sol::readonly_property([this]() { return GetPlayers(); });
         worldType["playerCount"] = sol::readonly_property([this]() { return m_world.GetPlayerManager().Count(); });
@@ -143,10 +153,7 @@ void ScriptService::BindInbuiltFunctions()
 
 {
     auto server = luaVm.new_usertype<GameServer>("GameServer", sol::no_constructor);
-    server["get"] = [this]()
-    {
-        return GameServer::Get();
-    };
+    server["get"] = [this]() { return GameServer::Get(); };
     server["name"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().name; });
     server["tags"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tagList; });
     server["tickrate"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tick_rate; });
@@ -165,7 +172,8 @@ Vector<Script::Player> ScriptService::GetPlayers() const
     Vector<Script::Player> players;
 
     auto& playerManager = m_world.GetPlayerManager();
-    playerManager.ForEach([&](const Player* aPlayer) { players.emplace_back(aPlayer->GetId(), *aPlayer->GetCharacter(), m_world); });
+    playerManager.ForEach(
+        [&](const Player* aPlayer) { players.emplace_back(aPlayer->GetId(), *aPlayer->GetCharacter(), m_world); });
 
     return players;
 }
@@ -200,13 +208,25 @@ void ScriptService::HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisc
 
     switch (aReason)
     {
-    case Server::EDisconnectReason::Quit: reason = "Quit"; break;
-    case Server::EDisconnectReason::Kicked: reason = "Kicked"; break;
-    case Server::EDisconnectReason::Banned: reason = "Banned"; break;
-    case Server::EDisconnectReason::BadConnection: reason = "Connection lost"; break;
-    case Server::EDisconnectReason::TimedOut: reason = "Timed out"; break;
+    case Server::EDisconnectReason::Quit:
+        reason = "Quit";
+        break;
+    case Server::EDisconnectReason::Kicked:
+        reason = "Kicked";
+        break;
+    case Server::EDisconnectReason::Banned:
+        reason = "Banned";
+        break;
+    case Server::EDisconnectReason::BadConnection:
+        reason = "Connection lost";
+        break;
+    case Server::EDisconnectReason::TimedOut:
+        reason = "Timed out";
+        break;
     case Server::EDisconnectReason::Unknown:
-    default: reason = "Unknown"; break;
+    default:
+        reason = "Unknown";
+        break;
     }
 
     // CallEvent("onPlayerQuit", aConnectionId, reason);
@@ -239,6 +259,9 @@ void ScriptService::RegisterExtensions(ScriptContext& aContext)
 
 void ScriptService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
+    if (!GameServer::Get()->IsRunning())
+        return;
+
     CallEvent("onUpdate", acEvent.Delta);
 }
 
