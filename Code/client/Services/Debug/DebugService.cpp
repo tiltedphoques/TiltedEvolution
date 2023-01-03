@@ -212,6 +212,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             // m_world.GetOverlayService().Reload();
             auto* pPlayer = PlayerCharacter::Get();
             spdlog::info("{}", pPlayer->formID);
+            pPlayer->UnEquipAll();
         }
     }
     else
