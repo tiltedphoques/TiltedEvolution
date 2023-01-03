@@ -1,6 +1,6 @@
 
 #include <windows.h>
-#include <OverlayApp.hpp>
+#include <OverlayProc.hpp>
 #include "ProcessHandler.h"
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
