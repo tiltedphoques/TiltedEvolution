@@ -32,7 +32,8 @@ struct ScriptService
 
     std::tuple<bool, String> HandlePlayerJoin(const Script::Player& aPlayer) noexcept;
     std::tuple<bool, String> HandleMove(const Script::Npc& aNpc) noexcept;
-    // bool HandleChatMessage();
+
+    std::tuple<bool, String> HandleChatMessage(const Script::Player& aSender, const String& aMessage) noexcept;
 
     void HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisconnectReason aReason) noexcept;
 

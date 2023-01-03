@@ -213,6 +213,11 @@ std::tuple<bool, String> ScriptService::HandlePlayerJoin(const Script::Player& a
     return CallCancelableEvent("onPlayerJoin", aPlayer);
 }
 
+std::tuple<bool, String> ScriptService::HandleChatMessage(const Script::Player& aSender, const String& aMessage) noexcept
+{
+    return CallCancelableEvent("onChatMessage", aSender, aMessage);
+}
+
 void ScriptService::HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisconnectReason aReason) noexcept
 {
     std::string reason;
