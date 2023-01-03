@@ -132,6 +132,7 @@ void ScriptService::BindInbuiltFunctions()
         playerType["position"] = sol::readonly_property(&Script::Player::GetPosition);
         playerType["kick"] = &Script::Player::Kick;
         playerType["sendChatMessage"] = &Script::Player::SendChatMessage;
+        playerType["getInventory"] = sol::readonly_property(&Script::Player::GetInventory);
     }
 
     {

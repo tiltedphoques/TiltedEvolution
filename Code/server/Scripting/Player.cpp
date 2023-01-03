@@ -139,4 +139,21 @@ sol::optional<Party> Player::GetParty() const noexcept
     return sol::nullopt;
 }
 
+sol::optional<Inventory> Player::GetInventory() const noexcept
+{
+    auto* pPlayer = PlayerManager::Get()->GetById(m_playerObjectRefId);
+    if (!pPlayer)
+        return sol::nullopt;
+
+    auto character = pPlayer->GetCharacter();
+    if (!character)
+        return sol::nullopt;
+
+    const auto* inventoryComponent = GameServer::Get()->GetWorld().try_get<InventoryComponent>(*character);
+    if (!inventoryComponent)
+        return sol::nullopt;
+
+    return inventoryComponent->Content;
+}
+
 } // namespace Script
