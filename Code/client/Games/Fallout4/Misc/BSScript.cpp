@@ -68,4 +68,3 @@ void BSScript::Statement::SetSize(uint32_t aCount) noexcept
 
     TiltedPhoques::ThisCall(s_setSize, this, aCount);
 }
-

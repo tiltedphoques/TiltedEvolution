@@ -5,4 +5,3 @@
 struct TESClass : TESForm
 {
 };
-

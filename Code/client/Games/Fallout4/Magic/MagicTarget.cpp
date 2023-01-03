@@ -105,14 +105,15 @@ bool TP_MAKE_THISCALL(HookCheckAddEffectTargetData, MagicTarget::AddTargetData, 
     return TiltedPhoques::ThisCall(RealCheckAddEffectTargetData, apThis, arArgs, afResistance);
 }
 
-static TiltedPhoques::Initializer s_magicTargetHooks([]() {
-    POINTER_FALLOUT4(TAddTarget, addTarget, 385036);
-    POINTER_FALLOUT4(TCheckAddEffectTargetData, checkAddEffectTargetData, 113034);
+static TiltedPhoques::Initializer s_magicTargetHooks(
+    []()
+    {
+        POINTER_FALLOUT4(TAddTarget, addTarget, 385036);
+        POINTER_FALLOUT4(TCheckAddEffectTargetData, checkAddEffectTargetData, 113034);
 
-    RealAddTarget = addTarget.Get();
-    RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
+        RealAddTarget = addTarget.Get();
+        RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
 
-    TP_HOOK(&RealAddTarget, HookAddTarget);
-    TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
-});
-
+        TP_HOOK(&RealAddTarget, HookAddTarget);
+        TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
+    });

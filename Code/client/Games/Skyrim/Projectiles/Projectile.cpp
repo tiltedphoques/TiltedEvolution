@@ -25,7 +25,7 @@ BSPointerHandle<Projectile>* Projectile::Launch(BSPointerHandle<Projectile>* apR
 
     TESObjectREFR* pObject = TESObjectREFR::GetByHandle(result->handle.iBits);
     Projectile* pProjectile = Cast<Projectile>(pObject);
-    
+
     TP_ASSERT(pProjectile, "No projectile found.");
     if (!pProjectile)
     {
@@ -101,7 +101,7 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
 
     TESObjectREFR* pObject = TESObjectREFR::GetByHandle(result->handle.iBits);
     Projectile* pProjectile = Cast<Projectile>(pObject);
-    
+
     TP_ASSERT(pProjectile, "No projectile found.");
 
     Event.Power = pProjectile->fPower;
@@ -111,43 +111,44 @@ BSPointerHandle<Projectile>* TP_MAKE_THISCALL(HookLaunch, BSPointerHandle<Projec
     return result;
 }
 
-static TiltedPhoques::Initializer s_projectileHooks([]() {
-    POINTER_SKYRIMSE(TLaunch, s_launch, 44108);
-
-    RealLaunch = s_launch.Get();
-
-    TP_HOOK(&RealLaunch, HookLaunch);
-
-    VersionDbPtr<uint8_t> hookLoc(34452);
-
-    struct C : TiltedPhoques::CodeGenerator
+static TiltedPhoques::Initializer s_projectileHooks(
+    []()
     {
-        C(uint8_t* apLoc)
+        POINTER_SKYRIMSE(TLaunch, s_launch, 44108);
+
+        RealLaunch = s_launch.Get();
+
+        TP_HOOK(&RealLaunch, HookLaunch);
+
+        VersionDbPtr<uint8_t> hookLoc(34452);
+
+        struct C : TiltedPhoques::CodeGenerator
         {
-            // replicate
-            mov(rbx, ptr[rsp + 0x50]);
-            
-            // nullptr check
-            cmp(rbx, 0);
-            jz("exit");
-            // jump back 
-            jmp_S(apLoc + 0x379);
+            C(uint8_t* apLoc)
+            {
+                // replicate
+                mov(rbx, ptr[rsp + 0x50]);
 
-            L("exit");
-            // return false; scratch space from the registers
-            mov(al, 0);
-            add(rsp, 0x138);
-            pop(r15);
-            pop(r14);
-            pop(r13);
-            pop(r12);
-            pop(rdi);
-            pop(rsi);
-            pop(rbx);
-            pop(rbp);
-            ret();
-        }
-    } gen(hookLoc.Get());
-    TiltedPhoques::Jump(hookLoc.Get() + 0x374, gen.getCode());
-});
+                // nullptr check
+                cmp(rbx, 0);
+                jz("exit");
+                // jump back
+                jmp_S(apLoc + 0x379);
 
+                L("exit");
+                // return false; scratch space from the registers
+                mov(al, 0);
+                add(rsp, 0x138);
+                pop(r15);
+                pop(r14);
+                pop(r13);
+                pop(r12);
+                pop(rdi);
+                pop(rsi);
+                pop(rbx);
+                pop(rbp);
+                ret();
+            }
+        } gen(hookLoc.Get());
+        TiltedPhoques::Jump(hookLoc.Get() + 0x374, gen.getCode());
+    });

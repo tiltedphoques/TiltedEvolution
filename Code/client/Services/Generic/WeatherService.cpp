@@ -13,7 +13,8 @@
 #include <Forms/TESWeather.h>
 
 WeatherService::WeatherService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher)
-    : m_world(aWorld), m_transport(aTransport)
+    : m_world(aWorld)
+    , m_transport(aTransport)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&WeatherService::OnUpdate>(this);
     m_disconnectConnection = aDispatcher.sink<DisconnectedEvent>().connect<&WeatherService::OnDisconnected>(this);

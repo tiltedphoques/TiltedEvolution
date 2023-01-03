@@ -34,9 +34,7 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
 
 bool MagicTarget::AddTargetData::ShouldSync()
 {
-    return !pEffectItem->IsSummonEffect() &&
-           !pSpell->IsInvisibilitySpell() &&
-           !pSpell->IsWardSpell();
+    return !pEffectItem->IsSummonEffect() && !pSpell->IsInvisibilitySpell() && !pSpell->IsWardSpell();
 }
 
 Actor* MagicTarget::GetTargetAsActor()
@@ -149,17 +147,18 @@ bool TP_MAKE_THISCALL(HookFindTargets, MagicCaster, float afEffectivenessMult, i
     return TiltedPhoques::ThisCall(RealFindTargets, apThis, afEffectivenessMult, aruiTargetCount, apSource, abLoadCast, abAdjust);
 }
 
-static TiltedPhoques::Initializer s_magicTargetHooks([]() {
-    POINTER_SKYRIMSE(TAddTarget, addTarget, 34526);
-    POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 34525);
-    POINTER_SKYRIMSE(TFindTargets, findTargets, 34410);
+static TiltedPhoques::Initializer s_magicTargetHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TAddTarget, addTarget, 34526);
+        POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 34525);
+        POINTER_SKYRIMSE(TFindTargets, findTargets, 34410);
 
-    RealAddTarget = addTarget.Get();
-    RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
-    RealFindTargets = findTargets.Get();
+        RealAddTarget = addTarget.Get();
+        RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
+        RealFindTargets = findTargets.Get();
 
-    TP_HOOK(&RealAddTarget, HookAddTarget);
-    TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
-    TP_HOOK(&RealFindTargets, HookFindTargets);
-});
-
+        TP_HOOK(&RealAddTarget, HookAddTarget);
+        TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
+        TP_HOOK(&RealFindTargets, HookFindTargets);
+    });

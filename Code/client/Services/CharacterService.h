@@ -46,8 +46,8 @@ struct World;
 struct TransportService;
 
 /**
-* @brief Handles actors and players.
-*/
+ * @brief Handles actors and players.
+ */
 struct CharacterService
 {
     CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
@@ -91,9 +91,7 @@ struct CharacterService
     void ProcessNewEntity(entt::entity aEntity) const noexcept;
 
 private:
-
-    void MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId,
-                   const Vector3_NetQuantize& acPosition) const noexcept;
+    void MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId, const Vector3_NetQuantize& acPosition) const noexcept;
 
     void RequestServerAssignment(entt::entity aEntity) const noexcept;
     void CancelServerAssignment(entt::entity aEntity, uint32_t aFormId) const noexcept;
@@ -119,7 +117,8 @@ private:
         WeaponDrawData() = default;
         WeaponDrawData(bool aDrawWeapon)
             : m_drawWeapon(aDrawWeapon)
-        {}
+        {
+        }
 
         double m_timer = 0.0;
         bool m_drawWeapon = false;

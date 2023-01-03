@@ -17,10 +17,7 @@ public:
         s_collection = loader.BuildRecordCollection();
     }
 
-    UniquePtr<ESLoader::RecordCollection>& GetCollection()
-    {
-        return s_collection;
-    }
+    UniquePtr<ESLoader::RecordCollection>& GetCollection() { return s_collection; }
 
     static UniquePtr<ESLoader::RecordCollection> s_collection;
 };
@@ -38,7 +35,7 @@ TEST_F(ESLoaderTest, GetMapMarkerLandmark)
     auto& pCollection = ESLoaderTest::GetCollection();
 
     REFR& mapMarker = pCollection->GetObjectRefById(0x105F3A);
-    
+
     EXPECT_EQ(mapMarker.m_basicObject.m_baseId, 0x10);
     EXPECT_TRUE(mapMarker.m_markerData.m_isMarker);
     EXPECT_EQ(mapMarker.m_markerData.m_marker, Chunks::MapMarkerData::MARKER_TYPE::kLandmark);
@@ -49,7 +46,7 @@ TEST_F(ESLoaderTest, GetNpcFaendal)
     auto& pCollection = ESLoaderTest::GetCollection();
 
     NPC& faendal = pCollection->GetNpcById(0x13480);
-    
+
     EXPECT_EQ(faendal.m_editorId, "Faendal");
     EXPECT_TRUE(faendal.m_baseStats.IsUnique());
     EXPECT_EQ(faendal.m_defaultOutfit.m_formId, 0xDAB76);

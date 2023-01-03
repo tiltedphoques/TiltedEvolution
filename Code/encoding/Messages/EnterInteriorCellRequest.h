@@ -9,7 +9,8 @@ struct EnterInteriorCellRequest final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kEnterInteriorCellRequest;
 
-    EnterInteriorCellRequest() : ClientMessage(Opcode)
+    EnterInteriorCellRequest()
+        : ClientMessage(Opcode)
     {
     }
 
@@ -18,11 +19,7 @@ struct EnterInteriorCellRequest final : ClientMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const EnterInteriorCellRequest& acRhs) const noexcept
-    {
-        return CellId == acRhs.CellId &&
-            GetOpcode() == acRhs.GetOpcode();
-    }
-    
+    bool operator==(const EnterInteriorCellRequest& acRhs) const noexcept { return CellId == acRhs.CellId && GetOpcode() == acRhs.GetOpcode(); }
+
     GameId CellId{};
 };

@@ -4,14 +4,12 @@ const VersionDbPtr<internal::TDynamicCast> internal::DynamicCast(84113);
 
 namespace internal
 {
-template <class T>
-RttiLocator<T>::RttiLocator(uint32_t aId)
+template <class T> RttiLocator<T>::RttiLocator(uint32_t aId)
 {
     m_pRtti = TiltedPhoques::MakeUnique<VersionDbPtr<void*>>(aId);
 }
 
-template <class T>
-const void* RttiLocator<T>::Get()
+template <class T> const void* RttiLocator<T>::Get()
 {
     return *m_pRtti;
 }
@@ -6487,4 +6485,3 @@ template struct internal::RttiLocator<BSDynamicLines>;
 internal::RttiLocator<BSDynamicLines> registerRtti_BSDynamicLines(887475);
 template struct internal::RttiLocator<BSParabolicCullingProcess>;
 internal::RttiLocator<BSParabolicCullingProcess> registerRtti_BSParabolicCullingProcess(401936);
-

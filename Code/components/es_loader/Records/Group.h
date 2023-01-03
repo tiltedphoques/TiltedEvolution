@@ -21,4 +21,3 @@ class GroupData
 public:
     Vector<const void*> m_subGroups;
 };
-

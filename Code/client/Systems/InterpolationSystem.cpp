@@ -9,8 +9,7 @@
 #include <Games/References.h>
 #include <World.h>
 
-void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterpolationComponent,
-                                 const uint64_t aTick) noexcept
+void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterpolationComponent, const uint64_t aTick) noexcept
 {
     auto& movements = aInterpolationComponent.TimePoints;
 
@@ -76,15 +75,14 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     apActor->SetRotation(finalX, finalY, finalZ);
 }
 
-void InterpolationSystem::AddPoint(InterpolationComponent& aInterpolationComponent,
-    const InterpolationComponent::TimePoint& acPoint) noexcept
+void InterpolationSystem::AddPoint(InterpolationComponent& aInterpolationComponent, const InterpolationComponent::TimePoint& acPoint) noexcept
 {
     auto itor = std::begin(aInterpolationComponent.TimePoints);
     const auto end = std::cend(aInterpolationComponent.TimePoints);
 
-    while(itor != end)
+    while (itor != end)
     {
-        if(itor->Tick > acPoint.Tick)
+        if (itor->Tick > acPoint.Tick)
         {
             aInterpolationComponent.TimePoints.insert(itor, acPoint);
 

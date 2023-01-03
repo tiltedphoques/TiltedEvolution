@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_DwarvenSpider.h>
 
-
-
 AnimationGraphDescriptor_DwarvenSpider::AnimationGraphDescriptor_DwarvenSpider(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -83,30 +81,34 @@ AnimationGraphDescriptor_DwarvenSpider::AnimationGraphDescriptor_DwarvenSpider(A
 
     uint64_t key = 15924684633707834553;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbAnimationDriven,
-            kbAllowRotation,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbMLh_Ready,
-            kbEquipOk,
-            kIsAttackReady,
+            {
+                kbAnimationDriven,
+                kbAllowRotation,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kbMLh_Ready,
+                kbEquipOk,
+                kIsAttackReady,
             },
-        {kSpeed,
-            kTurnDelta,
-            kturnSpeedMult,
-            kDirection,
-            kSpeedSampled,
-            kspeedMultBackward,
-            kspeedMultRight,
-            kspeedMultForward,
-            kspeedMultLeft,
+            {
+                kSpeed,
+                kTurnDelta,
+                kturnSpeedMult,
+                kDirection,
+                kSpeedSampled,
+                kspeedMultBackward,
+                kspeedMultRight,
+                kspeedMultForward,
+                kspeedMultLeft,
             },
-        {kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiCombatStance,
-            kiCurrentStateID,
+            {
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiCombatStance,
+                kiCurrentStateID,
             }));
 }

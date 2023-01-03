@@ -2,7 +2,7 @@
 
 class IGameServerInstance
 {
-  public:
+public:
     virtual ~IGameServerInstance() = default;
 
     // lifetime control

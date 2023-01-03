@@ -8,11 +8,11 @@ TimeData* TimeData::Get() noexcept
     return *(s_instance.Get());
 }
 
-using TSimulateTime = void(TimeData *, float);
-static TSimulateTime *RealSimulateTime;
+using TSimulateTime = void(TimeData*, float);
+static TSimulateTime* RealSimulateTime;
 
 // in SP mode we let the client handle its own time simulation
-void HookSimulateTime(TimeData *apData, float aMultiplier)
+void HookSimulateTime(TimeData* apData, float aMultiplier)
 {
     if (CalendarService::AllowGameTick())
     {
@@ -20,11 +20,12 @@ void HookSimulateTime(TimeData *apData, float aMultiplier)
     }
 }
 
-static TiltedPhoques::Initializer s_loadingScreenHooks([]() {
+static TiltedPhoques::Initializer s_loadingScreenHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TSimulateTime, s_SimulateTime, 36291);
+        POINTER_FALLOUT4(TSimulateTime, s_SimulateTime, 1330305);
 
-    POINTER_SKYRIMSE(TSimulateTime, s_SimulateTime, 36291);
-    POINTER_FALLOUT4(TSimulateTime, s_SimulateTime, 1330305);
-
-    RealSimulateTime = s_SimulateTime.Get();
-    TP_HOOK(&RealSimulateTime, HookSimulateTime);
-});
+        RealSimulateTime = s_SimulateTime.Get();
+        TP_HOOK(&RealSimulateTime, HookSimulateTime);
+    });

@@ -10,4 +10,4 @@ class ConsoleRegistry;
 
 void SaveSettingsToIni(ConsoleRegistry& aReg, const std::filesystem::path& path);
 void LoadSettingsFromIni(ConsoleRegistry& aReg, const std::filesystem::path& path);
-} // namespace base
+} // namespace Console

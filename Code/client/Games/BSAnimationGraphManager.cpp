@@ -14,24 +14,24 @@ SortedMap<uint32_t, String> BSAnimationGraphManager::DumpAnimationVariables(bool
     if (animationGraphIndex < animationGraphs.size)
     {
         const auto pGraph = animationGraphs.Get(animationGraphIndex);
-        if(pGraph)
+        if (pGraph)
         {
             const auto pDb = pGraph->hkxDB;
             const auto pBuckets = pDb->animationVariables.buckets;
             const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
 
-            if(pBuckets && pVariableSet)
+            if (pBuckets && pVariableSet)
             {
-                for(decltype(pDb->animationVariables.bucketCount) i = 0; i < pDb->animationVariables.bucketCount; ++i)
+                for (decltype(pDb->animationVariables.bucketCount) i = 0; i < pDb->animationVariables.bucketCount; ++i)
                 {
                     auto pBucket = &pBuckets[i];
                     if (!pBucket->next)
                         continue;
 
-                    while(pBucket != pDb->animationVariables.end)
+                    while (pBucket != pDb->animationVariables.end)
                     {
                         const auto variableIndex = pBucket->value;
-                        if(pVariableSet->size > static_cast<uint32_t>(variableIndex))
+                        if (pVariableSet->size > static_cast<uint32_t>(variableIndex))
                         {
                             variables[variableIndex] = pBucket->key.AsAscii();
                         }
@@ -42,7 +42,7 @@ SortedMap<uint32_t, String> BSAnimationGraphManager::DumpAnimationVariables(bool
 
                 if (aPrintVariables)
                 {
-                    for(auto& [id, name] : variables)
+                    for (auto& [id, name] : variables)
                     {
                         std::cout << "k" << name << " = " << id << "," << std::endl;
                     }
@@ -66,24 +66,24 @@ uint64_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
     {
         const auto pGraph = aForceIndex == -1 ? animationGraphs.Get(animationGraphIndex) : animationGraphs.Get(aForceIndex);
 
-        if(pGraph)
+        if (pGraph)
         {
             const auto pDb = pGraph->hkxDB;
             const auto pBuckets = pDb->animationVariables.buckets;
             const auto pVariableSet = pGraph->behaviorGraph->animationVariables;
 
-            if(pBuckets && pVariableSet)
+            if (pBuckets && pVariableSet)
             {
-                for(decltype(pDb->animationVariables.bucketCount) i = 0; i < pDb->animationVariables.bucketCount; ++i)
+                for (decltype(pDb->animationVariables.bucketCount) i = 0; i < pDb->animationVariables.bucketCount; ++i)
                 {
                     auto pBucket = &pBuckets[i];
                     if (!pBucket->next)
                         continue;
 
-                    while(pBucket != pDb->animationVariables.end)
+                    while (pBucket != pDb->animationVariables.end)
                     {
                         const auto variableIndex = pBucket->value;
-                        if(pVariableSet->size > static_cast<uint32_t>(variableIndex))
+                        if (pVariableSet->size > static_cast<uint32_t>(variableIndex))
                         {
                             variables[variableIndex] = pBucket->key.AsAscii();
                         }
@@ -92,7 +92,7 @@ uint64_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
                     }
                 }
 
-                for(auto& [id, name] : variables)
+                for (auto& [id, name] : variables)
                 {
                     variableNames += name;
                 }
@@ -100,8 +100,7 @@ uint64_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
         }
     }
 
-    std::transform(variableNames.begin(), variableNames.end(), variableNames.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    std::transform(variableNames.begin(), variableNames.end(), variableNames.begin(), [](unsigned char c) { return std::tolower(c); });
 
     return Crc64(reinterpret_cast<const unsigned char*>(variableNames.c_str()), variableNames.size());
 }

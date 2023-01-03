@@ -33,8 +33,7 @@ namespace
 extern "C" const IMAGE_DOS_HEADER __ImageBase;
 
 constinit const uint8_t* pBasePtr = reinterpret_cast<const uint8_t*>(&__ImageBase);
-const uint8_t* kpImageEnd{pBasePtr +
-                          ((PIMAGE_NT_HEADERS)(pBasePtr + __ImageBase.e_lfanew))->OptionalHeader.SizeOfImage};
+const uint8_t* kpImageEnd{pBasePtr + ((PIMAGE_NT_HEADERS)(pBasePtr + __ImageBase.e_lfanew))->OptionalHeader.SizeOfImage};
 
 bool InRange(const uint8_t* apObj, const uint8_t* apLo, const uint8_t* apHi)
 {
@@ -50,7 +49,6 @@ bool EXP IsThisExeAddress(const uint8_t* apAddress)
 
 bool EXP IsGameMemoryAddress(const uint8_t* apAddress)
 {
-    return InRange(apAddress, &highrip[0], &highrip[sizeof(highrip)]) ||
-           InRange(apAddress, &game_seg[0], &game_seg[sizeof(game_seg)]);
+    return InRange(apAddress, &highrip[0], &highrip[sizeof(highrip)]) || InRange(apAddress, &game_seg[0], &game_seg[sizeof(game_seg)]);
 }
 #undef EXP

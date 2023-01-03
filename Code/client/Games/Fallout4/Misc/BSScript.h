@@ -14,7 +14,7 @@ struct BSScript
 
         template <class T> void Set(T aValue) noexcept
         {
-            //static_assert(false);
+            // static_assert(false);
         }
 
         enum Type : uint64_t
@@ -27,7 +27,7 @@ struct BSScript
             kBoolean
         };
 
-        union Data 
+        union Data
         {
             int32_t i;
             const char* s;
@@ -95,8 +95,7 @@ struct BSScript
         virtual void sub_2A();
         virtual void sub_2B();
         virtual void sub_2C();
-        virtual void SendEvent(uint64_t aId, const BSFixedString& acEventName,
-                               std::function<bool(Statement*)>& aFunctor) const noexcept;
+        virtual void SendEvent(uint64_t aId, const BSFixedString& acEventName, std::function<bool(Statement*)>& aFunctor) const noexcept;
     };
 };
 

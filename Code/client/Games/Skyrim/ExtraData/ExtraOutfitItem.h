@@ -10,4 +10,3 @@ struct ExtraOutfitItem : BSExtraData
 };
 
 static_assert(sizeof(ExtraOutfitItem) == 0x18);
-

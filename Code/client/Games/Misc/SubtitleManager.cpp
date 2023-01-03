@@ -16,11 +16,9 @@ SubtitleManager* SubtitleManager::Get() noexcept
 }
 
 #if TP_SKYRIM64
-TP_THIS_FUNCTION(TShowSubtitle, void, SubtitleManager, TESObjectREFR* apSpeaker, const char* apSubtitleText,
-                 bool aIsInDialogue);
+TP_THIS_FUNCTION(TShowSubtitle, void, SubtitleManager, TESObjectREFR* apSpeaker, const char* apSubtitleText, bool aIsInDialogue);
 #elif TP_FALLOUT4
-TP_THIS_FUNCTION(TShowSubtitle, void, SubtitleManager, TESObjectREFR* apSpeaker, BSFixedString* apSubtitleText,
-                 TESTopicInfo* apTopicInfo, bool aIsInDialogue);
+TP_THIS_FUNCTION(TShowSubtitle, void, SubtitleManager, TESObjectREFR* apSpeaker, BSFixedString* apSubtitleText, TESTopicInfo* apTopicInfo, bool aIsInDialogue);
 #endif
 static TShowSubtitle* RealShowSubtitle = nullptr;
 
@@ -45,14 +43,12 @@ void* SubtitleManager::HideSubtitle(TESObjectREFR* apSpeaker) noexcept
 }
 
 #if TP_SKYRIM64
-void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeaker, const char* apSubtitleText,
-                      bool aIsInDialogue)
+void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeaker, const char* apSubtitleText, bool aIsInDialogue)
 #elif TP_FALLOUT4
-void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeaker, BSFixedString* apSubtitleText,
-                      TESTopicInfo* apTopicInfo, bool aIsInDialogue)
+void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeaker, BSFixedString* apSubtitleText, TESTopicInfo* apTopicInfo, bool aIsInDialogue)
 #endif
 {
-    //spdlog::debug("Subtitle for actor {:X} (bool {}):\n\t{}", apSpeaker ? apSpeaker->formID : 0, aIsInDialogue, apSubtitleText);
+    // spdlog::debug("Subtitle for actor {:X} (bool {}):\n\t{}", apSpeaker ? apSpeaker->formID : 0, aIsInDialogue, apSubtitleText);
 
     Actor* pActor = Cast<Actor>(apSpeaker);
     if (apSubtitleText && pActor && pActor->GetExtension()->IsLocal() && !pActor->GetExtension()->IsPlayer())
@@ -62,7 +58,6 @@ void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeake
         World::Get().GetRunner().Trigger(SubtitleEvent(apSpeaker->formID, apSubtitleText->AsAscii()));
 #endif
 
-
 #if TP_SKYRIM64
     TiltedPhoques::ThisCall(RealShowSubtitle, apThis, apSpeaker, apSubtitleText, aIsInDialogue);
 #elif TP_FALLOUT4
@@ -70,13 +65,13 @@ void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeake
 #endif
 }
 
-TiltedPhoques::Initializer s_subtitleHooks([]()
-{
-    POINTER_SKYRIMSE(TShowSubtitle, s_showSubtitle, 52626);
-    POINTER_FALLOUT4(TShowSubtitle, s_showSubtitle, 875509);
+TiltedPhoques::Initializer s_subtitleHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TShowSubtitle, s_showSubtitle, 52626);
+        POINTER_FALLOUT4(TShowSubtitle, s_showSubtitle, 875509);
 
-    RealShowSubtitle = s_showSubtitle.Get();
+        RealShowSubtitle = s_showSubtitle.Get();
 
-    TP_HOOK(&RealShowSubtitle, HookShowSubtitle);
-});
-
+        TP_HOOK(&RealShowSubtitle, HookShowSubtitle);
+    });

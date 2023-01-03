@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Ghoul.h>
 
-
-
-AnimationGraphDescriptor_Ghoul::AnimationGraphDescriptor_Ghoul(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Ghoul::AnimationGraphDescriptor_Ghoul(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -139,7 +136,8 @@ AnimationGraphDescriptor_Ghoul::AnimationGraphDescriptor_Ghoul(
     };
     uint64_t key = 18279284073093955153;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbEquipOk,
@@ -177,6 +175,5 @@ AnimationGraphDescriptor_Ghoul::AnimationGraphDescriptor_Ghoul(
                 kiSyncIdleLocomotion,
                 kiRecoilSelector,
                 kcHitReactionBodyPart,
-            }
-        ));
+            }));
 }

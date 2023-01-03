@@ -188,7 +188,7 @@ struct Actor : TESObjectREFR
     TESForm* GetEquippedAmmo() const noexcept;
     Actor* GetCommandingActor() const noexcept;
     // in reality this is a BGSLocation
-    TESForm *GetCurrentLocation();
+    TESForm* GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;
     float GetActorPermanentValue(uint32_t aId) const noexcept;
     Inventory GetActorInventory() const noexcept;
@@ -248,15 +248,9 @@ struct Actor : TESObjectREFR
         IS_ESSENTIAL = 1 << 18,
     };
 
-    bool IsMount() const noexcept
-    {
-        return flags2 & ActorFlags::IS_A_MOUNT;
-    }
+    bool IsMount() const noexcept { return flags2 & ActorFlags::IS_A_MOUNT; }
 
-    bool IsEssential() const noexcept
-    {
-        return flags2 & ActorFlags::IS_ESSENTIAL;
-    }
+    bool IsEssential() const noexcept { return flags2 & ActorFlags::IS_ESSENTIAL; }
     void SetEssential(bool aSetEssential) noexcept
     {
         if (aSetEssential)
@@ -265,13 +259,9 @@ struct Actor : TESObjectREFR
             flags2 &= ~ActorFlags::IS_ESSENTIAL;
     }
 
-    bool IsCommandedActor() const noexcept
-    {
-        return flags2 & ActorFlags::IS_COMMANDED_ACTOR;
-    }
+    bool IsCommandedActor() const noexcept { return flags2 & ActorFlags::IS_COMMANDED_ACTOR; }
 
 public:
-
     enum ChangeFlags : uint32_t
     {
         CHANGE_ACTOR_LIFESTATE = 1 << 10,
@@ -330,8 +320,8 @@ public:
     uint32_t unkE4;
     uint32_t unkE8;
     uint32_t unkEC;
-    uint32_t unk178; // F0
-    uint32_t unk17C; // F4
+    uint32_t unk178;               // F0
+    uint32_t unk17C;               // F4
     SpellItemEntry* spellItemHead; // F8
     BSTSmallArray<TESForm*> addedSpells;
     ActorMagicCaster* casters[4];
@@ -339,7 +329,7 @@ public:
     TESForm* equippedShout;
     uint32_t someRefrHandle;
     TESRace* race;
-    float weight; // set to -1.0 by extra container changes data ctor, asuming it's the weight 
+    float weight; // set to -1.0 by extra container changes data ctor, asuming it's the weight
     uint32_t flags2;
     void* unk200[4];
     struct BGSDialogueBranch* dialogueBranch;
@@ -361,7 +351,7 @@ public:
     BSRecursiveLock actorLock;
     uint8_t padActorEnd[0x2B0 - 0x284];
 
-    //void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);    
+    // void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);
 };
 
 static_assert(offsetof(Actor, currentProcess) == 0xF8);

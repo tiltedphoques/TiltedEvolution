@@ -10,14 +10,11 @@ namespace Console
 // Optimized for small size.
 class ArgStack
 {
-  public:
+public:
     // Default ctor for queue emplacement
     ArgStack() = default;
 
-    explicit ArgStack(size_t acCount)
-    {
-        m_pArgs = TiltedPhoques::MakeUnique<std::any[]>(acCount);
-    }
+    explicit ArgStack(size_t acCount) { m_pArgs = TiltedPhoques::MakeUnique<std::any[]>(acCount); }
 
     // Move operator for em placing within queue
     ArgStack& operator=(ArgStack&& other) noexcept
@@ -42,12 +39,9 @@ class ArgStack
 
     // This must be called before calling Pop() and is done
     // for optimization purposes.
-    void ResetCounter()
-    {
-        m_Count = 0;
-    }
+    void ResetCounter() { m_Count = 0; }
 
-  private:
+private:
     TiltedPhoques::UniquePtr<std::any[]> m_pArgs = nullptr;
     size_t m_Count = 0;
 };

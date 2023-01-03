@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 using TiltedPhoques::Buffer;
 
 struct ServerSettings

@@ -18,7 +18,6 @@ protected:
     void OnRequestCurrentWeather(const PacketEvent<RequestCurrentWeather>& acMessage) const noexcept;
 
 private:
-
     World& m_world;
 
     entt::scoped_connection m_weatherChangeConnection;

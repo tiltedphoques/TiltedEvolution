@@ -24,7 +24,6 @@ struct Player
     [[nodiscard]] const CellIdComponent& GetCellComponent() const noexcept;
     [[nodiscard]] QuestLogComponent& GetQuestLogComponent() noexcept;
     [[nodiscard]] const QuestLogComponent& GetQuestLogComponent() const noexcept;
-    
 
     void SetDiscordId(uint64_t aDiscordId) noexcept;
     void SetEndpoint(String aEndpoint) noexcept;
@@ -41,7 +40,6 @@ struct Player
     void Send(const ServerMessage& acServerMessage) const;
 
 private:
-
     uint32_t m_id{0};
     ConnectionId_t m_connectionId;
     std::optional<entt::entity> m_character;

@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_Mudcrab.h>
 
-
-
 AnimationGraphDescriptor_Mudcrab::AnimationGraphDescriptor_Mudcrab(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -55,26 +53,30 @@ AnimationGraphDescriptor_Mudcrab::AnimationGraphDescriptor_Mudcrab(AnimationGrap
 
     uint64_t key = 9498225481650921683;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbAnimationDriven,
-            kbAllowRotation,
-            kbHeadTracking,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kIsAttackReady,
-            kbEquipOk,
+            {
+                kbAnimationDriven,
+                kbAllowRotation,
+                kbHeadTracking,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kIsAttackReady,
+                kbEquipOk,
             },
-        {kSpeed,
-            kTurnDelta,
-            kturnSpeedMult,
-            kDirection,
-            kSpeedSampled,
+            {
+                kSpeed,
+                kTurnDelta,
+                kturnSpeedMult,
+                kDirection,
+                kSpeedSampled,
             },
-        {kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiCombatStance,
-            kiCurrentStateID,
+            {
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiCombatStance,
+                kiCurrentStateID,
             }));
 }

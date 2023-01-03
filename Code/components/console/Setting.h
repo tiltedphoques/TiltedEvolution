@@ -46,12 +46,17 @@ struct SettingBase
     };
 
     SettingBase(SettingBase*& parent, const char* n, const char* d, Type t, SettingsFlags f)
-        : next(parent), flags(f), type(t), name(n), desc(d)
+        : next(parent)
+        , flags(f)
+        , type(t)
+        , name(n)
+        , desc(d)
     {
         parent = this;
     }
 
-    explicit SettingBase(const char* n, const char* d, Type t, SettingsFlags f) : SettingBase(ROOT(), n, d, t, f)
+    explicit SettingBase(const char* n, const char* d, Type t, SettingsFlags f)
+        : SettingBase(ROOT(), n, d, t, f)
     {
     }
 
@@ -95,20 +100,11 @@ struct SettingBase
         return data.as_string;
     }
 
-    inline bool IsHidden() const
-    {
-        return flags & SettingsFlags::kHidden;
-    }
+    inline bool IsHidden() const { return flags & SettingsFlags::kHidden; }
 
-    inline bool IsLocked() const
-    {
-        return flags & SettingsFlags::kLocked;
-    }
+    inline bool IsLocked() const { return flags & SettingsFlags::kLocked; }
 
-    inline bool IsCheat() const
-    {
-        return flags & SettingsFlags::kCheat;
-    }
+    inline bool IsCheat() const { return flags & SettingsFlags::kCheat; }
 
     // type info
     SettingsFlags flags;
@@ -120,7 +116,8 @@ struct SettingBase
 
     // Gets aligned to 8 bytes anyway
     size_t dataLength = 0;
-    union {
+    union
+    {
         bool as_boolean;
         int32_t as_int32;
         int64_t as_int64;
@@ -155,10 +152,7 @@ template <typename T> struct FixedStorage
 
 template <typename T> struct DynamicStringStorage
 {
-    DynamicStringStorage(SettingBase& b, const T* acValue)
-    {
-        StoreValue(b, acValue);
-    }
+    DynamicStringStorage(SettingBase& b, const T* acValue) { StoreValue(b, acValue); }
 
     inline void StoreValue(SettingBase& b, const T* acValue)
     {
@@ -167,7 +161,7 @@ template <typename T> struct DynamicStringStorage
         b.data.as_string = m_data.c_str();
     }
 
-  private:
+private:
     std::basic_string<T, std::char_traits<T>, StlAllocator<T>> m_data;
 };
 } // namespace detail
@@ -176,28 +170,20 @@ template <typename T> struct DynamicStringStorage
 // However, make sure to make the providers aware of this.
 template <typename T, class TStorage = detail::FixedStorage<T>> class Setting : public SettingBase, public TStorage
 {
-  public:
+public:
     Setting(const char* acName, const char* acDesc, const T acDefault, const SettingsFlags acFlags = SettingsFlags::kNone)
-        : SettingBase(acName, acDesc, ToTypeIndex<T>(), acFlags), TStorage(*this, acDefault)
+        : SettingBase(acName, acDesc, ToTypeIndex<T>(), acFlags)
+        , TStorage(*this, acDefault)
     {
     }
 
     Setting() = delete;
 
-    T value() const
-    {
-        return reinterpret_cast<T>(data.as_uint64);
-    }
+    T value() const { return reinterpret_cast<T>(data.as_uint64); }
 
-    template <typename Tas> Tas value_as() const
-    {
-        return static_cast<Tas>(data.as_uint64);
-    }
+    template <typename Tas> Tas value_as() const { return static_cast<Tas>(data.as_uint64); }
 
-    float as_float() const
-    {
-        return data.as_float;
-    }
+    float as_float() const { return data.as_float; }
 
     operator bool()
     {
@@ -205,10 +191,7 @@ template <typename T, class TStorage = detail::FixedStorage<T>> class Setting : 
         return data.as_boolean;
     }
 
-    bool empty()
-    {
-        return dataLength == 0;
-    }
+    bool empty() { return dataLength == 0; }
 
     void operator=(const T value)
     {

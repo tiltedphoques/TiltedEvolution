@@ -16,19 +16,16 @@
 #include <Messages/RequestQuestUpdate.h>
 #include <Messages/NotifyQuestUpdate.h>
 
-static TESQuest* FindQuestByNameId(const String &name)
+static TESQuest* FindQuestByNameId(const String& name)
 {
     auto& questRegistry = ModManager::Get()->quests;
-    auto it = std::find_if(questRegistry.begin(), questRegistry.end(), [name](auto* it) 
-    { 
-         return std::strcmp(it->idName.AsAscii(), name.c_str()); 
-    });
+    auto it = std::find_if(questRegistry.begin(), questRegistry.end(), [name](auto* it) { return std::strcmp(it->idName.AsAscii(), name.c_str()); });
 
     return it != questRegistry.end() ? *it : nullptr;
 }
 
 // TODO: ft (verify)
-QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher) 
+QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
 {
     m_joinedConnection = aDispatcher.sink<ConnectedEvent>().connect<&QuestService::OnConnected>(this);
@@ -64,8 +61,7 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
 {
-    if (ScopedQuestOverride::IsOverriden()
-        || !m_world.Get().GetPartyService().IsLeader())
+    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsLeader())
         return BSTEventResult::kOk;
 
     spdlog::info("Quest start/stop event: {:X}", apEvent->formId);
@@ -75,23 +71,21 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
         if (IsNonSyncableQuest(pQuest))
             return BSTEventResult::kOk;
 
-        m_world.GetRunner().Queue([&, 
-            formId = pQuest->formID, 
-            stageId = pQuest->currentStage, 
-            stopped = pQuest->IsStopped()]() 
-        {
-            GameId Id;
-            auto& modSys = m_world.GetModSystem();
-            if (modSys.GetServerModId(formId, Id))
+        m_world.GetRunner().Queue(
+            [&, formId = pQuest->formID, stageId = pQuest->currentStage, stopped = pQuest->IsStopped()]()
             {
-                RequestQuestUpdate update;
-                update.Id = Id;
-                update.Stage = stageId;
-                update.Status = stopped ? RequestQuestUpdate::Stopped : RequestQuestUpdate::Started;
+                GameId Id;
+                auto& modSys = m_world.GetModSystem();
+                if (modSys.GetServerModId(formId, Id))
+                {
+                    RequestQuestUpdate update;
+                    update.Id = Id;
+                    update.Stage = stageId;
+                    update.Status = stopped ? RequestQuestUpdate::Stopped : RequestQuestUpdate::Started;
 
-                m_world.GetTransport().Send(update);
-            }
-        });
+                    m_world.GetTransport().Send(update);
+                }
+            });
     }
 
     return BSTEventResult::kOk;
@@ -99,8 +93,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
 
 BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const EventDispatcher<TESQuestStageEvent>*)
 {
-    if (ScopedQuestOverride::IsOverriden()
-        || !m_world.Get().GetPartyService().IsLeader())
+    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsLeader())
         return BSTEventResult::kOk;
 
     spdlog::info("Quest stage event: {:X}, stage: {}", apEvent->formId, apEvent->stageId);
@@ -111,22 +104,21 @@ BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const Ev
         if (IsNonSyncableQuest(pQuest))
             return BSTEventResult::kOk;
 
-        m_world.GetRunner().Queue([&, 
-            formId = apEvent->formId, 
-            stageId = apEvent->stageId]() 
-        {
-            GameId Id;
-            auto& modSys = m_world.GetModSystem();
-            if (modSys.GetServerModId(formId, Id))
+        m_world.GetRunner().Queue(
+            [&, formId = apEvent->formId, stageId = apEvent->stageId]()
             {
-                RequestQuestUpdate update;
-                update.Id = Id;
-                update.Stage = stageId;
-                update.Status = RequestQuestUpdate::StageUpdate;
+                GameId Id;
+                auto& modSys = m_world.GetModSystem();
+                if (modSys.GetServerModId(formId, Id))
+                {
+                    RequestQuestUpdate update;
+                    update.Id = Id;
+                    update.Stage = stageId;
+                    update.Status = RequestQuestUpdate::StageUpdate;
 
-                m_world.GetTransport().Send(update);
-            }
-        });
+                    m_world.GetTransport().Send(update);
+                }
+            });
     }
 
     return BSTEventResult::kOk;
@@ -140,7 +132,7 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
     bool bResult = false;
     switch (aUpdate.Status)
     {
-    case NotifyQuestUpdate::Started: 
+    case NotifyQuestUpdate::Started:
     {
         if (TESQuest* pQuest = SetQuestStage(formId, aUpdate.Stage))
         {
@@ -158,8 +150,7 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
         bResult = StopQuest(formId);
         spdlog::info("Remote quest stopped: {:X}, stage: {}", formId, aUpdate.Stage);
         break;
-    default:
-        break;
+    default: break;
     }
 
     if (!bResult)
@@ -214,8 +205,7 @@ bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
     // non story quests are "blocked" and not synced
     auto& stages = apQuest->stages;
     return apQuest->type == TESQuest::Type::None // internal event
-           || apQuest->type == TESQuest::Type::Miscellaneous 
-           || stages.Empty();
+           || apQuest->type == TESQuest::Type::Miscellaneous || stages.Empty();
 }
 
 void QuestService::DebugDumpQuests()

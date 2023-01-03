@@ -88,7 +88,7 @@ struct Actor : TESObjectREFR
     virtual void PutCreatedPackage(struct TESPackage*, bool = false, bool = true, bool = true);
     virtual void sub_100();
     //...
-    //virtual void sub_132();
+    // virtual void sub_132();
 
     // Casting
     ActorExtension* GetExtension() noexcept;
@@ -158,15 +158,9 @@ struct Actor : TESObjectREFR
 
     // TODO: ft verify, fallout has no mounts? unlikely, but maybe this flag is reused for something else?
     // those helicopters maybe?
-    bool IsMount() const noexcept
-    {
-        return flags2 & ActorFlags::IS_A_MOUNT;
-    }
+    bool IsMount() const noexcept { return flags2 & ActorFlags::IS_A_MOUNT; }
 
-    bool IsEssential() const noexcept
-    {
-        return flags2 & ActorFlags::IS_ESSENTIAL;
-    }
+    bool IsEssential() const noexcept { return flags2 & ActorFlags::IS_ESSENTIAL; }
     void SetEssential(bool aSetEssential) noexcept
     {
         if (aSetEssential)

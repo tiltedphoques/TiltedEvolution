@@ -1,9 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_RootState.h>
 
-
-AnimationGraphDescriptor_RootState::AnimationGraphDescriptor_RootState(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_RootState::AnimationGraphDescriptor_RootState(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -65,7 +63,8 @@ AnimationGraphDescriptor_RootState::AnimationGraphDescriptor_RootState(
 
     uint64_t key = 16544277667400076734;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbAnimationDriven,

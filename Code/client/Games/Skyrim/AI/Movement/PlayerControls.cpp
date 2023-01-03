@@ -32,4 +32,4 @@ void BSInputEnableManager::EnableOtherEvent(int32_t aFlags, bool aEnable, bool a
     TiltedPhoques::ThisCall(setEnabled, this, aFlags, aEnable, aUnk2);
 }
 
-//static TiltedPhoques::Initializer s_Init([]() { TiltedPhoques::Put<uint8_t>(0x14072E490, 0xCC); });
+// static TiltedPhoques::Initializer s_Init([]() { TiltedPhoques::Put<uint8_t>(0x14072E490, 0xCC); });

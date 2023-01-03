@@ -2,7 +2,6 @@
 #include <Components.h>
 #include <es_loader/ESLoader.h>
 
-
 uint32_t ModsComponent::AddStandard(const String& acpFilename) noexcept
 {
     const auto itor = m_standardMods.find(acpFilename);
@@ -41,8 +40,7 @@ void ModsComponent::AddServerMod(const ESLoader::PluginData& acData)
 
 bool ModsComponent::IsInstalled(const String& acpFilename) const noexcept
 {
-    auto it = std::find_if(m_serverMods.begin(), m_serverMods.end(),
-                           [&](const TModList::value_type& aEntry) { return aEntry.first == acpFilename; });
+    auto it = std::find_if(m_serverMods.begin(), m_serverMods.end(), [&](const TModList::value_type& aEntry) { return aEntry.first == acpFilename; });
 
     return it != m_serverMods.end();
 }

@@ -16,7 +16,6 @@ protected:
     void OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept;
 
 private:
-
     World& m_world;
 
     entt::scoped_connection m_projectileLaunchConnection;

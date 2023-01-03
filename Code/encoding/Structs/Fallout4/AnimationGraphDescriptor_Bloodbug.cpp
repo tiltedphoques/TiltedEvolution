@@ -1,8 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Bloodbug.h>
 
-AnimationGraphDescriptor_Bloodbug::AnimationGraphDescriptor_Bloodbug(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Bloodbug::AnimationGraphDescriptor_Bloodbug(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -94,7 +93,8 @@ AnimationGraphDescriptor_Bloodbug::AnimationGraphDescriptor_Bloodbug(
 
     uint64_t key = 7385599169756089322;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbGraphDrivenRotation,
@@ -124,6 +124,5 @@ AnimationGraphDescriptor_Bloodbug::AnimationGraphDescriptor_Bloodbug(
                 kiCombatState,
                 kiSyncTurnState,
                 kiSyncDirectionState,
-            }
-        ));
+            }));
 }

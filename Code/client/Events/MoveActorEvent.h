@@ -3,7 +3,9 @@
 struct MoveActorEvent
 {
     MoveActorEvent(uint32_t aFormId, uint32_t aCellId, NiPoint3 aPosition)
-        : FormId(aFormId), CellId(aCellId), Position(aPosition)
+        : FormId(aFormId)
+        , CellId(aCellId)
+        , Position(aPosition)
     {
     }
 

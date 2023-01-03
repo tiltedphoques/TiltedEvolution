@@ -11,9 +11,9 @@ struct BGSColorForm : TESForm
     {
         struct Color
         {
-            uint8_t   red, green, blue, alpha;
+            uint8_t red, green, blue, alpha;
         } color;
         uint32_t abgr;
     };
-    uint32_t  unk20;
+    uint32_t unk20;
 };

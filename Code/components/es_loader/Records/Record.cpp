@@ -89,15 +89,16 @@ void Record::DecompressChunkData(const void* apCompressedData, size_t aCompresse
 
 void Record::DiscoverChunks()
 {
-    IterateChunks([&](ChunkId aChunkId, Buffer::Reader& aReader) {
-        switch (aChunkId)
+    IterateChunks(
+        [&](ChunkId aChunkId, Buffer::Reader& aReader)
         {
-            /*
-        case ChunkId::XMRK_ID:
-            spdlog::info("XMRK found in form {:X}", m_formId);
-            break;
-            */
-        }
-    });
+            switch (aChunkId)
+            {
+                /*
+            case ChunkId::XMRK_ID:
+                spdlog::info("XMRK found in form {:X}", m_formId);
+                break;
+                */
+            }
+        });
 }
-

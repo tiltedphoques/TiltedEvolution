@@ -85,7 +85,7 @@ float* GetVATSSelectTargetTimeMultiplier() noexcept
     return s_vatsSelectTargetMult.Get();
 }
 #endif
-}
+} // namespace Settings
 
 namespace GameplayFormulas
 {
@@ -111,13 +111,13 @@ float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexce
 
     // TODO(cosideci): this seems problematic? It may not register the kill for others?
     // Disabled for now, cause this check seems to have totally broken everything, let's see what happens.
-    //if (!aKillMove || multiplier < 1.0)
-        realDamage = aDamage * multiplier;
+    // if (!aKillMove || multiplier < 1.0)
+    realDamage = aDamage * multiplier;
 
     return realDamage;
 }
 
-}
+} // namespace GameplayFormulas
 
 // TODO: ft
 void FadeOutGame(bool aFadingOut, bool aBlackFade, float aFadeDuration, bool aRemainVisible, float aSecondsToFade) noexcept
@@ -133,7 +133,7 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 {
     TESObjectREFR* pResult = nullptr;
 
-    using TGetRefrByHandle = void(uint32_t& aHandle, TESObjectREFR*& apResult);
+    using TGetRefrByHandle = void(uint32_t & aHandle, TESObjectREFR * &apResult);
 
     POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 17201);
     POINTER_FALLOUT4(TGetRefrByHandle, s_getRefrByHandle, 1152089);
@@ -197,9 +197,8 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
             if (!pGraph)
                 return;
-        
-            if (!pGraph->behaviorGraph || !pGraph->behaviorGraph->stateMachine ||
-                !pGraph->behaviorGraph->stateMachine->name)
+
+            if (!pGraph->behaviorGraph || !pGraph->behaviorGraph->stateMachine || !pGraph->behaviorGraph->stateMachine->name)
                 return;
 
             auto* pExtendedActor = pActor->GetExtension();
@@ -212,8 +211,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
                     pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey();
             }
 
-            auto pDescriptor =
-                AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
+            auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
             if (!pDescriptor)
                 return;
@@ -222,7 +220,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
             if (!pVariableSet)
                 return;
-            
+
             aVariables.Booleans = 0;
 
             aVariables.Floats.resize(pDescriptor->FloatLookupTable.size());
@@ -321,9 +319,8 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
 
             if (!pGraph)
                 return;
-            
-            if (!pGraph->behaviorGraph || !pGraph->behaviorGraph->stateMachine ||
-                !pGraph->behaviorGraph->stateMachine->name)
+
+            if (!pGraph->behaviorGraph || !pGraph->behaviorGraph->stateMachine || !pGraph->behaviorGraph->stateMachine->name)
                 return;
 
             auto* pActor = Cast<Actor>(this);
@@ -334,17 +331,16 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
             if (pExtendedActor->GraphDescriptorHash == 0)
                 pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey();
 
-            auto pDescriptor =
-                AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
+            auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
             if (!pDescriptor)
                 return;
 
             const auto* pVariableSet = pGraph->behaviorGraph->animationVariables;
-            
+
             if (!pVariableSet)
                 return;
-            
+
             for (size_t i = 0; i < pDescriptor->BooleanLookUpTable.size(); ++i)
             {
                 const auto idx = pDescriptor->BooleanLookUpTable[i];
@@ -459,8 +455,7 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
 {
     ScopedReferencesOverride recursionGuard;
 
-    TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*,
-                     const NiPoint3&, const NiPoint3&);
+    TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*, const NiPoint3&, const NiPoint3&);
 
     POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 56626);
     POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 1332435);
@@ -508,7 +503,6 @@ uint16_t Actor::GetLevel() const noexcept
     POINTER_FALLOUT4(TGetLevel, s_getLevel, 661618);
     return TiltedPhoques::ThisCall(s_getLevel, this);
 }
-
 
 void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
 {
@@ -591,7 +585,6 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
     return pActor;
 }
 
-
 void Actor::SetLevelMod(uint32_t aLevel) noexcept
 {
     TP_THIS_FUNCTION(TActorSetLevelMod, void, ExtraDataList, uint32_t);
@@ -609,12 +602,12 @@ void Actor::SetLevelMod(uint32_t aLevel) noexcept
 
 ActorExtension* Actor::GetExtension() noexcept
 {
-    if(AsExActor())
+    if (AsExActor())
     {
         return static_cast<ActorExtension*>(AsExActor());
     }
 
-    if(AsExPlayerCharacter())
+    if (AsExPlayerCharacter())
     {
         return static_cast<ActorExtension*>(AsExPlayerCharacter());
     }
@@ -892,7 +885,7 @@ char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 
 void TP_MAKE_THISCALL(HookRotateX, TESObjectREFR, float aAngle)
 {
-    if(apThis->formType == Actor::Type)
+    if (apThis->formType == Actor::Type)
     {
         const auto pActor = static_cast<Actor*>(apThis);
         // We don't allow remotes to move
@@ -997,7 +990,7 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
         formId = pObject->formID;
 
     // TODO: ft
-    //World::Get().GetDebugService().SetDebugId(formId);
+    // World::Get().GetDebugService().SetDebugId(formId);
 
     return TiltedPhoques::ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }
@@ -1044,7 +1037,8 @@ void TP_MAKE_THISCALL(HookAddDeathItems, Actor)
     TiltedPhoques::ThisCall(RealAddDeathItems, apThis);
 }
 
-TiltedPhoques::Initializer s_referencesHooks([]()
+TiltedPhoques::Initializer s_referencesHooks(
+    []()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
         POINTER_FALLOUT4(TSetPosition, s_setPosition, 1101833);
@@ -1096,10 +1090,10 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealLockChange = s_lockChange.Get();
         RealCheckForNewPackage = s_checkForNewPackage.Get();
         RealInitFromPackage = s_initFromPackage.Get();
-        // TODO: ft
-    #if TP_SKYRIM64
+    // TODO: ft
+#if TP_SKYRIM64
         RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
-    #endif
+#endif
         RealSetWeather = setWeather.Get();
         RealForceWeather = forceWeather.Get();
         RealUpdateWeather = updateWeather.Get();
@@ -1119,4 +1113,3 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealUpdateWeather, HookUpdateWeather);
         TP_HOOK(&RealAddDeathItems, HookAddDeathItems);
     });
-

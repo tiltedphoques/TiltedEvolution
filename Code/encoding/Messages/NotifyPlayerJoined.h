@@ -8,8 +8,8 @@ struct NotifyPlayerJoined final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyPlayerJoined;
 
-    NotifyPlayerJoined() : 
-        ServerMessage(Opcode)
+    NotifyPlayerJoined()
+        : ServerMessage(Opcode)
     {
     }
 
@@ -18,15 +18,7 @@ struct NotifyPlayerJoined final : ServerMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifyPlayerJoined& acRhs) const noexcept
-    {
-        return GetOpcode() == acRhs.GetOpcode() &&
-               PlayerId == acRhs.PlayerId &&
-               Username == acRhs.Username &&
-               WorldSpaceId == acRhs.WorldSpaceId &&
-               CellId == acRhs.CellId &&
-               Level == acRhs.Level;
-    }
+    bool operator==(const NotifyPlayerJoined& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && PlayerId == acRhs.PlayerId && Username == acRhs.Username && WorldSpaceId == acRhs.WorldSpaceId && CellId == acRhs.CellId && Level == acRhs.Level; }
 
     uint32_t PlayerId{};
     String Username{};

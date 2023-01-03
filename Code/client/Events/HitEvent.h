@@ -3,8 +3,9 @@
 struct HitEvent
 {
     HitEvent() = delete;
-    HitEvent(uint32_t aHitterId, uint32_t aHitteeId) 
-        : HitterId(aHitterId), HitteeId(aHitteeId)
+    HitEvent(uint32_t aHitterId, uint32_t aHitteeId)
+        : HitterId(aHitterId)
+        , HitteeId(aHitteeId)
     {
     }
 

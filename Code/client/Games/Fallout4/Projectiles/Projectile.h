@@ -24,21 +24,21 @@ struct ProjectileLaunchData
     TESForm* pProjectileBase; // is actually BGSProjectile*
     TESObjectREFR* pShooter;
     CombatController* pShooterCombatController;
-    //BGSObjectInstanceT<TESObjectWEAP> FromWeapon; // length: 0x10
-    //TESForm* pFromWeapon;
-    //void* pFromWeaponData;
+    // BGSObjectInstanceT<TESObjectWEAP> FromWeapon; // length: 0x10
+    // TESForm* pFromWeapon;
+    // void* pFromWeaponData;
     WeaponData FromWeapon;
-    TESAmmo *pFromAmmo;
-    //BGSEquipIndex EquipIndex;
+    TESAmmo* pFromAmmo;
+    // BGSEquipIndex EquipIndex;
     uint32_t EquipIndex;
     float fZAngle;
     float fXAngle;
     float fYAngle;
-    TESObjectREFR *pHomingTarget;
-    TESObjectCELL *pParentCell;
-    MagicItem *pSpell;
+    TESObjectREFR* pHomingTarget;
+    TESObjectCELL* pParentCell;
+    MagicItem* pSpell;
     MagicSystem::CastingSource eCastingSource;
-    AlchemyItem *pPoison;
+    AlchemyItem* pPoison;
     int iArea;
     float fPower;
     float fScale;
@@ -61,4 +61,3 @@ struct Projectile
 {
     static BSPointerHandle<Projectile>* Launch(BSPointerHandle<Projectile>* apResult, ProjectileLaunchData& arData) noexcept;
 };
-

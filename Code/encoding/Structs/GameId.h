@@ -22,12 +22,9 @@ struct GameId
 
 namespace std
 {
-    template <> class hash<GameId>
-    {
-      public:
-        size_t operator()(const GameId& gameId) const
-        {
-            return hash<uint32_t>()(gameId.BaseId) ^ (hash<uint32_t>()(gameId.ModId) << 1);
-        }
-    };
-}
+template <> class hash<GameId>
+{
+public:
+    size_t operator()(const GameId& gameId) const { return hash<uint32_t>()(gameId.BaseId) ^ (hash<uint32_t>()(gameId.ModId) << 1); }
+};
+} // namespace std

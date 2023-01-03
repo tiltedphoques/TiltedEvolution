@@ -55,38 +55,20 @@ struct Inventory
         void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
         void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
-        bool ContainsExtraData() const noexcept
-        {
-            return !IsExtraDataEquals(Entry{});
-        }
+        bool ContainsExtraData() const noexcept { return !IsExtraDataEquals(Entry{}); }
 
-        bool CanBeMerged(const Entry& acRhs) const noexcept
-        {
-            return BaseId == acRhs.BaseId && IsExtraDataEquals(acRhs);
-        }
+        bool CanBeMerged(const Entry& acRhs) const noexcept { return BaseId == acRhs.BaseId && IsExtraDataEquals(acRhs); }
 
         bool IsExtraDataEquals(const Entry& acRhs) const noexcept
         {
             // TODO: the whole server side state thing is very flawed
             // since many of these things can and will change, like poison id or charge
             // or the fact that the enchant id can be temp
-            return ExtraCharge == acRhs.ExtraCharge &&
-                   ExtraEnchantId == acRhs.ExtraEnchantId &&
-                   ExtraEnchantCharge == acRhs.ExtraEnchantCharge &&
-                   ExtraEnchantRemoveUnequip == acRhs.ExtraEnchantRemoveUnequip &&
-                   ExtraHealth == acRhs.ExtraHealth &&
-                   ExtraPoisonId == acRhs.ExtraPoisonId &&
-                   ExtraPoisonCount == acRhs.ExtraPoisonCount &&
-                   ExtraSoulLevel == acRhs.ExtraSoulLevel &&
-                   ExtraWorn == acRhs.ExtraWorn &&
-                   ExtraWornLeft == acRhs.ExtraWornLeft &&
-                   IsQuestItem == acRhs.IsQuestItem;
+            return ExtraCharge == acRhs.ExtraCharge && ExtraEnchantId == acRhs.ExtraEnchantId && ExtraEnchantCharge == acRhs.ExtraEnchantCharge && ExtraEnchantRemoveUnequip == acRhs.ExtraEnchantRemoveUnequip && ExtraHealth == acRhs.ExtraHealth && ExtraPoisonId == acRhs.ExtraPoisonId &&
+                   ExtraPoisonCount == acRhs.ExtraPoisonCount && ExtraSoulLevel == acRhs.ExtraSoulLevel && ExtraWorn == acRhs.ExtraWorn && ExtraWornLeft == acRhs.ExtraWornLeft && IsQuestItem == acRhs.IsQuestItem;
         }
 
-        bool IsWorn() const noexcept
-        {
-            return ExtraWorn || ExtraWornLeft;
-        }
+        bool IsWorn() const noexcept { return ExtraWorn || ExtraWornLeft; }
     };
 
     bool operator==(const Inventory& acRhs) const noexcept;

@@ -24,10 +24,7 @@ struct TESActorBaseData : BaseFormComponent
 
     // TODO: ft
     // idk if this is correct
-    bool IsEssential() const noexcept
-    {
-        return flags & BaseFlags::IS_ESSENTIAL;
-    }
+    bool IsEssential() const noexcept { return flags & BaseFlags::IS_ESSENTIAL; }
     void SetEssential(bool aSet) noexcept
     {
         if (aSet)
