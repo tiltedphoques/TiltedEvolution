@@ -41,6 +41,8 @@
 #include <Messages/NotifyActorTeleport.h>
 #include <Messages/NotifyRelinquishControl.h>
 
+#include <Scripting/Npc.h>
+
 namespace
 {
 Console::Setting bEnableXpSync{"Gameplay:bEnableXpSync", "Syncs combat XP within the party", true};
@@ -451,8 +453,9 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
 
         for (auto& action : update.ActionEvents)
         {
-            // TODO: HandleAction
-            // auto [canceled, reason] = apWorld->GetScriptServce()->HandleMove(acMessage.Player.ConnectionId, kvp.first);
+            auto [canceled, reason] = GameServer::Get()->GetWorld().GetScriptService().HandleMove(Script::Npc(*itor, m_world));
+            if (canceled)
+                continue;
 
             animationComponent.CurrentAction = action;
 

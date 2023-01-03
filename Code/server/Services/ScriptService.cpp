@@ -130,8 +130,8 @@ void ScriptService::BindInbuiltFunctions()
         playerType["party"] = sol::readonly_property(&Script::Player::GetParty);
         playerType["name"] = sol::readonly_property(&Script::Player::GetName);
         playerType["position"] = sol::readonly_property(&Script::Player::GetPosition);
-        playerType["Kick"] = &Script::Player::Kick;
-        playerType["SendChatMessage"] = &Script::Player::SendChatMessage;
+        playerType["kick"] = &Script::Player::Kick;
+        playerType["sendChatMessage"] = &Script::Player::SendChatMessage;
     }
 
     {
@@ -143,28 +143,26 @@ void ScriptService::BindInbuiltFunctions()
     }
 
     {
+        auto upTime = luaVm.new_usertype<GameServer::UpTime>("UpTime", sol::no_constructor);
+        upTime["weeks"] = sol::readonly_property(&GameServer::UpTime::GetWeeks);
+        upTime["days"] = sol::readonly_property(&GameServer::UpTime::GetDays);
+        upTime["hours"] = sol::readonly_property(&GameServer::UpTime::GetHours);
+        upTime["minutes"] = sol::readonly_property(&GameServer::UpTime::GetMintutes);
+    }
 
-        {auto upTime = luaVm.new_usertype<GameServer::UpTime>("UpTime", sol::no_constructor);
-    upTime["weeks"] = sol::readonly_property(&GameServer::UpTime::GetWeeks);
-    upTime["days"] = sol::readonly_property(&GameServer::UpTime::GetDays);
-    upTime["hours"] = sol::readonly_property(&GameServer::UpTime::GetHours);
-    upTime["minutes"] = sol::readonly_property(&GameServer::UpTime::GetMintutes);
-}
+    {
+        auto server = luaVm.new_usertype<GameServer>("GameServer", sol::no_constructor);
+        server["get"] = [this]() { return GameServer::Get(); };
+        server["name"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().name; });
+        server["tags"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tagList; });
+        server["tickrate"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tick_rate; });
+        server["getUptime"] = &GameServer::GetUptime;
+        server["close"] = &GameServer::Kill;
+    }
 
-{
-    auto server = luaVm.new_usertype<GameServer>("GameServer", sol::no_constructor);
-    server["get"] = [this]() { return GameServer::Get(); };
-    server["name"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().name; });
-    server["tags"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tagList; });
-    server["tickrate"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tick_rate; });
-    server["GetUptime"] = &GameServer::GetUptime;
-    server["Close"] = &GameServer::Kill;
-}
-}
-
-{
-    // upTime["SendGlobalMessage"] = sol::readonly_property([]() { return GameServer::Get()->GetInfo().name; });
-}
+    {
+        // upTime["SendGlobalMessage"] = sol::readonly_property([]() { return GameServer::Get()->GetInfo().name; });
+    }
 }
 
 Vector<Script::Player> ScriptService::GetPlayers() const
@@ -182,12 +180,25 @@ Vector<Script::Npc> ScriptService::GetNpcs() const
 {
     Vector<Script::Npc> npcs;
 
-    /* auto npcView = m_world.view<CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>(
-        entt::exclude<PlayerComponent>);
+    auto npcView = m_world.view<CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>(entt::exclude<ObjectComponent>);
     for (auto entity : npcView)
     {
+        bool isPlayer = false;
+        for (Player* pPlayer : m_world.GetPlayerManager())
+        {
+            auto character = pPlayer->GetCharacter();
+            if (character && *character == entity)
+            {
+                isPlayer = true;
+                break;
+            }
+        }
+
+        if (isPlayer)
+            continue;
+
         npcs.push_back(Script::Npc(entity, m_world));
-    }*/
+    }
 
     return npcs;
 }
