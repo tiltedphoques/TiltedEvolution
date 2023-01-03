@@ -137,7 +137,7 @@ void ScriptService::BindInbuiltFunctions()
     {
         auto worldType = luaVm.new_usertype<World>("World", sol::no_constructor);
         worldType["get"] = [this]() { return &m_world; };
-        // worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
+        worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
         worldType["players"] = sol::readonly_property([this]() { return GetPlayers(); });
         worldType["playerCount"] = sol::readonly_property([this]() { return m_world.GetPlayerManager().Count(); });
     }
