@@ -144,7 +144,10 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
             return nullptr;
     }
 
-    if (pExtension->IsLocal())
+    // Consumables are "equipped" as well. We don't want this to sync, for several reasons.
+    // The right hand item on the server would be overridden by the consumable.
+    // Furthermore, the equip action on the other clients would doubly subtract the consumables.
+    if (pExtension->IsLocal() && !apItem->IsConsumable())
     {
         EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
