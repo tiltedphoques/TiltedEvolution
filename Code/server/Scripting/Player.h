@@ -31,6 +31,7 @@ struct Player : EntityHandle
     [[nodiscard]] const glm::vec3& GetRotation() const;
     [[nodiscard]] float GetSpeed() const;
     const Inventory& GetInventory() const;
+    Vector<Quest> GetQuests() const;
 
     Player& operator=(const Player& acRhs)
     {
@@ -47,7 +48,6 @@ struct Player : EntityHandle
     bool SendChatMessage(const std::string& acMessage) noexcept;
 
     sol::optional<Quest> AddQuest(std::string aModName, uint32_t aformId);
-    sol::optional<Vector<Quest>> GetQuests() const noexcept;
     sol::optional<Party> GetParty() const noexcept;
 
     inline entt::entity GetEntityHandle() const { return m_entity; }

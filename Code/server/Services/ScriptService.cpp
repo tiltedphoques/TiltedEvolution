@@ -1,4 +1,5 @@
 #include <stdafx.h>
+#include <Scripting/Quest.h>
 
 #include <Services/CalendarService.h>
 #include <Services/ScriptService.h>
@@ -135,15 +136,22 @@ void ScriptService::BindInbuiltFunctions()
     }
 
     {
+        auto questType = luaVm.new_usertype<Script::Quest>("Quest", sol::no_constructor);
+        questType["id"] = sol::readonly_property(&Script::Quest::GetId);
+        questType["stage"] = sol::readonly_property(&Script::Quest::GetStage);
+    }
+
+    {
         auto playerType = luaVm.new_usertype<Script::Player>("Player", sol::no_constructor);
         playerType["id"] = sol::readonly_property(&Script::Player::GetId);
         playerType["discordId"] = sol::readonly_property(&Script::Player::GetDiscordId);
         playerType["party"] = sol::readonly_property(&Script::Player::GetParty);
         playerType["name"] = sol::readonly_property(&Script::Player::GetName);
         playerType["position"] = sol::readonly_property(&Script::Player::GetPosition);
-        playerType["kick"] = &Script::Player::Kick;
-        playerType["sendChatMessage"] = &Script::Player::SendChatMessage;
         playerType["inventory"] = sol::readonly_property(&Script::Player::GetInventory);
+        playerType["quests"] = sol::readonly_property(&Script::Player::GetQuests);
+        playerType["Kick"] = &Script::Player::Kick;
+        playerType["SendChatMessage"] = &Script::Player::SendChatMessage;
     }
 
     {

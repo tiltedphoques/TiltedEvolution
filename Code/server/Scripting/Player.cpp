@@ -16,13 +16,18 @@
 
 namespace Script
 {
+static Vector<String> kNullVecString{};
 static String kNullString{};
 static glm::vec3 kNullVec{};
 static Inventory kNullInventory{};
 
 const Vector<String>& Player::GetMods() const
 {
-    return {};
+    if (auto* pPlayerObject = PlayerManager::Get()->GetById(m_playerObjectRefId))
+    {
+        return pPlayerObject->GetMods();
+    }
+    return kNullVecString;
 }
 
 const String& Player::GetIp() const
@@ -89,6 +94,36 @@ float Player::GetSpeed() const
     return 0.f;
 }
 
+const Inventory& Player::GetInventory() const
+{
+    auto* pPlayer = PlayerManager::Get()->GetById(m_playerObjectRefId);
+    if (!pPlayer)
+        return kNullInventory;
+
+    auto character = pPlayer->GetCharacter();
+    if (!character)
+        return kNullInventory;
+
+    const auto* inventoryComponent = GameServer::Get()->GetWorld().try_get<InventoryComponent>(*character);
+    if (!inventoryComponent)
+        return kNullInventory;
+
+    return inventoryComponent->Content;
+}
+
+Vector<Quest> Player::GetQuests() const
+{
+    Vector<Quest> quests{};
+
+    if (auto* pPlayerObject = PlayerManager::Get()->GetById(m_playerObjectRefId))
+    {
+        for (const auto& quest : pPlayerObject->GetQuestLogComponent().QuestContent.Entries)
+            quests.push_back(Quest(quest.Id, quest.Stage, m_pWorld));
+    }
+
+    return quests;
+}
+
 bool Player::HasMod(const std::string& aModName) const noexcept
 {
     return false;
@@ -102,11 +137,6 @@ bool Player::RemoveQuest(uint32_t aformId)
 sol::optional<Quest> Player::AddQuest(const std::string aModName, uint32_t aformId)
 {
     return std::nullopt;
-}
-
-sol::optional<Vector<Quest>> Player::GetQuests() const noexcept
-{
-    return sol::nullopt;
 }
 
 bool Player::SendChatMessage(const std::string& acMessage) noexcept
@@ -138,23 +168,6 @@ bool Player::Kick() noexcept
 sol::optional<Party> Player::GetParty() const noexcept
 {
     return sol::nullopt;
-}
-
-const Inventory& Player::GetInventory() const
-{
-    auto* pPlayer = PlayerManager::Get()->GetById(m_playerObjectRefId);
-    if (!pPlayer)
-        return kNullInventory;
-
-    auto character = pPlayer->GetCharacter();
-    if (!character)
-        return kNullInventory;
-
-    const auto* inventoryComponent = GameServer::Get()->GetWorld().try_get<InventoryComponent>(*character);
-    if (!inventoryComponent)
-        return kNullInventory;
-
-    return inventoryComponent->Content;
 }
 
 } // namespace Script
