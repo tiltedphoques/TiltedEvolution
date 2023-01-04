@@ -110,12 +110,6 @@ void ScriptService::BindInbuiltFunctions()
         luaVm.set_function("cancelEvent", [this](std::string acReason) { CancelEvent(std::move(acReason)); });
     }
 
-    // game time information
-    {
-        auto cal = luaVm.new_usertype<CalendarService>("Calendar", sol::no_constructor);
-        // cal["GetGameTime"] = &CalendarService::GetGameTime;
-    }
-
     {
         auto vec = luaVm.new_usertype<glm::vec3>("Vector3", sol::no_constructor);
         vec["x"] = sol::property(&glm::vec3::x, &glm::vec3::x);
@@ -158,6 +152,8 @@ void ScriptService::BindInbuiltFunctions()
         worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
         worldType["players"] = sol::readonly_property([this]() { return GetPlayers(); });
         worldType["playerCount"] = sol::readonly_property([this]() { return m_world.GetPlayerManager().Count(); });
+        worldType["time"] = sol::readonly_property([this]() { return m_world.GetCalendarService().GetTime(); });
+        worldType["date"] = sol::readonly_property([this]() { return m_world.GetCalendarService().GetDate(); });
     }
 
     {
