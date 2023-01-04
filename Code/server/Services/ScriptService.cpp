@@ -126,6 +126,7 @@ void ScriptService::BindInbuiltFunctions()
     {
         auto gameIdType = luaVm.new_usertype<GameId>("GameId", sol::no_constructor);
         gameIdType["baseId"] = sol::readonly_property(&GameId::BaseId);
+        gameIdType["modId"] = sol::readonly_property(&GameId::ModId);
     }
 
     {
