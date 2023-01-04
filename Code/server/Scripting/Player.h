@@ -30,6 +30,7 @@ struct Player : EntityHandle
     [[nodiscard]] const glm::vec3& GetPosition() const;
     [[nodiscard]] const glm::vec3& GetRotation() const;
     [[nodiscard]] float GetSpeed() const;
+    const Inventory& GetInventory() const;
 
     Player& operator=(const Player& acRhs)
     {
@@ -48,7 +49,6 @@ struct Player : EntityHandle
     sol::optional<Quest> AddQuest(std::string aModName, uint32_t aformId);
     sol::optional<Vector<Quest>> GetQuests() const noexcept;
     sol::optional<Party> GetParty() const noexcept;
-    sol::optional<Inventory> GetInventory() const noexcept;
 
     inline entt::entity GetEntityHandle() const { return m_entity; }
 

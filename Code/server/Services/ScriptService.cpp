@@ -124,6 +124,22 @@ void ScriptService::BindInbuiltFunctions()
     }
 
     {
+        auto gameIdType = luaVm.new_usertype<GameId>("GameId", sol::no_constructor);
+        gameIdType["baseId"] = sol::readonly_property(&GameId::BaseId);
+    }
+
+    {
+        auto entryType = luaVm.new_usertype<Inventory::Entry>("Entry", sol::no_constructor);
+        entryType["formId"] = sol::readonly_property(&Inventory::Entry::BaseId);
+        entryType["count"] = sol::readonly_property(&Inventory::Entry::Count);
+    }
+
+    {
+        auto inventoryType = luaVm.new_usertype<Inventory>("Inventory", sol::no_constructor);
+        inventoryType["entries"] = sol::readonly_property(&Inventory::Entries);
+    }
+
+    {
         auto playerType = luaVm.new_usertype<Script::Player>("Player", sol::no_constructor);
         playerType["id"] = sol::readonly_property(&Script::Player::GetId);
         playerType["discordId"] = sol::readonly_property(&Script::Player::GetDiscordId);
@@ -132,7 +148,7 @@ void ScriptService::BindInbuiltFunctions()
         playerType["position"] = sol::readonly_property(&Script::Player::GetPosition);
         playerType["kick"] = &Script::Player::Kick;
         playerType["sendChatMessage"] = &Script::Player::SendChatMessage;
-        playerType["getInventory"] = sol::readonly_property(&Script::Player::GetInventory);
+        playerType["inventory"] = sol::readonly_property(&Script::Player::GetInventory);
     }
 
     {

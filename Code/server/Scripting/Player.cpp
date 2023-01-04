@@ -18,6 +18,7 @@ namespace Script
 {
 static String kNullString{};
 static glm::vec3 kNullVec{};
+static Inventory kNullInventory{};
 
 const Vector<String>& Player::GetMods() const
 {
@@ -139,19 +140,19 @@ sol::optional<Party> Player::GetParty() const noexcept
     return sol::nullopt;
 }
 
-sol::optional<Inventory> Player::GetInventory() const noexcept
+const Inventory& Player::GetInventory() const
 {
     auto* pPlayer = PlayerManager::Get()->GetById(m_playerObjectRefId);
     if (!pPlayer)
-        return sol::nullopt;
+        return kNullInventory;
 
     auto character = pPlayer->GetCharacter();
     if (!character)
-        return sol::nullopt;
+        return kNullInventory;
 
     const auto* inventoryComponent = GameServer::Get()->GetWorld().try_get<InventoryComponent>(*character);
     if (!inventoryComponent)
-        return sol::nullopt;
+        return kNullInventory;
 
     return inventoryComponent->Content;
 }
