@@ -144,6 +144,7 @@ void ScriptService::BindInbuiltFunctions()
     {
         auto playerType = luaVm.new_usertype<Script::Player>("Player", sol::no_constructor);
         playerType["id"] = sol::readonly_property(&Script::Player::GetId);
+        playerType["mods"] = sol::readonly_property(&Script::Player::GetMods);
         playerType["discordId"] = sol::readonly_property(&Script::Player::GetDiscordId);
         playerType["party"] = sol::readonly_property(&Script::Player::GetParty);
         playerType["name"] = sol::readonly_property(&Script::Player::GetName);
