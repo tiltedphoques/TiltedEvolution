@@ -153,6 +153,7 @@ void ScriptService::BindInbuiltFunctions()
         playerType["quests"] = sol::readonly_property(&Script::Player::GetQuests);
         playerType["Kick"] = &Script::Player::Kick;
         playerType["SendChatMessage"] = &Script::Player::SendChatMessage;
+        playerType["HasMod"] = &Script::Player::HasMod;
     }
 
     {

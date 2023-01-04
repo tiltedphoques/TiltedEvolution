@@ -27,6 +27,7 @@ const Vector<String>& Player::GetMods() const
     {
         return pPlayerObject->GetMods();
     }
+
     return kNullVecString;
 }
 
@@ -126,6 +127,16 @@ Vector<Quest> Player::GetQuests() const
 
 bool Player::HasMod(const std::string& aModName) const noexcept
 {
+    if (auto* pPlayerObject = PlayerManager::Get()->GetById(m_playerObjectRefId))
+    {
+        for (const auto& modName : pPlayerObject->GetMods())
+        {
+            std::string mod(modName.c_str());
+            if (mod == aModName)
+                return true;
+        }
+    }
+
     return false;
 }
 
