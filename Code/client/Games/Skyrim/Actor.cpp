@@ -727,20 +727,20 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
 {
     if (!ScopedInventoryOverride::IsOverriden())
     {
-        // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync
-        if (apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden())
-        {
-            auto& modSystem = World::Get().GetModSystem();
+        auto& modSystem = World::Get().GetModSystem();
 
-            Inventory::Entry item{};
-            modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
-            item.Count = aCount;
+        Inventory::Entry item{};
+        modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
+        item.Count = aCount;
 
-            if (apObject->GetExtraDataList())
-                apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
+        if (apObject->GetExtraDataList())
+            apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
 
-            World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
-        }
+        // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync.
+        // The inventory change event should always be sent to the server, otherwise the server inventory won't be updated.
+        bool shouldUpdateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
+
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item), false, shouldUpdateClients));
     }
 
     return TiltedPhoques::ThisCall(RealPickUpObject, apThis, apObject, aCount, aUnk1, aUnk2);
