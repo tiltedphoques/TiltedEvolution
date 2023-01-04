@@ -38,9 +38,6 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
         inventoryComponent.Content.AddOrRemoveEntry(message.Item);
     }
 
-    if (!message.UpdateClients)
-        return;
-
     NotifyInventoryChanges notify;
     notify.ServerId = message.ServerId;
     notify.Item = message.Item;

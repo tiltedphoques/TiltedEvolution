@@ -23,16 +23,7 @@ struct InventoryChangeEvent
     {
     }
 
-    InventoryChangeEvent(const uint32_t aFormId, Inventory::Entry&& arItem, bool aDrop, bool aUpdateClients)
-        : FormId(aFormId)
-        , Item(std::move(arItem))
-        , Drop(aDrop)
-        , UpdateClients(aUpdateClients)
-    {
-    }
-
     uint32_t FormId{};
     Inventory::Entry Item{};
     bool Drop = false;
-    bool UpdateClients = true;
 };
