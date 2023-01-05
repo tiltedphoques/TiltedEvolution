@@ -275,9 +275,6 @@ void ScriptService::RegisterExtensions(ScriptContext& aContext)
 
 void ScriptService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
-    if (!GameServer::Get()->IsRunning())
-        return;
-
     CallEvent("onUpdate", acEvent.Delta);
 }
 
