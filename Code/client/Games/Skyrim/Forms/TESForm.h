@@ -8,10 +8,12 @@ enum class FormType : uint8_t
     Book = 27,
     Container = 28,
     Door = 29,
+    Ingredient = 30,
     Weapon = 41,
     Ammo = 42,
     Npc = 43,
     LeveledCharacter = 44,
+    Alchemy = 46,
     Character = 62,
     QuestItem = 77,
     Count = 0x87
@@ -107,6 +109,7 @@ struct TESForm : BaseFormComponent
 
     bool IsDisabled() const noexcept { return (flags & DISABLED) != 0; }
     bool IsTemporary() const noexcept { return formID >= 0xFF000000; }
+    bool IsConsumable() const noexcept { return formType == FormType::Ingredient || formType == FormType::Alchemy; }
 
     uintptr_t unk4;
     uint32_t flags;
