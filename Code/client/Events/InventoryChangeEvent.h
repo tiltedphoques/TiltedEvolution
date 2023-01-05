@@ -10,22 +10,22 @@
  */
 struct InventoryChangeEvent
 {
-    InventoryChangeEvent(const uint32_t aFormId, Inventory::Entry&& arItem)
+    InventoryChangeEvent(const uint32_t aFormId, Inventory::Entry arItem)
         : FormId(aFormId)
-        , Item(std::move(arItem))
+        , Item(arItem)
     {
     }
 
-    InventoryChangeEvent(const uint32_t aFormId, Inventory::Entry&& arItem, bool aDrop)
+    InventoryChangeEvent(const uint32_t aFormId, Inventory::Entry arItem, bool aDrop)
         : FormId(aFormId)
-        , Item(std::move(arItem))
+        , Item(arItem)
         , Drop(aDrop)
     {
     }
 
-    InventoryChangeEvent(const uint32_t aFormId, Inventory::Entry&& arItem, bool aDrop, bool aUpdateClients)
+    InventoryChangeEvent(const uint32_t aFormId, Inventory::Entry arItem, bool aDrop, bool aUpdateClients)
         : FormId(aFormId)
-        , Item(std::move(arItem))
+        , Item(arItem)
         , Drop(aDrop)
         , UpdateClients(aUpdateClients)
     {
