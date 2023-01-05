@@ -68,8 +68,9 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
     RequestInventoryChanges request;
     request.ServerId = serverIdRes.value();
-    request.Item = std::move(acEvent.Item);
+    request.Item = acEvent.Item;
     request.Drop = acEvent.Drop;
+    request.UpdateClients = acEvent.UpdateClients;
 
     m_transport.Send(request);
 
