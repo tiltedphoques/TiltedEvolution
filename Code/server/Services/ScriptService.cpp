@@ -180,8 +180,8 @@ void ScriptService::BindInbuiltFunctions()
         server["name"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().name; });
         server["tags"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tagList; });
         server["tickrate"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tick_rate; });
-        server["getUptime"] = &GameServer::GetUptime;
-        server["close"] = &GameServer::Kill;
+        server["GetUptime"] = &GameServer::GetUptime;
+        server["Close"] = &GameServer::Kill;
     }
 
     {
