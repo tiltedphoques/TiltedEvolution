@@ -4,19 +4,21 @@
 
 namespace Script
 {
-struct Npc : EntityHandle
+struct Actor : EntityHandle
 {
-    Npc(entt::entity aEntity, World& aWorld);
+    Actor(entt::entity aEntity, World& aWorld);
 
     [[nodiscard]] const glm::vec3& GetPosition() const;
     [[nodiscard]] const glm::vec3& GetRotation() const;
     [[nodiscard]] float GetSpeed() const;
     [[nodiscard]] bool IsDead() const;
 
+    const Inventory& GetInventory() const;
+
     void Kill() const;
     void Resurrect() const;
 
-    Npc& operator=(const Npc& acRhs)
+    Actor& operator=(const Actor& acRhs)
     {
         EntityHandle::operator=(acRhs);
 

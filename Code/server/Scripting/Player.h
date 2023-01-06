@@ -13,6 +13,7 @@ namespace Script
 {
 struct Quest;
 struct Party;
+struct Actor;
 
 struct Player : EntityHandle
 {
@@ -26,11 +27,7 @@ struct Player : EntityHandle
     const String& GetIp() const;
     const String& GetName() const;
     const uint64_t GetDiscordId() const;
-
-    [[nodiscard]] const glm::vec3& GetPosition() const;
-    [[nodiscard]] const glm::vec3& GetRotation() const;
-    [[nodiscard]] float GetSpeed() const;
-    const Inventory& GetInventory() const;
+    sol::optional<Script::Actor> GetActor() const;
     Vector<Quest> GetQuests() const;
 
     Player& operator=(const Player& acRhs)

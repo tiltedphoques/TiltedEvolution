@@ -41,7 +41,7 @@
 #include <Messages/NotifyActorTeleport.h>
 #include <Messages/NotifyRelinquishControl.h>
 
-#include <Scripting/Npc.h>
+#include <Scripting/Actor.h>
 
 namespace
 {
@@ -453,7 +453,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
 
         for (auto& action : update.ActionEvents)
         {
-            auto [canceled, reason] = GameServer::Get()->GetWorld().GetScriptService().HandleMove(Script::Npc(*itor, m_world));
+            auto [canceled, reason] = GameServer::Get()->GetWorld().GetScriptService().HandleMove(Script::Actor(*itor, m_world));
             if (canceled)
                 continue;
 

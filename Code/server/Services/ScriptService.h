@@ -10,7 +10,7 @@ struct PlayerEnterWorldEvent;
 
 namespace Script
 {
-struct Npc;
+struct Actor;
 struct Player;
 struct Quest;
 } // namespace Script
@@ -31,7 +31,7 @@ struct ScriptService
     bool LoadScript(const std::filesystem::path& aPath);
 
     std::tuple<bool, String> HandlePlayerJoin(const Script::Player& aPlayer) noexcept;
-    std::tuple<bool, String> HandleMove(const Script::Npc& aNpc) noexcept;
+    std::tuple<bool, String> HandleMove(const Script::Actor& aNpc) noexcept;
 
     std::tuple<bool, String> HandleChatMessage(const Script::Player& aSender, const String& aMessage) noexcept;
 
@@ -53,7 +53,8 @@ struct ScriptService
     void CancelEvent(std::string aReason) noexcept;
 
     [[nodiscard]] Vector<Script::Player> GetPlayers() const;
-    [[nodiscard]] Vector<Script::Npc> GetNpcs() const;
+    [[nodiscard]] Vector<Script::Actor> GetNpcs() const;
+    [[nodiscard]] Vector<Script::Actor> GetActors() const;
 
     template <typename... Args>
     std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args) noexcept;

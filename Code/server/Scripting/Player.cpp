@@ -1,6 +1,6 @@
 #include <stdafx.h>
 
-#include <Scripting/Npc.h>
+#include <Scripting/Actor.h>
 #include <Scripting/Party.h>
 #include <Scripting/Player.h>
 #include <Scripting/Quest.h>
@@ -19,7 +19,6 @@ namespace Script
 static Vector<String> kNullVecString{};
 static String kNullString{};
 static glm::vec3 kNullVec{};
-static Inventory kNullInventory{};
 
 const Vector<String>& Player::GetMods() const
 {
@@ -58,58 +57,17 @@ const uint64_t Player::GetDiscordId() const
     return 0;
 }
 
-const glm::vec3& Player::GetPosition() const
+sol::optional<Script::Actor> Player::GetActor() const
 {
-    if (!GameServer::Get()->GetWorld().valid(m_entity))
+    if (auto* pPlayerObject = PlayerManager::Get()->GetById(m_playerObjectRefId))
     {
-        return kNullVec;
+        if (auto character = pPlayerObject->GetCharacter())
+        {
+            return Script::Actor(*character, *m_pWorld);
+        }
     }
 
-    auto* movementComponent = GameServer::Get()->GetWorld().try_get<MovementComponent>(m_entity);
-    if (!movementComponent)
-    {
-        return kNullVec;
-    }
-
-    return movementComponent->Position;
-}
-
-const glm::vec3& Player::GetRotation() const
-{
-    if (!m_pWorld->valid(m_entity))
-    {
-        return kNullVec;
-    }
-
-    auto* movementComponent = m_pWorld->try_get<MovementComponent>(m_entity);
-    if (!movementComponent)
-    {
-        return kNullVec;
-    }
-
-    return movementComponent->Rotation;
-}
-
-float Player::GetSpeed() const
-{
-    return 0.f;
-}
-
-const Inventory& Player::GetInventory() const
-{
-    auto* pPlayer = PlayerManager::Get()->GetById(m_playerObjectRefId);
-    if (!pPlayer)
-        return kNullInventory;
-
-    auto character = pPlayer->GetCharacter();
-    if (!character)
-        return kNullInventory;
-
-    const auto* inventoryComponent = GameServer::Get()->GetWorld().try_get<InventoryComponent>(*character);
-    if (!inventoryComponent)
-        return kNullInventory;
-
-    return inventoryComponent->Content;
+    return sol::nullopt;
 }
 
 Vector<Quest> Player::GetQuests() const

@@ -5,7 +5,7 @@
 #include <Services/ScriptService.h>
 #include <World.h>
 
-#include <Scripting/Npc.h>
+#include <Scripting/Actor.h>
 #include <Scripting/Party.h>
 #include <Scripting/Player.h>
 #include <Scripting/Quest.h>
@@ -148,8 +148,7 @@ void ScriptService::BindInbuiltFunctions()
         playerType["discordId"] = sol::readonly_property(&Script::Player::GetDiscordId);
         playerType["party"] = sol::readonly_property(&Script::Player::GetParty);
         playerType["name"] = sol::readonly_property(&Script::Player::GetName);
-        playerType["position"] = sol::readonly_property(&Script::Player::GetPosition);
-        playerType["inventory"] = sol::readonly_property(&Script::Player::GetInventory);
+        playerType["actor"] = sol::readonly_property(&Script::Player::GetActor);
         playerType["quests"] = sol::readonly_property(&Script::Player::GetQuests);
         playerType["Kick"] = &Script::Player::Kick;
         playerType["SendChatMessage"] = &Script::Player::SendChatMessage;
@@ -157,12 +156,14 @@ void ScriptService::BindInbuiltFunctions()
     }
 
     {
-        auto npcType = luaVm.new_usertype<Script::Npc>("Npc", sol::no_constructor);
-        npcType["id"] = sol::readonly_property(&Script::Npc::GetId);
-        npcType["position"] = sol::readonly_property(&Script::Npc::GetPosition);
-        npcType["isDead"] = sol::readonly_property(&Script::Npc::IsDead);
-        npcType["Kill"] = &Script::Npc::Kill;
-        npcType["Resurrect"] = &Script::Npc::Resurrect;
+        auto actorType = luaVm.new_usertype<Script::Actor>("Actor", sol::no_constructor);
+        actorType["id"] = sol::readonly_property(&Script::Actor::GetId);
+        actorType["position"] = sol::readonly_property(&Script::Actor::GetPosition);
+        actorType["rotation"] = sol::readonly_property(&Script::Actor::GetRotation);
+        actorType["inventory"] = sol::readonly_property(&Script::Actor::GetInventory);
+        actorType["isDead"] = sol::readonly_property(&Script::Actor::IsDead);
+        actorType["Kill"] = &Script::Actor::Kill;
+        actorType["Resurrect"] = &Script::Actor::Resurrect;
     }
 
     {
@@ -209,9 +210,9 @@ Vector<Script::Player> ScriptService::GetPlayers() const
     return players;
 }
 
-Vector<Script::Npc> ScriptService::GetNpcs() const
+Vector<Script::Actor> ScriptService::GetNpcs() const
 {
-    Vector<Script::Npc> npcs;
+    Vector<Script::Actor> npcs;
 
     auto npcView = m_world.view<CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>(entt::exclude<ObjectComponent>);
     for (auto entity : npcView)
@@ -230,13 +231,26 @@ Vector<Script::Npc> ScriptService::GetNpcs() const
         if (isPlayer)
             continue;
 
-        npcs.push_back(Script::Npc(entity, m_world));
+        npcs.push_back(Script::Actor(entity, m_world));
     }
 
     return npcs;
 }
 
-std::tuple<bool, String> ScriptService::HandleMove(const Script::Npc& aNpc) noexcept
+Vector<Script::Actor> ScriptService::GetActors() const
+{
+    Vector<Script::Actor> actors{};
+
+    auto actorView = m_world.view<CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>(entt::exclude<ObjectComponent>);
+    for (auto entity : actorView)
+    {
+        actors.push_back(Script::Actor(entity, m_world));
+    }
+
+    return actors;
+}
+
+std::tuple<bool, String> ScriptService::HandleMove(const Script::Actor& aNpc) noexcept
 {
     return CallCancelableEvent("onCharacterMove", aNpc);
 }
