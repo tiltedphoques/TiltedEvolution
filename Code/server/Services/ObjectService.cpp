@@ -161,6 +161,7 @@ void ObjectService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage
         if (pPlayer == acMessage.pPlayer)
             continue;
 
+        // TODO: consider sending this to everyone in the world, not just in range
         if (pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
             pPlayer->Send(notifyLockChange);
     }

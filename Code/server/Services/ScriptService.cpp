@@ -9,6 +9,7 @@
 #include <Scripting/Party.h>
 #include <Scripting/Player.h>
 #include <Scripting/Quest.h>
+#include <Scripting/Object.h>
 
 #include <Events/PlayerEnterWorldEvent.h>
 #include <Events/UpdateEvent.h>
@@ -169,6 +170,20 @@ void ScriptService::BindInbuiltFunctions()
         actorType["isDead"] = sol::readonly_property(&Script::Actor::IsDead);
         actorType["Kill"] = &Script::Actor::Kill;
         actorType["Resurrect"] = &Script::Actor::Resurrect;
+    }
+
+    {
+        auto lockType = luaVm.new_usertype<LockData>("LockData", sol::no_constructor);
+        lockType["isLocked"] = sol::readonly_property(&LockData::IsLocked);
+        lockType["lockLevel"] = sol::readonly_property(&LockData::LockLevel);
+    }
+
+    {
+        auto objectType = luaVm.new_usertype<Script::Object>("Object", sol::no_constructor);
+        objectType["id"] = sol::readonly_property(&Script::Object::GetId);
+        objectType["lockData"] = sol::readonly_property(&Script::Object::GetLockData);
+        objectType["Lock"] = &Script::Object::Lock;
+        objectType["Unlock"] = &Script::Object::Unlock;
     }
 
     {

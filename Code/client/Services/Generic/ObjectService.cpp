@@ -374,7 +374,9 @@ void ObjectService::OnLockChangeNotify(const NotifyLockChange& acMessage) noexce
         }
     }
 
-    pLock->lockLevel = acMessage.LockLevel;
+    if (acMessage.IsLocked)
+        pLock->lockLevel = acMessage.LockLevel;
+
     pLock->SetLock(acMessage.IsLocked);
     pObject->LockChange();
 }

@@ -15,5 +15,5 @@ struct ObjectComponent
     }
 
     Player* pLastSender;
-    LockData CurrentLockData{};
+    LockData CurrentLockData{}; // TODO: this should probably be std::optional
 };
