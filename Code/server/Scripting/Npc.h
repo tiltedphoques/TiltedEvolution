@@ -11,6 +11,10 @@ struct Npc : EntityHandle
     [[nodiscard]] const glm::vec3& GetPosition() const;
     [[nodiscard]] const glm::vec3& GetRotation() const;
     [[nodiscard]] float GetSpeed() const;
+    [[nodiscard]] bool IsDead() const;
+
+    void Kill() const;
+    void Resurrect() const;
 
     Npc& operator=(const Npc& acRhs)
     {

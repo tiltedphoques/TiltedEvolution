@@ -157,6 +157,15 @@ void ScriptService::BindInbuiltFunctions()
     }
 
     {
+        auto npcType = luaVm.new_usertype<Script::Npc>("Npc", sol::no_constructor);
+        npcType["id"] = sol::readonly_property(&Script::Npc::GetId);
+        npcType["position"] = sol::readonly_property(&Script::Npc::GetPosition);
+        npcType["isDead"] = sol::readonly_property(&Script::Npc::IsDead);
+        npcType["Kill"] = &Script::Npc::Kill;
+        npcType["Resurrect"] = &Script::Npc::Resurrect;
+    }
+
+    {
         auto worldType = luaVm.new_usertype<World>("World", sol::no_constructor);
         worldType["get"] = [this]() { return &m_world; };
         worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
