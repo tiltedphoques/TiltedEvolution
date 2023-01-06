@@ -11,9 +11,13 @@ struct Actor : EntityHandle
     [[nodiscard]] const glm::vec3& GetPosition() const;
     [[nodiscard]] const glm::vec3& GetRotation() const;
     [[nodiscard]] float GetSpeed() const;
+    [[nodiscard]] float GetHealth() const;
+    [[nodiscard]] float GetHealthMax() const;
     [[nodiscard]] bool IsDead() const;
-
     const Inventory& GetInventory() const;
+
+    void SetHealth(float aHealth);
+    void SetHealthMax(float aHealthMax);
 
     void Kill() const;
     void Resurrect() const;

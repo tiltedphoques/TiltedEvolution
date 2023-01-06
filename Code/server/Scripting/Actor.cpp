@@ -8,6 +8,8 @@
 #include <Components.h>
 
 #include <Messages/NotifyDeathStateChange.h>
+#include <Messages/NotifyHealthChangeBroadcast.h>
+#include <Messages/NotifyActorMaxValueChanges.h>
 
 namespace Script
 {
@@ -38,6 +40,54 @@ float Actor::GetSpeed() const
     auto movementComponent = m_pWorld->try_get<MovementComponent>(m_entity);
 
     return 0.f;
+}
+
+float Actor::GetHealth() const
+{
+    if (auto actorValuesComponent = m_pWorld->try_get<ActorValuesComponent>(m_entity))
+        return actorValuesComponent->CurrentActorValues.ActorValuesList[24];
+    return 0.f;
+}
+
+float Actor::GetHealthMax() const
+{
+    if (auto actorValuesComponent = m_pWorld->try_get<ActorValuesComponent>(m_entity))
+        return actorValuesComponent->CurrentActorValues.ActorMaxValuesList[24];
+    return 0.f;
+}
+
+void Actor::SetHealth(float aHealth)
+{
+    auto actorValuesComponent = m_pWorld->try_get<ActorValuesComponent>(m_entity);
+    if (!actorValuesComponent)
+        return;
+
+    // Disallow setting the health value higher than the max
+    if (aHealth > actorValuesComponent->CurrentActorValues.ActorMaxValuesList[24])
+        return;
+
+    float currentHealth = actorValuesComponent->CurrentActorValues.ActorValuesList[24];
+
+    NotifyHealthChangeBroadcast notify{};
+    notify.Id = World::ToInteger(m_entity);
+    notify.DeltaHealth = aHealth - currentHealth;
+
+    GameServer::Get()->SendToPlayers(notify);
+}
+
+void Actor::SetHealthMax(float aHealthMax)
+{
+    auto actorValuesComponent = m_pWorld->try_get<ActorValuesComponent>(m_entity);
+    if (!actorValuesComponent)
+        return;
+
+    actorValuesComponent->CurrentActorValues.ActorMaxValuesList[24] = aHealthMax;
+
+    NotifyActorMaxValueChanges notify{};
+    notify.Id = World::ToInteger(m_entity);
+    notify.Values = {{24, aHealthMax}};
+
+    GameServer::Get()->SendToPlayers(notify);
 }
 
 bool Actor::IsDead() const

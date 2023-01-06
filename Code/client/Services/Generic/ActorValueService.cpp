@@ -350,15 +350,7 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
 
 void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acMessage) const noexcept
 {
-    auto view = m_world.view<FormIdComponent, RemoteComponent>();
-
-    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) { return view.get<RemoteComponent>(entity).Id == id; });
-
-    if (it == std::end(view))
-        return;
-
-    auto& formIdComponent = view.get<FormIdComponent>(*it);
-    Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.Id);
 
     if (!pActor)
         return;

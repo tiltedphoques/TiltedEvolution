@@ -163,6 +163,8 @@ void ScriptService::BindInbuiltFunctions()
         actorType["id"] = sol::readonly_property(&Script::Actor::GetId);
         actorType["position"] = sol::readonly_property(&Script::Actor::GetPosition);
         actorType["rotation"] = sol::readonly_property(&Script::Actor::GetRotation);
+        actorType["health"] = sol::property(&Script::Actor::GetHealth, &Script::Actor::SetHealth);
+        actorType["healthMax"] = sol::property(&Script::Actor::GetHealthMax, &Script::Actor::SetHealthMax);
         actorType["inventory"] = sol::readonly_property(&Script::Actor::GetInventory);
         actorType["isDead"] = sol::readonly_property(&Script::Actor::IsDead);
         actorType["Kill"] = &Script::Actor::Kill;
