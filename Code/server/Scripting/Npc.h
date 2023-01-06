@@ -22,5 +22,8 @@ struct Npc : EntityHandle
 
         return *this;
     }
+
+protected:
+    void ChangeDeathState(bool aIsDead) const;
 };
 } // namespace Script

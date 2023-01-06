@@ -46,30 +46,26 @@ bool Npc::IsDead() const
 
 void Npc::Kill() const
 {
-    auto& characterComponent = m_pWorld->get<CharacterComponent>(m_entity);
-    if (characterComponent.IsDead())
-        return;
-
-    characterComponent.SetDead(true);
-
-    NotifyDeathStateChange notify{};
-    notify.Id = World::ToInteger(m_entity);
-    notify.IsDead = true;
-
-    GameServer::Get()->SendToPlayersInRange(notify, m_entity);
+    ChangeDeathState(true);
 }
 
 void Npc::Resurrect() const
 {
+    ChangeDeathState(false);
+}
+
+void Npc::ChangeDeathState(bool aIsDead) const
+{
     auto& characterComponent = m_pWorld->get<CharacterComponent>(m_entity);
-    if (!characterComponent.IsDead())
+    bool isDead = characterComponent.IsDead();
+    if (isDead == aIsDead)
         return;
 
-    characterComponent.SetDead(false);
+    characterComponent.SetDead(aIsDead);
 
     NotifyDeathStateChange notify{};
     notify.Id = World::ToInteger(m_entity);
-    notify.IsDead = false;
+    notify.IsDead = aIsDead;
 
     GameServer::Get()->SendToPlayersInRange(notify, m_entity);
 }
