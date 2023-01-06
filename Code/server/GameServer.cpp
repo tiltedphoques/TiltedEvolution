@@ -766,8 +766,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         // Note: to lower traffic we only send the mod ids the user can fix in order as other ids will lead to a
         // null form id anyway
-        Vector<String> playerMods;
-        Vector<uint16_t> playerModsIds;
+        Map<String, uint32_t> playerMods{};
 
         size_t i = 0;
         for (auto& mod : acRequest->UserMods.ModList)
@@ -775,13 +774,13 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             const uint32_t id =
                 mod.IsLite ? modsComponent.AddLite(mod.Filename) : modsComponent.AddStandard(mod.Filename);
 
+            playerMods[mod.Filename] = id;
+
             Mods::Entry entry;
             entry.Filename = mod.Filename;
             entry.Id = static_cast<uint16_t>(id);
             entry.IsLite = mod.IsLite;
 
-            playerMods.push_back(mod.Filename);
-            playerModsIds.push_back(entry.Id);
             responseList.ModList.push_back(entry);
         }
 
@@ -790,7 +789,6 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         pPlayer->SetDiscordId(acRequest->DiscordId);
         pPlayer->SetUsername(std::move(acRequest->Username));
         pPlayer->SetMods(playerMods);
-        pPlayer->SetModIds(playerModsIds);
         pPlayer->SetLevel(acRequest->Level);
 
         auto [canceled, reason] = m_pWorld->GetScriptService().HandlePlayerJoin(

@@ -18,7 +18,6 @@ Player::Player(Player&& aRhs) noexcept
     , m_connectionId{std::exchange(aRhs.m_connectionId, 0)}
     , m_character{std::exchange(aRhs.m_character, std::nullopt)}
     , m_mods{std::exchange(aRhs.m_mods, {})}
-    , m_modIds{std::exchange(aRhs.m_modIds, {})}
     , m_discordId{std::exchange(aRhs.m_discordId, 0)}
     , m_endpoint{std::exchange(aRhs.m_endpoint, {})}
     , m_username{std::exchange(aRhs.m_username, {})}
@@ -63,14 +62,9 @@ void Player::SetUsername(String aUsername) noexcept
     m_username = std::move(aUsername);
 }
 
-void Player::SetMods(Vector<String> aMods) noexcept
+void Player::SetMods(Map<String, uint32_t> aMods) noexcept
 {
     m_mods = std::move(aMods);
-}
-
-void Player::SetModIds(Vector<uint16_t> aModIds) noexcept
-{
-    m_modIds = std::move(aModIds);
 }
 
 void Player::SetCharacter(entt::entity aCharacter) noexcept

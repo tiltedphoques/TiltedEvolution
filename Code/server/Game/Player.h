@@ -21,7 +21,7 @@ struct Player
     [[nodiscard]] const uint64_t GetDiscordId() const noexcept { return m_discordId; }
     [[nodiscard]] const uint32_t GetStringCacheId() const noexcept { return m_stringCacheId; }
     [[nodiscard]] const uint16_t GetLevel() const noexcept { return m_level; }
-    [[nodiscard]] const Vector<String>& GetMods() const noexcept { return m_mods; }
+    [[nodiscard]] const Map<String, uint32_t>& GetMods() const noexcept { return m_mods; }
 
     [[nodiscard]] CellIdComponent& GetCellComponent() noexcept;
     [[nodiscard]] const CellIdComponent& GetCellComponent() const noexcept;
@@ -31,8 +31,7 @@ struct Player
     void SetDiscordId(uint64_t aDiscordId) noexcept;
     void SetEndpoint(String aEndpoint) noexcept;
     void SetUsername(String aUsername) noexcept;
-    void SetMods(Vector<String> aMods) noexcept;
-    void SetModIds(Vector<uint16_t> aModIds) noexcept;
+    void SetMods(Map<String, uint32_t> aMods) noexcept;
     void SetCharacter(entt::entity aCharacter) noexcept;
     void SetStringCacheId(uint32_t aStringCacheId) noexcept;
     // TODO(cosideci): update on level up
@@ -46,8 +45,7 @@ private:
     uint32_t m_id{0};
     ConnectionId_t m_connectionId;
     std::optional<entt::entity> m_character;
-    Vector<String> m_mods;
-    Vector<uint16_t> m_modIds;
+    Map<String, uint32_t> m_mods;
     uint64_t m_discordId{0};
     String m_endpoint;
     String m_username;

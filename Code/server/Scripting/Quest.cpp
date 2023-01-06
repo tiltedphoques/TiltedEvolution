@@ -4,9 +4,11 @@
 #include <Scripting/Quest.h>
 #include <Components.h>
 
+#include <Messages/NotifyQuestUpdate.h>
+
 namespace Script
 {
-void Quest::SetStage(uint16_t anewStage, std::vector<Player> aPlayers)
+void Quest::SetStage(uint16_t aNewStage, std::vector<Player> aPlayers)
 {
     // update the remote quest nodes
     size_t counter = 0;
@@ -20,14 +22,14 @@ void Quest::SetStage(uint16_t anewStage, std::vector<Player> aPlayers)
 
         if (it != questList.end())
         {
-            it->Stage = anewStage;
+            it->Stage = aNewStage;
             counter++;
 
-            // TODO: sync this shit
+            player.UpdateQuest(*this);
         }
     }
 
     // update our node
-    m_stage = anewStage;
+    m_stage = aNewStage;
 }
 } // namespace Script

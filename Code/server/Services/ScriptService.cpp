@@ -139,6 +139,7 @@ void ScriptService::BindInbuiltFunctions()
         auto questType = luaVm.new_usertype<Script::Quest>("Quest", sol::no_constructor);
         questType["id"] = sol::readonly_property(&Script::Quest::GetId);
         questType["stage"] = sol::readonly_property(&Script::Quest::GetStage);
+        questType["SetStage"] = &Script::Quest::SetStage;
     }
 
     {
@@ -153,6 +154,7 @@ void ScriptService::BindInbuiltFunctions()
         playerType["Kick"] = &Script::Player::Kick;
         playerType["SendChatMessage"] = &Script::Player::SendChatMessage;
         playerType["HasMod"] = &Script::Player::HasMod;
+        playerType["AddQuest"] = &Script::Player::AddQuest;
     }
 
     {

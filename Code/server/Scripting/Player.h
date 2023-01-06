@@ -23,7 +23,7 @@ struct Player : EntityHandle
     {
     }
 
-    const Vector<String>& GetMods() const;
+    Vector<String> GetMods() const;
     const String& GetIp() const;
     const String& GetName() const;
     const uint64_t GetDiscordId() const;
@@ -39,12 +39,13 @@ struct Player : EntityHandle
 
     bool HasMod(const std::string& aModName) const noexcept;
 
+    sol::optional<Quest> AddQuest(std::string aModName, uint32_t aformId);
+    bool UpdateQuest(const Quest& aQuest);
     bool RemoveQuest(uint32_t aformId);
 
     bool Kick() noexcept;
     bool SendChatMessage(const std::string& acMessage) noexcept;
 
-    sol::optional<Quest> AddQuest(std::string aModName, uint32_t aformId);
     sol::optional<Party> GetParty() const noexcept;
 
     inline entt::entity GetEntityHandle() const { return m_entity; }
