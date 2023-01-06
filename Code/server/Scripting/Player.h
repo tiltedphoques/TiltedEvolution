@@ -39,9 +39,9 @@ struct Player : EntityHandle
 
     bool HasMod(const std::string& aModName) const noexcept;
 
-    sol::optional<Quest> AddQuest(std::string aModName, uint32_t aformId);
+    sol::optional<Quest> AddQuest(std::string aModName, uint32_t aFormId);
     bool UpdateQuest(const Quest& aQuest);
-    bool RemoveQuest(uint32_t aformId);
+    bool RemoveQuest(std::string aModName, uint32_t aFormId);
 
     bool Kick() noexcept;
     bool SendChatMessage(const std::string& acMessage) noexcept;

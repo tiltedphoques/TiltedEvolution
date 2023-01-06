@@ -155,6 +155,7 @@ void ScriptService::BindInbuiltFunctions()
         playerType["SendChatMessage"] = &Script::Player::SendChatMessage;
         playerType["HasMod"] = &Script::Player::HasMod;
         playerType["AddQuest"] = &Script::Player::AddQuest;
+        playerType["RemoveQuest"] = &Script::Player::RemoveQuest;
     }
 
     {

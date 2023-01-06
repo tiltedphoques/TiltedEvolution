@@ -119,6 +119,8 @@ sol::optional<Quest> Player::AddQuest(const std::string aModName, uint32_t aForm
             notify.Status = NotifyQuestUpdate::Started;
 
             pPlayerObject->Send(notify);
+
+            return Quest(gameId, 0, m_pWorld);
         }
     }
 
@@ -155,8 +157,30 @@ bool Player::UpdateQuest(const Quest& aQuest)
     return false;
 }
 
-bool Player::RemoveQuest(uint32_t aformId)
+bool Player::RemoveQuest(std::string aModName, uint32_t aFormId)
 {
+    if (auto* pPlayerObject = PlayerManager::Get()->GetById(m_playerObjectRefId))
+    {
+        auto& mods = pPlayerObject->GetMods();
+        auto modId = mods.find(String(aModName));
+        if (modId != mods.end())
+        {
+            GameId gameId{};
+            gameId.ModId = modId->second;
+            gameId.BaseId = aFormId & 0x00FFFFFF;
+
+            auto& entry = pPlayerObject->GetQuestLogComponent().QuestContent.Entries.emplace_back();
+
+            NotifyQuestUpdate notify{};
+            notify.Id = gameId;
+            notify.Status = NotifyQuestUpdate::Stopped;
+
+            pPlayerObject->Send(notify);
+
+            return true;
+        }
+    }
+
     return false;
 }
 
