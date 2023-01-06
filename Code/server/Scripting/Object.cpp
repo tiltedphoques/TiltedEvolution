@@ -17,7 +17,8 @@ const LockData& Object::GetLockData()
 {
     if (auto objectComponent = m_pWorld->try_get<ObjectComponent>(m_entity))
     {
-        return objectComponent->CurrentLockData;
+        if (objectComponent->CurrentLockData)
+            return *objectComponent->CurrentLockData;
     }
 
     return kNullLockData;
@@ -28,11 +29,11 @@ void Object::Lock(uint8_t aLockLevel)
     auto objectComponent = m_pWorld->try_get<ObjectComponent>(m_entity);
     auto formIdComponent = m_pWorld->try_get<FormIdComponent>(m_entity);
 
-    if (!objectComponent || !formIdComponent)
+    if (!formIdComponent || !objectComponent || !objectComponent->CurrentLockData)
         return;
 
-    objectComponent->CurrentLockData.IsLocked = true;
-    objectComponent->CurrentLockData.LockLevel = aLockLevel;
+    objectComponent->CurrentLockData->IsLocked = true;
+    objectComponent->CurrentLockData->LockLevel = aLockLevel;
 
     NotifyLockChange notifyLockChange{};
     notifyLockChange.Id = formIdComponent->Id;
@@ -47,10 +48,10 @@ void Object::Unlock()
     auto objectComponent = m_pWorld->try_get<ObjectComponent>(m_entity);
     auto formIdComponent = m_pWorld->try_get<FormIdComponent>(m_entity);
 
-    if (!objectComponent || !formIdComponent)
+    if (!formIdComponent || !objectComponent || !objectComponent->CurrentLockData)
         return;
 
-    objectComponent->CurrentLockData.IsLocked = false;
+    objectComponent->CurrentLockData->IsLocked = false;
 
     NotifyLockChange notifyLockChange{};
     notifyLockChange.Id = formIdComponent->Id;

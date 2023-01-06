@@ -6,6 +6,7 @@
 
 #include <Structs/LockData.h>
 #include <Game/Player.h>
+#include <optional>
 
 struct ObjectComponent
 {
@@ -15,5 +16,5 @@ struct ObjectComponent
     }
 
     Player* pLastSender;
-    LockData CurrentLockData{}; // TODO: this should probably be std::optional
+    std::optional<LockData> CurrentLockData{std::nullopt};
 };

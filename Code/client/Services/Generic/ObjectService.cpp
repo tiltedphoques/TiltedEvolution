@@ -148,6 +148,7 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
         if (Lock* pLock = pObject->GetLock())
         {
+            objectData.HasLock = true;
             objectData.CurrentLockData.IsLocked = pLock->flags;
             objectData.CurrentLockData.LockLevel = pLock->lockLevel;
         }

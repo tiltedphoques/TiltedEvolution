@@ -24,4 +24,5 @@ struct ObjectData
     LockData CurrentLockData{};
     Inventory CurrentInventory{};
     bool IsSenderFirst{};
+    bool HasLock{};
 };

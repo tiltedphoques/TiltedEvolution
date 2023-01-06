@@ -82,7 +82,8 @@ void ObjectService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsReques
             objectData.Id = formIdComponent.Id;
 
             auto& objectComponent = view.get<ObjectComponent>(*iter);
-            objectData.CurrentLockData = objectComponent.CurrentLockData;
+            if (objectComponent.CurrentLockData)
+                objectData.CurrentLockData = *objectComponent.CurrentLockData;
 
             auto& inventoryComponent = view.get<InventoryComponent>(*iter);
             objectData.CurrentInventory = inventoryComponent.Content;
@@ -98,7 +99,8 @@ void ObjectService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsReques
             m_world.emplace<FormIdComponent>(cEntity, object.Id);
 
             auto& objectComponent = m_world.emplace<ObjectComponent>(cEntity, acMessage.pPlayer);
-            objectComponent.CurrentLockData = object.CurrentLockData;
+            if (object.HasLock)
+                objectComponent.CurrentLockData = object.CurrentLockData;
 
             m_world.emplace<CellIdComponent>(cEntity, object.CellId, object.WorldSpaceId, object.CurrentCoords);
             auto& inventoryComp = m_world.emplace<InventoryComponent>(cEntity);
@@ -149,12 +151,15 @@ void ObjectService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage
             return formIdComponent.Id == id;
         });
 
-    if (iter != std::end(objectView))
-    {
-        auto& objectComponent = objectView.get<ObjectComponent>(*iter);
-        objectComponent.CurrentLockData.IsLocked = acMessage.Packet.IsLocked;
-        objectComponent.CurrentLockData.LockLevel = acMessage.Packet.LockLevel;
-    }
+    if (iter == std::end(objectView))
+        return;
+
+    auto& objectComponent = objectView.get<ObjectComponent>(*iter);
+    if (!objectComponent.CurrentLockData)
+        return;
+
+    objectComponent.CurrentLockData->IsLocked = acMessage.Packet.IsLocked;
+    objectComponent.CurrentLockData->LockLevel = acMessage.Packet.LockLevel;
 
     for (Player* pPlayer : m_world.GetPlayerManager())
     {
