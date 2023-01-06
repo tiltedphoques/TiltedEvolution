@@ -109,6 +109,10 @@ void ScriptService::BindInbuiltFunctions()
             AddEventHandler(std::move(acName), std::move(aFunction));
         });
         luaVm.set_function("cancelEvent", [this](std::string acReason) { CancelEvent(std::move(acReason)); });
+        luaVm["addCommand"] = sol::overload(&AddCommand, &AddCommandWithArguments);
+        luaVm.set_function("addCommand", [this](std::string acName, sol::function aFunction) {
+            AddEventHandler(std::move(acName), std::move(aFunction));
+        });
     }
 
     {
@@ -382,6 +386,23 @@ void ScriptService::BindTypes(ScriptContext& aContext) noexcept
 void ScriptService::AddEventHandler(const std::string acName, const sol::function acFunction) noexcept
 {
     m_callbacks[String(acName)].push_back(acFunction);
+}
+
+void ScriptService::AddCommand(std::string acName, sol::function acFunction) noexcept
+{
+    AddCommandWithArguments(acName, acFunction, {});
+}
+
+void ScriptService::AddCommandWithArguments(std::string acName, sol::function acFunction, std::vector<std::string> aArguments) noexcept
+{
+    String name(acName);
+    if (m_commands.contains(name))
+    {
+        spdlog::error("Command {} is already registered in another plugin.", name);
+        return;
+    }
+
+
 }
 
 void ScriptService::CancelEvent(const std::string aReason) noexcept

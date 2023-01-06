@@ -50,6 +50,8 @@ struct ScriptService
     // void BindTypes(ScriptContext& aContext) noexcept;
 
     void AddEventHandler(std::string acName, sol::function acFunction) noexcept;
+    void AddCommand(std::string acName, sol::function acFunction) noexcept;
+    void AddCommandWithArguments(std::string acName, sol::function acFunction, std::vector<std::string> aArguments) noexcept;
     void CancelEvent(std::string aReason) noexcept;
 
     [[nodiscard]] Vector<Script::Player> GetPlayers() const;
@@ -66,6 +68,7 @@ struct ScriptService
 
   private:
     using TCallbacks = Vector<sol::function>;
+    using TCommand = std::pair<sol::function, Vector<std::string>>;
 
     World& m_world;
     bool m_eventCanceled{};
@@ -79,6 +82,7 @@ struct ScriptService
     // so do not touch this order of member variables
     TiltedPhoques::Lockable<sol::state, std::recursive_mutex> m_lua;
     Map<String, TCallbacks> m_callbacks;
+    Map<String, TCommand> m_commands;
     TiltedPhoques::Vector<sol::environment> m_sandboxes;
     sol::table m_globals{};
 };
