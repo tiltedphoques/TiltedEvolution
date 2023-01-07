@@ -179,7 +179,10 @@ void ObjectService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessa
         if (objectData.IsSenderFirst)
             continue;
 
-        if (objectData.CurrentLockData != LockData{})
+        if (pObject->baseForm->formType == FormType::Container)
+            pObject->SetInventory(objectData.CurrentInventory);
+
+        if (objectData.HasLock)
         {
             Lock* pLock = pObject->GetLock();
 
@@ -194,9 +197,6 @@ void ObjectService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessa
             pLock->SetLock(objectData.CurrentLockData.IsLocked);
             pObject->LockChange();
         }
-
-        if (pObject->baseForm->formType == FormType::Container)
-            pObject->SetInventory(objectData.CurrentInventory);
     }
 }
 
@@ -375,8 +375,7 @@ void ObjectService::OnLockChangeNotify(const NotifyLockChange& acMessage) noexce
         }
     }
 
-    if (acMessage.IsLocked)
-        pLock->lockLevel = acMessage.LockLevel;
+    pLock->lockLevel = acMessage.LockLevel;
 
     pLock->SetLock(acMessage.IsLocked);
     pObject->LockChange();

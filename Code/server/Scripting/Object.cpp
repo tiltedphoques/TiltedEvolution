@@ -2,7 +2,7 @@
 
 #include <GameServer.h>
 
-#include <Messages/NotifyLockChange.h>
+#include <Events/ObjectLockEvent.h>
 
 namespace Script
 {
@@ -26,38 +26,22 @@ const LockData& Object::GetLockData()
 
 void Object::Lock(uint8_t aLockLevel)
 {
-    auto objectComponent = m_pWorld->try_get<ObjectComponent>(m_entity);
-    auto formIdComponent = m_pWorld->try_get<FormIdComponent>(m_entity);
-
-    if (!formIdComponent || !objectComponent || !objectComponent->CurrentLockData)
-        return;
-
-    objectComponent->CurrentLockData->IsLocked = true;
-    objectComponent->CurrentLockData->LockLevel = aLockLevel;
-
-    NotifyLockChange notifyLockChange{};
-    notifyLockChange.Id = formIdComponent->Id;
-    notifyLockChange.IsLocked = true;
-    notifyLockChange.LockLevel = aLockLevel;
-
-    GameServer::Get()->SendToPlayersInRange(notifyLockChange, m_entity);
+    LockData lock{};
+    lock.IsLocked = true;
+    lock.LockLevel = aLockLevel;
+    m_pWorld->GetDispatcher().trigger(ObjectLockEvent(m_entity, lock));
 }
 
 void Object::Unlock()
 {
     auto objectComponent = m_pWorld->try_get<ObjectComponent>(m_entity);
-    auto formIdComponent = m_pWorld->try_get<FormIdComponent>(m_entity);
-
-    if (!formIdComponent || !objectComponent || !objectComponent->CurrentLockData)
+    if (!objectComponent || !objectComponent->CurrentLockData)
         return;
 
-    objectComponent->CurrentLockData->IsLocked = false;
-
-    NotifyLockChange notifyLockChange{};
-    notifyLockChange.Id = formIdComponent->Id;
-    notifyLockChange.IsLocked = false;
-
-    GameServer::Get()->SendToPlayersInRange(notifyLockChange, m_entity);
+    LockData lock{};
+    lock.IsLocked = false;
+    lock.LockLevel = objectComponent->CurrentLockData->LockLevel;
+    m_pWorld->GetDispatcher().trigger(ObjectLockEvent(m_entity, lock));
 }
 
 }

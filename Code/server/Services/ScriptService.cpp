@@ -270,6 +270,7 @@ Vector<Script::Actor> ScriptService::GetActors() const
     return actors;
 }
 
+// TODO: this is currently not truly cancelable, since the owner client already moved the npc.
 std::tuple<bool, String> ScriptService::HandleMove(const Script::Actor& aNpc) noexcept
 {
     return CallCancelableEvent("onCharacterMove", aNpc);

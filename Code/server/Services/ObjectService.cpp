@@ -5,6 +5,7 @@
 #include <Components.h>
 
 #include <Events/PlayerLeaveCellEvent.h>
+#include <Events/ObjectLockEvent.h>
 
 #include <Messages/ActivateRequest.h>
 #include <Messages/NotifyActivate.h>
@@ -19,6 +20,7 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
 {
     m_leaveCellConnection = aDispatcher.sink<PlayerLeaveCellEvent>().connect<&ObjectService::OnPlayerLeaveCellEvent>(this);
+    m_objectLockEventConnection = aDispatcher.sink<ObjectLockEvent>().connect<&ObjectService::OnObjectLockEvent>(this);
     m_assignObjectConnection = aDispatcher.sink<PacketEvent<AssignObjectsRequest>>().connect<&ObjectService::OnAssignObjectsRequest>(this);
     m_activateConnection = aDispatcher.sink<PacketEvent<ActivateRequest>>().connect<&ObjectService::OnActivate>(this);
     m_lockChangeConnection = aDispatcher.sink<PacketEvent<LockChangeRequest>>().connect<&ObjectService::OnLockChange>(this);
@@ -55,10 +57,30 @@ void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) 
     }
 }
 
+void ObjectService::OnObjectLockEvent(const ObjectLockEvent& acEvent) noexcept
+{
+    auto objectComponent = m_world.try_get<ObjectComponent>(acEvent.Entity);
+    auto formIdComponent = m_world.try_get<FormIdComponent>(acEvent.Entity);
+
+    if (!formIdComponent || !objectComponent)
+        return;
+
+    objectComponent->CurrentLockData = acEvent.Lock;
+
+    NotifyLockChange notifyLockChange{};
+    notifyLockChange.Id = formIdComponent->Id;
+    notifyLockChange.IsLocked = acEvent.Lock.IsLocked;
+    notifyLockChange.LockLevel = acEvent.Lock.LockLevel;
+
+    // TODO: consider sending this to everyone in the world, not just in range
+    GameServer::Get()->SendToPlayersInRange(notifyLockChange, acEvent.Entity);
+}
+
 // NOTE: this whole system kinda relies on all objects in a cell being static.
 // This is fine for containers and doors, but if this system is expanded, think of temporaries.
 void ObjectService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsRequest>& acMessage) noexcept
 {
+    // TODO: why is InventoryComponent in this view?
     auto view = m_world.view<FormIdComponent, ObjectComponent, InventoryComponent>();
 
     AssignObjectsResponse response;
@@ -75,22 +97,21 @@ void ObjectService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsReques
 
         if (iter != std::end(view))
         {
-            ObjectData objectData;
+            ObjectData& objectData = response.Objects.emplace_back();
             objectData.ServerId = World::ToInteger(*iter);
 
             auto& formIdComponent = view.get<FormIdComponent>(*iter);
             objectData.Id = formIdComponent.Id;
 
             auto& objectComponent = view.get<ObjectComponent>(*iter);
-            if (objectComponent.CurrentLockData)
+            objectData.HasLock = objectComponent.CurrentLockData != std::nullopt;
+            if (objectData.HasLock)
                 objectData.CurrentLockData = *objectComponent.CurrentLockData;
 
             auto& inventoryComponent = view.get<InventoryComponent>(*iter);
             objectData.CurrentInventory = inventoryComponent.Content;
 
             objectData.IsSenderFirst = false;
-
-            response.Objects.push_back(objectData);
         }
         else
         {
@@ -136,11 +157,6 @@ void ObjectService::OnActivate(const PacketEvent<ActivateRequest>& acMessage) co
 
 void ObjectService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage) const noexcept
 {
-    NotifyLockChange notifyLockChange;
-    notifyLockChange.Id = acMessage.Packet.Id;
-    notifyLockChange.IsLocked = acMessage.Packet.IsLocked;
-    notifyLockChange.LockLevel = acMessage.Packet.LockLevel;
-
     auto objectView = m_world.view<FormIdComponent, ObjectComponent>();
 
     const auto iter = std::find_if(
@@ -154,22 +170,11 @@ void ObjectService::OnLockChange(const PacketEvent<LockChangeRequest>& acMessage
     if (iter == std::end(objectView))
         return;
 
-    auto& objectComponent = objectView.get<ObjectComponent>(*iter);
-    if (!objectComponent.CurrentLockData)
-        return;
+    LockData lockData{};
+    lockData.IsLocked = acMessage.Packet.IsLocked;
+    lockData.LockLevel = acMessage.Packet.LockLevel;
 
-    objectComponent.CurrentLockData->IsLocked = acMessage.Packet.IsLocked;
-    objectComponent.CurrentLockData->LockLevel = acMessage.Packet.LockLevel;
-
-    for (Player* pPlayer : m_world.GetPlayerManager())
-    {
-        if (pPlayer == acMessage.pPlayer)
-            continue;
-
-        // TODO: consider sending this to everyone in the world, not just in range
-        if (pPlayer->GetCellComponent().Cell == acMessage.Packet.CellId)
-            pPlayer->Send(notifyLockChange);
-    }
+    m_world.GetDispatcher().trigger(ObjectLockEvent(*iter, lockData));
 }
 
 void ObjectService::OnScriptAnimationRequest(const PacketEvent<ScriptAnimationRequest>& acMessage) noexcept

@@ -18,6 +18,7 @@ struct NotifyLockChange final : ServerMessage
     bool operator==(const NotifyLockChange& acRhs) const noexcept { return Id == acRhs.Id && IsLocked == acRhs.IsLocked && LockLevel == acRhs.LockLevel && GetOpcode() == acRhs.GetOpcode(); }
 
     GameId Id;
+    // TODO: use LockData
     bool IsLocked;
     uint8_t LockLevel;
 };
