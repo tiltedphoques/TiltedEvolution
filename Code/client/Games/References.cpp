@@ -848,6 +848,17 @@ void Sky::ForceWeather(TESWeather* apWeather) noexcept
     TiltedPhoques::ThisCall(RealForceWeather, this, apWeather, true);
 }
 
+void Sky::ReleaseWeatherOverride() noexcept
+{
+#if TP_SKYRIM64
+    TP_THIS_FUNCTION(TReleaseWeatherOverride, void, Sky);
+    POINTER_SKYRIMSE(TReleaseWeatherOverride, releaseWeatherOverride, 26244);
+    // TODO(ft)
+
+    TiltedPhoques::ThisCall(releaseWeatherOverride, this);
+#endif
+}
+
 void Sky::ResetWeather() noexcept
 {
     TP_THIS_FUNCTION(TResetWeather, void, Sky);
