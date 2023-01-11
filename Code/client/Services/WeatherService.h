@@ -30,12 +30,19 @@ protected:
     void RunWeatherUpdates(const double acDelta) noexcept;
 
     void ToggleGameWeatherSystem(bool aToggle) noexcept;
+    void SetCachedWeather() noexcept;
 
 private:
     World& m_world;
     TransportService& m_transport;
 
-    bool m_isInParty{};
+    bool m_useGameWeather{};
+
+    /**
+    * This variable has two uses:
+    * For the party leader, it is used to detect weather changes.
+    * For non-leaders, it is used to reapply the server weather if it changes.
+    */
     uint32_t m_cachedWeatherId{};
 
     entt::scoped_connection m_updateConnection;

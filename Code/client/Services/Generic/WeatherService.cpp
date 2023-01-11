@@ -37,10 +37,9 @@ void WeatherService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 
 void WeatherService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
 {
-    Sky::s_shouldUpdateWeather = acEvent.IsLeader;
-
     if (!acEvent.IsLeader)
     {
+        // TODO: why is this loop here? Party should always have a leader.
         auto view = m_world.view<PlayerComponent>();
         const auto& partyService = m_world.GetPartyService();
 
@@ -133,13 +132,12 @@ void WeatherService::OnWeatherChange(const NotifyWeatherChange& acMessage) noexc
     }
 
     Sky::Get()->ForceWeather(pWeather);
+
+    m_cachedWeatherId = weatherId;
 }
 
 void WeatherService::RunWeatherUpdates(const double acDelta) noexcept
 {
-    if (!m_world.GetPartyService().IsLeader())
-        return;
-
     Sky* pSky = Sky::Get();
     if (!pSky)
         return;
@@ -147,7 +145,11 @@ void WeatherService::RunWeatherUpdates(const double acDelta) noexcept
     TESWeather* pWeather = pSky->GetWeather();
     if (!pWeather)
     {
-        m_cachedWeatherId = 0;
+        if (m_world.GetPartyService().IsLeader())
+            m_cachedWeatherId = 0;
+        else
+            SetCachedWeather();
+
         return;
     }
 
@@ -159,22 +161,40 @@ void WeatherService::RunWeatherUpdates(const double acDelta) noexcept
     if (pWeather->formID == m_cachedWeatherId)
         return;
 
-    m_cachedWeatherId = pWeather->formID;
-
-    RequestWeatherChange request{};
-
-    auto& modSystem = m_world.GetModSystem();
-    if (!modSystem.GetServerModId(pWeather->formID, request.Id))
+    if (m_world.GetPartyService().IsLeader())
     {
-        spdlog::error(__FUNCTION__ ": weather server ID not found, form id: {:X}", pWeather->formID);
-        return;
-    }
+        m_cachedWeatherId = pWeather->formID;
 
-    m_transport.Send(request);
+        RequestWeatherChange request{};
+
+        auto& modSystem = m_world.GetModSystem();
+        if (!modSystem.GetServerModId(pWeather->formID, request.Id))
+        {
+            spdlog::error(__FUNCTION__ ": weather server ID not found, form id: {:X}", pWeather->formID);
+            return;
+        }
+
+        m_transport.Send(request);
+    }
+    else
+    {
+        SetCachedWeather();
+    }
 }
 
 void WeatherService::ToggleGameWeatherSystem(bool aToggle) noexcept
 {
+    // TODO: use this
+    m_useGameWeather = aToggle;
+
+    if (aToggle)
+        Sky::Get()->ReleaseWeatherOverride();
+    else
+        m_transport.Send(RequestCurrentWeather());
+
+    m_cachedWeatherId = 0;
+
+#if 0
     Sky::s_shouldUpdateWeather = aToggle;
 
     if (aToggle)
@@ -184,4 +204,21 @@ void WeatherService::ToggleGameWeatherSystem(bool aToggle) noexcept
         m_transport.Send(RequestCurrentWeather());
 
     m_cachedWeatherId = 0;
+#endif
+}
+
+void WeatherService::SetCachedWeather() noexcept
+{
+    if (m_cachedWeatherId == 0)
+        return;
+
+    TESWeather* pWeather = Cast<TESWeather>(TESForm::GetById(m_cachedWeatherId));
+
+    if (!pWeather)
+    {
+        spdlog::error(__FUNCTION__ ": weather not found, form id: {:X}", m_cachedWeatherId);
+        return;
+    }
+
+    Sky::Get()->ForceWeather(pWeather);
 }
