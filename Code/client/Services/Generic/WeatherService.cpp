@@ -190,18 +190,6 @@ void WeatherService::ToggleGameWeatherSystem(bool aToggle) noexcept
         m_transport.Send(RequestCurrentWeather());
 
     m_cachedWeatherId = 0;
-
-#if 0
-    Sky::s_shouldUpdateWeather = aToggle;
-
-    if (aToggle)
-        Sky::Get()->ResetWeather();
-
-    if (!aToggle)
-        m_transport.Send(RequestCurrentWeather());
-
-    m_cachedWeatherId = 0;
-#endif
 }
 
 void WeatherService::SetCachedWeather() noexcept
