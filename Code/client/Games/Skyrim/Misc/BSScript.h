@@ -69,6 +69,11 @@ struct BSScript
         kFailedAbort = 4
     };
 
+    struct ObjectTypeInfo : BSIntrusiveRefCounted
+    {
+        BSFixedString name;
+    };
+
     struct StackFrame;
     struct Stack;
     struct IVirtualMachine;
@@ -129,7 +134,12 @@ struct BSScript
             POINTER_SKYRIMSE(TGetStackFrameVariable, getStackFrameVariable, 104484);
             return TiltedPhoques::ThisCall(getStackFrameVariable, this, apFrame, aIndex, aPageHint);
         }
+
+        uint8_t unk0[0x60];
+        StackFrame* pTop;
+        uint8_t unk68[0xA0 - 0x68];
     };
+    static_assert(sizeof(Stack) == 0xA0);
 
     struct StackFrame
     {
@@ -138,6 +148,9 @@ struct BSScript
         Variable* GetStackFrameVariable(uint32_t aIndex, uint32_t aPageHint) { return pParent->GetStackFrameVariable(this, aIndex, aPageHint); }
 
         Stack* pParent;
+        StackFrame* pPreviousFrame;
+        IFunction* pOwningFunction;
+        ObjectTypeInfo* pOwningObjectType;
     };
 
     struct IObjectHandlePolicy

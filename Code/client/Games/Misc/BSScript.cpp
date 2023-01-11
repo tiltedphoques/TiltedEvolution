@@ -15,6 +15,7 @@ TP_THIS_FUNCTION(TRegisterPapyrusFunction, void, BSScript::IVirtualMachine, Nati
 #if TP_SKYRIM64
 TP_THIS_FUNCTION(TBindEverythingToScript, void, BSScript::IVirtualMachine*);
 TP_THIS_FUNCTION(TSignaturesMatch, bool, BSScript::NativeFunction, BSScript::NativeFunction*);
+TP_THIS_FUNCTION(TCreateStack, void, BSScript::IVirtualMachine, int, int, BSScript::Stack**);
 #endif
 TP_THIS_FUNCTION(TCompareVariables, int64_t, void, BSScript::Variable*, BSScript::Variable*);
 
@@ -22,6 +23,7 @@ TRegisterPapyrusFunction* RealRegisterPapyrusFunction = nullptr;
 #if TP_SKYRIM64
 TBindEverythingToScript* RealBindEverythingToScript = nullptr;
 TSignaturesMatch* RealSignaturesMatch = nullptr;
+TCreateStack* RealCreateStack = nullptr;
 #endif
 TCompareVariables* RealCompareVariables = nullptr;
 
@@ -54,6 +56,16 @@ bool TP_MAKE_THISCALL(HookSignaturesMatch, BSScript::NativeFunction, BSScript::N
     */
 
     return TiltedPhoques::ThisCall(RealSignaturesMatch, apThis, apOther);
+}
+
+void TP_MAKE_THISCALL(HookCreateStack, BSScript::IVirtualMachine, int aUnk1, int aUnk2, BSScript::Stack** appStack)
+{
+    TiltedPhoques::ThisCall(RealCreateStack, apThis, aUnk1, aUnk2, appStack);
+
+    if ((*appStack)->pTop && (*appStack)->pTop->pOwningObjectType)
+        spdlog::critical("{}", (*appStack)->pTop->pOwningObjectType->name.AsAscii());
+    else
+        spdlog::error("Missing some shit");
 }
 #endif
 
@@ -112,6 +124,7 @@ static TiltedPhoques::Initializer s_vmHooks(
 #if TP_SKYRIM64
         POINTER_SKYRIMSE(TBindEverythingToScript, s_bindEverythingToScript, 55739);
         POINTER_SKYRIMSE(TSignaturesMatch, s_signaturesMatch, 104359);
+        POINTER_SKYRIMSE(TCreateStack, s_createStack, 104870);
 #endif
 
         // POINTER_SKYRIMSE(TCompareVariables, s_compareVariables, 105220);
@@ -120,6 +133,7 @@ static TiltedPhoques::Initializer s_vmHooks(
 #if TP_SKYRIM64
         RealBindEverythingToScript = s_bindEverythingToScript.Get();
         RealSignaturesMatch = s_signaturesMatch.Get();
+        RealCreateStack = s_createStack.Get();
 #endif
         // RealCompareVariables = s_compareVariables.Get();
 
@@ -127,6 +141,7 @@ static TiltedPhoques::Initializer s_vmHooks(
 #if TP_SKYRIM64
         TP_HOOK(&RealBindEverythingToScript, HookBindEverythingToScript);
         TP_HOOK(&RealSignaturesMatch, HookSignaturesMatch);
+        TP_HOOK(&RealCreateStack, HookCreateStack);
 #endif
         // TP_HOOK(&RealCompareVariables, HookCompareVariables);
     });
