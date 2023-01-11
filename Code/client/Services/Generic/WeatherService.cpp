@@ -184,9 +184,6 @@ void WeatherService::RunWeatherUpdates(const double acDelta) noexcept
 
 void WeatherService::ToggleGameWeatherSystem(bool aToggle) noexcept
 {
-    // TODO: use this
-    m_useGameWeather = aToggle;
-
     if (aToggle)
         Sky::Get()->ReleaseWeatherOverride();
     else

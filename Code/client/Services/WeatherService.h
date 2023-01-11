@@ -36,8 +36,6 @@ private:
     World& m_world;
     TransportService& m_transport;
 
-    bool m_useGameWeather{};
-
     /**
     * This variable has two uses:
     * For the party leader, it is used to detect weather changes.
