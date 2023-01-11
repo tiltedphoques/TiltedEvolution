@@ -62,10 +62,40 @@ void TP_MAKE_THISCALL(HookCreateStack, BSScript::IVirtualMachine, int aUnk1, int
 {
     TiltedPhoques::ThisCall(RealCreateStack, apThis, aUnk1, aUnk2, appStack);
 
-    if ((*appStack)->pTop && (*appStack)->pTop->pOwningObjectType)
-        spdlog::critical("{}", (*appStack)->pTop->pOwningObjectType->name.AsAscii());
-    else
-        spdlog::error("Missing some shit");
+    auto stackId = (*appStack)->uiStackID;
+
+    World::Get().GetRunner().Queue([stackId]() {
+        BSScript::VirtualMachine* pVm = (BSScript::VirtualMachine*)GameVM::Get()->virtualMachine;
+        std::optional<creation::BSTScatterTableDefaultKVStorage<uint32_t, BSScript::Stack*>> stack = std::nullopt;
+        for (const auto& stackIt : pVm->kAllRunningStacks)
+        {
+            if (stackIt.key == stackId)
+            {
+                stack = stackIt;
+                break;
+            }
+        }
+
+        if (!stack)
+        {
+            spdlog::error("Could not find stack");
+            return;
+        }
+
+        BSScript::Stack* pStack = stack->value;
+
+        if (pStack->pTop && pStack->pTop->pOwningObjectType)
+            spdlog::critical("{}", pStack->pTop->pOwningObjectType->name.AsAscii());
+        else
+            spdlog::error("Missing some shit, top: {}", pStack->pTop ? "yes" : "no");
+
+    #if 0
+        if ((*appStack)->pTop && (*appStack)->pTop->pOwningObjectType)
+            spdlog::critical("{}", (*appStack)->pTop->pOwningObjectType->name.AsAscii());
+        else
+            spdlog::error("Missing some shit");
+    #endif
+    });
 }
 #endif
 

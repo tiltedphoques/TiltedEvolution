@@ -2,6 +2,7 @@
 
 #include <Misc/BSFixedString.h>
 #include <tuple>
+#include <BSCore/BSTHashMap.h>
 
 struct BSScript
 {
@@ -137,7 +138,9 @@ struct BSScript
 
         uint8_t unk0[0x60];
         StackFrame* pTop;
-        uint8_t unk68[0xA0 - 0x68];
+        uint8_t unk68[0x80 - 0x68];
+        uint32_t uiStackID;
+        uint8_t unk84[0xA0 - 0x84];
     };
     static_assert(sizeof(Stack) == 0xA0);
 
@@ -220,6 +223,13 @@ struct BSScript
         virtual void sub_2C();
         virtual IObjectHandlePolicy* GetObjectHandlePolicy();
     };
+
+    struct VirtualMachine : IVirtualMachine
+    {
+        uint8_t unk8[0x9320 - 0x8];
+        creation::BSTHashMap<uint32_t, Stack*> kAllRunningStacks;
+    };
+    static_assert(offsetof(VirtualMachine, kAllRunningStacks) == 0x9320);
 
     struct NativeFunctionBase : IFunction
     {
