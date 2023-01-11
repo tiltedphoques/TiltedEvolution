@@ -1013,9 +1013,9 @@ void TP_MAKE_THISCALL(HookSetWeather, Sky, TESWeather* apWeather, bool abOverrid
 
     if (!Sky::s_shouldUpdateWeather)
         return;
+#endif
 
     TiltedPhoques::ThisCall(RealSetWeather, apThis, apWeather, abOverride, abAccelerate);
-#endif
 }
 
 void TP_MAKE_THISCALL(HookForceWeather, Sky, TESWeather* apWeather, bool abOverride)
@@ -1025,9 +1025,9 @@ void TP_MAKE_THISCALL(HookForceWeather, Sky, TESWeather* apWeather, bool abOverr
 
     if (!Sky::s_shouldUpdateWeather)
         return;
+#endif
 
     TiltedPhoques::ThisCall(RealForceWeather, apThis, apWeather, abOverride);
-#endif
 }
 
 TP_THIS_FUNCTION(TUpdateWeather, void, Sky);
@@ -1038,9 +1038,9 @@ void TP_MAKE_THISCALL(HookUpdateWeather, Sky)
 #if 0
     if (!Sky::s_shouldUpdateWeather)
         return;
+#endif
 
     TiltedPhoques::ThisCall(RealUpdateWeather, apThis);
-#endif
 }
 
 TP_THIS_FUNCTION(TAddDeathItems, void, Actor);
