@@ -1,6 +1,9 @@
 #pragma once
 
-#include <Misc/BSScript.h>
+namespace BSScript
+{
+struct IVirtualMachine;
+}
 
 struct SkyrimVM
 {

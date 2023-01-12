@@ -10,13 +10,21 @@
 #include <Games/ActorExtension.h>
 #include <Games/PapyrusFunctions.h>
 
+struct Variables
+{
+    void* pUnk0;
+    BSScript::Variable* pVariables;
+    uint64_t capacity;
+    uint64_t size;
+};
+
 TP_THIS_FUNCTION(TRegisterPapyrusFunction, void, BSScript::IVirtualMachine, NativeFunction*);
 // TODO: ft
 #if TP_SKYRIM64
 TP_THIS_FUNCTION(TBindEverythingToScript, void, BSScript::IVirtualMachine*);
 TP_THIS_FUNCTION(TSignaturesMatch, bool, BSScript::NativeFunction, BSScript::NativeFunction*);
 TP_THIS_FUNCTION(TCreateStack, void, BSScript::IVirtualMachine, int, int, BSScript::Stack**);
-TP_THIS_FUNCTION(TPushFrame, uint64_t, BSScript::Stack, BSScript::IFunction**, BSScript::ObjectTypeInfo**, BSScript::Variable*, GameArray<BSScript::Variable*>*);
+TP_THIS_FUNCTION(TPushFrame, uint64_t, BSScript::Stack, BSScript::IFunction**, BSScript::ObjectTypeInfo**, BSScript::Variable*, Variables*);
 #endif
 TP_THIS_FUNCTION(TCompareVariables, int64_t, void, BSScript::Variable*, BSScript::Variable*);
 
@@ -95,10 +103,22 @@ void TP_MAKE_THISCALL(HookCreateStack, BSScript::IVirtualMachine, int aUnk1, int
 
 uint64_t TP_MAKE_THISCALL(HookPushFrame, BSScript::Stack, BSScript::IFunction** appOwningFunction,
                           BSScript::ObjectTypeInfo** appOwningObject, BSScript::Variable* apSelf,
-                          GameArray<BSScript::Variable*>* apArguments)
+                          Variables* apArguments)
 {
     if (String("TempleBlessingScript") == String((*appOwningFunction)->GetObjectTypeName().AsAscii()))
     {
+        TESForm* pComplexType = apSelf->ExtractComplexType<TESForm>();
+        if (pComplexType)
+            spdlog::error("ComplexType extracted, form id: {:X}", pComplexType->formID);
+        else
+            spdlog::warn("Failed to extract complex type");
+
+        for (int i = 0; i < apArguments->size; i++)
+        {
+            BSScript::Variable* pVariable = &apArguments->pVariables[i];
+            TESForm* pVarForm = pVariable->ExtractComplexType<TESForm>();
+            spdlog::info("{:X}", pVarForm->formID);
+        }
         DebugBreak();
     }
 

@@ -80,22 +80,6 @@ BSScript::Object* BSScript::Variable::GetObject() const noexcept
     return data.pObj;
 }
 
-template <class T> T* BSScript::Variable::ExtractComplexType() noexcept
-{
-    auto* pPolicy = GameVM::Get()->virtualMachine->GetObjectHandlePolicy();
-    BSScript::Object* pBaseObject = GetObject();
-
-    if (!pBaseObject && !pPolicy)
-        return nullptr;
-
-    uint64_t handle = pBaseObject->GetHandle();
-
-    if (!pPolicy->HandleIsType((uint32_t)T::Type, handle) || !pPolicy->IsHandleObjectAvailable(handle))
-        return nullptr;
-
-    return pPolicy->GetObjectForHandle<T>(handle);
-}
-
 void BSScript::IFunctionArguments::Statement::SetSize(uint32_t aCount) noexcept
 {
     TP_THIS_FUNCTION(TSetSize, void, BSScript::IFunctionArguments::Statement, uint32_t aCount);

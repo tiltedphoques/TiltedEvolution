@@ -4,6 +4,7 @@
 
 enum class FormType : uint8_t
 {
+    None = 0, // TESForm
     Armor = 26,
     Book = 27,
     Container = 28,
@@ -24,6 +25,8 @@ struct BGSLoadFormBuffer;
 
 struct TESForm : BaseFormComponent
 {
+    static constexpr FormType Type = FormType::None;
+
     struct ChangeFlags
     {
         uint32_t flags{};
