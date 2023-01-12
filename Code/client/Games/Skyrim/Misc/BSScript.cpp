@@ -101,6 +101,7 @@ String BSScript::Variable::GetTypeString() const noexcept
     case Type::kBooleanArray:
         return "bool[]";
     default: {
+        // TODO: this wont work with array of objects
         BSScript::Object* pObject = GetObject();
 
         if (!pObject || !pObject->pType)
@@ -113,6 +114,39 @@ String BSScript::Variable::GetTypeString() const noexcept
             result += "[]";
 
         return result;
+    }
+    }
+}
+
+std::optional<std::any> BSScript::Variable::GetValue() noexcept
+{
+    switch (type)
+    {
+    case Type::kString:
+        return String(data.s);
+    case Type::kInteger:
+        return data.i;
+    case Type::kFloat:
+        return data.f;
+    case Type::kBoolean:
+        return data.b;
+    case Type::kStringArray:
+        return Vector<String>{};
+    case Type::kIntegerArray:
+        return Vector<int32_t>{};
+    case Type::kFloatArray:
+        return Vector<float>{};
+    case Type::kBooleanArray:
+        return Vector<bool>{};
+    default: {
+        // TODO: this wont work with array of objects
+        auto* pForm = ExtractComplexType<TESForm>();
+        if (pForm)
+            return pForm->formID;
+
+        spdlog::error(__FUNCTION__ ": failed to extract value");
+
+        return std::nullopt;
     }
     }
 }

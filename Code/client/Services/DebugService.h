@@ -2,6 +2,8 @@
 
 #include <Actor.h>
 
+#include <Events/PapyrusFunctionCallEvent.h>
+
 struct World;
 struct ImguiService;
 
@@ -27,6 +29,7 @@ struct DebugService
     void OnDialogue(const DialogueEvent&) noexcept;
     void OnSubtitle(const SubtitleEvent&) noexcept;
     void OnMoveActor(const MoveActorEvent&) noexcept;
+    void OnPapyrusFunctionCallEvent(const PapyrusFunctionCallEvent&) noexcept;
 
     void SetDebugId(const uint32_t aFormId) noexcept;
 
@@ -57,6 +60,7 @@ private:
     void DrawCellView();
     void DrawProcessView();
     void DrawWeatherView();
+    void DrawPapyrusView();
 
 public:
     bool m_showDebugStuff = false;
@@ -77,9 +81,13 @@ private:
     String SubtitleText = "";
     uint32_t TopicID = 0;
 
+    std::mutex m_papyrusEventLock{};
+    Vector<PapyrusFunctionCallEvent> m_papyrusEvents{};
+
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;
     entt::scoped_connection m_dialogueConnection;
+    entt::scoped_connection m_papyrusEventConnection;
     bool m_showBuildTag = true;
     bool m_drawComponentsInWorldSpace = false;
 };

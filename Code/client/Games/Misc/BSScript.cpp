@@ -10,6 +10,8 @@
 #include <Games/ActorExtension.h>
 #include <Games/PapyrusFunctions.h>
 
+#include <Events/PapyrusFunctionCallEvent.h>
+
 struct Variables
 {
     void* pUnk0;
@@ -76,6 +78,9 @@ void TP_MAKE_THISCALL(HookCreateStack, BSScript::IVirtualMachine, int aUnk1, int
 
     World::Get().GetRunner().Queue([stackId]() {
         BSScript::VirtualMachine* pVm = (BSScript::VirtualMachine*)GameVM::Get()->virtualMachine;
+
+        BSScopedLock<BSRecursiveLock> _(pVm->kRunningStacksLock);
+
         std::optional<creation::BSTScatterTableDefaultKVStorage<uint32_t, BSScript::Stack*>> stack = std::nullopt;
         for (const auto& stackIt : pVm->kAllRunningStacks)
         {
@@ -105,20 +110,20 @@ uint64_t TP_MAKE_THISCALL(HookPushFrame, BSScript::Stack, BSScript::IFunction** 
                           BSScript::ObjectTypeInfo** appOwningObject, BSScript::Variable* apSelf,
                           Variables* apArguments)
 {
-    //if (String("SkyrimTogetherUtils") == String((*appOwningFunction)->GetObjectTypeName().AsAscii()))
+    //if (String("TempleBlessingScript") == String((*appOwningFunction)->GetObjectTypeName().AsAscii()))
     {
         auto* pOwningFunction = *appOwningFunction;
-        String function = "";
-        function += pOwningFunction->GetObjectTypeName().AsAscii();
-        function += "::";
-        function += pOwningFunction->GetName().AsAscii();
-        function += "(";
+
+        PapyrusFunctionCallEvent callEvent{};
+        callEvent.StackId = apThis->uiStackID;
+        callEvent.ScriptName = pOwningFunction->GetObjectTypeName().AsAscii();
+        callEvent.FunctionName = pOwningFunction->GetName().AsAscii();
+
+        if (auto* pSelf = apSelf->ExtractComplexType<TESForm>())
+            callEvent.SelfFormId = pSelf->formID;
 
         for (int i = 0; i < pOwningFunction->GetParamCount(); i++)
         {
-            if (i != 0)
-                function += ", ";
-
             BSFixedString name{};
             BSScript::Variable::Type type{};
             pOwningFunction->GetParam(i, name, type);
@@ -128,18 +133,17 @@ uint64_t TP_MAKE_THISCALL(HookPushFrame, BSScript::Stack, BSScript::IFunction** 
             {
                 BSScript::Variable* pVariable = &apArguments->pVariables[i];
                 typeString = pVariable->GetTypeString();
-            }
 
-            function += typeString;
-            function += " ";
-            function += name.AsAscii();
+                auto& argument = callEvent.Arguments.emplace_back();
+                argument.Name = name.AsAscii();
+                argument.Type = typeString;
+                argument.Value = pVariable->GetValue();
+            }
 
             name.Release();
         }
 
-        function += ")";
-
-        spdlog::info("{}", function);
+        World::Get().GetRunner().Trigger(callEvent);
 
     #if 0
         TESForm* pComplexType = apSelf->ExtractComplexType<TESForm>();

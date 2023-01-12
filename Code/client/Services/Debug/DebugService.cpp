@@ -99,6 +99,7 @@ DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, Transpo
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&DebugService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&DebugService::OnDraw>(this);
     m_dialogueConnection = m_dispatcher.sink<DialogueEvent>().connect<&DebugService::OnDialogue>(this);
+    m_papyrusEventConnection = m_dispatcher.sink<PapyrusFunctionCallEvent>().connect<&DebugService::OnPapyrusFunctionCallEvent>(this);
     m_dispatcher.sink<SubtitleEvent>().connect<&DebugService::OnSubtitle>(this);
     m_dispatcher.sink<MoveActorEvent>().connect<&DebugService::OnMoveActor>(this);
 }
@@ -234,6 +235,7 @@ static bool g_enableQuestWindow{false};
 static bool g_enableCellWindow{false};
 static bool g_enableProcessesWindow{false};
 static bool g_enableWeatherWindow{false};
+static bool g_enablePapyrusWindow{true};
 
 void DebugService::DrawServerView() noexcept
 {
@@ -327,6 +329,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
         ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
         ImGui::MenuItem("Weather", nullptr, &g_enableWeatherWindow);
+        ImGui::MenuItem("Papyrus", nullptr, &g_enablePapyrusWindow);
 #endif
 
         ImGui::EndMenu();
@@ -380,6 +383,8 @@ void DebugService::OnDraw() noexcept
         DrawProcessView();
     if (g_enableWeatherWindow)
         DrawWeatherView();
+    if (g_enablePapyrusWindow)
+        DrawPapyrusView();
 
     if (m_drawComponentsInWorldSpace)
         DrawComponentDebugView();

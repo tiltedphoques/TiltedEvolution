@@ -77,14 +77,15 @@ namespace BSScript
 
     struct Variable
     {
-        String GetTypeString() const noexcept;
-
         Variable();
         ~Variable() noexcept;
 
         void Reset() noexcept;
         void Clear() noexcept;
         Object* GetObject() const noexcept;
+        String GetTypeString() const noexcept;
+
+        std::optional<std::any> GetValue() noexcept;
 
         template <class T> void Set(T aValue) noexcept
         {
@@ -243,7 +244,8 @@ namespace BSScript
 
     struct VirtualMachine : IVirtualMachine
     {
-        uint8_t unk8[0x9320 - 0x8];
+        uint8_t unk8[0x9318 - 0x8];
+        BSRecursiveLock kRunningStacksLock;
         creation::BSTHashMap<uint32_t, Stack*> kAllRunningStacks;
     };
     static_assert(offsetof(VirtualMachine, kAllRunningStacks) == 0x9320);
@@ -383,7 +385,7 @@ template <class T> T* BSScript::Variable::ExtractComplexType() noexcept
     auto* pPolicy = GameVM::Get()->virtualMachine->GetObjectHandlePolicy();
     BSScript::Object* pBaseObject = GetObject();
 
-    if (!pBaseObject && !pPolicy)
+    if (!pBaseObject || !pPolicy)
         return nullptr;
 
     uint64_t handle = pBaseObject->GetHandle();
