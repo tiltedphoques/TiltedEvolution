@@ -80,6 +80,43 @@ BSScript::Object* BSScript::Variable::GetObject() const noexcept
     return data.pObj;
 }
 
+String BSScript::Variable::GetTypeString() const noexcept
+{
+    switch (type)
+    {
+    case Type::kString:
+        return "string";
+    case Type::kInteger:
+        return "int";
+    case Type::kFloat:
+        return "float";
+    case Type::kBoolean:
+        return "bool";
+    case Type::kStringArray:
+        return "string[]";
+    case Type::kIntegerArray:
+        return "int[]";
+    case Type::kFloatArray:
+        return "float[]";
+    case Type::kBooleanArray:
+        return "bool[]";
+    default: {
+        BSScript::Object* pObject = GetObject();
+
+        if (!pObject || !pObject->pType)
+            return "UNDEFINED";
+
+        String result = pObject->pType->name.AsAscii();
+
+        // if is array
+        if (type & 0x1)
+            result += "[]";
+
+        return result;
+    }
+    }
+}
+
 void BSScript::IFunctionArguments::Statement::SetSize(uint32_t aCount) noexcept
 {
     TP_THIS_FUNCTION(TSetSize, void, BSScript::IFunctionArguments::Statement, uint32_t aCount);

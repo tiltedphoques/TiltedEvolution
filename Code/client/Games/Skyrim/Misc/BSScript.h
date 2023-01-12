@@ -62,13 +62,23 @@ namespace BSScript
         virtual IObjectHandlePolicy* GetObjectHandlePolicy();
     };
 
+    struct ObjectTypeInfo : BSIntrusiveRefCounted
+    {
+        BSFixedString name;
+    };
+
     struct Object
     {
         uint64_t GetHandle();
+
+        uint8_t unk0[0x8];
+        ObjectTypeInfo* pType;
     };
 
     struct Variable
     {
+        String GetTypeString() const noexcept;
+
         Variable();
         ~Variable() noexcept;
 
@@ -91,6 +101,13 @@ namespace BSScript
             kInteger,
             kFloat,
             kBoolean,
+
+            kEmptyArray = 10,
+            kObjectArray = 11,
+            kStringArray = 12,
+            kIntegerArray = 13,
+            kFloatArray = 14,
+            kBooleanArray = 15,
 
             kMax = 16
         };
@@ -124,11 +141,6 @@ namespace BSScript
         kInProgress = 2,
         kFailedRetry = 3,
         kFailedAbort = 4
-    };
-
-    struct ObjectTypeInfo : BSIntrusiveRefCounted
-    {
-        BSFixedString name;
     };
 
     struct StackFrame;

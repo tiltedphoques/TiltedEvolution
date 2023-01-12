@@ -105,8 +105,43 @@ uint64_t TP_MAKE_THISCALL(HookPushFrame, BSScript::Stack, BSScript::IFunction** 
                           BSScript::ObjectTypeInfo** appOwningObject, BSScript::Variable* apSelf,
                           Variables* apArguments)
 {
-    if (String("TempleBlessingScript") == String((*appOwningFunction)->GetObjectTypeName().AsAscii()))
+    //if (String("SkyrimTogetherUtils") == String((*appOwningFunction)->GetObjectTypeName().AsAscii()))
     {
+        auto* pOwningFunction = *appOwningFunction;
+        String function = "";
+        function += pOwningFunction->GetObjectTypeName().AsAscii();
+        function += "::";
+        function += pOwningFunction->GetName().AsAscii();
+        function += "(";
+
+        for (int i = 0; i < pOwningFunction->GetParamCount(); i++)
+        {
+            if (i != 0)
+                function += ", ";
+
+            BSFixedString name{};
+            BSScript::Variable::Type type{};
+            pOwningFunction->GetParam(i, name, type);
+
+            String typeString = "UNDEFINED";
+            if (i < apArguments->size)
+            {
+                BSScript::Variable* pVariable = &apArguments->pVariables[i];
+                typeString = pVariable->GetTypeString();
+            }
+
+            function += typeString;
+            function += " ";
+            function += name.AsAscii();
+
+            name.Release();
+        }
+
+        function += ")";
+
+        spdlog::info("{}", function);
+
+    #if 0
         TESForm* pComplexType = apSelf->ExtractComplexType<TESForm>();
         if (pComplexType)
             spdlog::error("ComplexType extracted, form id: {:X}", pComplexType->formID);
@@ -119,25 +154,26 @@ uint64_t TP_MAKE_THISCALL(HookPushFrame, BSScript::Stack, BSScript::IFunction** 
             TESForm* pVarForm = pVariable->ExtractComplexType<TESForm>();
             spdlog::info("{:X}", pVarForm->formID);
         }
-        DebugBreak();
+    #endif
     }
 
     auto result =
         TiltedPhoques::ThisCall(RealPushFrame, apThis, appOwningFunction, appOwningObject, apSelf, apArguments);
 
+    #if 0
     if (result == 0)
     {
         if (appOwningFunction && *appOwningFunction)
         {
             spdlog::critical("{}:{}", (*appOwningFunction)->GetObjectTypeName().AsAscii(),
                              (*appOwningFunction)->GetName().AsAscii());
-            auto* pOwningFunction = *appOwningFunction;
         }
         else
             spdlog::error("Missing function type");
     }
     else
         spdlog::warn("Failed to push frame");
+    #endif
 
     return result;
 }
