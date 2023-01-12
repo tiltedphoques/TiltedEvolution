@@ -57,7 +57,7 @@ export class ServerListComponent {
   favoriteServers = new BehaviorSubject<Record<string, Server>>({});
   hideVersionMismatchedServers = new BehaviorSubject(true);
   hideFullServers = new BehaviorSubject(true);
-  hidePasswordProtectedServers = new BehaviorSubject(true);
+  hidePasswordProtectedServers = new BehaviorSubject(false);
   playerCountOrdering = new BehaviorSubject(SortOrder.NONE);
   countryOrdering = new BehaviorSubject(SortOrder.NONE);
   serverNameOrdering = new BehaviorSubject(SortOrder.NONE);
