@@ -50,7 +50,19 @@
         'COMPONENT.SERVER_LIST.HIDE_FULL_SERVERS' | transloco
       }}</label>
     </div>
+    
+    <div class="filter-checkbox">
+      <input 
+        type="checkbox"
+        id="hide-password-protected-servers-checkbox"
+        [ngModel]="hidePasswordProtectedServers | async"
+        (ngModelChange)="hidePasswordProtectedServers.next($event)"
+      />
+      <label for="hide-password-protected-servers-checkbox">{{ 'COMPONENT.SERVER_LIST.HIDE_PASSWORD_PROTECTED_SERVERS' | transloco }}</label>
+    </div>
   </div>
+
+  
 
   <div class="server-count">
     {{
@@ -77,6 +89,9 @@
       <div class="scrollbar-offset">
         <div class="server-list-table">
           <div class="row header">
+            <div style="width: 1.55em">
+              <fa-icon [icon]="fasLock"></fa-icon>
+            </div>
             <div>
               {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.NAME' | transloco }}
               <app-order
@@ -123,6 +138,9 @@
             class="row"
             [class.odd]="odd"
           >
+            <div style="width: 1.55em">
+              <fa-icon *ngIf="server.hasPassword" [icon]="fasLock"></fa-icon>
+            </div>
             <div>{{ server.name }}</div>
             <div style="width: 7em">
               {{ server.player_count }} / {{ server.max_player_count }}
@@ -148,7 +166,7 @@
             </div>
             <div style="width: 4em">
               <button
-                (click)="connect(server)"
+                (click)="server.hasPassword ? connectWithPassword(server) : connect(server)"
                 class="join-button"
                 [disabled]="!server.isCompatible"
               >

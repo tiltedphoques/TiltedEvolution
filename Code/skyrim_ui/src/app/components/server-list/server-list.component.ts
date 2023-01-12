@@ -6,7 +6,7 @@ import {
   Output,
 } from '@angular/core';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
-import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
+import { faStar as fasStar, faLock as fasLock } from '@fortawesome/free-solid-svg-icons';
 import { loadingFor } from '@ngneat/loadoff';
 import { FormControl } from '@ngneat/reactive-forms';
 import {
@@ -32,6 +32,7 @@ import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
 import { UiRepository } from '../../store/ui.repository';
 import { SortOrder } from '../order/order.component';
+import { environment } from '../../../environments/environment';
 
 interface SortFunction {
   fn: (a: Server, b: Server) => number;
@@ -48,6 +49,7 @@ export class ServerListComponent {
   /* ### ICONS ### */
   readonly fasStar = fasStar;
   readonly farStar = farStar;
+  readonly fasLock = fasLock;
 
   loader = loadingFor('serverlist');
   refreshServerlist = new BehaviorSubject<void>(undefined);
@@ -55,6 +57,7 @@ export class ServerListComponent {
   favoriteServers = new BehaviorSubject<Record<string, Server>>({});
   hideVersionMismatchedServers = new BehaviorSubject(true);
   hideFullServers = new BehaviorSubject(true);
+  hidePasswordProtectedServers = new BehaviorSubject(true);
   playerCountOrdering = new BehaviorSubject(SortOrder.NONE);
   countryOrdering = new BehaviorSubject(SortOrder.NONE);
   serverNameOrdering = new BehaviorSubject(SortOrder.NONE);
@@ -107,6 +110,7 @@ export class ServerListComponent {
           const shortVersion = this.getServerVersion(server);
           return {
             ...server,
+            hasPassword: server.pass,
             isFavorite: !!favorites[`${server.ip}:${server.port}`],
             isFull: server.player_count >= server.max_player_count,
             shortVersion,
@@ -129,6 +133,7 @@ export class ServerListComponent {
         ),
         this.hideVersionMismatchedServers,
         this.hideFullServers,
+        this.hidePasswordProtectedServers,
         this.sortFunctions,
       ),
       map(
@@ -137,6 +142,7 @@ export class ServerListComponent {
           searchPhrase,
           hideVersionMismatchedServers,
           hideFullServers,
+          hidePasswordProtectedServers,
           sortFunction,
         ]) => {
           if (hideVersionMismatchedServers) {
@@ -144,6 +150,9 @@ export class ServerListComponent {
           }
           if (hideFullServers) {
             servers = servers.filter(server => !server.isFull);
+          }
+          if (hidePasswordProtectedServers) {
+            servers = servers.filter(server => !server.pass);
           }
           if (searchPhrase) {
             servers = servers.filter((server: Server) => {
@@ -280,6 +289,10 @@ export class ServerListComponent {
     this.clientService.connect(server.ip, server.port ? server.port : 10578);
     this.soundService.play(Sound.Ok);
     this.close();
+  }
+
+  public connectWithPassword(server: Server) {
+    this.uiRepository.openConnectWithPasswordView(server.ip, server.port, server.name);
   }
 
   public getServerVersion(server: Server) {

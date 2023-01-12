@@ -76,6 +76,9 @@
       <app-popup *ngSwitchCase="RootView.CONNECT">
         <app-connect (done)="closeView()"></app-connect>
       </app-popup>
+      <app-popup *ngSwitchCase="RootView.CONNECT_PASSWORD">
+        <app-connect-password (done)="closeView()"></app-connect-password>
+      </app-popup>
       <app-popup *ngSwitchCase="RootView.DISCONNECT">
         <app-disconnect (done)="closeView()"></app-disconnect>
       </app-popup>

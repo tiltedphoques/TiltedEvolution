@@ -6,6 +6,9 @@ import { View } from '../models/view.enum';
 interface UiProps {
   view: View | null;
   playerManagerTab: PlayerManagerTab;
+  connectIp: string;
+  connectPort: number;
+  connectName: string;
 }
 
 const uiStore = createStore(
@@ -13,6 +16,9 @@ const uiStore = createStore(
   withProps<UiProps>({
     view: null,
     playerManagerTab: PlayerManagerTab.PLAYER_LIST,
+    connectIp: null,
+    connectPort: null,
+    connectName: null,
   }),
 );
 
@@ -24,6 +30,9 @@ export class UiRepository {
   public readonly playerManagerTab$ = uiStore.pipe(
     select(state => state.playerManagerTab),
   );
+  public readonly connectIp$ = uiStore.pipe(select((state) => state.connectIp));
+  public readonly connectPort$ = uiStore.pipe(select((state) => state.connectPort));
+  public readonly connectName$ = uiStore.pipe(select((state) => state.connectName));
 
   openView(view: UiProps['view']) {
     uiStore.update(state => ({
@@ -47,10 +56,32 @@ export class UiRepository {
     return !!this.getView();
   }
 
+  getConnectIp() {
+    return uiStore.getValue().connectIp;
+  }
+
+  getConnectPort() {
+    return uiStore.getValue().connectPort;
+  }
+
+  getConnectName() {
+    return uiStore.getValue().connectName;
+  }
+
   openPlayerManagerTab(playerManagerTab: UiProps['playerManagerTab']) {
     uiStore.update(state => ({
       ...state,
       playerManagerTab,
     }));
+  }
+
+  openConnectWithPasswordView(connectIp: string, connectPort: number, connectName: string) {
+    uiStore.update((state) => ({
+      ...state,
+      view: View.CONNECT_PASSWORD,
+      connectIp,
+      connectPort,
+      connectName,
+    }))
   }
 }

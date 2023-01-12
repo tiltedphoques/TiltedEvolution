@@ -15,6 +15,7 @@
       "ADDRESS": "Address",
       "PASSWORD": "Password",
       "SAVE_PASSWORD": "Save Password?",
+      "HIDE_PASSWORD": "Hide Password?",
       "CONNECT": "Connect",
       "CANCEL": "Cancel",
       "PUBLIC_SERVERS": "Public servers",
@@ -93,6 +94,7 @@
       "NO_SERVERS": "No public server available",
       "HIDE_MISMATCHED_SERVERS": "Hide servers with incompatible version",
       "HIDE_FULL_SERVERS": "Hide full servers",
+      "HIDE_PASSWORD_PROTECTED_SERVERS": "Hide password protected server",
       "SERVER_COUNT": "Showing {{filteredCount}} of {{count}} servers",
       "TABLE_HEADERS": {
         "NAME": "Server Name",
@@ -103,9 +105,14 @@
       "JOIN": "Join"
     },
     "SETTINGS": {
+      "VERSION": {
+        "HEADER": "Version",
+        "INFO": "Currently installed:",
+        "OUTDATED": "Version is outdated. Please update."
+      },
       "AUDIO": "Audio",
-      "MUTE_UI": "Mute UI",
-      "UI_VOLUME": "UI Volume",
+      "MUTE_UI": "Mute User Interface",
+      "UI_VOLUME": "User Interface Volume",
       "PARTY": "Party",
       "SHOW_PARTY": "Show Party",
       "AUTO_HIDE_PARTY": "Auto Hide Party",
@@ -120,7 +127,7 @@
       "PARTY_ANCHOR_OFFSET_X": "Horizontal Offset",
       "PARTY_ANCHOR_OFFSET_Y": "Vertical Offset",
       "LENGTH": "{{length}}s",
-      "UI": "UI",
+      "UI": "User Interface",
       "LANGUAGE": "Language",
       "DEBUG": "Debug",
       "SHOW_DEBUG_INFO": "Show Debug Information",
