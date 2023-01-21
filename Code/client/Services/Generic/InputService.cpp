@@ -438,7 +438,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
         if (!IsWindowUnicode(hwnd))
         {
             wchar_t wch;
-            ::MultiByteToWideChar(s_currentACP, MB_PRECOMPOSED, (char*) &virtualKey, 2, &wch, sizeof(wchar_t));
+            ::MultiByteToWideChar(s_currentACP, MB_PRECOMPOSED, reinterpret_cast<char*>(&virtualKey), 2, &wch, sizeof(wchar_t));
             virtualKey = wch;
         }
         ProcessKeyboard(virtualKey, scancode, KEYEVENT_CHAR, false, false);
