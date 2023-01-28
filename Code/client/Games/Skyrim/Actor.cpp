@@ -449,35 +449,7 @@ void Actor::SetPlayerTeammate(bool aSet) noexcept
 
 void Actor::UnEquipAll() noexcept
 {
-    // For each change
-    const auto pContainerChanges = GetContainerChanges()->entries;
-    for (auto pChange : *pContainerChanges)
-    {
-        if (pChange && pChange->form && pChange->dataList)
-        {
-            // Parse all extra data lists
-            const auto pDataLists = pChange->dataList;
-            for (auto* pDataList : *pDataLists)
-            {
-                if (pDataList)
-                {
-                    BSScopedLock<BSRecursiveLock> _(pDataList->lock);
-
-                    // Right slot
-                    if (pDataList->Contains(ExtraDataType::Worn))
-                    {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false, nullptr);
-                    }
-
-                    // Left slot
-                    if (pDataList->Contains(ExtraDataType::WornLeft))
-                    {
-                        EquipManager::Get()->UnEquip(this, pChange->form, pDataList, 1, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false, nullptr);
-                    }
-                }
-            }
-        }
-    }
+    EquipManager::Get()->UnequipAll(this);
 
     // Taken from skyrim's code shouts can be two form types apparently
     if (equippedShout && ((int)equippedShout->formType - 41) <= 1)
@@ -727,20 +699,20 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
 {
     if (!ScopedInventoryOverride::IsOverriden())
     {
-        // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync
-        if (apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden())
-        {
-            auto& modSystem = World::Get().GetModSystem();
+        auto& modSystem = World::Get().GetModSystem();
 
-            Inventory::Entry item{};
-            modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
-            item.Count = aCount;
+        Inventory::Entry item{};
+        modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
+        item.Count = aCount;
 
-            if (apObject->GetExtraDataList())
-                apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
+        if (apObject->GetExtraDataList())
+            apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
 
-            World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
-        }
+        // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync.
+        // The inventory change event should always be sent to the server, otherwise the server inventory won't be updated.
+        bool shouldUpdateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
+
+        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item), false, shouldUpdateClients));
     }
 
     return TiltedPhoques::ThisCall(RealPickUpObject, apThis, apObject, aCount, aUnk1, aUnk2);

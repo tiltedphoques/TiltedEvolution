@@ -117,22 +117,23 @@ void PlayerCharacter::PayCrimeGoldToAllFactions() noexcept
 
 char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
 {
-    // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync
-    if (apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden())
+    auto& modSystem = World::Get().GetModSystem();
+
+    Inventory::Entry item{};
+    modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
+    item.Count = aCount;
+
+    if (apObject->GetExtraDataList() && !ScopedExtraDataOverride::IsOverriden())
     {
-        auto& modSystem = World::Get().GetModSystem();
-
-        Inventory::Entry item{};
-        modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
-        item.Count = aCount;
-
-        if (apObject->GetExtraDataList() && !ScopedExtraDataOverride::IsOverriden())
-        {
-            ScopedExtraDataOverride _;
-            apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
-        }
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+        ScopedExtraDataOverride _;
+        apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
     }
+
+    // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync.
+    // The inventory change event should always be sent to the server, otherwise the server inventory won't be updated.
+    bool shouldUpdateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
+
+    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item), false, shouldUpdateClients));
 
     ScopedInventoryOverride _;
 
