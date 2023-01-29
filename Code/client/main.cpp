@@ -42,6 +42,8 @@ static void ShowAddressLibraryError(const wchar_t* apGamePath)
     exit(4);
 }
 
+#include "spdlog/sinks/stdout_color_sinks.h"
+
 void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVersion)
 {
 #if TP_SKYRIM64
@@ -56,6 +58,8 @@ void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVe
     // VersionDb::Get().DumpToTextFile(R"(S:\Work\Tilted\fallout\_addresslib.txt)");
 
     g_appInstance = std::make_unique<TiltedOnlineApp>();
+
+    auto console = spdlog::stdout_color_mt("basic_ass_logger");  
 
     TiltedOnlineApp::InstallHooks2();
     TP_HOOK_COMMIT;

@@ -989,10 +989,10 @@ void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjec
     return TiltedPhoques::ThisCall(RealInitFromPackage, apThis, apPackage, apTarget, arActor);
 }
 
-TP_THIS_FUNCTION(TSetCurrentPickREFR, void, Console, BSPointerHandle<TESObjectREFR>* apRefr);
+TP_THIS_FUNCTION(TSetCurrentPickREFR, void, Game_Console, BSPointerHandle<TESObjectREFR>* apRefr);
 static TSetCurrentPickREFR* RealSetCurrentPickREFR = nullptr;
 
-void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObjectREFR>* apRefr)
+void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Game_Console, BSPointerHandle<TESObjectREFR>* apRefr)
 {
     uint32_t formId = 0;
 

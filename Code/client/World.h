@@ -7,9 +7,9 @@
 #include <Services/OverlayService.h>
 #include <Services/CharacterService.h>
 #include <Services/DebugService.h>
+#include <Services/LocalServerRunnerService.h>
 
 #include <Systems/ModSystem.h>
-
 #include <Structs/ServerSettings.h>
 
 struct World : entt::registry
@@ -31,6 +31,10 @@ struct World : entt::registry
     const OverlayService& GetOverlayService() const noexcept { return ctx().at<const OverlayService>(); }
     DebugService& GetDebugService() noexcept { return ctx().at<DebugService>(); }
     const DebugService& GetDebugService() const noexcept { return ctx().at<const DebugService>(); }
+    LocalServerService& GetLocalServerService() noexcept
+    {
+        return m_localServerService;
+    }
 
     auto& GetDispatcher() noexcept { return m_dispatcher; }
 
@@ -46,6 +50,7 @@ private:
     entt::dispatcher m_dispatcher;
     RunnerService m_runner;
     TransportService m_transport;
+    LocalServerService m_localServerService;
     ModSystem m_modSystem;
     ServerSettings m_serverSettings{};
 

@@ -220,7 +220,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 #endif
 }
 
-static bool g_enableServerWindow{false};
+static bool g_enableServerWindow{true};
 static bool g_enableAnimWindow{false};
 static bool g_enableEntitiesWindow{false};
 static bool g_enableInventoryWindow{false};
@@ -257,6 +257,16 @@ void DebugService::DrawServerView() noexcept
             m_transport.SetServerPassword(s_password);
             m_transport.Connect(s_address);
         }
+
+        if (ImGui::Button("Create LAN Server"))
+        {
+            World::Get().GetLocalServerService().Start();
+        }
+        if (ImGui::Button("Yeet LAN Server"))
+        {
+            World::Get().GetLocalServerService().Kill();
+        }
+        
     }
 
     ImGui::End();

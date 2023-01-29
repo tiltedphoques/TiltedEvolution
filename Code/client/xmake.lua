@@ -40,6 +40,7 @@ target(name)
         "UiProcess",
         "CommonLib",
         "BaseLib",
+        "Console",
         "ImGuiImpl",
         "TiltedConnect",
         "TiltedReverse",
