@@ -31,7 +31,7 @@ if has_config("unitybuild") then
 end
 
 add_requires(
-    "entt", 
+    "entt v3.10.0", 
     "recastnavigation", 
     "tiltedcore", 
     "cryptopp", 
