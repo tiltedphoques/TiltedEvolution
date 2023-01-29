@@ -3,7 +3,8 @@
     <section>
       <h2>{{ 'COMPONENT.SETTINGS.VERSION.HEADER' | transloco }}</h2>
       <div class="flex-item">
-        {{ 'COMPONENT.SETTINGS.VERSION.INFO' | transloco }} <div [class.up-to-date]="(isVersionOutdated | async) === false" [class.outdated]="(isVersionOutdated | async)">{{ clientVersion$ | async }}</div>
+        {{ 'COMPONENT.SETTINGS.VERSION.INFO' | transloco }}
+        <div class="version" [class.outdated]="isVersionOutdated | async">{{ clientVersion$ | async }}</div>
       </div>
       <div *ngIf="isVersionOutdated | async" class="flex-item">
         {{ 'COMPONENT.SETTINGS.VERSION.OUTDATED' | transloco }}
