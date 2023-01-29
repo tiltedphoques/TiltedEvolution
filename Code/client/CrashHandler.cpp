@@ -24,7 +24,7 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 {
     if (pExceptionInfo->ExceptionRecord->ExceptionCode == 0xC0000005)
     {
-        spdlog::error("Crash occured!");
+        spdlog::error("Crash occurred!");
         MINIDUMP_EXCEPTION_INFORMATION M;
         char dumpPath[MAX_PATH];
 

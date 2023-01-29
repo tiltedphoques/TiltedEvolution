@@ -483,7 +483,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     if (pActor->IsDead() != acMessage.IsDead)
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
 
-    spdlog::info("Spawn Reqeust Is summon {}", acMessage.IsPlayerSummon);
+    spdlog::info("Spawn Request Is summon {}", acMessage.IsPlayerSummon);
 
 #if TP_SKYRIM64
     if (acMessage.IsPlayerSummon)
