@@ -22,12 +22,12 @@
       margin-bottom: 1rem;
       border-bottom: 2px solid;
 
-      .outdated {
-        color: red;
-      }
-
-      .up-to-date {
+      .version {
         color: green;
+
+        .outdated {
+          color: red;
+        }
       }
 
       .flex-item {
@@ -38,7 +38,7 @@
         margin: 1em 0;
       }
 
-      &> div:not(:last-child) {
+      & > div:not(:last-child) {
         margin-bottom: 0.5rem;
       }
     }

@@ -6,7 +6,10 @@ import {
   Output,
 } from '@angular/core';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
-import { faStar as fasStar, faLock as fasLock } from '@fortawesome/free-solid-svg-icons';
+import {
+  faLock as fasLock,
+  faStar as fasStar,
+} from '@fortawesome/free-solid-svg-icons';
 import { loadingFor } from '@ngneat/loadoff';
 import { FormControl } from '@ngneat/reactive-forms';
 import {
@@ -25,14 +28,13 @@ import { ClientService } from '../../services/client.service';
 import { ErrorService } from '../../services/error.service';
 import { ServerListService } from '../../services/server-list.service';
 import {
-  SettingService,
   fontSizeToPixels,
+  SettingService,
 } from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
 import { UiRepository } from '../../store/ui.repository';
 import { SortOrder } from '../order/order.component';
-import { environment } from '../../../environments/environment';
 
 interface SortFunction {
   fn: (a: Server, b: Server) => number;
@@ -67,6 +69,7 @@ export class ServerListComponent {
       isCompatible: boolean;
       shortVersion: string;
       isFull: boolean;
+      hasPassword: boolean;
     })[]
   >;
   filteredServerlist$: typeof this.serverlist$;
@@ -292,7 +295,11 @@ export class ServerListComponent {
   }
 
   public connectWithPassword(server: Server) {
-    this.uiRepository.openConnectWithPasswordView(server.ip, server.port, server.name);
+    this.uiRepository.openConnectWithPasswordView(
+      server.ip,
+      server.port,
+      server.name,
+    );
   }
 
   public getServerVersion(server: Server) {
