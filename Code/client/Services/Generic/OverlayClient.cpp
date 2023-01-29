@@ -110,8 +110,7 @@ void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
         messageRequest.MessageType = static_cast<ChatMessageType>(aEventArgs->GetInt(0));
         messageRequest.ChatMessage = contents;
 
-        // @TODO fix logging of unicode characters
-        spdlog::info("Send chat message of type {}: '{}' ", messageRequest.MessageType, messageRequest.ChatMessage);
+        spdlog::info(L"Send chat message of type {}: '{}' ", messageRequest.MessageType, aEventArgs->GetString(1).ToWString());
         m_transport.Send(messageRequest);
     }
 }
