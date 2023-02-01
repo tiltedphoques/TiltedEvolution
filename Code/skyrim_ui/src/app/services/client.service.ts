@@ -376,7 +376,7 @@ export class ClientService implements OnDestroy {
    * @param version Game's version.
    */
   private onSetVersion(version: string): void {
-    version = environment.overwriteVersion ?? version;
+    version = environment.overwriteVersion || version;
 
     this.zone.run(() => {
       this.versionSet.next(version);
