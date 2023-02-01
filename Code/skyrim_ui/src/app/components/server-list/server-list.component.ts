@@ -21,7 +21,8 @@ import {
   startWith,
   throttleTime,
 } from 'rxjs';
-import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
+import { distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
+import { DestroyService } from 'src/app/services/destroy.service';
 import { Server } from '../../models/server';
 import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
@@ -46,6 +47,7 @@ interface SortFunction {
   templateUrl: './server-list.component.html',
   styleUrls: ['./server-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [DestroyService],
 })
 export class ServerListComponent {
   /* ### ICONS ### */
@@ -59,7 +61,7 @@ export class ServerListComponent {
   favoriteServers = new BehaviorSubject<Record<string, Server>>({});
   hideVersionMismatchedServers = new BehaviorSubject(true);
   hideFullServers = new BehaviorSubject(true);
-  hidePasswordProtectedServers = new BehaviorSubject(false);
+  hidePasswordProtectedServers = new BehaviorSubject(true);
   playerCountOrdering = new BehaviorSubject(SortOrder.NONE);
   countryOrdering = new BehaviorSubject(SortOrder.NONE);
   serverNameOrdering = new BehaviorSubject(SortOrder.NONE);
@@ -81,6 +83,7 @@ export class ServerListComponent {
   @Output() public done = new EventEmitter<void>();
 
   constructor(
+    private readonly destroy$: DestroyService,
     private readonly errorService: ErrorService,
     private readonly serverListService: ServerListService,
     private readonly clientService: ClientService,
@@ -196,7 +199,18 @@ export class ServerListComponent {
     this.rowHeight$ = this.settingService.settings.fontSize.pipe(
       map(fontSize => fontSizeToPixels[fontSize] * 2),
     );
+
+    this.hideVersionMismatchedServers.next(this.uiRepository.getHideVersionMismatchedServers());
+    this.hideFullServers.next(this.uiRepository.getHideFullServers());
+    this.hidePasswordProtectedServers.next(this.uiRepository.getHidePasswordProtectedServers());
   }
+
+  ngOnInit() {
+    this.OnHideVersionMismatchedServers();
+    this.OnHideFullServers();
+    this.OnHidePasswordProtectedServers();
+  }
+
 
   public cancel(): void {
     this.uiRepository.openView(View.CONNECT);
@@ -204,6 +218,30 @@ export class ServerListComponent {
 
   async updateServerList() {
     this.refreshServerlist.next();
+  }
+
+  private OnHideVersionMismatchedServers() {
+    this.hideVersionMismatchedServers
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state: boolean) => {
+        this.uiRepository.setHideVersionMismatchedServers(state);
+      });
+  }
+
+  private OnHideFullServers() {
+    this.hideFullServers
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state: boolean) => {
+        this.uiRepository.setHideFullServers(state);
+      });
+  }
+
+  private OnHidePasswordProtectedServers() {
+    this.hidePasswordProtectedServers
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state: boolean) => {
+        this.uiRepository.setHidePasswordProtectedServers(state);
+      });
   }
 
   private getLocationDataByIp(servers: Server[]): Array<Observable<Server>> {

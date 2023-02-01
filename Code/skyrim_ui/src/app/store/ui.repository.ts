@@ -9,6 +9,9 @@ interface UiProps {
   connectIp: string;
   connectPort: number;
   connectName: string;
+  hideVersionMismatchedServers: boolean;
+  hideFullServers: boolean;
+  hidePasswordProtectedServers: boolean;
 }
 
 const uiStore = createStore(
@@ -19,6 +22,9 @@ const uiStore = createStore(
     connectIp: null,
     connectPort: null,
     connectName: null,
+    hideVersionMismatchedServers: true,
+    hideFullServers: true,
+    hidePasswordProtectedServers: true
   }),
 );
 
@@ -33,6 +39,9 @@ export class UiRepository {
   public readonly connectIp$ = uiStore.pipe(select((state) => state.connectIp));
   public readonly connectPort$ = uiStore.pipe(select((state) => state.connectPort));
   public readonly connectName$ = uiStore.pipe(select((state) => state.connectName));
+  public readonly hideVersionMismatchedServers$ = uiStore.pipe(select((state) => state.hideVersionMismatchedServers));
+  public readonly hideFullServers$ = uiStore.pipe(select((state) => state.hideFullServers));
+  public readonly hidePasswordProtectedServers$ = uiStore.pipe(select((state) => state.hidePasswordProtectedServers));
 
   openView(view: UiProps['view']) {
     uiStore.update(state => ({
@@ -66,6 +75,42 @@ export class UiRepository {
 
   getConnectName() {
     return uiStore.getValue().connectName;
+  }
+
+  getHideVersionMismatchedServers() {
+    return uiStore.getValue().hideVersionMismatchedServers;
+  }
+
+  getHideFullServers() {
+    return uiStore.getValue().hideFullServers;
+  }
+
+  getHidePasswordProtectedServers() {
+    return uiStore.getValue().hidePasswordProtectedServers;
+  }
+
+  setHideVersionMismatchedServers(hideVersionMismatchedServers: boolean) {
+    console.log("hideVersionMismatchedServers: " + hideVersionMismatchedServers);
+    uiStore.update(state => ({
+      ...state,
+      hideVersionMismatchedServers,
+    }))
+  }
+
+  setHideFullServers(hideFullServers: boolean) {
+    console.log("hideFullServers: " + hideFullServers);
+    uiStore.update(state => ({
+      ...state,
+      hideFullServers,
+    }))
+  }
+
+  setHidePasswordProtectedServers(hidePasswordProtectedServers: boolean) {
+    console.log("hidePasswordProtectedServers: " + hidePasswordProtectedServers);
+    uiStore.update(state => ({
+      ...state,
+      hidePasswordProtectedServers,
+    }))
   }
 
   openPlayerManagerTab(playerManagerTab: UiProps['playerManagerTab']) {
