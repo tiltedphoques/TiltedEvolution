@@ -32,7 +32,7 @@
         type="checkbox"
         id="hide-version-mismatched-servers-checkbox"
         [ngModel]="hideVersionMismatchedServers | async"
-        (ngModelChange)="hideVersionMismatchedServers.next($event)"
+        (ngModelChange)="onHideVersionMismatchedServers($event)"
       />
       <label for="hide-version-mismatched-servers-checkbox">
         {{ 'COMPONENT.SERVER_LIST.HIDE_MISMATCHED_SERVERS' | transloco }}
@@ -44,7 +44,7 @@
         type="checkbox"
         id="hide-full-servers-checkbox"
         [ngModel]="hideFullServers | async"
-        (ngModelChange)="hideFullServers.next($event)"
+        (ngModelChange)="onHideFullServers($event)"
       />
       <label for="hide-full-servers-checkbox">
         {{ 'COMPONENT.SERVER_LIST.HIDE_FULL_SERVERS' | transloco }}
@@ -56,7 +56,7 @@
         type="checkbox"
         id="hide-password-protected-servers-checkbox"
         [ngModel]="hidePasswordProtectedServers | async"
-        (ngModelChange)="hidePasswordProtectedServers.next($event)"
+        (ngModelChange)="onHidePasswordProtectedServers($event)"
       />
       <label for="hide-password-protected-servers-checkbox">
         {{ 'COMPONENT.SERVER_LIST.HIDE_PASSWORD_PROTECTED_SERVERS' | transloco }}
