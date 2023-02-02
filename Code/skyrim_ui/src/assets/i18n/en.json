@@ -1,6 +1,4 @@
 {
-  "INFO": "DO NOT MODIFY THIS FILE! USE THE overwrite.json FILE TO TRANSLATE THE UI!",
-
   "COMPONENT": {
     "CHAT": {
       "SEND": "Send",
@@ -65,7 +63,7 @@
       "LEAVE_PARTY": "Leave party"
     },
     "PARTY_LIST": {
-      "NO_OTHER_PLAYERS": "Nobody here but us chickens!",
+      "NO_OTHER_PLAYERS": "Nobody here but us chickens",
       "TABLE_HEADERS": {
         "LEVEL": "Lv.",
         "NAME": "Name",
@@ -150,7 +148,7 @@
     },
     "COMMANDS": {
       "AVAILABLE_COMMANDS": "Available chat commands: {{cmds}}",
-      "COMMAND_NOT_FOUND": "'{{cmd}}' is recognized as a command."
+      "COMMAND_NOT_FOUND": "'{{cmd}}' is not recognized as a command."
     },
     "GROUP": {
       "LEVEL_UP": "{{name}} has reached level {{level}}.",
