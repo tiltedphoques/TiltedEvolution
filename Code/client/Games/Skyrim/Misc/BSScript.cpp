@@ -85,7 +85,7 @@ template <class T> T* BSScript::Variable::ExtractComplexType() noexcept
     auto* pPolicy = GameVM::Get()->virtualMachine->GetObjectHandlePolicy();
     BSScript::Object* pBaseObject = GetObject();
 
-    if (!pBaseObject && !pPolicy)
+    if (!pBaseObject || !pPolicy)
         return nullptr;
 
     uint64_t handle = pBaseObject->GetHandle();
