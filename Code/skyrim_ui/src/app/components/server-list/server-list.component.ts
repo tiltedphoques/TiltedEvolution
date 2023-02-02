@@ -91,6 +91,7 @@ export class ServerListComponent {
   ) {
     this.sortFavorite(SortOrder.DESC);
     this.sortPlayerCount(SortOrder.DESC);
+
     this.serverlist$ = this.refreshServerlist.pipe(
       switchMap(() =>
         this.serverListService.getServerList().pipe(
@@ -111,13 +112,14 @@ export class ServerListComponent {
       map(([servers, favorites, clientVersion]) => {
         return servers.map(server => {
           const shortVersion = this.getServerVersion(server);
+          const shortClientVersion = this.getClientVersion(clientVersion);
           return {
             ...server,
             hasPassword: server.pass,
             isFavorite: !!favorites[`${server.ip}:${server.port}`],
             isFull: server.player_count >= server.max_player_count,
             shortVersion,
-            isCompatible: shortVersion === clientVersion,
+            isCompatible: shortVersion === shortClientVersion,
           };
         });
       }),
@@ -323,6 +325,10 @@ export class ServerListComponent {
 
   public getServerVersion(server: Server) {
     return server.version.split('-')[0];
+  }
+
+  public getClientVersion(version: string) {
+    return version.split('-')[0];
   }
 
   private close() {
