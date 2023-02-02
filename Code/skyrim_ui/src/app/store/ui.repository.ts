@@ -90,7 +90,6 @@ export class UiRepository {
   }
 
   setHideVersionMismatchedServers(hideVersionMismatchedServers: boolean) {
-    console.log("hideVersionMismatchedServers: " + hideVersionMismatchedServers);
     uiStore.update(state => ({
       ...state,
       hideVersionMismatchedServers,
@@ -98,7 +97,6 @@ export class UiRepository {
   }
 
   setHideFullServers(hideFullServers: boolean) {
-    console.log("hideFullServers: " + hideFullServers);
     uiStore.update(state => ({
       ...state,
       hideFullServers,
@@ -106,7 +104,6 @@ export class UiRepository {
   }
 
   setHidePasswordProtectedServers(hidePasswordProtectedServers: boolean) {
-    console.log("hidePasswordProtectedServers: " + hidePasswordProtectedServers);
     uiStore.update(state => ({
       ...state,
       hidePasswordProtectedServers,

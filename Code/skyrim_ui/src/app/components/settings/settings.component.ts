@@ -93,11 +93,6 @@ export class SettingsComponent {
     const tags = await this.getVersionTagList();
     const usedVersionIndex = tags.findIndex(tag => tag.name === usedVersion);
 
-    console.log(usedVersionIndex);
-    console.log(usedVersionIndex > 0 || usedVersionIndex === -1)
-    console.log(usedVersionIndex > 0 )
-    console.log(usedVersionIndex === -1)
-
     return usedVersionIndex > 0 || usedVersionIndex === -1;
   }
 
