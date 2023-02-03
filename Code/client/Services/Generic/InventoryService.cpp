@@ -92,7 +92,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
     {
-        spdlog::error(__FUNCTION__ ": failed to find server id, actor id: {:X}, item id: {:X}, unequip: {}, slot: {:X}", acEvent.ActorId, acEvent.IsAmmo, acEvent.Unequip, acEvent.EquipSlotId);
+        spdlog::error(__FUNCTION__ ": failed to find server id, actor id: {:X}, item id: {:X}, isAmmo: {}, unequip: {}, slot: {:X}", acEvent.ActorId, acEvent.ItemId, acEvent.IsAmmo, acEvent.Unequip, acEvent.EquipSlotId);
         return;
     }
 

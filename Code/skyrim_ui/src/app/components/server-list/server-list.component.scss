@@ -120,7 +120,7 @@
         background: transparentize(mod($-color-background, 1), 0.95);
       }
 
-      :first-child {
+      :nth-child(2) {
         flex: 1 1 auto;
       }
 
