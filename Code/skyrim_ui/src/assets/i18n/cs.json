@@ -1,6 +1,4 @@
 {
-  "INFO": "DO NOT MODIFY THIS FILE! USE THE overwrite.json FILE TO TRANSLATE THE UI!",
-
   "COMPONENT": {
     "CHAT": {
       "SEND": "Odeslat",
@@ -15,6 +13,7 @@
       "ADDRESS": "Adresa",
       "PASSWORD": "Heslo",
       "SAVE_PASSWORD": "Uložit heslo?",
+      "HIDE_PASSWORD": "Skrýt heslo?",
       "CONNECT": "Připojit",
       "CANCEL": "Zrušit",
       "PUBLIC_SERVERS": "Veřejné servery",
@@ -64,7 +63,7 @@
       "LEAVE_PARTY": "Opustit skupinu"
     },
     "PARTY_LIST": {
-      "NO_OTHER_PLAYERS": "Nikdo tu není!",
+      "NO_OTHER_PLAYERS": "Nikdo tu není",
       "TABLE_HEADERS": {
         "LEVEL": "Lv.",
         "NAME": "Jméno",
@@ -93,6 +92,7 @@
       "NO_SERVERS": "Není k dispozici žádný veřejný server",
       "HIDE_MISMATCHED_SERVERS": "Skrýt servery s nekompatibilní verzí",
       "HIDE_FULL_SERVERS": "Skrýt obsazené servery",
+      "HIDE_PASSWORD_PROTECTED_SERVERS": "Skrýt servery chráněné heslem",
       "SERVER_COUNT": "Zobrazeno  {{filteredCount}} z {{count}} serverů",
       "TABLE_HEADERS": {
         "NAME": "Jméno serveru",
@@ -103,6 +103,11 @@
       "JOIN": "Připojit"
     },
     "SETTINGS": {
+      "VERSION": {
+        "HEADER": "Verze",
+        "INFO": "Aktuálně nainstalována:",
+        "OUTDATED": "Verze není aktuální. Prosím proveďte aktualizaci."
+      },
       "AUDIO": "Audio",
       "MUTE_UI": "Ztlumit UI",
       "UI_VOLUME": "Hlasitost UI",
@@ -143,7 +148,7 @@
     },
     "COMMANDS": {
       "AVAILABLE_COMMANDS": "Dostupné příkazy pro chat: {{cmds}}",
-      "COMMAND_NOT_FOUND": "'{{cmd}}' je rozpoznán jako příkaz."
+      "COMMAND_NOT_FOUND": "'{{cmd}}' není rozpoznán jako příkaz."
     },
     "GROUP": {
       "LEVEL_UP": "{{name}} dosáhl {{level}} lv.",
