@@ -13,6 +13,7 @@
       "ADDRESS": "Adresse",
       "PASSWORD": "Passwort",
       "SAVE_PASSWORD": "Passwort speichern?",
+      "HIDE_PASSWORD": "Passwort ausblenden?",
       "CONNECT": "Verbinden",
       "CANCEL": "Abbrechen",
       "PUBLIC_SERVERS": "Öffentliche Server",
@@ -38,6 +39,8 @@
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Einladung von {{name}} akzeptieren",
       "LAUNCH_PARTY": "Gruppe erstellen",
+      "INVITES": "Einladungen",
+      "NO_INVITES": "Du hast keine Einladungen",
       "EXPERIENCE_WARNING": "Für ein optimales Questerlebnis solltet ihr unbedingt den Spielleitfaden in unserem Wiki lesen, den ihr auf unserer Website <b>skyrim-together.com</b> finden könnt. Hier ist eine kurze Zusammenfassung des Leitfadens:",
       "GUIDELINES": {
         "PARTY": "Wenn du eine Gruppe erstellst, wirst du der \"Host\", also der Gruppenleiter.",
@@ -87,7 +90,10 @@
       "BACK": "Zurück",
       "LOADING": "Lädt...",
       "NO_SERVERS": "Keine öffentlichen Server verfügbar",
-      "HIDE_MISMATCHED_SERVER": "Server mit inkompatiblen Versionen verstecken",
+      "HIDE_MISMATCHED_SERVERS": "Server mit inkompatiblen Versionen verstecken",
+      "HIDE_FULL_SERVERS": "Volle Server verstecken",
+      "HIDE_PASSWORD_PROTECTED_SERVERS": "Server mit Passwort verstecken",
+      "SERVER_COUNT": "{{filteredCount}} von {{count}} Servern",
       "TABLE_HEADERS": {
         "NAME": "Servername",
         "PLAYERS": "Spieler",
@@ -97,6 +103,11 @@
       "JOIN": "Beitreten"
     },
     "SETTINGS": {
+      "VERSION": {
+        "HEADER": "Version",
+        "INFO": "Momentan installiert:",
+        "OUTDATED": "Deine Version ist nicht aktuell. Bitte aktualisiere sie."
+      },
       "AUDIO": "Audio",
       "MUTE_UI": "UI Stummschalten",
       "UI_VOLUME": "UI Lautstärke",
@@ -118,12 +129,26 @@
       "LANGUAGE": "Sprache",
       "DEBUG": "Debug",
       "SHOW_DEBUG_INFO": "Debug Informationen anzeigen",
+      "FONT_SIZE": "Schriftgröße",
+      "FONT_SIZES": {
+        "XS": "Extra klein",
+        "S": "Klein",
+        "M": "Normal",
+        "L": "Groß",
+        "XL": "Extra groß"
+      },
       "BACK": "Zurück"
     }
   },
   "SERVICE": {
     "CLIENT": {
-      "CONNECTION_LOST": "Verbindung verloren, versuche erneut zu verbinden. {{remainingReconnectionAttempt } Versuche verbleibend."
+      "CONNECTION_LOST": "Verbindung verloren, versuche erneut zu verbinden. {{remainingReconnectionAttempt } Versuche verbleibend.",
+      "CONNECTED": "Erfolreich dem Server beigetreten.",
+      "DISCONNECTED": "Verbindung zum Server getrennt."
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "Verfügbare Chatbefehle: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' ist kein bekannter Chatbefehl."
     },
     "GROUP": {
       "LEVEL_UP": "{{name}} hat Level {{level}} erreicht.",
@@ -139,7 +164,8 @@
         "MODS_MISMATCH_INSTALL": "Bitte installiere folgende Mods, um dem Server beitreten zu können:\n{{mods}}",
         "CLIENT_MODS_DISALLOWED": "Dieser Server verbietet folgende Mods {{mods}}. Bitte entferne diese, um beitreten zu können.",
         "WRONG_PASSWORD": "Das eingegebene Passwort ist falsch.",
-        "NO_REASON": "Der Server hat die Verbindung ohne Angabe von Gründen verweigert."
+        "NO_REASON": "Der Server hat die Verbindung ohne Angabe von Gründen verweigert.",
+        "SERVER_FULL": "Dieser Server ist voll."
       }
     },
     "PLAYER_LIST": {

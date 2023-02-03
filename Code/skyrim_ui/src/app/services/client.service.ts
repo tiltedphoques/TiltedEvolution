@@ -1,12 +1,6 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
-import {
-  AsyncSubject,
-  BehaviorSubject,
-  firstValueFrom,
-  ReplaySubject,
-  Subject,
-} from 'rxjs';
+import { AsyncSubject, BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { PartyInfo } from '../models/party-info';
@@ -382,9 +376,15 @@ export class ClientService implements OnDestroy {
    * @param version Game's version.
    */
   private onSetVersion(version: string): void {
+    version = environment.overwriteVersion || version;
+
     this.zone.run(() => {
       this.versionSet.next(version);
     });
+  }
+
+  getVersion(): string {
+    return this.versionSet.value;
   }
 
   /**

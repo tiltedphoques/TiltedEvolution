@@ -21,10 +21,26 @@
     section {
       margin-bottom: 1rem;
       border-bottom: 2px solid;
-    }
 
-    section > div:not(:last-child) {
-      margin-bottom: 0.5rem;
+      .version {
+        color: green;
+
+        .outdated {
+          color: red;
+        }
+      }
+
+      .flex-item {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 1em 0;
+      }
+
+      & > div:not(:last-child) {
+        margin-bottom: 0.5rem;
+      }
     }
 
     hr {

@@ -14,4 +14,5 @@ export interface Server {
   countryCode: string;
   country: string;
   isFavorite: boolean;
+  pass: boolean;
 }
