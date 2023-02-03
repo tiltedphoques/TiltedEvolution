@@ -242,13 +242,26 @@ void DebugService::DrawServerView() noexcept
 
     static char s_address[1024] = "127.0.0.1:10578";
     static char s_password[1024] = "";
+    static bool s_isLan = false;
     ImGui::InputText("Address", s_address, std::size(s_address));
     ImGui::InputText("Password", s_password, std::size(s_password));
 
     if (m_transport.IsOnline())
     {
-        if (ImGui::Button("Disconnect"))
-            m_transport.Close();
+        if (s_isLan)
+        {
+            if (ImGui::Button("Disconnect"))
+            {
+                m_transport.Close();
+                World::Get().GetLocalServerService().Kill();
+                s_isLan = false;
+            }
+        }
+        else
+        {
+            if (ImGui::Button("Disconnect"))
+                m_transport.Close();
+        }
     }
     else
     {
@@ -260,13 +273,12 @@ void DebugService::DrawServerView() noexcept
 
         if (ImGui::Button("Create LAN Server"))
         {
-            World::Get().GetLocalServerService().Start();
+            if (World::Get().GetLocalServerService().Start())
+            {
+                m_transport.SetServerPassword(s_password);
+                s_isLan = m_transport.Connect(s_address);
+            }
         }
-        if (ImGui::Button("Yeet LAN Server"))
-        {
-            World::Get().GetLocalServerService().Kill();
-        }
-        
     }
 
     ImGui::End();
