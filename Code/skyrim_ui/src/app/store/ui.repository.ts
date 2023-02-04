@@ -12,6 +12,7 @@ interface UiProps {
   hideVersionMismatchedServers: boolean;
   hideFullServers: boolean;
   hidePasswordProtectedServers: boolean;
+  joinedLanServer: boolean;
 }
 
 const uiStore = createStore(
@@ -24,7 +25,8 @@ const uiStore = createStore(
     connectName: null,
     hideVersionMismatchedServers: true,
     hideFullServers: true,
-    hidePasswordProtectedServers: true
+    hidePasswordProtectedServers: true,
+    joinedLanServer: false,
   }),
 );
 
@@ -42,6 +44,7 @@ export class UiRepository {
   public readonly hideVersionMismatchedServers$ = uiStore.pipe(select((state) => state.hideVersionMismatchedServers));
   public readonly hideFullServers$ = uiStore.pipe(select((state) => state.hideFullServers));
   public readonly hidePasswordProtectedServers$ = uiStore.pipe(select((state) => state.hidePasswordProtectedServers));
+  public readonly joinedLanServer$ = uiStore.pipe(select((state) => state.joinedLanServer));
 
   openView(view: UiProps['view']) {
     uiStore.update(state => ({
@@ -63,6 +66,17 @@ export class UiRepository {
 
   isViewOpen() {
     return !!this.getView();
+  }
+
+  hasJoinedLanServer() {
+    return uiStore.getValue().joinedLanServer;
+  }
+
+  setJoinedLanServer(joinedLanServer: boolean) {
+    uiStore.update(state => ({
+      ...state,
+      joinedLanServer,
+    }))
   }
 
   getConnectIp() {

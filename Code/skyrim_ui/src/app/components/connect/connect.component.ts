@@ -133,6 +133,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     this.connecting = true;
     this.client.createLanServer();
     this.sound.play(Sound.Ok);
+    this.uiRepository.setJoinedLanServer(true);
   }
 
   @ViewChild('input')

@@ -1,4 +1,5 @@
 import { Component, EventEmitter, HostListener, Output } from '@angular/core';
+import { UiRepository } from 'src/app/store/ui.repository';
 import { ClientService } from '../../services/client.service';
 import { Sound, SoundService } from '../../services/sound.service';
 
@@ -13,6 +14,7 @@ export class DisconnectComponent {
   public constructor(
     private readonly client: ClientService,
     private readonly sound: SoundService,
+    private readonly uiRepository: UiRepository,
   ) {}
 
   public disconnect(): void {

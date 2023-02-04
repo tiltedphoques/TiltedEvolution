@@ -45,6 +45,8 @@
         </div>
       </div>
     </div>
+    <div class="separator">Errors</div>
+    <button (click)="popupError()">Popup error</button>
     <div class="separator">Background</div>
     <div class="debug-helper-row">
       <button (click)="setBackground('dark')">Dark</button>
@@ -53,7 +55,7 @@
       <button (click)="setBackground('light-image')">Image Light</button>
     </div>
     <div class="separator">Debug</div>
-    <div>
+    <div class="option">
       <label for="random-debug">Randomize Debug Info</label>
       <input
         type="checkbox"

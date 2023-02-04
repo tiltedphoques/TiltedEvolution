@@ -2,4 +2,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  button {
+    min-width: 4em;
+    padding: 0.5em;
+    background-color: #292929;
+    border-radius: 2px;
+    margin: 0 2em;
+  }
 }

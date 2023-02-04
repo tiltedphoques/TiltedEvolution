@@ -16,6 +16,7 @@ import {
 import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject, of, takeUntil, timer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { ErrorService } from 'src/app/services/error.service';
 import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';
 import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
@@ -56,6 +57,7 @@ export class DebugHelperComponent implements OnInit {
     private readonly storeService: StoreService,
     private readonly mockClientService: MockClientService,
     private readonly clientService: ClientService,
+    private readonly errorSerive: ErrorService,
   ) {}
 
   ngOnInit() {
@@ -89,6 +91,10 @@ export class DebugHelperComponent implements OnInit {
 
   addMockPlayer() {
     this.mockClientService.skyrimtogether.addMockPlayer();
+  }
+
+  popupError() {
+    this.errorSerive.setError("Error");
   }
 
   disconnectMockPlayer(playerId: number) {
