@@ -422,4 +422,9 @@ interface SkyrimTogether {
    * @param playerId Id of the new leader.
    */
   changePartyLeader(playerId: number): void;
+
+  /**
+   * Creates a new LAN server
+   */
+  createLanServer(): void;
 }

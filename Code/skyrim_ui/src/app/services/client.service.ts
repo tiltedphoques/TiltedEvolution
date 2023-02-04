@@ -270,6 +270,11 @@ export class ClientService implements OnDestroy {
     skyrimtogether.teleportToPlayer(playerId);
   }
 
+  public createLanServer(): void {
+    this.isConnectionInProgressChange.next(true);
+    skyrimtogether.createLanServer();
+  }
+
   /**
    * Called when the UI is first initialized.
    */

@@ -129,6 +129,12 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     this.uiRepository.openView(View.SERVER_LIST);
   }
 
+  public createLanServer(): void {
+    this.connecting = true;
+    this.client.createLanServer();
+    this.sound.play(Sound.Ok);
+  }
+
   @ViewChild('input')
   private inputRef!: ElementRef;
 

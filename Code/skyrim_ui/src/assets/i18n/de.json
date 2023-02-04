@@ -17,6 +17,7 @@
       "CONNECT": "Verbinden",
       "CANCEL": "Abbrechen",
       "PUBLIC_SERVERS": "Öffentliche Server",
+      "CREATE_LAN_SERVER": "Erstelle LAN Server",
       "ERROR": {
         "CONNECTION": "Es konnte keine Verbindung mit dem angegebenen Server hergestellt werden. Bitte vergewissere dich, dass du die richtige Adresse eingegeben hast und dass keine Netzwerkprobleme vorliegen.",
         "VERSION_MISMATCH": "Es konnte keine Verbindung mit dem Server hergestellt werden, weil dieser eine andere Version von Skyrim Together verwendet.",

@@ -189,6 +189,10 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     );
   }
 
+  createLanServer(): void {
+    this.connect("localhost", 10578, "");
+  }
+
   initMock() {
     Object.keys((this as any)._events).forEach(e => {
       this.on(e, (...params) => {
