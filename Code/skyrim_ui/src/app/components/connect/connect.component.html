@@ -6,51 +6,32 @@
     </p>
   </div>
 
-  <input
-    #input
-    type="text"
-    [placeholder]="'COMPONENT.CONNECT.ADDRESS' | transloco"
-    (keydown.enter)="connect()"
-    [(ngModel)]="address"
-    spellcheck="false"
-  />
-  <input
-    type="text"
-    [placeholder]="'COMPONENT.CONNECT.PASSWORD' | transloco"
-    spellcheck="false"
-    [(ngModel)]="password"
-    (keydown.enter)="connect()"
-  />
+  <input #input type="text" [placeholder]="'COMPONENT.CONNECT.ADDRESS' | transloco" (keydown.enter)="connect()"
+    [(ngModel)]="address" spellcheck="false" />
+  <input type="text" [placeholder]="'COMPONENT.CONNECT.PASSWORD' | transloco" spellcheck="false" [(ngModel)]="password"
+    (keydown.enter)="connect()" />
   <span class="save-password">
     <input type="checkbox" id="save-password" [(ngModel)]="savePassword" />
     <label for="save-password">{{
       'COMPONENT.CONNECT.SAVE_PASSWORD' | transloco
-    }}</label>
+      }}</label>
   </span>
 
   <app-action-buttons>
-    <button
-      [disabled]="connecting"
-      (click)="connect()"
-    >
+    <button [disabled]="connecting" (click)="connect()">
       {{ 'COMPONENT.CONNECT.CONNECT' | transloco }}
     </button>
-    <button
-      [disabled]="connecting"
-      (click)="cancel()"
-    >
-      {{ 'COMPONENT.CONNECT.CANCEL' | transloco }}
+    <button (click)="openServerList()">
+      {{ 'COMPONENT.CONNECT.PUBLIC_SERVERS' | transloco }}
+    </button>
+    <button (click)="createLanServer()">
+      {{ 'COMPONENT.CONNECT.CREATE_LAN_SERVER' | transloco }}
     </button>
   </app-action-buttons>
   <hr />
-  <button 
-    (click)="openServerList()"
-  >
-    {{ 'COMPONENT.CONNECT.PUBLIC_SERVERS' | transloco }}
-  </button>
-  <button 
-    (click)="createLanServer()"
-  >
-    {{ 'COMPONENT.CONNECT.CREATE_LAN_SERVER' | transloco }}
-  </button>
+  <app-action-buttons>
+    <button class="cancel" [disabled]="connecting" (click)="cancel()">
+      {{ 'COMPONENT.CONNECT.CANCEL' | transloco }}
+    </button>
+  </app-action-buttons>
 </div>

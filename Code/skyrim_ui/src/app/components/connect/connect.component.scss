@@ -1,7 +1,7 @@
-@import 'env';
+@import "env";
 
-@import 'functions/mod';
-@import 'mixins/gapped-vertical';
+@import "functions/mod";
+@import "mixins/gapped-vertical";
 
 .container {
   @include gapped-vertical($-size-gap);
@@ -16,12 +16,24 @@
     }
   }
 
-  button {
-    min-width: 4em;
-    padding: 0.5em;
-    background-color: #292929;
-    border-radius: 2px;
-    margin: 0 2em;
+  app-action-buttons {
+    width: 100%;
+    justify-content: center;
+
+    button {
+      &.cancel {
+        flex: none;
+      }
+
+      min-width: 4em;
+      padding: 0.5em;
+      background-color: #292929;
+      border-radius: 2px;
+      margin: 0 2em;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
   }
 }
 
