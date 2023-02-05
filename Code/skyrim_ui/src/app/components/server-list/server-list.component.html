@@ -93,7 +93,7 @@
             <div style="width: 1.55em">
               <fa-icon [icon]="fasLock"></fa-icon>
             </div>
-            <div>
+            <div style="width: 30em">
               {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.NAME' | transloco }}
               <app-order
                 [sortingOrder]="serverNameOrdering | async"
@@ -142,7 +142,9 @@
             <div style="width: 1.55em">
               <fa-icon *ngIf="server.hasPassword" [icon]="fasLock"></fa-icon>
             </div>
-            <div>{{ server.name }}</div>
+            <div style="width: 21em">
+              {{ server.name }}
+            </div>
             <div style="width: 7em">
               {{ server.player_count }} / {{ server.max_player_count }}
             </div>
