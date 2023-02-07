@@ -21,9 +21,11 @@ protected:
     void OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept;
 
 private:
-    void Announce() const noexcept;
+    void Announce() noexcept;
 
-    static void PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick, uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList, bool aPublic) noexcept;
+    static void PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick,
+                                 uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList, bool aPublic,
+                                 bool aPassword, int32 aFlags) noexcept;
 
     World& m_world;
 
@@ -31,4 +33,12 @@ private:
     entt::scoped_connection m_playerJoinConnection;
     entt::scoped_connection m_playerLeaveConnection;
     mutable std::chrono::steady_clock::time_point m_nextAnnounce;
+
+    int32 m_flags = 0;
+
+    enum
+    {
+        kHasPassword = 1 << 0,
+        kIsPublic = 1 << 1
+    };
 };

@@ -30,13 +30,6 @@ ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatche
     if (!bAnnounceServer)
         spdlog::warn("bAnnounceServer is set to false. The server will not show up as a public server. "
                      "If you are just playing with friends, this is probably what you want.");
-
-    // TODO: list pw protected servers on server list
-    if (bAnnounceServer && GameServer::Get()->IsPasswordProtected())
-    {
-        spdlog::warn("Your server will not show up on the server list because this server has a password.");
-        bAnnounceServer = false;
-    }
 }
 
 void ServerListService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -63,16 +56,25 @@ void ServerListService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
     m_nextAnnounce = (std::chrono::steady_clock::now() + std::chrono::minutes(1));
 }
 
-void ServerListService::Announce() const noexcept
+void ServerListService::Announce() noexcept
 {
     auto* pServer = GameServer::Get();
     const auto& cInfo = pServer->GetInfo();
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
 
-    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url, pServer->GetPort(), cInfo.tick_rate, pc, uMaxPlayerCount.value_as<uint16_t>(), cInfo.tagList, bAnnounceServer);
+    if (bAnnounceServer)
+        m_flags |= kIsPublic;
+    if (GameServer::Get()->IsPasswordProtected())
+        m_flags |= kHasPassword;
+
+    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url,
+                        pServer->GetPort(), cInfo.tick_rate, pc, uMaxPlayerCount.value_as<uint16_t>(), cInfo.tagList,
+                        bAnnounceServer, GameServer::Get()->IsPasswordProtected(), m_flags);
 }
 
-void ServerListService::PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick, uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList, bool aPublic) noexcept
+void ServerListService::PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick,
+                                         uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList,
+                                         bool aPublic, bool aPassword, int32 aFlags) noexcept
 {
     const std::string kVersion{BUILD_COMMIT};
     const httplib::Params params{
@@ -86,6 +88,8 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
         {"max_player_count", std::to_string(aPlayerMaxCount)},
         {"tags", std::string(acTagList.c_str(), acTagList.size())},
         {"public", aPublic ? "true" : "false"},
+        {"pass", aPassword ? "true" : "false"},
+        {"flags", std::to_string(aFlags)},
     };
 
     httplib::Client client(kMasterServerEndpoint);

@@ -13,7 +13,7 @@
     </button>
   </div>
 
-  <hr />
+  <hr/>
 
   <div class="server-list-filters">
     <input
@@ -32,11 +32,11 @@
         type="checkbox"
         id="hide-version-mismatched-servers-checkbox"
         [ngModel]="hideVersionMismatchedServers | async"
-        (ngModelChange)="hideVersionMismatchedServers.next($event)"
+        (ngModelChange)="onHideVersionMismatchedServers($event)"
       />
-      <label for="hide-version-mismatched-servers-checkbox">{{
-        'COMPONENT.SERVER_LIST.HIDE_MISMATCHED_SERVERS' | transloco
-      }}</label>
+      <label for="hide-version-mismatched-servers-checkbox">
+        {{ 'COMPONENT.SERVER_LIST.HIDE_MISMATCHED_SERVERS' | transloco }}
+      </label>
     </div>
 
     <div class="filter-checkbox">
@@ -44,22 +44,35 @@
         type="checkbox"
         id="hide-full-servers-checkbox"
         [ngModel]="hideFullServers | async"
-        (ngModelChange)="hideFullServers.next($event)"
+        (ngModelChange)="onHideFullServers($event)"
       />
-      <label for="hide-full-servers-checkbox">{{
-        'COMPONENT.SERVER_LIST.HIDE_FULL_SERVERS' | transloco
-      }}</label>
+      <label for="hide-full-servers-checkbox">
+        {{ 'COMPONENT.SERVER_LIST.HIDE_FULL_SERVERS' | transloco }}
+      </label>
+    </div>
+
+    <div class="filter-checkbox">
+      <input
+        type="checkbox"
+        id="hide-password-protected-servers-checkbox"
+        [ngModel]="hidePasswordProtectedServers | async"
+        (ngModelChange)="onHidePasswordProtectedServers($event)"
+      />
+      <label for="hide-password-protected-servers-checkbox">
+        {{ 'COMPONENT.SERVER_LIST.HIDE_PASSWORD_PROTECTED_SERVERS' | transloco }}
+      </label>
     </div>
   </div>
 
+
   <div class="server-count">
     {{
-      'COMPONENT.SERVER_LIST.SERVER_COUNT'
-        | transloco
-          : {
-              filteredCount: (filteredServerlist$ | async)?.length ?? 0,
-              count: (serverlist$ | async)?.length ?? 0
-            }
+    'COMPONENT.SERVER_LIST.SERVER_COUNT'
+      | transloco
+      : {
+        filteredCount: (filteredServerlist$ | async)?.length ?? 0,
+        count: (serverlist$ | async)?.length ?? 0
+      }
     }}
   </div>
 </div>
@@ -77,6 +90,9 @@
       <div class="scrollbar-offset">
         <div class="server-list-table">
           <div class="row header">
+            <div style="width: 1.55em">
+              <fa-icon [icon]="fasLock"></fa-icon>
+            </div>
             <div>
               {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.NAME' | transloco }}
               <app-order
@@ -114,7 +130,7 @@
 
       <cdk-virtual-scroll-viewport
         *ngIf="serverlist.length !== 0"
-        [itemSize]="rowHeight | async"
+        [itemSize]="rowHeight$ | async"
         class="virtual-viewport"
       >
         <div class="server-list-table">
@@ -123,6 +139,9 @@
             class="row"
             [class.odd]="odd"
           >
+            <div style="width: 1.55em">
+              <fa-icon *ngIf="server.hasPassword" [icon]="fasLock"></fa-icon>
+            </div>
             <div>{{ server.name }}</div>
             <div style="width: 7em">
               {{ server.player_count }} / {{ server.max_player_count }}
@@ -148,7 +167,7 @@
             </div>
             <div style="width: 4em">
               <button
-                (click)="connect(server)"
+                (click)="server.hasPassword ? connectWithPassword(server) : connect(server)"
                 class="join-button"
                 [disabled]="!server.isCompatible"
               >
