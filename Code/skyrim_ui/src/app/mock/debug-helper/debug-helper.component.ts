@@ -16,6 +16,7 @@ import {
 import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject, of, takeUntil, timer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { LanServer } from 'src/app/models/lan-server';
 import { ErrorService } from 'src/app/services/error.service';
 import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';
 import { ClientService } from '../../services/client.service';
@@ -95,6 +96,13 @@ export class DebugHelperComponent implements OnInit {
 
   popupError() {
     this.errorSerive.setError("Error");
+  }
+
+  discLanServer() {
+    this.clientService.lanServerDiscovered.next(new LanServer({
+      ip: "192.168.2.123",
+      port: 10578
+    }))
   }
 
   disconnectMockPlayer(playerId: number) {

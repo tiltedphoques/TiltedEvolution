@@ -18,6 +18,7 @@
       "CANCEL": "Cancel",
       "PUBLIC_SERVERS": "Public servers",
       "CREATE_LAN_SERVER": "Create LAN Server",
+      "JOIN_LAN_SERVER": "Join LAN Server",
       "ERROR": {
         "CONNECTION": "Could not connect to the specified server. Please make sure you've entered the correct address and that you're not experiencing network issues",
         "VERSION_MISMATCH": "You cannot connect to the server because it does not have the same version of Skyrim Together as you.",

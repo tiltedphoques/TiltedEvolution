@@ -25,6 +25,17 @@
         flex: none;
       }
 
+      span {
+        &.server-online {
+          color: #00ff00;
+          margin-left: 0.5em;
+        }
+        
+        &.server-offline {
+          display: none;
+        }
+      }
+
       min-width: 4em;
       padding: 0.5em;
       background-color: #292929;
@@ -34,6 +45,8 @@
       display: flex;
       justify-content: center;
     }
+
+
   }
 }
 

@@ -213,6 +213,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     this.emit('enterGame');
     this.emit('setVersion', this.version);
     this.emit('setName', this.playerName);
+    this.emit('lanServerDiscovered', "192.168.1.123", 10578);
 
     fromEvent(window, 'keydown').subscribe((event: KeyboardEvent) => {
       if (event.ctrlKey && event.location === 2) {

@@ -94,6 +94,8 @@ declare namespace SkyrimTogetherTypes {
   type PartyLeftCallback = (inviterId: number) => void;
 
   type PartyInviteReceivedCallback = (inviterId: number) => void;
+
+  type LanServerDiscoveredCallback = (ip: string, port: number) => void;
 }
 
 /** Global Skyrim: Together object. */
@@ -218,6 +220,8 @@ interface SkyrimTogether {
     event: 'partyInviteReceived',
     callback: SkyrimTogetherTypes.PartyInviteReceivedCallback,
   ): void;
+
+  on(event: 'lanServerDiscovered', callback: SkyrimTogetherTypes.LanServerDiscoveredCallback,): void;
 
   /** Remove listener from when the application is first initialized. */
   off(event: 'init', callback?: SkyrimTogetherTypes.InitCallback): void;
@@ -348,6 +352,8 @@ interface SkyrimTogether {
     event: 'partyInviteReceived',
     callback?: SkyrimTogetherTypes.PartyInviteReceivedCallback,
   ): void;
+
+  off(event: 'lanServerDiscovered', callback?: SkyrimTogetherTypes.LanServerDiscoveredCallback,): void;
 
   /**
    * Connect to server at given address and port.

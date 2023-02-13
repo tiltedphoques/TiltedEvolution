@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { PartyInfo } from '../models/party-info';
 import { Player } from '../models/player';
+import { LanServer } from '../models/lan-server';
 import { UiRepository } from '../store/ui.repository';
 import { ChatService } from './chat.service';
 import { ErrorEvents, ErrorService } from './error.service';
@@ -96,6 +97,8 @@ export class ClientService implements OnDestroy {
   /** Used for when a party leader changed. */
   public partyLeaderChange = new Subject<number>();
 
+  public lanServerDiscovered = new Subject<LanServer>();
+
   public localPlayerId = undefined;
 
   private _host: string;
@@ -153,6 +156,7 @@ export class ClientService implements OnDestroy {
       'partyInviteReceived',
       this.onPartyInviteReceived.bind(this),
     );
+    skyrimtogether.on('lanServerDiscovered', this.onLanServerDiscovered.bind(this));
   }
 
   /**
@@ -186,6 +190,7 @@ export class ClientService implements OnDestroy {
     skyrimtogether.off('partyCreated');
     skyrimtogether.off('partyLeft');
     skyrimtogether.off('partyInviteReceived');
+    skyrimtogether.off('lanServerDiscovered');
   }
 
   /**
@@ -630,6 +635,23 @@ export class ClientService implements OnDestroy {
     }
     this.zone.run(() => {
       this.partyInviteReceivedChange.next(inviterId);
+    });
+  }
+
+  private onLanServerDiscovered(ip: string, port: number) {
+    if (environment.game) {
+      console.log(
+        `%conSetLocalPlayerId`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
+    this.zone.run(() => {
+      this.lanServerDiscovered.next(new LanServer({
+        ip: ip,
+        port: port
+      }),
+      );
     });
   }
 }

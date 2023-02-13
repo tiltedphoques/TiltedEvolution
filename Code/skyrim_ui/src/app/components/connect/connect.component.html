@@ -24,8 +24,8 @@
     <button (click)="openServerList()">
       {{ 'COMPONENT.CONNECT.PUBLIC_SERVERS' | transloco }}
     </button>
-    <button (click)="createLanServer()">
-      {{ 'COMPONENT.CONNECT.CREATE_LAN_SERVER' | transloco }}
+    <button (click)="lanServerDiscovered ? connectLocally() : createLanServer()">
+      {{getLanButtonTranslation() | transloco }} <span [ngClass]="lanServerDiscovered ? 'server-online' : 'server-offline'">●</span>
     </button>
   </app-action-buttons>
   <hr />

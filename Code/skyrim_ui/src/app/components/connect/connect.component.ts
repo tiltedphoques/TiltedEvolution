@@ -29,6 +29,10 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
 
   public connecting = false;
 
+  public lanServerDiscovered = false;
+  private lanServerIp = '';
+  private lanServerPort = 0;
+
   @Output() public done = new EventEmitter<void>();
 
   public constructor(
@@ -39,7 +43,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     private readonly translocoService: TranslocoService,
     private readonly uiRepository: UiRepository,
   ) {
-    this.connectionSubscription = this.client.connectionStateChange.subscribe(
+    this.connectionSubscription = this.client.connectionStateChange.subscribe (
       async state => {
         if (this.connecting) {
           this.connecting = false;
@@ -73,6 +77,16 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
         }
       });
 
+      this.lanServerDiscoveredSubscription = this.client.lanServerDiscovered.subscribe(async state => {
+        if (state) {
+          this.lanServerDiscovered = true;
+          this.lanServerIp = state.ip;
+          this.lanServerPort = state.port;
+        } else {
+          this.lanServerDiscovered = false;
+        }
+      })
+
     this.address = this.storeService.get('last_connected_address', '');
     this.password = this.storeService.get('last_connected_password', '');
     this.savePassword = this.password !== '';
@@ -87,6 +101,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   public ngOnDestroy(): void {
     this.connectionSubscription.unsubscribe();
     this.protocolMismatchSubscription.unsubscribe();
+    this.lanServerDiscoveredSubscription.unsubscribe();
   }
 
   async connect(): Promise<void> {
@@ -120,6 +135,16 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     );
   }
 
+  async connectLocally(): Promise<void> {
+    this.connecting = true;
+    this.sound.play(Sound.Ok);
+    this.client.connect(
+      this.lanServerIp,
+      this.lanServerPort,
+      this.password,
+    );
+  }
+
   public cancel(): void {
     this.sound.play(Sound.Cancel);
     this.done.next();
@@ -136,10 +161,16 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     this.uiRepository.setJoinedLanServer(true);
   }
 
+  public getLanButtonTranslation(): string {
+    return this.lanServerDiscovered ? 'COMPONENT.CONNECT.JOIN_LAN_SERVER' : 'COMPONENT.CONNECT.CREATE_LAN_SERVER';
+  }
+
   @ViewChild('input')
   private inputRef!: ElementRef;
 
   private connectionSubscription: Subscription;
+
+  private lanServerDiscoveredSubscription: Subscription;
 
   private protocolMismatchSubscription: Subscription;
 
