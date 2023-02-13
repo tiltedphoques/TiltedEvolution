@@ -61,6 +61,15 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher)
     };
 }
 
+TransportService::~TransportService() noexcept
+{
+    if (m_connected)
+    {
+        m_surpressDisconnectEvent = true;
+        Client::Close();
+    }
+}
+
 bool TransportService::Send(const ClientMessage& acMessage) const noexcept
 {
     static thread_local ScratchAllocator s_allocator(1 << 18);
@@ -160,7 +169,8 @@ void TransportService::OnDisconnected(EDisconnectReason aReason)
 
     spdlog::warn("Disconnected from server {}", aReason);
 
-    m_dispatcher.trigger(DisconnectedEvent());
+    if (!m_surpressDisconnectEvent)   
+        m_dispatcher.trigger(DisconnectedEvent());
 }
 
 void TransportService::OnUpdate()

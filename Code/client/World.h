@@ -44,6 +44,7 @@ struct World : entt::registry
     [[nodiscard]] uint64_t GetTick() const noexcept;
 
     static void Create() noexcept;
+    static void Destroy() noexcept;
     [[nodiscard]] static World& Get() noexcept;
 
 private:

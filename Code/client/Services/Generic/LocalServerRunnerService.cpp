@@ -27,7 +27,8 @@ LocalServerService::LocalServerService() : m_registry("basic_ass_logger")
 
 LocalServerService::~LocalServerService()
 {
-    __debugbreak();
+    if (m_pServerInstance)
+        Kill();
 }
 
 bool LocalServerService::LoadServer()

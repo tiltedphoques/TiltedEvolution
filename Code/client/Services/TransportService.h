@@ -19,7 +19,7 @@ using TiltedPhoques::Client;
 struct TransportService : Client
 {
     TransportService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
-    ~TransportService() noexcept = default;
+    ~TransportService() noexcept override;
 
     TP_NOCOPYMOVE(TransportService);
 
@@ -45,6 +45,7 @@ private:
     World& m_world;
     entt::dispatcher& m_dispatcher;
     bool m_connected;
+    bool m_surpressDisconnectEvent = false;
     String m_serverPassword{};
 
     entt::scoped_connection m_updateConnection;

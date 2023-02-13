@@ -97,6 +97,14 @@ void World::Create() noexcept
     }
 }
 
+void World::Destroy() noexcept
+{
+    if (entt::locator<World>::has_value())
+    {
+        entt::locator<World>::reset();
+    }
+}
+
 World& World::Get() noexcept
 {
     return entt::locator<World>::value();

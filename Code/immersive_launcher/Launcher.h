@@ -30,4 +30,5 @@ bool LoadProgram(LaunchContext&);
 int StartUp(int argc, char** argv);
 
 void InitClient();
+void DestroyClient();
 } // namespace launcher

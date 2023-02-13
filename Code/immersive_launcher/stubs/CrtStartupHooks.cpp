@@ -1,12 +1,17 @@
 
 #include "launcher.h"
 #include <FunctionHook.hpp>
-#include <mutex>
 #include <TiltedCore/Initializer.hpp>
+#include <mutex>
 
-static std::once_flag s_initGuard;
-static uint16_t(WINAPI* Real_crtGetShowWindowMode)() = nullptr;
-static int(WINAPI* Real_ismbbled)(uint32_t) = nullptr;
+namespace
+{
+std::once_flag s_initGuard;
+std::once_flag s_destroyGuard;
+
+uint16_t(WINAPI* Real_crtGetShowWindowMode)() = nullptr;
+int(WINAPI* Real_ismbbled)(uint32_t) = nullptr;
+} // namespace
 
 void TP_GetStartupInfoW(LPSTARTUPINFOW apInfo) noexcept
 {
@@ -20,8 +25,15 @@ int TP_ismbblead(uint32_t c)
     return Real_ismbbled(c);
 }
 
+void TP_exit(int c)
+{
+    std::call_once(s_destroyGuard, []() { launcher::DestroyClient(); });
+    // we ignore the original intent here as we want to let the HOST finish
+}
+
 // this is more of a workaround, till we add SEH table support.
-void WINAPI TP_RaiseException(DWORD dwExceptionCode, DWORD dwExceptionFlags, DWORD nNumberOfArguments, const ULONG_PTR* lpArguments)
+void WINAPI TP_RaiseException(DWORD dwExceptionCode, DWORD dwExceptionFlags, DWORD nNumberOfArguments,
+                              const ULONG_PTR* lpArguments)
 {
     if (dwExceptionCode == 0x406D1388 && !IsDebuggerPresent())
         return; // thread naming
@@ -42,6 +54,7 @@ void InstallStartHook()
 #elif defined(TARGET_ST)
     TP_HOOK_IAT2("Kernel32.dll", "GetStartupInfoW", TP_GetStartupInfoW);
     TP_HOOK_IAT2("Kernel32.dll", "RaiseException", TP_RaiseException);
+    TP_HOOK_IAT2("api-ms-win-crt-runtime-l1-1-0.dll", "exit", TP_exit);
 #else
 #error Fix?
 #endif

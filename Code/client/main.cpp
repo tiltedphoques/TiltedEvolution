@@ -65,7 +65,12 @@ void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVe
     TP_HOOK_COMMIT;
 }
 
-void RunTiltedApp()
+void OnAppStart()
 {
     g_appInstance->BeginMain();
+}
+
+void OnAppExit()
+{
+    g_appInstance->EndMain();
 }

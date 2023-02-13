@@ -19,7 +19,8 @@
 
 // These symbols are defined within the client code skyrimtogetherclient
 extern void InstallStartHook();
-extern void RunTiltedApp();
+extern void OnAppStart();
+extern void OnAppExit();
 extern void RunTiltedInit(const std::filesystem::path& acGamePath, const TiltedPhoques::String& aExeVersion);
 
 // Defined in EarlyLoad.dll
@@ -139,7 +140,12 @@ bool LoadProgram(LaunchContext& LC)
 void InitClient()
 {
     // Jump into client code.
-    RunTiltedApp();
+    OnAppStart();
+}
+
+void DestroyClient()
+{
+    OnAppExit();
 }
 } // namespace launcher
 

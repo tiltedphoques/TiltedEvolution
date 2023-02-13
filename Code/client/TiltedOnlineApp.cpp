@@ -20,6 +20,8 @@
 
 using TiltedPhoques::Debug;
 
+static std::atomic_bool g_isExiting{false};
+
 TiltedOnlineApp::TiltedOnlineApp()
 {
     // Set console code page to UTF-8 so console known how to interpret string data
@@ -61,7 +63,13 @@ bool TiltedOnlineApp::BeginMain()
 
 bool TiltedOnlineApp::EndMain()
 {
+    if (!g_isExiting)
+        g_isExiting = true;
+    else
+        __debugbreak(); // this should stay here, as its a hard programmer error.
+
     UninstallHooks();
+    World::Destroy();
 
     return true;
 }
