@@ -73,7 +73,8 @@ bool LocalServerService::Start()
     char** argv = nullptr;
 
     m_pServerInstance = std::move(g_pCreateServer(m_registry, [this, argc, argv]() {}));
-    m_thread = std::thread([this]() {
+    m_thread = std::thread([&]() {
+        m_thread.detach();
         Base::SetThreadName(m_thread.native_handle(), "STLanServerThread");
         m_started = true;
         this->Run();
