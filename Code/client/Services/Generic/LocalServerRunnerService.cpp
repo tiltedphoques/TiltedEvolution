@@ -25,6 +25,11 @@ LocalServerService::LocalServerService() : m_registry("basic_ass_logger")
 {
 }
 
+LocalServerService::~LocalServerService()
+{
+    __debugbreak();
+}
+
 bool LocalServerService::LoadServer()
 {
     m_pServerDllHandle = LoadLibraryW(kServerDllName);

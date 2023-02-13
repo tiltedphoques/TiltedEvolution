@@ -6,6 +6,7 @@
 struct LocalServerService
 {
     LocalServerService();
+    ~LocalServerService();
 
     bool Start();
     void Kill();
