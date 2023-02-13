@@ -21,7 +21,7 @@ TCheckBuildTag g_pCheckTag{nullptr};
 TCreateServer g_pCreateServer{nullptr};
 } // namespace
 
-LocalServerService::LocalServerService() : m_registry("basic_ass_logger")
+LocalServerService::LocalServerService() : m_registry(spdlog::default_logger())
 {
 }
 

@@ -61,6 +61,15 @@ ConsoleRegistry::ConsoleRegistry(const char* acLoggerName)
     RegisterNatives();
 }
 
+ConsoleRegistry::ConsoleRegistry(std::shared_ptr<spdlog::logger> aLogger)
+    : m_out(aLogger)
+{
+    BASE_ASSERT(m_out.get(), "Output logger not found");
+
+    BindStaticItems();
+    RegisterNatives();
+}
+
 ConsoleRegistry::~ConsoleRegistry() = default;
 
 void ConsoleRegistry::BindStaticItems()

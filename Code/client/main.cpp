@@ -59,8 +59,6 @@ void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVe
 
     g_appInstance = std::make_unique<TiltedOnlineApp>();
 
-    auto console = spdlog::stdout_color_mt("basic_ass_logger");  
-
     TiltedOnlineApp::InstallHooks2();
     TP_HOOK_COMMIT;
 }
