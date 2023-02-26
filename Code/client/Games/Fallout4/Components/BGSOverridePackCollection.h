@@ -8,4 +8,3 @@ struct BGSOverridePackCollection : BaseFormComponent
 
     void* packs[5];
 };
-

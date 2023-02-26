@@ -18,6 +18,7 @@ local function build_server()
     add_deps(
         "CommonLib",
         "Console",
+        "Resources",
         "ESLoader",
         "CrashHandler",
         "BaseLib",

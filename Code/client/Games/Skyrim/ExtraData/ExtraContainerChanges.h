@@ -30,7 +30,7 @@ struct ExtraContainerChanges : BSExtraData
         TESObjectREFR* parent;
         float totalWeight;
         float armorWeight; // init to -1.0, maybe weight
-        uint16_t unk18; // Maybe count ? init to 0
+        uint16_t unk18;    // Maybe count ? init to 0
     };
 
     Data* data;

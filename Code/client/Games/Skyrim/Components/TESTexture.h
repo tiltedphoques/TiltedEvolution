@@ -5,7 +5,7 @@
 
 struct TESTexture : BaseFormComponent
 {
-    virtual ~TESTexture() {};
+    virtual ~TESTexture(){};
 
     void Construct();
 

@@ -6,7 +6,8 @@ struct PartyChangeLeaderRequest final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kPartyChangeLeaderRequest;
 
-    PartyChangeLeaderRequest() : ClientMessage(Opcode)
+    PartyChangeLeaderRequest()
+        : ClientMessage(Opcode)
     {
     }
 
@@ -15,11 +16,7 @@ struct PartyChangeLeaderRequest final : ClientMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const PartyChangeLeaderRequest& achRhs) const noexcept
-    {
-        return GetOpcode() == achRhs.GetOpcode() &&
-        PartyMemberPlayerId == achRhs.PartyMemberPlayerId;
-    }
+    bool operator==(const PartyChangeLeaderRequest& achRhs) const noexcept { return GetOpcode() == achRhs.GetOpcode() && PartyMemberPlayerId == achRhs.PartyMemberPlayerId; }
 
     uint32_t PartyMemberPlayerId{};
 };

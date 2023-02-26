@@ -12,7 +12,7 @@ CachedString& CachedString::operator=(const TiltedPhoques::String& acRhs) noexce
 
 void CachedString::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    const auto cId =  StringCache::Get()[*this];
+    const auto cId = StringCache::Get()[*this];
 
     Serialization::WriteBool(aWriter, cId.has_value());
     if (cId)

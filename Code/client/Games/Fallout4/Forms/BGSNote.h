@@ -7,5 +7,4 @@
 
 struct BGSNote : TESBoundObject, TESWeightForm, TESValueForm, TESModel, TESFullName
 {
-
 };

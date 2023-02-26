@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_Rabbit.h>
 
-
-
 AnimationGraphDescriptor_Rabbit::AnimationGraphDescriptor_Rabbit(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -57,22 +55,26 @@ AnimationGraphDescriptor_Rabbit::AnimationGraphDescriptor_Rabbit(AnimationGraphD
 
     uint64_t key = 11071881714804970071;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbAnimationDriven,
-            kbAllowRotation,
-            kbHeadTracking,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
+            {
+                kbAnimationDriven,
+                kbAllowRotation,
+                kbHeadTracking,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
             },
-        {kSpeed,
-            kTurnDelta,
-            kturnSpeedMult,
-            kDirection,
-            kSpeedSampled,
+            {
+                kSpeed,
+                kTurnDelta,
+                kturnSpeedMult,
+                kDirection,
+                kSpeedSampled,
             },
-        {kiSyncIdleLocomotion,
-            kiCombatStance,
+            {
+                kiSyncIdleLocomotion,
+                kiCombatStance,
             }));
 }

@@ -26,7 +26,8 @@ OverlayService::OverlayService(World& aWorld, entt::dispatcher& aDispatcher)
     m_playerHealthConnection = aDispatcher.sink<PacketEvent<RequestPlayerHealthUpdate>>().connect<&OverlayService::OnPlayerHealthUpdate>(this);
 }
 
-void sendPlayerMessage(const ChatMessageType acType, const String acContent, Player* aSendingPlayer) noexcept {
+void sendPlayerMessage(const ChatMessageType acType, const String acContent, Player* aSendingPlayer) noexcept
+{
     NotifyChatMessageBroadcast notifyMessage{};
 
     std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
@@ -38,21 +39,13 @@ void sendPlayerMessage(const ChatMessageType acType, const String acContent, Pla
 
     switch (notifyMessage.MessageType)
     {
-    case kGlobalChat:
-        GameServer::Get()->SendToPlayers(notifyMessage);
-        break;
+    case kGlobalChat: GameServer::Get()->SendToPlayers(notifyMessage); break;
 
-    case kSystemMessage:
-        spdlog::error("PlayerId {} attempted to send a System Message.", aSendingPlayer->GetId());
-        break;
+    case kSystemMessage: spdlog::error("PlayerId {} attempted to send a System Message.", aSendingPlayer->GetId()); break;
 
-    case kPlayerDialogue:
-        GameServer::Get()->SendToParty(notifyMessage, aSendingPlayer->GetParty());
-        break;
+    case kPlayerDialogue: GameServer::Get()->SendToParty(notifyMessage, aSendingPlayer->GetParty()); break;
 
-    case kPartyChat:
-        GameServer::Get()->SendToParty(notifyMessage, aSendingPlayer->GetParty());
-        break;
+    case kPartyChat: GameServer::Get()->SendToParty(notifyMessage, aSendingPlayer->GetParty()); break;
 
     case kLocalChat:
         if (character)
@@ -61,9 +54,7 @@ void sendPlayerMessage(const ChatMessageType acType, const String acContent, Pla
         }
         break;
 
-    default:
-        spdlog::error("{} is not a known MessageType", static_cast<uint64_t>(notifyMessage.MessageType));
-        break;
+    default: spdlog::error("{} is not a known MessageType", static_cast<uint64_t>(notifyMessage.MessageType)); break;
     }
 }
 

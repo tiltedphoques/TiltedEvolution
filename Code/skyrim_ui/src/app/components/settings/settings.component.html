@@ -1,144 +1,175 @@
 <div class="container">
   <div class="settings">
-    <div class="section">
-      <h2>{{ 'COMPONENT.SETTINGS.AUDIO' | transloco }}</h2>
+    <section>
+      <h2>{{ 'COMPONENT.SETTINGS.VERSION.HEADER' | transloco }}</h2>
       <div class="flex-item">
-        <label for="muted">{{ 'COMPONENT.SETTINGS.MUTE_UI' | transloco }}</label>
-        <input 
+        {{ 'COMPONENT.SETTINGS.VERSION.INFO' | transloco }}
+        <div class="version" [class.outdated]="isVersionOutdated | async">{{ clientVersion$ | async }}</div>
+      </div>
+      <div *ngIf="isVersionOutdated | async" class="flex-item">
+        {{ 'COMPONENT.SETTINGS.VERSION.OUTDATED' | transloco }}
+      </div>
+    </section>
+
+    <section>
+      <h2>{{ 'COMPONENT.SETTINGS.AUDIO' | transloco }}</h2>
+      <div class="setting">
+        <label for="muted">{{
+          'COMPONENT.SETTINGS.MUTE_UI' | transloco
+        }}</label>
+        <input
           type="checkbox"
           id="muted"
-          [ngModel]="muted"
-          (ngModelChange)="onMutedChange($event)"
+          [ngModel]="settings.muted | async"
+          (ngModelChange)="settings.muted.next($event)"
         />
       </div>
-      <div class="flex-item">
-        <label>{{ 'COMPONENT.SETTINGS.UI_VOLUME' | transloco }}</label>
-        <input class="volumeSlider" type="range" min="0.0" max="1.0" step="0.1" [ngModel]="volume"
-               (ngModelChange)="onVolumeChange($event)"
-        >
+      <div class="setting">
+        <label for="volumeSlider">{{
+          'COMPONENT.SETTINGS.UI_VOLUME' | transloco
+        }}</label>
+        <input
+          type="range"
+          id="volumeSlider"
+          min="0.0"
+          max="1.0"
+          step="0.1"
+          [ngModel]="settings.volume | async"
+          (ngModelChange)="settings.volume.next($event)"
+        />
       </div>
-    </div>
+    </section>
 
-    <div class="section">
+    <section>
       <h2>{{ 'COMPONENT.SETTINGS.UI' | transloco }}</h2>
-      <div class="flex-item">
+      <div class="setting">
         <label>{{ 'COMPONENT.SETTINGS.LANGUAGE' | transloco }}</label>
-        <app-dropdown class="settings-dropdown" [ngModel]="language" (ngModelChange)="onLanguageChange($event)">
-          <app-dropdown-option *ngFor="let l of availableLanguages" [text]="l.label" [value]="l.id"></app-dropdown-option>
+        <app-dropdown
+          [noTranslate]="true"
+          class="settings-dropdown"
+          [ngModel]="settings.language | async"
+          (ngModelChange)="settings.language.next($event)"
+        >
+          <app-dropdown-option
+            *ngFor="let lang of availableLanguages"
+            [text]="lang.label"
+            [value]="lang.id"
+          ></app-dropdown-option>
         </app-dropdown>
       </div>
-      <div class="flex-item">
-        <label for="fontSize">{{ 'COMPONENT.SETTINGS.FONT_SIZE' | transloco }}</label>
-        <app-dropdown class="settings-dropdown" [ngModel]="fontSize" (ngModelChange)="onFontSizeChange($event)">
-          <app-dropdown-option *ngFor="let l of availableFontSizes" [text]="l.label | transloco" [value]="l.id"></app-dropdown-option>
+      <div class="setting">
+        <label>{{ 'COMPONENT.SETTINGS.FONT_SIZE' | transloco }}</label>
+        <app-dropdown
+          class="settings-dropdown"
+          [ngModel]="settings.fontSize | async"
+          (ngModelChange)="settings.fontSize.next($event)"
+        >
+          <app-dropdown-option
+            *ngFor="let size of availableFontSizes"
+            [text]="size.label"
+            [value]="size.id"
+          ></app-dropdown-option>
         </app-dropdown>
       </div>
-    </div>
+    </section>
 
-    <div class="section">
+    <section>
       <h2>{{ 'COMPONENT.SETTINGS.PARTY' | transloco }}</h2>
-      <div class="flex-item">
-        <label for="showParty">{{ 'COMPONENT.SETTINGS.SHOW_PARTY' | transloco }}</label>
-        <input 
+      <div class="setting">
+        <label for="showParty">{{
+          'COMPONENT.SETTINGS.SHOW_PARTY' | transloco
+        }}</label>
+        <input
           type="checkbox"
           id="showParty"
-          [ngModel]="showParty"
-          (ngModelChange)="onShowPartyChange($event)"
+          [ngModel]="settings.isPartyShown | async"
+          (ngModelChange)="settings.isPartyShown.next($event)"
         />
       </div>
-      <div class="flex-item">
-        <label for="autoHideParty">{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY' | transloco }}</label>
-        <input 
+      <div class="setting">
+        <label for="autoHideParty">{{
+          'COMPONENT.SETTINGS.AUTO_HIDE_PARTY' | transloco
+        }}</label>
+        <input
           type="checkbox"
           id="autoHideParty"
-          [ngModel]="autoHideParty"
-          (ngModelChange)="onAutoHidePartyChange($event)"
+          [ngModel]="settings.autoHideParty | async"
+          (ngModelChange)="settings.autoHideParty.next($event)"
+        />
+      </div>
+      <div class="setting">
+        <label>{{
+          'COMPONENT.SETTINGS.AUTO_HIDE_PARTY_LENGTH' | transloco
+        }}</label>
+        <app-dropdown
+          [disabled]="!(settings.autoHideParty | async)"
+          [ngModel]="settings.autoHideTime | async"
+          (ngModelChange)="settings.autoHideTime.next($event)"
         >
-
-      </div>
-      <div class="flex-item">
-        <label>{{ 'COMPONENT.SETTINGS.AUTO_HIDE_PARTY_LENGTH' | transloco }}</label>
-        <div class="radio-group">
-          <div>
-            <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 1 } }}</label>
-            <input
-              type="radio"
-              [value]="1"
-              [disabled]="!autoHideParty"
-              [ngModel]="autoHideTime"
-              (ngModelChange)="onAutoHideTimeChange($event)"
-            >
-          </div>
-          <div>
-            <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 3 } }}</label>
-            <input
-              type="radio"
-              [value]="3"
-              [disabled]="!autoHideParty"
-              [ngModel]="autoHideTime"
-              (ngModelChange)="onAutoHideTimeChange($event)"
-            >
-          </div>
-          <div>
-            <label>{{ 'COMPONENT.SETTINGS.LENGTH' | transloco:{ length: 5 } }}</label>
-            <input
-              type="radio"
-              [value]="5"
-              [disabled]="!autoHideParty"
-              [ngModel]="autoHideTime"
-              (ngModelChange)="onAutoHideTimeChange($event)"
-            >
-          </div>
-        </div>
-      </div>
-      <div class="flex-item">
-        <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR' | transloco }}</label>
-        <app-dropdown class="settings-dropdown" [ngModel]="partyAnchor" (ngModelChange)="onPartyAnchorChange($event)">
           <app-dropdown-option
-            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_LEFT' | transloco"
-            [value]="PartyAnchor.TOP_LEFT"
-          ></app-dropdown-option>
-          <app-dropdown-option
-            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.TOP_RIGHT' | transloco"
-            [value]="PartyAnchor.TOP_RIGHT"
-          ></app-dropdown-option>
-          <app-dropdown-option
-            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_RIGHT' | transloco"
-            [value]="PartyAnchor.BOTTOM_RIGHT"
-          ></app-dropdown-option>
-          <app-dropdown-option
-            [text]="'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_LEFT' | transloco"
-            [value]="PartyAnchor.BOTTOM_LEFT"
+            *ngFor="let time of availableAutoHideTimes"
+            [text]="'COMPONENT.SETTINGS.LENGTH'"
+            [value]="time"
           ></app-dropdown-option>
         </app-dropdown>
       </div>
-      <div class="flex-item">
-        <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_OFFSET_X' | transloco }}</label>
-        <input type="range" min="0" max="84" step="1" [ngModel]="partyAnchorOffsetX"
-               (ngModelChange)="onPartyAnchorOffsetXChange($event)"
+      <div class="setting">
+        <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR' | transloco }}</label>
+        <app-dropdown
+          [ngModel]="settings.partyAnchor | async"
+          (ngModelChange)="settings.partyAnchor.next($event)"
         >
+          <app-dropdown-option
+            *ngFor="let anchor of availablePartyAnchors"
+            [text]="anchor.label"
+            [value]="anchor.id"
+          ></app-dropdown-option>
+        </app-dropdown>
       </div>
-      <div class="flex-item">
-        <label>{{ 'COMPONENT.SETTINGS.PARTY_ANCHOR_OFFSET_Y' | transloco }}</label>
+      <div class="setting">
+        <label for="partyAnchorOffsetX">{{
+          'COMPONENT.SETTINGS.PARTY_ANCHOR_OFFSET_X' | transloco
+        }}</label>
         <input
-          type="range" min="2" max="50" step="1" [ngModel]="partyAnchorOffsetY"
-          (ngModelChange)="onPartyAnchorOffsetYChange($event)"
-        >
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>{{ 'COMPONENT.SETTINGS.DEBUG' | transloco }}</h2>
-      <div class="flex-item">
-        <label for="showDebug">{{ 'COMPONENT.SETTINGS.SHOW_DEBUG_INFO' | transloco }}</label>
-        <input 
-          type="checkbox"
-          id="showDebug"
-          [ngModel]="showDebug"
-          (ngModelChange)="onShowDebugChange($event)"
+          type="range"
+          id="partyAnchorOffsetX"
+          min="0"
+          max="84"
+          step="1"
+          [ngModel]="settings.partyAnchorOffsetX | async"
+          (ngModelChange)="settings.partyAnchorOffsetX.next($event)"
         />
       </div>
-    </div>
+      <div class="setting">
+        <label for="partyAnchorOffsetY">{{
+          'COMPONENT.SETTINGS.PARTY_ANCHOR_OFFSET_Y' | transloco
+        }}</label>
+        <input
+          type="range"
+          id="partyAnchorOffsetY"
+          min="2"
+          max="50"
+          step="1"
+          [ngModel]="settings.partyAnchorOffsetY | async"
+          (ngModelChange)="settings.partyAnchorOffsetY.next($event)"
+        />
+      </div>
+    </section>
+
+    <section>
+      <h2>{{ 'COMPONENT.SETTINGS.DEBUG' | transloco }}</h2>
+      <div class="setting">
+        <label for="showDebug">{{
+          'COMPONENT.SETTINGS.SHOW_DEBUG_INFO' | transloco
+        }}</label>
+        <input
+          type="checkbox"
+          id="showDebug"
+          [ngModel]="settings.isDebugShown | async"
+          (ngModelChange)="settings.isDebugShown.next($event)"
+        />
+      </div>
+    </section>
   </div>
 </div>
 

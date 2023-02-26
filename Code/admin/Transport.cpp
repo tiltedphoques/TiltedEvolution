@@ -49,10 +49,7 @@ bool AdminApp::Send(const ClientAdminMessage& acMessage) const noexcept
 
     struct ScopedReset
     {
-        ~ScopedReset()
-        {
-            s_allocator.Reset();
-        }
+        ~ScopedReset() { s_allocator.Reset(); }
     } allocatorGuard;
 
     if (IsConnected())
@@ -80,10 +77,7 @@ bool AdminApp::Send(const ClientMessage& acMessage) const noexcept
 
     struct ScopedReset
     {
-        ~ScopedReset()
-        {
-            s_allocator.Reset();
-        }
+        ~ScopedReset() { s_allocator.Reset(); }
     } allocatorGuard;
 
     if (IsConnected())
@@ -104,7 +98,6 @@ bool AdminApp::Send(const ClientMessage& acMessage) const noexcept
 
     return false;
 }
-
 
 void AdminApp::SendShutdownRequest()
 {

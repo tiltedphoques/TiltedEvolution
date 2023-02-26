@@ -14,26 +14,22 @@ struct BSAnimationGraphChannel : BSIntrusiveRefCounted
     BSFixedString str;
 };
 
-template<class T, class U>
-struct ActorDirectionChannel
+template <class T, class U> struct ActorDirectionChannel
 {
     T data;
     void* unk;
     U* reference;
 };
 
-template<class TReference, class TType, template<class T, class U> class TChannel>
-struct BSTAnimationGraphDataChannel
-    : BSAnimationGraphChannel, TChannel<TType, TReference>
+template <class TReference, class TType, template <class T, class U> class TChannel> struct BSTAnimationGraphDataChannel : BSAnimationGraphChannel, TChannel<TType, TReference>
 {
     virtual ~BSTAnimationGraphDataChannel();
 };
 
 namespace internal
 {
-    using _TestChannel = BSTAnimationGraphDataChannel<Actor, float, ActorDirectionChannel>;
+using _TestChannel = BSTAnimationGraphDataChannel<Actor, float, ActorDirectionChannel>;
 }
-
 
 static_assert(offsetof(internal::_TestChannel, data) == 0x18);
 static_assert(offsetof(internal::_TestChannel, reference) == 0x28);

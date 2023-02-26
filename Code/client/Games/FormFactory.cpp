@@ -12,4 +12,3 @@ IFormFactory* IFormFactory::GetForType(const FormType aId) noexcept
 
     return s_factories.Get()[(uint32_t)aId];
 }
-

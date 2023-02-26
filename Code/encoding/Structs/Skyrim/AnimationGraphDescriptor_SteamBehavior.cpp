@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_SteamBehavior.h>
 
-
-
 AnimationGraphDescriptor_SteamBehavior::AnimationGraphDescriptor_SteamBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -51,29 +49,33 @@ AnimationGraphDescriptor_SteamBehavior::AnimationGraphDescriptor_SteamBehavior(A
     };
 
     uint64_t key = 12323911819758128165;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbEquipOk,
-            kbAnimationDriven,
-            kIsAttackReady,
-            kbAllowRotation,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbVoiceReady,
-            kbWeapReady,
-            kIsShouting,
-            kbAttached,
-            kbWantCastVoice,
+            {
+                kbEquipOk,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kbAllowRotation,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kbVoiceReady,
+                kbWeapReady,
+                kIsShouting,
+                kbAttached,
+                kbWantCastVoice,
             },
-        {kTurnDelta,
-            kSpeed,
-            kSampledSpeed,
-            kDirection,
+            {
+                kTurnDelta,
+                kSpeed,
+                kSampledSpeed,
+                kDirection,
             },
-        {kcurrentDefaultState,
-            kiSyncIdleLocomotion,
-            kiSyncTurnState,
+            {
+                kcurrentDefaultState,
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
             }));
 }

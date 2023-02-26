@@ -9,7 +9,8 @@ struct RequestOwnershipTransfer final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kRequestOwnershipTransfer;
 
-    RequestOwnershipTransfer() : ClientMessage(Opcode)
+    RequestOwnershipTransfer()
+        : ClientMessage(Opcode)
     {
     }
 
@@ -18,14 +19,7 @@ struct RequestOwnershipTransfer final : ClientMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const RequestOwnershipTransfer& achRhs) const noexcept
-    {
-        return GetOpcode() == achRhs.GetOpcode() &&
-               ServerId == achRhs.ServerId &&
-               WorldSpaceId == achRhs.WorldSpaceId &&
-               CellId == achRhs.CellId &&
-               Position == achRhs.Position;
-    }
+    bool operator==(const RequestOwnershipTransfer& achRhs) const noexcept { return GetOpcode() == achRhs.GetOpcode() && ServerId == achRhs.ServerId && WorldSpaceId == achRhs.WorldSpaceId && CellId == achRhs.CellId && Position == achRhs.Position; }
 
     uint32_t ServerId{};
     GameId WorldSpaceId{};

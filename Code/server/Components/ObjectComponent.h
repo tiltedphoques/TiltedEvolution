@@ -11,7 +11,8 @@ struct ObjectComponent
 {
     ObjectComponent(Player* apLastSender)
         : pLastSender(apLastSender)
-    {}
+    {
+    }
 
     Player* pLastSender;
     LockData CurrentLockData{};

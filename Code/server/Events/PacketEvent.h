@@ -5,13 +5,15 @@ using TiltedPhoques::ConnectionId_t;
 struct Player;
 
 /**
-* @brief Wrapper for client-to-server messages.
-*/
-template<class T>
-struct PacketEvent
+ * @brief Wrapper for client-to-server messages.
+ */
+template <class T> struct PacketEvent
 {
-    PacketEvent(T* aPacket, Player* apPlayer) : Packet(*aPacket), pPlayer(apPlayer)
-    {}
+    PacketEvent(T* aPacket, Player* apPlayer)
+        : Packet(*aPacket)
+        , pPlayer(apPlayer)
+    {
+    }
 
     constexpr PacketEvent(const PacketEvent& acRhs) = default;
 
@@ -23,10 +25,7 @@ struct PacketEvent
         return *this;
     }
 
-    Player* GetSender() const
-    {
-        return pPlayer;
-    }
+    Player* GetSender() const { return pPlayer; }
 
     T& Packet;
     Player* pPlayer;

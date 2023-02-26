@@ -1,13 +1,20 @@
-<div #log (scroll)="onLogScroll()" class="app-chat-messages" [style.padding-top.px]="padding">
-  <p
-    #entry
-    *ngFor="let message of messages"
-    [ngClass]="message.typeClass"
-  >
+<div
+  #log
+  (scroll)="onLogScroll()"
+  class="app-chat-messages"
+  [style.padding-top.px]="padding"
+>
+  <p #entry *ngFor="let message of messages" [ngClass]="message.typeClass">
     <span class="app-chat-date">[{{ message.date | date: 'HH:mm:ss' }}] </span>
-    <span class="app-chat-name" *ngIf="message.senderName">{{ message.senderName }}: </span>
-    <span class="app-chat-message" *ngIf="message.typeClass === 'system'">{{ message.content | transloco: message.translationParams }}</span>
-    <span class="app-chat-message" *ngIf="message.typeClass !== 'system'">{{ message.content }}</span>
+    <span class="app-chat-name" *ngIf="message.senderName"
+      >{{ message.senderName }}:
+    </span>
+    <span class="app-chat-message" *ngIf="message.typeClass === 'system'">{{
+      message.content | transloco: message.translationParams
+    }}</span>
+    <span class="app-chat-message" *ngIf="message.typeClass !== 'system'">{{
+      message.content
+    }}</span>
   </p>
 </div>
 <div class="app-chat-input">
@@ -20,7 +27,7 @@
     spellcheck="false"
     [(ngModel)]="message"
     (keydown.enter)="sendMessage()"
-  >
+  />
   <button (click)="sendMessage()">
     {{ 'COMPONENT.CHAT.SEND' | transloco }}
   </button>

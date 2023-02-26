@@ -43,12 +43,12 @@ private:
     static void AllocateBuffer(uv_handle_t* apHandle, size_t aSuggestedSize, uv_buf_t* apBuffer);
 
 private:
-    //fs::path m_configPath;
-    // Order here matters for constructor calling order.
+    // fs::path m_configPath;
+    //  Order here matters for constructor calling order.
     uv_loop_t m_loop;
     uv_tty_t m_tty;
     fs::path m_SettingsPath;
-    bool m_useIni{ false };
+    bool m_useIni{false};
     Console::ConsoleRegistry m_console;
     TiltedPhoques::UniquePtr<IGameServerInstance> m_pServerInstance;
 };

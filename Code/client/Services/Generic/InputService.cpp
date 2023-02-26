@@ -16,13 +16,14 @@
 #include "Games/Skyrim/Interface/MenuControls.h"
 
 static OverlayService* s_pOverlay = nullptr;
+static UINT s_currentACP = CP_ACP;
 
 void ForceKillAllInput()
 {
 #if TP_SKYRIM
     MenuControls::GetInstance()->SetToggle(false);
 #else
-// TODO! Crash the project so we notice
+    // TODO! Crash the project so we notice
     int* t = nullptr;
     *t = 42;
 #endif
@@ -158,60 +159,28 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
         {
             switch (aKey)
             {
-            case VK_CONTROL:
-                aKey = VK_RCONTROL;
-                break;
-            case VK_MENU:
-                aKey = VK_RMENU;
-                break;
-            case VK_RETURN:
-                aKey = VK_SEPARATOR;
-                break;
+            case VK_CONTROL: aKey = VK_RCONTROL; break;
+            case VK_MENU: aKey = VK_RMENU; break;
+            case VK_RETURN: aKey = VK_SEPARATOR; break;
             }
         }
         else
         {
             switch (aKey)
             {
-            case VK_CONTROL:
-                aKey = VK_LCONTROL;
-                break;
-            case VK_MENU:
-                aKey = VK_LMENU;
-                break;
-            case VK_INSERT:
-                aKey = VK_NUMPAD0;
-                break;
-            case VK_DELETE:
-                aKey = VK_DECIMAL;
-                break;
-            case VK_HOME:
-                aKey = VK_NUMPAD7;
-                break;
-            case VK_END:
-                aKey = VK_NUMPAD1;
-                break;
-            case VK_PRIOR:
-                aKey = VK_NUMPAD9;
-                break;
-            case VK_NEXT:
-                aKey = VK_NUMPAD3;
-                break;
-            case VK_LEFT:
-                aKey = VK_NUMPAD4;
-                break;
-            case VK_RIGHT:
-                aKey = VK_NUMPAD6;
-                break;
-            case VK_UP:
-                aKey = VK_NUMPAD8;
-                break;
-            case VK_DOWN:
-                aKey = VK_NUMPAD2;
-                break;
-            case VK_CLEAR:
-                aKey = VK_NUMPAD5;
-                break;
+            case VK_CONTROL: aKey = VK_LCONTROL; break;
+            case VK_MENU: aKey = VK_LMENU; break;
+            case VK_INSERT: aKey = VK_NUMPAD0; break;
+            case VK_DELETE: aKey = VK_DECIMAL; break;
+            case VK_HOME: aKey = VK_NUMPAD7; break;
+            case VK_END: aKey = VK_NUMPAD1; break;
+            case VK_PRIOR: aKey = VK_NUMPAD9; break;
+            case VK_NEXT: aKey = VK_NUMPAD3; break;
+            case VK_LEFT: aKey = VK_NUMPAD4; break;
+            case VK_RIGHT: aKey = VK_NUMPAD6; break;
+            case VK_UP: aKey = VK_NUMPAD8; break;
+            case VK_DOWN: aKey = VK_NUMPAD2; break;
+            case VK_CLEAR: aKey = VK_NUMPAD5; break;
             }
         }
     }
@@ -297,7 +266,7 @@ void ProcessMouseMove(uint16_t aX, uint16_t aY)
 }
 
 void ProcessMouseButton(uint16_t aX, uint16_t aY, cef_mouse_button_type_t aButton, bool aDown)
-{   
+{
     auto& overlay = *s_pOverlay;
 
     const auto pApp = overlay.GetOverlayApp();
@@ -344,6 +313,24 @@ void ProcessMouseWheel(uint16_t aX, uint16_t aY, int16_t aZ)
     }
 }
 
+UINT GetRealACP()
+{
+    // Get the keyboard layout for the current thread.
+    HKL keybdLayout = GetKeyboardLayout(0);
+
+    // Extract the language ID from it, contained in its low-order word.
+    int langID = LOWORD(keybdLayout);
+
+    // Call the GetLocaleInfo function to retrieve the default ANSI code page
+    // associated with that language ID.
+    UINT acp = CP_ACP;
+    GetLocaleInfo(MAKELCID(langID, SORT_DEFAULT),
+        LOCALE_IDEFAULTANSICODEPAGE | LOCALE_RETURN_NUMBER,
+        (LPTSTR) &acp,
+        sizeof(acp) / sizeof(TCHAR));
+    return acp;
+}
+
 LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     const auto pApp = s_pOverlay->GetOverlayApp();
@@ -358,7 +345,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     if (!pRenderer)
         return 0;
 
-    auto &discord = World::Get().ctx().at<DiscordService>();
+    auto& discord = World::Get().ctx().at<DiscordService>();
     discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
 #if TP_SKYRIM64
@@ -446,7 +433,20 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     }
     else if (uMsg == WM_CHAR)
     {
-        ProcessKeyboard(static_cast<uint16_t>(wParam), (lParam >> 16) & 0xFF, KEYEVENT_CHAR, false, false);
+        uint16_t scancode = (lParam >> 16) & 0xFF;
+        uint16_t virtualKey = static_cast<uint16_t>(wParam);
+        if (!IsWindowUnicode(hwnd))
+        {
+            wchar_t wch;
+            ::MultiByteToWideChar(s_currentACP, MB_PRECOMPOSED, reinterpret_cast<char*>(&virtualKey), 2, &wch, sizeof(wchar_t));
+            virtualKey = wch;
+        }
+        ProcessKeyboard(virtualKey, scancode, KEYEVENT_CHAR, false, false);
+    }
+    else if (uMsg == WM_INPUTLANGCHANGE)
+    {
+        s_currentACP = GetRealACP();
+        spdlog::info("Input language changed, current ACP: {}", s_currentACP);
     }
 
 #if TP_FALLOUT
@@ -461,10 +461,10 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 InputService::InputService(OverlayService& aOverlay) noexcept
 {
     s_pOverlay = &aOverlay;
+    s_currentACP = GetRealACP();
 }
 
 InputService::~InputService() noexcept
 {
     s_pOverlay = nullptr;
 }
-

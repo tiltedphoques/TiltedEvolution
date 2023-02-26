@@ -14,4 +14,5 @@ struct EquipManager
     void* UnEquipSpell(Actor* apActor, TESForm* apSpell, uint32_t aSlotId);
     void* EquipShout(Actor* apActor, TESForm* apShout);
     void* UnEquipShout(Actor* apActor, TESForm* apShout);
+    void UnequipAll(Actor* apActor);
 };

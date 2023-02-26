@@ -9,8 +9,8 @@ struct PartyLeftEvent;
 struct NotifyWeatherChange;
 
 /**
-* @brief Responsible for weather changes, which is controlled on a party-per-party basis.
-*/
+ * @brief Responsible for weather changes, which is controlled on a party-per-party basis.
+ */
 struct WeatherService
 {
     WeatherService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher);
@@ -30,12 +30,17 @@ protected:
     void RunWeatherUpdates(const double acDelta) noexcept;
 
     void ToggleGameWeatherSystem(bool aToggle) noexcept;
+    void SetCachedWeather() noexcept;
 
 private:
     World& m_world;
     TransportService& m_transport;
 
-    bool m_isInParty{};
+    /**
+    * This variable has two uses:
+    * For the party leader, it is used to detect weather changes.
+    * For non-leaders, it is used to reapply the server weather if it changes.
+    */
     uint32_t m_cachedWeatherId{};
 
     entt::scoped_connection m_updateConnection;
@@ -46,4 +51,3 @@ private:
     entt::scoped_connection m_playerRemovedConnection;
     entt::scoped_connection m_weatherChangeConnection;
 };
-

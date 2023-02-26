@@ -5,17 +5,17 @@
 struct Player;
 
 /**
-* @brief Dispatched when a player enters a new exterior cell.
-*/
+ * @brief Dispatched when a player enters a new exterior cell.
+ */
 struct CharacterExteriorCellChangeEvent
 {
-    CharacterExteriorCellChangeEvent(Player* apOwner, const entt::entity aEntity,
-                                     const GameId aWorldSpaceId, const GridCellCoords aCurrentCoords)
+    CharacterExteriorCellChangeEvent(Player* apOwner, const entt::entity aEntity, const GameId aWorldSpaceId, const GridCellCoords aCurrentCoords)
         : Owner(apOwner)
         , Entity{aEntity}
         , WorldSpaceId(aWorldSpaceId)
         , CurrentCoords(aCurrentCoords)
-    {}
+    {
+    }
 
     Player* Owner;
     entt::entity Entity;

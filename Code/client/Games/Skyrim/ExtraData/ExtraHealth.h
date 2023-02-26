@@ -10,4 +10,3 @@ struct ExtraHealth : BSExtraData
 };
 
 static_assert(sizeof(ExtraHealth) == 0x18);
-

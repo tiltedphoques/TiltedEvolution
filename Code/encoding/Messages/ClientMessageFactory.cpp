@@ -2,32 +2,32 @@
 
 #include <Messages/ClientMessageFactory.h>
 
-static std::function<UniquePtr<ClientMessage>(TiltedPhoques::Buffer::Reader& aReader)>
-    s_clientMessageExtractor[kClientOpcodeMax];
+static std::function<UniquePtr<ClientMessage>(TiltedPhoques::Buffer::Reader& aReader)> s_clientMessageExtractor[kClientOpcodeMax];
 
 namespace details
 {
-    static struct ClientMessageFactoryInit
+static struct ClientMessageFactoryInit
+{
+    ClientMessageFactoryInit()
     {
-        ClientMessageFactoryInit()
+        auto extractor = [](auto& x)
         {
-            auto extractor = [](auto& x) {
-                using T = typename std::remove_reference_t<decltype(x)>::Type;
+            using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-                s_clientMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader) {
-                    auto ptr = TiltedPhoques::MakeUnique<T>();
-                    ptr->DeserializeRaw(aReader);
-                    return TiltedPhoques::CastUnique<ClientMessage>(std::move(ptr));
-                };
-
-                return false;
+            s_clientMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader)
+            {
+                auto ptr = TiltedPhoques::MakeUnique<T>();
+                ptr->DeserializeRaw(aReader);
+                return TiltedPhoques::CastUnique<ClientMessage>(std::move(ptr));
             };
 
-            ClientMessageFactory::Visit(extractor);
-        }
-    } s_ClientMessageFactoryInit;
-    }
+            return false;
+        };
 
+        ClientMessageFactory::Visit(extractor);
+    }
+} s_ClientMessageFactoryInit;
+} // namespace details
 
 UniquePtr<ClientMessage> ClientMessageFactory::Extract(TiltedPhoques::Buffer::Reader& aReader) const noexcept
 {

@@ -12,10 +12,7 @@ struct TESObjectCELL : TESForm
     Vector<TESObjectREFR*> GetRefsByFormTypes(const Vector<FormType>& aFormTypes) const noexcept;
     void GetCOCPlacementInfo(NiPoint3* aOutPos, NiPoint3* aOutRot, bool aAllowCellLoad) noexcept;
 
-    bool IsValid() const
-    {
-        return cellFlags[4] == 7;
-    }
+    bool IsValid() const { return cellFlags[4] == 7; }
 
     struct ReferenceData
     {
@@ -24,10 +21,7 @@ struct TESObjectCELL : TESForm
             TESObjectREFR* ref;
             void* unk08;
 
-            TESObjectREFR* Get()
-            {
-                return unk08 != nullptr ? ref : nullptr;
-            }
+            TESObjectREFR* Get() { return unk08 != nullptr ? ref : nullptr; }
         };
 
         uint64_t unk0;
@@ -39,10 +33,7 @@ struct TESObjectCELL : TESForm
         void* unk18;
         Reference* refArray;
 
-        uint32_t Count()
-        {
-            return capacity - available;
-        }
+        uint32_t Count() { return capacity - available; }
     };
     static_assert(sizeof(ReferenceData) == 0x30);
 

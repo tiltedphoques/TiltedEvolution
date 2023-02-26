@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 struct LockData
 {
     LockData() = default;

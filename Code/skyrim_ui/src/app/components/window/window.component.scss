@@ -2,18 +2,18 @@
 
 :host {
   border: 5px solid;
-  border-image: url("../../../assets/images/frame/simple.svg") 5 fill;
+  border-image: url('../../../assets/images/frame/simple.svg') 5 fill;
 
   display: block;
 
-  &[data-app-window-border=fancy] {
+  &[data-app-window-border='fancy'] {
     border: 26px solid;
-    border-image: url("../../../assets/images/frame/fancy.svg") 26 fill;
+    border-image: url('../../../assets/images/frame/fancy.svg') 26 fill;
   }
 
-  &[data-app-window-border=strip] {
+  &[data-app-window-border='strip'] {
     border: solid;
     border-width: 7px 39px;
-    border-image: url("../../../assets/images/frame/strip.svg") 7 39 fill;
+    border-image: url('../../../assets/images/frame/strip.svg') 7 39 fill;
   }
 }

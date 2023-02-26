@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Radscorpion.h>
 
-
-
-AnimationGraphDescriptor_Radscorpion::AnimationGraphDescriptor_Radscorpion(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Radscorpion::AnimationGraphDescriptor_Radscorpion(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -106,7 +103,8 @@ AnimationGraphDescriptor_Radscorpion::AnimationGraphDescriptor_Radscorpion(
 
     uint64_t key = 18391308120865710389;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kIsAttackReady,
@@ -139,6 +137,5 @@ AnimationGraphDescriptor_Radscorpion::AnimationGraphDescriptor_Radscorpion(
                 kiSyncIdleLocomotion,
                 kiLocomotionSpeed,
                 kiSyncTurnState,
-            }
-        ));
+            }));
 }

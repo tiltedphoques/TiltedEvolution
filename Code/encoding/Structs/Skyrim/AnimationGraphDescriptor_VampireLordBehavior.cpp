@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_VampireLordBehavior.h>
 
-
-
 AnimationGraphDescriptor_VampireLordBehavior::AnimationGraphDescriptor_VampireLordBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -83,43 +81,29 @@ AnimationGraphDescriptor_VampireLordBehavior::AnimationGraphDescriptor_VampireLo
         kDeathSpeedDamped = 73,
     };
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, m_key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, m_key,
         AnimationGraphDescriptor(
-        {kbEquipOk,
-            kbAnimationDriven,
-            kIsAttackReady,
-            kbAllowRotation,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbHeadTracking,
-            kbMRh_Ready,
-            kbInJumpState,
-            kIsCastingRight,
-            kbWantCastRight,
-            kbVoiceReady,
-            kisLevitating,
-            kIsSprinting,
-            kNotCasting,
-            kbWantCastLeft,
-            kbMLh_Ready,
-            kIsCastingLeft,
-            kbDelayMoveStart,
+            {
+                kbEquipOk,       kbAnimationDriven, kIsAttackReady, kbAllowRotation, kIsRecoiling, kIsStaggering, kIsAttacking,   kbHeadTracking, kbMRh_Ready,    kbInJumpState,
+                kIsCastingRight, kbWantCastRight,   kbVoiceReady,   kisLevitating,   kIsSprinting, kNotCasting,   kbWantCastLeft, kbMLh_Ready,    kIsCastingLeft, kbDelayMoveStart,
             },
-        {kSpeed,
-            kTurnDelta,
-            kDirection,
-            kSpeedSampled,
-            kCastBlend,
-            kPitch,
-            kTurnDeltaDamped,
-            kCastBlendDamped,
-            kSampledSpeed,
-            kVelocityZ,
+            {
+                kSpeed,
+                kTurnDelta,
+                kDirection,
+                kSpeedSampled,
+                kCastBlend,
+                kPitch,
+                kTurnDeltaDamped,
+                kCastBlendDamped,
+                kSampledSpeed,
+                kVelocityZ,
             },
-        {kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiSyncSprintState,
-            kiState,
+            {
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiSyncSprintState,
+                kiState,
             }));
 }

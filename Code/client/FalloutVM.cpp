@@ -44,7 +44,8 @@ uintptr_t TP_MAKE_THISCALL(HookVMDestructor, void)
     return TiltedPhoques::ThisCall(VMDestructor, apThis);
 }
 
-static TiltedPhoques::Initializer s_mainHooks([]()
+static TiltedPhoques::Initializer s_mainHooks(
+    []()
     {
         POINTER_FALLOUT4(TMainLoop, cMainLoop, 633525);
         POINTER_FALLOUT4(TVMUpdate, cVMUpdate, 759509);

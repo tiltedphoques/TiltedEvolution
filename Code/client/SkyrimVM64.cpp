@@ -44,7 +44,8 @@ uintptr_t TP_MAKE_THISCALL(HookVMDestructor, void)
     return TiltedPhoques::ThisCall(VMDestructor, apThis);
 }
 
-static TiltedPhoques::Initializer s_mainHooks([]()
+static TiltedPhoques::Initializer s_mainHooks(
+    []()
     {
         POINTER_SKYRIMSE(TMainLoop, cMainLoop, 36564);
         POINTER_SKYRIMSE(TVMUpdate, cVMUpdate, 53926);

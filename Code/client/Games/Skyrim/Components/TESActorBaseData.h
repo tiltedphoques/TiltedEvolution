@@ -34,10 +34,7 @@ struct TESActorBaseData : BaseFormComponent
         int8_t rank;
     };
 
-    bool IsEssential() const noexcept
-    {
-        return flags & BaseFlags::IS_ESSENTIAL;
-    }
+    bool IsEssential() const noexcept { return flags & BaseFlags::IS_ESSENTIAL; }
     void SetEssential(bool aSet) noexcept
     {
         if (aSet)

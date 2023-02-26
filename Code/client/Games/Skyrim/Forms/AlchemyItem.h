@@ -4,5 +4,4 @@
 
 struct AlchemyItem : TESForm
 {
-
 };

@@ -6,8 +6,8 @@ struct RenderSystemD3D9;
 struct RenderSystemD3D11;
 
 /**
-* @brief Draws the ImGui UI.
-*/
+ * @brief Draws the ImGui UI.
+ */
 struct ImguiService
 {
     using TCallback = void();
@@ -26,9 +26,8 @@ struct ImguiService
     void RawInputHandler(RAWINPUT& aRawinput);
 
     entt::sink<entt::sigh<TCallback>> OnDraw;
-    
-private:
 
+private:
     ImGuiImpl::ImGuiDriver m_imDriver;
     entt::sigh<TCallback> m_drawSignal;
 };

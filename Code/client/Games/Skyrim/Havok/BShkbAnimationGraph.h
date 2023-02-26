@@ -9,7 +9,7 @@ struct bhkWorldM;
 
 struct BShkbAnimationGraph
 {
-    virtual ~BShkbAnimationGraph() {};
+    virtual ~BShkbAnimationGraph(){};
 
     uint8_t pad8[0xC0 - 0x8];
     hkbCharacter character;

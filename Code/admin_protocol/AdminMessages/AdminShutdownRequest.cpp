@@ -1,6 +1,5 @@
 #include "AdminShutdownRequest.h"
 
-
 void AdminShutdownRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
 }

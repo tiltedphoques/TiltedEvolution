@@ -6,8 +6,7 @@ using TiltedPhoques::Serialization;
 
 bool ReferenceUpdate::operator==(const ReferenceUpdate& acRhs) const noexcept
 {
-    return UpdatedMovement == acRhs.UpdatedMovement &&
-        ActionEvents == acRhs.ActionEvents;
+    return UpdatedMovement == acRhs.UpdatedMovement && ActionEvents == acRhs.ActionEvents;
 }
 
 bool ReferenceUpdate::operator!=(const ReferenceUpdate& acRhs) const noexcept
@@ -18,7 +17,7 @@ bool ReferenceUpdate::operator!=(const ReferenceUpdate& acRhs) const noexcept
 void ReferenceUpdate::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     UpdatedMovement.Serialize(aWriter);
-    
+
     Serialization::WriteVarInt(aWriter, ActionEvents.size());
 
     for (auto& entry : ActionEvents)

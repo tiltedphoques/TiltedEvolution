@@ -17,7 +17,7 @@ struct Overlay
 
     void Update(AdminApp& aApp);
 
-  private:
+private:
     void SetActiveWidget(WidgetID aNewActive);
 
     WidgetID Toolbar();

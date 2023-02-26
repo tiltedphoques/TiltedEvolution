@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_GoatRootBehavior.h>
 
-
-
 AnimationGraphDescriptor_GoatRootBehavior::AnimationGraphDescriptor_GoatRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -102,29 +100,36 @@ AnimationGraphDescriptor_GoatRootBehavior::AnimationGraphDescriptor_GoatRootBeha
     };
 
     uint64_t key = 5260053452598805463;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbHeadTrackingOn,
-            kbAnimationDriven,
-            kbAllowRotation,
-            kbHeadTracking,
-            kbDisableHeadTrack,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbSkeeverLunge,
-            kbFootIKEnable,
-            kisMoving,},
-        {kSpeed,
-            kTurnDelta,
-            kturnSpeedMult,
-            kDirection,
-            kTurnDeltaDamped,
-            kSpeedSampled,
-            kwalkBackSpeedMult,},
-        {kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiSyncForwardState,
-            kiMovementSpeed,}));
+            {
+                kbHeadTrackingOn,
+                kbAnimationDriven,
+                kbAllowRotation,
+                kbHeadTracking,
+                kbDisableHeadTrack,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kbSkeeverLunge,
+                kbFootIKEnable,
+                kisMoving,
+            },
+            {
+                kSpeed,
+                kTurnDelta,
+                kturnSpeedMult,
+                kDirection,
+                kTurnDeltaDamped,
+                kSpeedSampled,
+                kwalkBackSpeedMult,
+            },
+            {
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiSyncForwardState,
+                kiMovementSpeed,
+            }));
 }

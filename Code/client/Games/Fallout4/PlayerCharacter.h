@@ -32,7 +32,7 @@ struct PlayerCharacter : Actor
     char pad490[0x7D8 - sizeof(Actor)];
     GameArray<ObjectiveInstance> objectives;
     char pad7F0[0x4F0 - 24];
-    TESForm* locationForm; //actually a bgslocation
+    TESForm* locationForm; // actually a bgslocation
     uint8_t pad_CD0[0x140];
 };
 

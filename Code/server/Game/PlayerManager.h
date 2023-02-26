@@ -8,8 +8,15 @@ struct PlayerManager
 
     struct Iterator
     {
-        Iterator(TMap::iterator aItor) : m_itor(aItor){}
-        Iterator operator++() { m_itor++; return *this; }
+        Iterator(TMap::iterator aItor)
+            : m_itor(aItor)
+        {
+        }
+        Iterator operator++()
+        {
+            m_itor++;
+            return *this;
+        }
         bool operator!=(const Iterator& acRhs) const { return m_itor != acRhs.m_itor; }
         const Player* operator*() const { return m_itor->second.get(); }
         Player* operator*() { return m_itor.value().get(); }
@@ -23,8 +30,8 @@ struct PlayerManager
 
     TP_NOCOPYMOVE(PlayerManager);
 
-    Iterator begin(){return Iterator(std::begin(m_players));}
-    Iterator end(){return Iterator(std::end(m_players));}
+    Iterator begin() { return Iterator(std::begin(m_players)); }
+    Iterator end() { return Iterator(std::end(m_players)); }
 
     Player* Create(ConnectionId_t aConnectionId) noexcept;
     void Remove(Player* apPlayer) noexcept;
@@ -36,8 +43,7 @@ struct PlayerManager
 
     uint32_t Count() const noexcept;
 
-    template<class T>
-    void ForEach(const T& acFunctor) noexcept
+    template <class T> void ForEach(const T& acFunctor) noexcept
     {
         auto itor = std::begin(m_players);
         auto end = std::end(m_players);
@@ -48,6 +54,5 @@ struct PlayerManager
     }
 
 private:
-
     TMap m_players;
 };

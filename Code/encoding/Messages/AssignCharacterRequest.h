@@ -18,7 +18,8 @@ struct AssignCharacterRequest final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kAssignCharacterRequest;
 
-    AssignCharacterRequest() : ClientMessage(Opcode)
+    AssignCharacterRequest()
+        : ClientMessage(Opcode)
     {
     }
 
@@ -29,27 +30,9 @@ struct AssignCharacterRequest final : ClientMessage
 
     bool operator==(const AssignCharacterRequest& acRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() &&
-            Cookie == acRhs.Cookie &&
-            ReferenceId == acRhs.ReferenceId &&
-            FormId == acRhs.FormId &&
-            CellId == acRhs.CellId &&
-            WorldSpaceId == acRhs.WorldSpaceId &&
-            Position == acRhs.Position &&
-            Rotation == acRhs.Rotation &&
-            ChangeFlags == acRhs.ChangeFlags &&
-            AppearanceBuffer == acRhs.AppearanceBuffer &&
-            InventoryContent == acRhs.InventoryContent &&
-            FactionsContent == acRhs.FactionsContent &&
-            LatestAction == acRhs.LatestAction &&
-            FaceTints == acRhs.FaceTints &&
-            QuestContent == acRhs.QuestContent &&
-            AllActorValues == acRhs.AllActorValues &&
-            IsDead == acRhs.IsDead &&
-            IsWeaponDrawn == acRhs.IsWeaponDrawn &&
-            IsDragon == acRhs.IsDragon &&
-            IsMount == acRhs.IsMount &&
-            IsPlayerSummon == acRhs.IsPlayerSummon;
+        return GetOpcode() == acRhs.GetOpcode() && Cookie == acRhs.Cookie && ReferenceId == acRhs.ReferenceId && FormId == acRhs.FormId && CellId == acRhs.CellId && WorldSpaceId == acRhs.WorldSpaceId && Position == acRhs.Position && Rotation == acRhs.Rotation && ChangeFlags == acRhs.ChangeFlags &&
+               AppearanceBuffer == acRhs.AppearanceBuffer && InventoryContent == acRhs.InventoryContent && FactionsContent == acRhs.FactionsContent && LatestAction == acRhs.LatestAction && FaceTints == acRhs.FaceTints && QuestContent == acRhs.QuestContent && AllActorValues == acRhs.AllActorValues &&
+               IsDead == acRhs.IsDead && IsWeaponDrawn == acRhs.IsWeaponDrawn && IsDragon == acRhs.IsDragon && IsMount == acRhs.IsMount && IsPlayerSummon == acRhs.IsPlayerSummon;
     }
 
     uint32_t Cookie{};

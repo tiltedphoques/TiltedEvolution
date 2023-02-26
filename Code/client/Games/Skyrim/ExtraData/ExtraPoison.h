@@ -13,4 +13,3 @@ struct ExtraPoison : BSExtraData
 };
 
 static_assert(sizeof(ExtraPoison) == 0x20);
-

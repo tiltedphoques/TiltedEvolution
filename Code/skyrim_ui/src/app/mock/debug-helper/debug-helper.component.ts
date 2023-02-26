@@ -1,10 +1,18 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, Renderer2 } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  Renderer2,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faArrowsUpDownLeftRight, faCode } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowsUpDownLeftRight,
+  faCode,
+} from '@fortawesome/free-solid-svg-icons';
 import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject, of, takeUntil, timer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -13,7 +21,6 @@ import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { StoreService } from '../../services/store.service';
 import { MockClientService } from '../mock-client.service';
-
 
 @Component({
   selector: 'app-debug-helper',
@@ -32,7 +39,6 @@ import { MockClientService } from '../mock-client.service';
   ],
 })
 export class DebugHelperComponent implements OnInit {
-
   readonly faCode = faCode;
   readonly faArrowsUpDownLeftRight = faArrowsUpDownLeftRight;
 
@@ -50,18 +56,18 @@ export class DebugHelperComponent implements OnInit {
     private readonly storeService: StoreService,
     private readonly mockClientService: MockClientService,
     private readonly clientService: ClientService,
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.setBackground(this.storeService.get('debug_background', 'dark'));
     this.visible.next(this.storeService.get('debug_helper', false) === 'true');
-    this.randomizeDebug.asObservable()
+    this.randomizeDebug
+      .asObservable()
       .pipe(
         takeUntil(this.destroy$),
-        switchMap((enabled) => enabled ? timer(0, 1000) : of(null)),
+        switchMap(enabled => (enabled ? timer(0, 1000) : of(null))),
       )
-      .subscribe((val) => {
+      .subscribe(val => {
         if (val !== null) {
           this.mockClientService.skyrimtogether.updateMockDebugData();
         }

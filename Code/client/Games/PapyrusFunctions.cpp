@@ -27,4 +27,4 @@ bool IsPlayer(Actor* apActor)
     return pExtension->IsPlayer();
 }
 
-}
+} // namespace PapyrusFunctions

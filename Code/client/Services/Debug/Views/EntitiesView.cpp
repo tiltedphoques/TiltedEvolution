@@ -38,7 +38,7 @@ void DebugService::DrawEntitiesView()
         }
         ImGui::EndTabBar();
     }
-    
+
     ImGui::End();
 }
 
@@ -47,7 +47,7 @@ void DebugService::DisplayEntities() noexcept
     static uint32_t s_selected = 0;
 
     StackAllocator<1 << 12> allocator;
-    ScopedAllocator _{ allocator };
+    ScopedAllocator _{allocator};
 
     const auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
 
@@ -58,7 +58,7 @@ void DebugService::DisplayEntities() noexcept
     ImGui::BeginChild("Entities", ImVec2(0, 200), true);
 
     int i = 0;
-    for(auto it : entities)
+    for (auto it : entities)
     {
         auto& formComponent = view.get<FormIdComponent>(it);
         const auto pActor = Cast<Actor>(TESForm::GetById(formComponent.Id));
@@ -76,7 +76,7 @@ void DebugService::DisplayEntities() noexcept
         if (ImGui::Selectable(name, m_formId == formComponent.Id))
             m_formId = formComponent.Id;
 
-        if(m_formId == formComponent.Id)
+        if (m_formId == formComponent.Id)
             s_selected = i;
 
         ++i;
@@ -93,7 +93,7 @@ void DebugService::DisplayObjects() noexcept
     static uint32_t s_selected = 0;
 
     StackAllocator<1 << 12> allocator;
-    ScopedAllocator _{ allocator };
+    ScopedAllocator _{allocator};
 
     const auto view = m_world.view<FormIdComponent, ObjectComponent>();
 
@@ -104,7 +104,7 @@ void DebugService::DisplayObjects() noexcept
     ImGui::BeginChild("Entities", ImVec2(0, 200), true);
 
     int i = 0;
-    for(auto it : entities)
+    for (auto it : entities)
     {
         auto& formComponent = view.get<FormIdComponent>(it);
         const auto pRefr = Cast<TESObjectREFR>(TESForm::GetById(formComponent.Id));
@@ -118,7 +118,7 @@ void DebugService::DisplayObjects() noexcept
         if (ImGui::Selectable(name, m_formId == formComponent.Id))
             m_formId = formComponent.Id;
 
-        if(m_formId == formComponent.Id)
+        if (m_formId == formComponent.Id)
             s_selected = i;
 
         ++i;
@@ -133,9 +133,12 @@ void DebugService::DisplayEntityPanel(entt::entity aEntity) noexcept
     const auto pLocalComponent = m_world.try_get<LocalComponent>(aEntity);
     const auto pRemoteComponent = m_world.try_get<RemoteComponent>(aEntity);
 
-    if (pFormIdComponent)               DisplayFormComponent(*pFormIdComponent);
-    if (pLocalComponent)                DisplayLocalComponent(*pLocalComponent, pFormIdComponent ? pFormIdComponent->Id : 0);
-    if (pRemoteComponent)               DisplayRemoteComponent(*pRemoteComponent, aEntity, pFormIdComponent ? pFormIdComponent->Id : 0);
+    if (pFormIdComponent)
+        DisplayFormComponent(*pFormIdComponent);
+    if (pLocalComponent)
+        DisplayLocalComponent(*pLocalComponent, pFormIdComponent ? pFormIdComponent->Id : 0);
+    if (pRemoteComponent)
+        DisplayRemoteComponent(*pRemoteComponent, aEntity, pFormIdComponent ? pFormIdComponent->Id : 0);
 }
 
 void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const noexcept
@@ -176,7 +179,7 @@ void DebugService::DisplayFormComponent(FormIdComponent& aFormComponent) const n
     auto owner = pActor->GetCommandingActor();
     int commandingActorId = int(owner ? owner->formID : 0x0);
     ImGui::InputScalar("Commanding Actor", ImGuiDataType_U8, &commandingActorId, 0, 0, "%" PRIx8, ImGuiInputTextFlags_ReadOnly);
-    float attributes[3] {pActor->GetActorValue(24), pActor->GetActorValue(25), pActor->GetActorValue(26)};
+    float attributes[3]{pActor->GetActorValue(24), pActor->GetActorValue(25), pActor->GetActorValue(26)};
     ImGui::InputFloat3("Attributes (H/M/S)", attributes, "%.3f", ImGuiInputTextFlags_ReadOnly);
 #endif
 }
@@ -208,21 +211,25 @@ void DebugService::DisplayRemoteComponent(RemoteComponent& aRemoteComponent, con
 
     if (ImGui::Button("Take ownership"))
     {
-        m_world.GetRunner().Queue([acEntity, acFormId]() {
-            if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
-                World::Get().GetCharacterService().TakeOwnership(acFormId, pRemoteCompoment->Id, acEntity);
-        });
+        m_world.GetRunner().Queue(
+            [acEntity, acFormId]()
+            {
+                if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
+                    World::Get().GetCharacterService().TakeOwnership(acFormId, pRemoteCompoment->Id, acEntity);
+            });
     }
 
     if (ImGui::Button("Get spawn data"))
     {
-        m_world.GetRunner().Queue([this, acEntity, acFormId]() {
-            if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
+        m_world.GetRunner().Queue(
+            [this, acEntity, acFormId]()
             {
-                RequestSpawnData request{};
-                request.Id = pRemoteCompoment->Id;
-                m_transport.Send(request);
-            }
-        });
+                if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
+                {
+                    RequestSpawnData request{};
+                    request.Id = pRemoteCompoment->Id;
+                    m_transport.Send(request);
+                }
+            });
     }
 }

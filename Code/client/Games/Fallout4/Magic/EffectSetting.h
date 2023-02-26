@@ -11,4 +11,3 @@ struct EffectSetting : TESForm
 };
 
 static_assert(sizeof(EffectSetting) == 0x1B0);
-

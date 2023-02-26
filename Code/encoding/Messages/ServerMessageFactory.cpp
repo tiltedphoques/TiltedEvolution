@@ -2,8 +2,7 @@
 
 #include <Messages/ServerMessageFactory.h>
 
-static std::function<UniquePtr<ServerMessage>(TiltedPhoques::Buffer::Reader& aReader)>
-    s_serverMessageExtractor[kServerOpcodeMax];
+static std::function<UniquePtr<ServerMessage>(TiltedPhoques::Buffer::Reader& aReader)> s_serverMessageExtractor[kServerOpcodeMax];
 
 namespace details
 {
@@ -11,10 +10,12 @@ static struct ServerMessageFactoryInit
 {
     ServerMessageFactoryInit()
     {
-        auto extractor = [](auto& x) {
+        auto extractor = [](auto& x)
+        {
             using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-            s_serverMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader) {
+            s_serverMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader)
+            {
                 auto ptr = TiltedPhoques::MakeUnique<T>();
                 ptr->DeserializeRaw(aReader);
                 return TiltedPhoques::CastUnique<ServerMessage>(std::move(ptr));

@@ -13,9 +13,9 @@
 
 #include <Structs/GridCellCoords.h>
 
-CommandService::CommandService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher) 
-    : m_world(aWorld), 
-      m_transport(aTransport)
+CommandService::CommandService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher)
+    : m_world(aWorld)
+    , m_transport(aTransport)
 {
     m_teleportConnection = aDispatcher.sink<TeleportCommandResponse>().connect<&CommandService::OnTeleportCommandResponse>(this);
 }

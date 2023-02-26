@@ -18,7 +18,7 @@ bool CalendarService::AllowGameTick() noexcept
     return !s_gameClockLocked;
 }
 
-CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) 
+CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport)
     : m_world(aWorld)
     , m_transport(aTransport)
 {
@@ -53,7 +53,7 @@ float CalendarService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) c
 
         return TiltedPhoques::Mod(x, 24.f);
     }
-    
+
     return TiltedPhoques::Lerp(aFrom.Time, aTo.Time, m_fadeTimer / kTransitionSpeed);
 }
 

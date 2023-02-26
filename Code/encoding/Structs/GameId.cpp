@@ -11,8 +11,7 @@ GameId::GameId(uint32_t aModId, uint32_t aBaseId) noexcept
 
 bool GameId::operator==(const GameId& acRhs) const noexcept
 {
-    return BaseId == acRhs.BaseId &&
-        ModId == acRhs.ModId;
+    return BaseId == acRhs.BaseId && ModId == acRhs.ModId;
 }
 
 bool GameId::operator!=(const GameId& acRhs) const noexcept

@@ -100,7 +100,7 @@ NiPoint3 PlayerCharacter::RespawnPlayer() noexcept
 void PlayerCharacter::PayCrimeGoldToAllFactions() noexcept
 {
     // Yes, yes, this isn't great, but there's no "pay fines everywhere" function
-    TiltedPhoques::Vector<uint32_t> crimeFactionIds{ 0x28170, 0x267E3, 0x29DB0, 0x2816D, 0x2816e, 0x2816C, 0x2816B, 0x267EA, 0x2816F, 0x4018279 };
+    TiltedPhoques::Vector<uint32_t> crimeFactionIds{0x28170, 0x267E3, 0x29DB0, 0x2816D, 0x2816e, 0x2816C, 0x2816B, 0x267EA, 0x2816F, 0x4018279};
 
     for (uint32_t crimeFactionId : crimeFactionIds)
     {
@@ -117,22 +117,23 @@ void PlayerCharacter::PayCrimeGoldToAllFactions() noexcept
 
 char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
 {
-    // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync
-    if (apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden())
+    auto& modSystem = World::Get().GetModSystem();
+
+    Inventory::Entry item{};
+    modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
+    item.Count = aCount;
+
+    if (apObject->GetExtraDataList() && !ScopedExtraDataOverride::IsOverriden())
     {
-        auto& modSystem = World::Get().GetModSystem();
-
-        Inventory::Entry item{};
-        modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
-        item.Count = aCount;
-
-        if (apObject->GetExtraDataList() && !ScopedExtraDataOverride::IsOverriden())
-        {
-            ScopedExtraDataOverride _;
-            apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
-        }
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+        ScopedExtraDataOverride _;
+        apThis->GetItemFromExtraData(item, apObject->GetExtraDataList());
     }
+
+    // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync.
+    // The inventory change event should always be sent to the server, otherwise the server inventory won't be updated.
+    bool shouldUpdateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
+
+    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item), false, shouldUpdateClients));
 
     ScopedInventoryOverride _;
 
@@ -153,9 +154,7 @@ void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool a
 void TP_MAKE_THISCALL(HookAddSkillExperience, PlayerCharacter, int32_t aSkill, float aExperience)
 {
     // TODO: armor skills? sneak?
-    static const Set<int32_t> combatSkills{ActorValueInfo::kAlteration, ActorValueInfo::kConjuration, ActorValueInfo::kDestruction,
-                                           ActorValueInfo::kIllusion, ActorValueInfo::kRestoration, ActorValueInfo::kOneHanded,
-                                           ActorValueInfo::kTwoHanded, ActorValueInfo::kMarksman, ActorValueInfo::kBlock};
+    static const Set<int32_t> combatSkills{ActorValueInfo::kAlteration, ActorValueInfo::kConjuration, ActorValueInfo::kDestruction, ActorValueInfo::kIllusion, ActorValueInfo::kRestoration, ActorValueInfo::kOneHanded, ActorValueInfo::kTwoHanded, ActorValueInfo::kMarksman, ActorValueInfo::kBlock};
 
     Skills::Skill skill = Skills::GetSkillFromActorValue(aSkill);
     float oldExperience = apThis->GetSkillExperience(skill);
@@ -189,20 +188,21 @@ bool TP_MAKE_THISCALL(HookCalculateExperience, int32_t, float* aFactor, float* a
     return result;
 }
 
-static TiltedPhoques::Initializer s_playerCharacterHooks([]()
-{
-    POINTER_SKYRIMSE(TPickUpObject, s_pickUpObject, 40533);
-    POINTER_SKYRIMSE(TSetBeastForm, s_setBeastForm, 55497);
-    POINTER_SKYRIMSE(TAddSkillExperience, s_addSkillExperience, 40488);
-    POINTER_SKYRIMSE(TCalculateExperience, s_calculateExperience, 27244);
+static TiltedPhoques::Initializer s_playerCharacterHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TPickUpObject, s_pickUpObject, 40533);
+        POINTER_SKYRIMSE(TSetBeastForm, s_setBeastForm, 55497);
+        POINTER_SKYRIMSE(TAddSkillExperience, s_addSkillExperience, 40488);
+        POINTER_SKYRIMSE(TCalculateExperience, s_calculateExperience, 27244);
 
-    RealPickUpObject = s_pickUpObject.Get();
-    RealSetBeastForm = s_setBeastForm.Get();
-    RealAddSkillExperience = s_addSkillExperience.Get();
-    RealCalculateExperience = s_calculateExperience.Get();
+        RealPickUpObject = s_pickUpObject.Get();
+        RealSetBeastForm = s_setBeastForm.Get();
+        RealAddSkillExperience = s_addSkillExperience.Get();
+        RealCalculateExperience = s_calculateExperience.Get();
 
-    TP_HOOK(&RealPickUpObject, HookPickUpObject);
-    TP_HOOK(&RealSetBeastForm, HookSetBeastForm);
-    TP_HOOK(&RealAddSkillExperience, HookAddSkillExperience);
-    TP_HOOK(&RealCalculateExperience, HookCalculateExperience);
-});
+        TP_HOOK(&RealPickUpObject, HookPickUpObject);
+        TP_HOOK(&RealSetBeastForm, HookSetBeastForm);
+        TP_HOOK(&RealAddSkillExperience, HookAddSkillExperience);
+        TP_HOOK(&RealCalculateExperience, HookCalculateExperience);
+    });

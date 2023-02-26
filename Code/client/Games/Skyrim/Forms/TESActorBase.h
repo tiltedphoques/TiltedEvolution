@@ -28,4 +28,3 @@ struct TESActorBase : TESBoundAnimObject
     BGSAttackDataForm attackDataForm;
     BGSPerkRankArray perkRanks;
 };
-

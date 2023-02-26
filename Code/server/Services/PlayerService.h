@@ -10,8 +10,8 @@ struct PlayerRespawnRequest;
 struct PlayerLevelRequest;
 
 /**
-* @brief Handles player specific actions that might change the information needed by other clients about that player.
-*/
+ * @brief Handles player specific actions that might change the information needed by other clients about that player.
+ */
 struct PlayerService
 {
     PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -20,7 +20,6 @@ struct PlayerService
     TP_NOCOPYMOVE(PlayerService);
 
 protected:
-
     void HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>& acMessage) const noexcept;
     void HandleExteriorCellEnter(const PacketEvent<EnterExteriorCellRequest>& acMessage) const noexcept;
     void HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellRequest>& acMessage) const noexcept;
@@ -28,7 +27,6 @@ protected:
     void OnPlayerLevelRequest(const PacketEvent<PlayerLevelRequest>& acMessage) const noexcept;
 
 private:
-
     World& m_world;
 
     entt::scoped_connection m_gridCellShiftConnection;

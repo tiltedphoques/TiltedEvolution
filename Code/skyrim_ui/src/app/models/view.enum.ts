@@ -1,5 +1,6 @@
 export enum View {
   CONNECT = 1,
+  CONNECT_PASSWORD,
   DISCONNECT,
   RECONNECT,
   SERVER_LIST,

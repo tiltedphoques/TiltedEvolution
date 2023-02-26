@@ -5,7 +5,6 @@
 class Record
 {
 public:
-
 #pragma pack(push, 1)
     struct Chunk
     {
@@ -32,40 +31,16 @@ public:
 
     void DiscoverChunks();
 
-    [[nodiscard]] FormEnum GetType() const noexcept
-    {
-        return m_formType;
-    }
-    [[nodiscard]] uint32_t GetFormId() const noexcept
-    {
-        return m_formId;
-    }
-    [[nodiscard]] uint32_t GetDataSize() const noexcept
-    {
-        return m_dataSize;
-    }
-    [[nodiscard]] uint32_t GetFlags() const noexcept
-    {
-        return m_flags;
-    }
+    [[nodiscard]] FormEnum GetType() const noexcept { return m_formType; }
+    [[nodiscard]] uint32_t GetFormId() const noexcept { return m_formId; }
+    [[nodiscard]] uint32_t GetDataSize() const noexcept { return m_dataSize; }
+    [[nodiscard]] uint32_t GetFlags() const noexcept { return m_flags; }
 
-    [[nodiscard]] bool Compressed() const noexcept
-    {
-        return (m_flags & FLAGS::kCompressed) != 0;
-    }
-    [[nodiscard]] bool Ignored() const noexcept
-    {
-        return (m_flags & FLAGS::kIgnored) != 0;
-    }
-    [[nodiscard]] bool Master() const noexcept
-    {
-        return (m_flags & FLAGS::kMasterFile) != 0;
-    }
+    [[nodiscard]] bool Compressed() const noexcept { return (m_flags & FLAGS::kCompressed) != 0; }
+    [[nodiscard]] bool Ignored() const noexcept { return (m_flags & FLAGS::kIgnored) != 0; }
+    [[nodiscard]] bool Master() const noexcept { return (m_flags & FLAGS::kMasterFile) != 0; }
 
-    [[nodiscard]] bool DefaultForm() const noexcept
-    {
-        return m_formId - 1 <= 0x7FE;
-    }
+    [[nodiscard]] bool DefaultForm() const noexcept { return m_formId - 1 <= 0x7FE; }
 
 private:
     FormEnum m_formType;
@@ -79,4 +54,3 @@ private:
 
 static_assert(sizeof(Record) == 0x18);
 static_assert(sizeof(Record::Chunk) == 0x6);
-

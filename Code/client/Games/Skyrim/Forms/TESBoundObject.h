@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <Forms/TESObject.h>
 
 struct TESBoundObject : TESObject

@@ -7,40 +7,28 @@ template <class T> struct BSTEventSink;
 // Very nasty work around to avoid template code duplication
 namespace details
 {
-    void InternalRegisterSink(void* apEventDispatcher, void* apSink) noexcept;
-    void InternalUnRegisterSink(void* apEventDispatcher, void* apSink) noexcept;
-    void InternalPushEvent(void* apEventDispatcher, void* apEvent) noexcept;
-}
+void InternalRegisterSink(void* apEventDispatcher, void* apSink) noexcept;
+void InternalUnRegisterSink(void* apEventDispatcher, void* apSink) noexcept;
+void InternalPushEvent(void* apEventDispatcher, void* apEvent) noexcept;
+} // namespace details
 
-template<class T>
-struct EventDispatcher
+template <class T> struct EventDispatcher
 {
-    void RegisterSink(BSTEventSink<T>* apSink) noexcept
-    {
-        details::InternalRegisterSink(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apSink));
-    }
+    void RegisterSink(BSTEventSink<T>* apSink) noexcept { details::InternalRegisterSink(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apSink)); }
 
-    void UnRegisterSink(BSTEventSink<T>* apSink) noexcept
-    {
-        details::InternalUnRegisterSink(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apSink));
-    }
+    void UnRegisterSink(BSTEventSink<T>* apSink) noexcept { details::InternalUnRegisterSink(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apSink)); }
 
-    void PushEvent(const T* apEvent) noexcept
-    {
-        details::InternalPushEvent(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apEvent));
-    }
+    void PushEvent(const T* apEvent) noexcept { details::InternalPushEvent(reinterpret_cast<void*>(this), reinterpret_cast<void*>(apEvent)); }
 
     uint8_t pad0[0x58];
 };
 
 struct UnknownEvent
 {
-
 };
 
 struct BGSEventProcessedEvent
 {
-
 };
 
 struct TESActivateEvent
@@ -58,27 +46,22 @@ struct TESActiveEffectApplyRemove
 
 struct TESActorLocationChangeEvent
 {
-
 };
 
 struct TESBookReadEvent
 {
-
 };
 
 struct TESCellAttachDetachEvent
 {
-
 };
 
 struct TESCellFullyLoadedEvent
 {
-
 };
 
 struct TESCombatEvent
 {
-
 };
 
 struct TESContainerChangedEvent
@@ -97,32 +80,26 @@ struct TESDeathEvent
 
 struct TESDestructionStageChangedEvent
 {
-
 };
 
 struct TESEnterBleedoutEvent
 {
-
 };
 
 struct TESEquipEvent
 {
-
 };
 
 struct TESFormDeleteEvent
 {
-
 };
 
 struct TESFurnitureEvent
 {
-
 };
 
 struct TESGrabReleaseEvent
 {
-
 };
 
 struct TESHitEvent
@@ -133,12 +110,10 @@ struct TESHitEvent
 
 struct TESLoadGameEvent
 {
-
 };
 
 struct TESLockChangedEvent
 {
-
 };
 
 struct TESMagicEffectApplyEvent
@@ -150,42 +125,34 @@ struct TESMagicEffectApplyEvent
 
 struct TESMagicWardHitEvent
 {
-
 };
 
 struct TESMoveAttachDetachEvent
 {
-
 };
 
 struct TESObjectLoadedEvent
 {
-
 };
 
 struct TESObjectREFRTranslationEvent
 {
-
 };
 
 struct TESOpenCloseEvent
 {
-
 };
 
 struct TESPackageEvent
 {
-
 };
 
 struct TESInitScriptEvent
 {
-
 };
 
 struct TESPerkEntryRunEvent
 {
-
 };
 
 struct TESQuestInitEvent
@@ -215,52 +182,42 @@ struct TESQuestStageItemDoneEvent
 
 struct TESResetEvent
 {
-
 };
 
 struct TESResolveNPCTemplatesEvent
 {
-
 };
 
 struct TESSceneEvent
 {
-
 };
 
 struct TESSceneActionEvent
 {
-
 };
 
 struct TESScenePhaseEvent
 {
-
 };
 
 struct TESSellEvent
 {
-
 };
 
 struct TESSleepStartEvent
 {
-
 };
 
 struct TESSleepStopEvent
 {
-
 };
 
 struct TESSpellCastEvent
 {
-
 };
 
 struct TESPlayerBowShotEvent
 {
-
 };
 
 struct TESTopicInfoEvent
@@ -274,12 +231,10 @@ struct TESTopicInfoEvent
 
 struct TESTrackedStatsEvent
 {
-
 };
 
 struct TESTrapHitEvent
 {
-
 };
 
 struct TESTriggerEvent
@@ -302,17 +257,14 @@ struct TESTriggerLeaveEvent
 
 struct TESUniqueIDChangeEvent
 {
-
 };
 
 struct TESSwitchRaceCompleteEvent
 {
-
 };
 
 struct TESFastTravelEndEvent
 {
-
 };
 
 struct EventDispatcherManager
@@ -326,7 +278,7 @@ struct EventDispatcherManager
     EventDispatcher<TESBookReadEvent> bookReadEvent;
     EventDispatcher<TESCellAttachDetachEvent> cellAttachDetachEvent;
     EventDispatcher<TESCellFullyLoadedEvent> cellFullyLoadedEvent;
-    EventDispatcher<UnknownEvent> unknownDispatcher8; //apply decals event
+    EventDispatcher<UnknownEvent> unknownDispatcher8; // apply decals event
     EventDispatcher<TESCombatEvent> combatEvent;
     EventDispatcher<TESContainerChangedEvent> containerChangedEvent;
     EventDispatcher<TESDeathEvent> deathEvent;
@@ -336,7 +288,7 @@ struct EventDispatcherManager
     EventDispatcher<TESFormDeleteEvent> formDeleteEvent;
     EventDispatcher<TESFurnitureEvent> furnitureEvent;
     EventDispatcher<TESGrabReleaseEvent> grabReleaseEvent;
-    EventDispatcher<TESHitEvent> hitEvent; //validated
+    EventDispatcher<TESHitEvent> hitEvent; // validated
     EventDispatcher<TESInitScriptEvent> initScriptEvent;
     EventDispatcher<TESLoadGameEvent> loadGameEvent;
     EventDispatcher<TESLockChangedEvent> lockChangedEvent;
@@ -348,11 +300,11 @@ struct EventDispatcherManager
     EventDispatcher<TESOpenCloseEvent> openCloseEvent;
     EventDispatcher<TESPackageEvent> packageEvent;
     EventDispatcher<TESPerkEntryRunEvent> perkEntryRunEvent;
-    EventDispatcher<TESQuestInitEvent> questInitEvent; //9F8
+    EventDispatcher<TESQuestInitEvent> questInitEvent; // 9F8
     EventDispatcher<TESQuestStageEvent> questStageEvent;
     EventDispatcher<TESQuestStageItemDoneEvent> questStageItemDoneEvent; // AA8, validated StageItemFinishedCallback::TriggerItemDoneEvent
-    EventDispatcher<TESQuestStartStopEvent> questStartStopEvent; // TESResolveNPCTemplatesEvent
-    EventDispatcher<TESResetEvent> resetEvent; //validated 0xB58
+    EventDispatcher<TESQuestStartStopEvent> questStartStopEvent;         // TESResolveNPCTemplatesEvent
+    EventDispatcher<TESResetEvent> resetEvent;                           // validated 0xB58
     EventDispatcher<TESResolveNPCTemplatesEvent> resolveNPCTemplatesEvent;
     EventDispatcher<TESSceneEvent> sceneEvent;
     EventDispatcher<TESSceneActionEvent> sceneActionEvent;
@@ -369,13 +321,13 @@ struct EventDispatcherManager
     EventDispatcher<TESTriggerEnterEvent> triggerEnterEvent;
     EventDispatcher<TESTriggerLeaveEvent> triggerLeaveEvent;
     EventDispatcher<TESUniqueIDChangeEvent> uniqueIDChangeEvent;
-    EventDispatcher<UnknownEvent> unknownDispatcher50; //waitevent
-    EventDispatcher<UnknownEvent> unknownDispatcher51; //TESWaitStopEvent
+    EventDispatcher<UnknownEvent> unknownDispatcher50; // waitevent
+    EventDispatcher<UnknownEvent> unknownDispatcher51; // TESWaitStopEvent
     EventDispatcher<TESSwitchRaceCompleteEvent> switchRaceCompleteEvent;
     EventDispatcher<TESFastTravelEndEvent> fastTravelEndEvent;
 };
 
-//constexpr auto x = offsetof(EventDispatcherManager, unkx);
+// constexpr auto x = offsetof(EventDispatcherManager, unkx);
 
 static_assert(sizeof(EventDispatcherManager) == 4752);
 static_assert(offsetof(EventDispatcherManager, activateEvent) == 88);

@@ -8,4 +8,3 @@ int64_t TESContainer::GetItemCount(TESForm* apItem) const noexcept
 
     return TiltedPhoques::ThisCall(s_getItemCount, this);
 }
-
