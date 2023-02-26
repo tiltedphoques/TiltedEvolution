@@ -1,5 +1,5 @@
 {
-  "INFO": "Polska lokalizacja do Skyrim Together: Reborn! Wersja: 1.3.0. Autor:<strong>Nutyo</strong>",
+  "INFO": "Polska lokalizacja do Skyrim Together: Reborn! Wersja: 1.4.0. Autor:<strong>Nutyo</strong>",
 
   "COMPONENT": {
     "CHAT": {
@@ -75,15 +75,15 @@
     "PLAYER_MANAGER": {
       "PLAYER_LIST": "Lista Graczy",
       "PARTY_MENU": "Menu Grupy",
-      "BACK": "wróć"
+      "BACK": "Wróć"
     },
     "ROOT": {
-      "CONNECT": "połącz",
-      "DISCONNECT": "odłącz",
-      "RECONNECT": "odłącz się i połącz z powrotem",
-      "PLAYER_MANAGER": "Manager Graczy",
+      "CONNECT": "Połącz",
+      "DISCONNECT": "Odłącz",
+      "RECONNECT": "Odłącz się i połącz z powrotem",
+      "PLAYER_MANAGER": "Menedżer Graczy",
       "SETTINGS": "Ustawienia",
-      "CONNECTION_IN_PROGRESS": "Podłączanie jest w progresie"
+      "CONNECTION_IN_PROGRESS": "Podłączanie jest w trakcie"
     },
     "SERVER_LIST": {
       "SEARCH": "Szukaj...",
@@ -103,6 +103,11 @@
       "JOIN": "dołącz"
     },
     "SETTINGS": {
+      "VERSION": {
+        "HEADER": "Wersja",
+        "INFO": "Aktualnie Zainstalowana:",
+        "OUTDATED": "Wersja jest przestarzała. Polecane jest zaktualizowanie."
+      },
       "AUDIO": "Audio",
       "MUTE_UI": "Wycisz UI",
       "UI_VOLUME": "Głośność UI",
@@ -143,7 +148,7 @@
     },
     "COMMANDS": {
       "AVAILABLE_COMMANDS": "Dostępne Komendy Czatu: {{cmds}}",
-      "COMMAND_NOT_FOUND": "'{{cmd}}' jest rozpoznawane jako Komenda."
+      "COMMAND_NOT_FOUND": "'{{cmd}}' nie jest rozpoznawane jako Komenda."
     },
     "GROUP": {
       "LEVEL_UP": "{{name}} Osiągnął Poziom {{level}}.",
