@@ -734,10 +734,10 @@ void Actor::SetPlayerRespawnMode(bool aSet) noexcept
 
 void Actor::SetEssentialEx(bool aSet) noexcept
 {
-    SetEssential(true);
+    SetEssential(aSet);
     TESNPC* pBase = Cast<TESNPC>(baseForm);
     if (pBase)
-        pBase->actorData.SetEssential(true);
+        pBase->actorData.SetEssential(aSet);
 }
 
 void Actor::SetNoBleedoutRecovery(bool aSet) noexcept

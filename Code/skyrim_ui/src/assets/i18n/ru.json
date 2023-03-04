@@ -1,5 +1,4 @@
 {
-  "INFO": "Русская локализация Skyrim Together: Reborn! Версия: 1.3.0. Автор: <strong>Sidiusz</strong>",
   "COMPONENT": {
     "CHAT": {
       "SEND": "Отправить",
@@ -14,6 +13,7 @@
       "ADDRESS": "Айпи-адрес",
       "PASSWORD": "Пароль",
       "SAVE_PASSWORD": "Сохранить пароль?",
+      "HIDE_PASSWORD": "Скрыть пароль?",
       "CONNECT": "Подключиться",
       "CANCEL": "Отмена",
       "PUBLIC_SERVERS": "Список серверов",
@@ -63,7 +63,7 @@
       "LEAVE_PARTY": "Покинуть группу"
     },
     "PARTY_LIST": {
-      "NO_OTHER_PLAYERS": "Здесь нет никого, кроме нас, курочек!",
+      "NO_OTHER_PLAYERS": "Тут нет никого, кроме нас, курей",
       "TABLE_HEADERS": {
         "LEVEL": "Ур.",
         "NAME": "Имя",
@@ -92,6 +92,7 @@
       "NO_SERVERS": "Нет общедоступных серверов",
       "HIDE_MISMATCHED_SERVERS": "Скрыть серверы с неподходящей версией",
       "HIDE_FULL_SERVERS": "Скрыть заполненные серверы",
+      "HIDE_PASSWORD_PROTECTED_SERVERS": "Скрыть защищенный паролем сервер",
       "SERVER_COUNT": "Показать {{filteredCount}} серверов из {{count}}",
       "TABLE_HEADERS": {
         "NAME": "Название сервера",
@@ -102,9 +103,14 @@
       "JOIN": "Присоединиться"
     },
     "SETTINGS": {
+      "VERSION": {
+        "HEADER": "Версия",
+        "INFO": "Сейчас установлена:",
+        "OUTDATED": "Версия устарела. Пожалуйста, обновите клиент."
+      },
       "AUDIO": "Аудио",
-      "MUTE_UI": "Заглушить UI",
-      "UI_VOLUME": "Громкость UI",
+      "MUTE_UI": "Заглушить интерфейс",
+      "UI_VOLUME": "Громкость интерфейса",
       "PARTY": "Группа",
       "SHOW_PARTY": "Показать группу",
       "AUTO_HIDE_PARTY": "Автоматически скрывать группу",
@@ -123,7 +129,6 @@
       "LANGUAGE": "Язык",
       "DEBUG": "Отладка",
       "SHOW_DEBUG_INFO": "Показать отладочную информацию",
-      "BACK": "Назад",
       "FONT_SIZE": "Размер шрифта",
       "FONT_SIZES": {
         "XS": "Очень маленький",
@@ -131,7 +136,8 @@
         "M": "Средний",
         "L": "Большой",
         "XL": "Огромный"
-      }
+      },
+      "BACK": "Назад"
     }
   },
   "SERVICE": {
@@ -139,6 +145,10 @@
       "CONNECTION_LOST": "Соединение потеряно, попытка переподключения. Осталось попыток - {{RemainingReconnectionAttempt}.",
       "CONNECTED": "Успешное подключение к серверу.",
       "DISCONNECTED": "Отключен от сервера."
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "Доступные команды чата: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' - не удалось распознать команду."
     },
     "GROUP": {
       "LEVEL_UP": "{{name}} достиг {{level}} уровня.",
@@ -157,10 +167,6 @@
         "NO_REASON": "Сервер отказал в подключении без причины.",
         "SERVER_FULL": "Сервер переполнен."
       }
-    },
-    "COMMANDS": {
-      "AVAILABLE_COMMANDS": "Доступные команды чата: {{cmds}}",
-      "COMMAND_NOT_FOUND": "'{{cmd}}' распознается как команда."
     },
     "PLAYER_LIST": {
       "PARTY_INVITE": "{{from}} предложил вам присоединиться к группе"
