@@ -22,6 +22,9 @@ using TiltedPhoques::Debug;
 
 TiltedOnlineApp::TiltedOnlineApp()
 {
+    // Set console code page to UTF-8 so console known how to interpret string data
+    SetConsoleOutputCP(CP_UTF8);
+
     auto logPath = TiltedPhoques::GetPath() / "logs";
 
     std::error_code ec;

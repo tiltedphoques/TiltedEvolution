@@ -6,6 +6,12 @@ import { View } from '../models/view.enum';
 interface UiProps {
   view: View | null;
   playerManagerTab: PlayerManagerTab;
+  connectIp: string;
+  connectPort: number;
+  connectName: string;
+  hideVersionMismatchedServers: boolean;
+  hideFullServers: boolean;
+  hidePasswordProtectedServers: boolean;
 }
 
 const uiStore = createStore(
@@ -13,6 +19,12 @@ const uiStore = createStore(
   withProps<UiProps>({
     view: null,
     playerManagerTab: PlayerManagerTab.PLAYER_LIST,
+    connectIp: null,
+    connectPort: null,
+    connectName: null,
+    hideVersionMismatchedServers: true,
+    hideFullServers: true,
+    hidePasswordProtectedServers: true
   }),
 );
 
@@ -24,6 +36,12 @@ export class UiRepository {
   public readonly playerManagerTab$ = uiStore.pipe(
     select(state => state.playerManagerTab),
   );
+  public readonly connectIp$ = uiStore.pipe(select((state) => state.connectIp));
+  public readonly connectPort$ = uiStore.pipe(select((state) => state.connectPort));
+  public readonly connectName$ = uiStore.pipe(select((state) => state.connectName));
+  public readonly hideVersionMismatchedServers$ = uiStore.pipe(select((state) => state.hideVersionMismatchedServers));
+  public readonly hideFullServers$ = uiStore.pipe(select((state) => state.hideFullServers));
+  public readonly hidePasswordProtectedServers$ = uiStore.pipe(select((state) => state.hidePasswordProtectedServers));
 
   openView(view: UiProps['view']) {
     uiStore.update(state => ({
@@ -47,10 +65,65 @@ export class UiRepository {
     return !!this.getView();
   }
 
+  getConnectIp() {
+    return uiStore.getValue().connectIp;
+  }
+
+  getConnectPort() {
+    return uiStore.getValue().connectPort;
+  }
+
+  getConnectName() {
+    return uiStore.getValue().connectName;
+  }
+
+  getHideVersionMismatchedServers() {
+    return uiStore.getValue().hideVersionMismatchedServers;
+  }
+
+  getHideFullServers() {
+    return uiStore.getValue().hideFullServers;
+  }
+
+  getHidePasswordProtectedServers() {
+    return uiStore.getValue().hidePasswordProtectedServers;
+  }
+
+  setHideVersionMismatchedServers(hideVersionMismatchedServers: boolean) {
+    uiStore.update(state => ({
+      ...state,
+      hideVersionMismatchedServers,
+    }))
+  }
+
+  setHideFullServers(hideFullServers: boolean) {
+    uiStore.update(state => ({
+      ...state,
+      hideFullServers,
+    }))
+  }
+
+  setHidePasswordProtectedServers(hidePasswordProtectedServers: boolean) {
+    uiStore.update(state => ({
+      ...state,
+      hidePasswordProtectedServers,
+    }))
+  }
+
   openPlayerManagerTab(playerManagerTab: UiProps['playerManagerTab']) {
     uiStore.update(state => ({
       ...state,
       playerManagerTab,
     }));
+  }
+
+  openConnectWithPasswordView(connectIp: string, connectPort: number, connectName: string) {
+    uiStore.update((state) => ({
+      ...state,
+      view: View.CONNECT_PASSWORD,
+      connectIp,
+      connectPort,
+      connectName,
+    }))
   }
 }
