@@ -8,13 +8,6 @@ struct World;
 struct ClientRpcCalls;
 struct PlayerEnterWorldEvent;
 
-namespace Script
-{
-struct Npc;
-struct Player;
-struct Quest;
-} // namespace Script
-
 namespace Resources
 {
 struct ResourceCollection;
@@ -30,16 +23,11 @@ struct ScriptService
     void Initialize(Resources::ResourceCollection& aCollection) noexcept;
     bool LoadScript(const std::filesystem::path& aPath);
 
-    std::tuple<bool, String> HandlePlayerJoin(const Script::Player& aPlayer) noexcept;
-    std::tuple<bool, String> HandleMove(const Script::Npc& aNpc) noexcept;
-
-    std::tuple<bool, String> HandleChatMessage(const Script::Player& aSender, const String& aMessage) noexcept;
+    std::tuple<bool, String> HandlePlayerJoin(const ConnectionId_t aEntity) noexcept;
+    std::tuple<bool, String> HandleMove(const entt::entity aNpc) noexcept;
+    std::tuple<bool, String> HandleChatMessage(const entt::entity aSender, const String& aMessage) noexcept;
 
     void HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisconnectReason aReason) noexcept;
-
-    void HandleQuestStart(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept;
-    void HandleQuestStage(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept;
-    void HandleQuestStop(const Script::Player& aPlayer, uint32_t aformId) noexcept;
 
   protected:
     // void RegisterExtensions(ScriptContext& aContext) override;
@@ -51,9 +39,6 @@ struct ScriptService
 
     void AddEventHandler(std::string acName, sol::function acFunction) noexcept;
     void CancelEvent(std::string aReason) noexcept;
-
-    [[nodiscard]] Vector<Script::Player> GetPlayers() const;
-    [[nodiscard]] Vector<Script::Npc> GetNpcs() const;
 
     template <typename... Args>
     std::tuple<bool, String> CallCancelableEvent(const String& acName, Args&&... args) noexcept;

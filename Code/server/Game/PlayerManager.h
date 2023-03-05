@@ -37,6 +37,7 @@ struct PlayerManager
 
     Player* Create(ConnectionId_t aConnectionId) noexcept;
     void Remove(Player* apPlayer) noexcept;
+
     Player* GetByConnectionId(ConnectionId_t aConnectionId) noexcept;
     Player const* GetByConnectionId(ConnectionId_t aConnectionId) const noexcept;
 

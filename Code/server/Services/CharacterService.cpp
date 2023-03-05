@@ -41,8 +41,6 @@
 #include <Messages/NotifyActorTeleport.h>
 #include <Messages/NotifyRelinquishControl.h>
 
-#include <Scripting/Npc.h>
-
 namespace
 {
 Console::Setting bEnableXpSync{"Gameplay:bEnableXpSync", "Syncs combat XP within the party", true};
@@ -424,7 +422,9 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
 
     for (auto& entry : message.Updates)
     {
-        auto itor = view.find(static_cast<entt::entity>(entry.first));
+        const auto entity = static_cast<entt::entity>(entry.first);
+
+        auto itor = view.find(entity);
         if (itor == std::end(view))
         {
             spdlog::debug("{:x} requested move of {:x} but does not exist", acMessage.pPlayer->GetConnectionId(), World::ToInteger(*itor));
@@ -453,7 +453,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
 
         for (auto& action : update.ActionEvents)
         {
-            auto [canceled, reason] = GameServer::Get()->GetWorld().GetScriptService().HandleMove(Script::Npc(*itor, m_world));
+            auto [canceled, reason] = GameServer::Get()->GetWorld().GetScriptService().HandleMove(entity);
             if (canceled)
                 continue;
 

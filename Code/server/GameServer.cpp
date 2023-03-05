@@ -22,8 +22,6 @@
 #include <console/ConsoleRegistry.h>
 #include <resources/ResourceCollection.h>
 
-#include <Scripting/Player.h>
-
 constexpr size_t kMaxServerNameLength = 128u;
 
 // -- Cvars --
@@ -329,12 +327,12 @@ void GameServer::BindServerCommands()
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
 
-    m_commands.RegisterCommand<int64_t, int64_t>(
+    m_commands.RegisterCommand<int, int>(
         "SetTime", "Set ingame hour and minute", [&](Console::ArgStack& aStack) {
             auto out = spdlog::get("ConOut");
 
-            auto hour = aStack.Pop<int64_t>();
-            auto minute = aStack.Pop<int64_t>();
+            auto hour = aStack.Pop<int>();
+            auto minute = aStack.Pop<int>();
             auto timescale = m_pWorld->GetCalendarService().GetTimeScale();
 
             bool time_set_successfully = m_pWorld->GetCalendarService().SetTime(hour, minute, timescale);
@@ -505,7 +503,8 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
     acServerMessage.Serialize(writer);
 
-    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()),
+                                     static_cast<uint32_t>(writer.Size()));
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
@@ -521,7 +520,8 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
     acServerMessage.Serialize(writer);
 
-    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()),
+                                     static_cast<uint32_t>(writer.Size()));
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
@@ -793,8 +793,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         pPlayer->SetModIds(playerModsIds);
         pPlayer->SetLevel(acRequest->Level);
 
-        auto [canceled, reason] = m_pWorld->GetScriptService().HandlePlayerJoin(
-            Script::Player(pPlayer->GetId(), *pPlayer->GetCharacter(), *m_pWorld));
+        // this event is shit, needs to be fixed, i know
+        auto [canceled, reason] = m_pWorld->GetScriptService().HandlePlayerJoin(aConnectionId);
         if (canceled)
         {
             spdlog::info("New player {:x} has a been rejected because \"{}\".", aConnectionId, reason.c_str());

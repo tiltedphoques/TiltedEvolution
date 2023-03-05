@@ -4,11 +4,6 @@
 #include <Services/ScriptService.h>
 #include <World.h>
 
-#include <Scripting/Npc.h>
-#include <Scripting/Party.h>
-#include <Scripting/Player.h>
-#include <Scripting/Quest.h>
-
 #include <Events/PlayerEnterWorldEvent.h>
 #include <Events/UpdateEvent.h>
 
@@ -17,6 +12,11 @@
 #include <TiltedCore/Filesystem.hpp>
 
 #include <resources/ResourceCollection.h>
+
+namespace Script
+{
+void CreateScriptBindings(sol::state& aState);
+}
 
 ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld), m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this)),
@@ -94,126 +94,27 @@ void ScriptService::BindInbuiltFunctions()
 {
     auto lua = m_lua.Lock();
     auto& luaVm = lua.Get();
+    Script::CreateScriptBindings(luaVm);
 
-    // git build information
-    {
-        auto table = luaVm.create_named_table("BuildInfo");
-        table["Commit"] = BUILD_COMMIT;
-        table["Branch"] = BUILD_BRANCH;
-    }
-
-    // https://github.com/tiltedphoques/TiltedRevolution/blob/master/Code/server/Services/ScriptService.cpp
     {
         luaVm.set_function("addEventHandler", [this](std::string acName, sol::function aFunction) {
             AddEventHandler(std::move(acName), std::move(aFunction));
         });
         luaVm.set_function("cancelEvent", [this](std::string acReason) { CancelEvent(std::move(acReason)); });
     }
-
-    // game time information
-    {
-        auto cal = luaVm.new_usertype<CalendarService>("Calendar", sol::no_constructor);
-        // cal["GetGameTime"] = &CalendarService::GetGameTime;
-    }
-
-    {
-        auto vec = luaVm.new_usertype<glm::vec3>("Vector3", sol::no_constructor);
-        vec["x"] = sol::property(&glm::vec3::x, &glm::vec3::x);
-        vec["y"] = sol::property(&glm::vec3::y, &glm::vec3::y);
-        vec["z"] = sol::property(&glm::vec3::z, &glm::vec3::z);
-    }
-
-    {
-        auto playerType = luaVm.new_usertype<Script::Player>("Player", sol::no_constructor);
-        playerType["id"] = sol::readonly_property(&Script::Player::GetId);
-        playerType["discordId"] = sol::readonly_property(&Script::Player::GetDiscordId);
-        playerType["party"] = sol::readonly_property(&Script::Player::GetParty);
-        playerType["name"] = sol::readonly_property(&Script::Player::GetName);
-        playerType["position"] = sol::readonly_property(&Script::Player::GetPosition);
-        playerType["kick"] = &Script::Player::Kick;
-        playerType["sendChatMessage"] = &Script::Player::SendChatMessage;
-    }
-
-    {
-        auto worldType = luaVm.new_usertype<World>("World", sol::no_constructor);
-        worldType["get"] = [this]() { return &m_world; };
-        worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
-        worldType["players"] = sol::readonly_property([this]() { return GetPlayers(); });
-        worldType["playerCount"] = sol::readonly_property([this]() { return m_world.GetPlayerManager().Count(); });
-    }
-
-    {
-        auto upTime = luaVm.new_usertype<GameServer::UpTime>("UpTime", sol::no_constructor);
-        upTime["weeks"] = sol::readonly_property(&GameServer::UpTime::GetWeeks);
-        upTime["days"] = sol::readonly_property(&GameServer::UpTime::GetDays);
-        upTime["hours"] = sol::readonly_property(&GameServer::UpTime::GetHours);
-        upTime["minutes"] = sol::readonly_property(&GameServer::UpTime::GetMintutes);
-    }
-
-    {
-        auto server = luaVm.new_usertype<GameServer>("GameServer", sol::no_constructor);
-        server["get"] = [this]() { return GameServer::Get(); };
-        server["name"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().name; });
-        server["tags"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tagList; });
-        server["tickrate"] = sol::readonly_property([this]() { return GameServer::Get()->GetInfo().tick_rate; });
-        server["GetUptime"] = &GameServer::GetUptime;
-        server["Close"] = &GameServer::Kill;
-    }
-
-    {
-        // upTime["SendGlobalMessage"] = sol::readonly_property([]() { return GameServer::Get()->GetInfo().name; });
-    }
 }
 
-Vector<Script::Player> ScriptService::GetPlayers() const
-{
-    Vector<Script::Player> players;
-
-    auto& playerManager = m_world.GetPlayerManager();
-    playerManager.ForEach(
-        [&](const Player* aPlayer) { players.emplace_back(aPlayer->GetId(), *aPlayer->GetCharacter(), m_world); });
-
-    return players;
-}
-
-Vector<Script::Npc> ScriptService::GetNpcs() const
-{
-    Vector<Script::Npc> npcs;
-
-    auto npcView = m_world.view<CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>(entt::exclude<ObjectComponent>);
-    for (auto entity : npcView)
-    {
-        bool isPlayer = false;
-        for (Player* pPlayer : m_world.GetPlayerManager())
-        {
-            auto character = pPlayer->GetCharacter();
-            if (character && *character == entity)
-            {
-                isPlayer = true;
-                break;
-            }
-        }
-
-        if (isPlayer)
-            continue;
-
-        npcs.push_back(Script::Npc(entity, m_world));
-    }
-
-    return npcs;
-}
-
-std::tuple<bool, String> ScriptService::HandleMove(const Script::Npc& aNpc) noexcept
+std::tuple<bool, String> ScriptService::HandleMove(const entt::entity aNpc) noexcept
 {
     return CallCancelableEvent("onCharacterMove", aNpc);
 }
 
-std::tuple<bool, String> ScriptService::HandlePlayerJoin(const Script::Player& aPlayer) noexcept
+std::tuple<bool, String> ScriptService::HandlePlayerJoin(const ConnectionId_t aPlayer) noexcept
 {
     return CallCancelableEvent("onPlayerJoin", aPlayer);
 }
 
-std::tuple<bool, String> ScriptService::HandleChatMessage(const Script::Player& aSender, const String& aMessage) noexcept
+std::tuple<bool, String> ScriptService::HandleChatMessage(const entt::entity aSender, const String& aMessage) noexcept
 {
     return CallCancelableEvent("onChatMessage", aSender, aMessage);
 }
@@ -248,21 +149,6 @@ void ScriptService::HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisc
     // CallEvent("onPlayerQuit", aConnectionId, reason);
 }
 
-void ScriptService::HandleQuestStart(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept
-{
-    CallEvent("onQuestStart", aPlayer, aQuest);
-}
-
-void ScriptService::HandleQuestStage(const Script::Player& aPlayer, const Script::Quest& aQuest) noexcept
-{
-    CallEvent("onQuestStage", aPlayer, aQuest);
-}
-
-void ScriptService::HandleQuestStop(const Script::Player& aPlayer, uint32_t aformId) noexcept
-{
-    CallEvent("onQuestStop", aPlayer, aformId);
-}
-
 #if 0
 void ScriptService::RegisterExtensions(ScriptContext& aContext)
 {
@@ -284,53 +170,6 @@ void ScriptService::OnPlayerEnterWorld(const PlayerEnterWorldEvent& acEvent) noe
 
     CallEvent("onPlayerEnterWorld", cPlayer);*/
 }
-#if 0
-void ScriptService::BindTypes(ScriptContext& aContext) noexcept
-{
-    using Script::Npc;
-    using Script::Player;
-    using Script::Quest;
-    using Script::Party;
-
-    auto npcType = aContext.new_usertype<Npc>("Npc", sol::no_constructor);
-    npcType["id"] = sol::readonly_property(&Npc::GetId);
-    npcType["position"] = sol::readonly_property(&Npc::GetPosition);
-    npcType["rotation"] = sol::readonly_property(&Npc::GetRotation);
-    npcType["speed"] = sol::readonly_property(&Npc::GetSpeed);
-
-    auto playerType = aContext.new_usertype<Player>("Player", sol::no_constructor);
-    playerType["id"] = sol::readonly_property(&Player::GetId);
-    playerType["mods"] = sol::readonly_property(&Player::GetMods);
-    playerType["ip"] = sol::readonly_property(&Player::GetIp);
-    playerType["party"] = sol::readonly_property(&Player::GetParty);
-    playerType["discordid"] = sol::readonly_property(&Player::GetDiscordId);
-    playerType["AddQuest"] = &Player::AddQuest;
-    playerType["GetQuests"] = &Player::GetQuests;
-    playerType["RemoveQuest"] = &Player::RemoveQuest; 
-
-    auto questType = aContext.new_usertype<Quest>("Quest", sol::no_constructor);
-    questType["id"] = sol::readonly_property(&Quest::GetId);
-    questType["GetStage"] = &Quest::GetStage;
-    // questType["SetStage"] = &Quest::SetStage;    
-
-    auto partyType = aContext.new_usertype<Party>("Party", sol::no_constructor);
-    partyType["id"] = sol::readonly_property(&Party::GetId);
-    partyType["members"] = sol::readonly_property(&Party::GetPlayers);
-
-    auto worldType = aContext.new_usertype<World>("World", sol::no_constructor);
-    worldType["get"] = [this]() { return &m_world; };
-    worldType["npcs"] = sol::readonly_property([this]() { return GetNpcs(); });
-    worldType["players"] = sol::readonly_property([this]() { return GetPlayers(); });
-
-    auto clockType = aContext.new_usertype<EnvironmentService>("Clock", sol::no_constructor);
-    clockType["get"] = [this]() { return &m_world.GetEnvironmentService(); };
-    clockType["SetTime"] = &EnvironmentService::SetTime;
-    clockType["GetTime"] = &EnvironmentService::GetTime;
-    clockType["GetDate"] = &EnvironmentService::GetDate;
-    clockType["GetTimeScale"] = &EnvironmentService::GetTimeScale;
-    clockType["GetRealTime"] = &EnvironmentService::GetRealTime;
-}
-#endif
 
 void ScriptService::AddEventHandler(const std::string acName, const sol::function acFunction) noexcept
 {
