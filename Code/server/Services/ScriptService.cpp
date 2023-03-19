@@ -146,7 +146,7 @@ void ScriptService::HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisc
         break;
     }
 
-    // CallEvent("onPlayerQuit", aConnectionId, reason);
+    CallEvent("onPlayerQuit", aConnectionId, reason);
 }
 
 #if 0
@@ -161,7 +161,17 @@ void ScriptService::RegisterExtensions(ScriptContext& aContext)
 
 void ScriptService::OnUpdate(const UpdateEvent& acEvent) noexcept
 {
-    CallEvent("onUpdate", acEvent.Delta);
+    if (m_sandboxes.size() == 0)
+        return;
+
+    try
+    {
+        CallEvent("onUpdate", acEvent.Delta);
+    }
+    catch (std::exception& exception)
+    {
+        spdlog::error("Script execution failure: {}", exception.what());
+    }
 }
 
 void ScriptService::OnPlayerEnterWorld(const PlayerEnterWorldEvent& acEvent) noexcept

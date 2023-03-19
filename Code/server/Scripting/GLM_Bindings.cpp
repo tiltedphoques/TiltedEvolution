@@ -30,6 +30,8 @@ void BindVec3(sol::state_view aState)
         sol::overload(static_cast<glm::vec3 (*)(const glm::vec3&, const glm::vec3&)>(glm::operator/),
                       static_cast<glm::vec3 (*)(const glm::vec3&, float)>(glm::operator/),
                       static_cast<glm::vec3 (*)(float, const glm::vec3&)>(glm::operator/));
+    vec3Type[sol::meta_function::equal_to] = [](const glm::vec3& a, const glm::vec3& b) -> bool { 
+        return a == b; };
 }
 
 void BindVec2(sol::state_view aState)
