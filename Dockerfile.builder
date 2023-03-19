@@ -11,9 +11,7 @@ RUN apt-get install -y --no-install-recommends cmake \
     g++-12 \
     build-essential \
     ca-certificates \
-    curl
-
-RUN curl -fsSL https://xmake.io/shget.text | bash 
-
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 110 --slave /usr/bin/g++ g++ /usr/bin/g++-12 --slave /usr/bin/gcov gcov /usr/bin/gcov-12 && \
+    curl &&\
+    curl -fsSL https://xmake.io/shget.text | bash &&\
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 110 --slave /usr/bin/g++ g++ /usr/bin/g++-12 --slave /usr/bin/gcov gcov /usr/bin/gcov-12 && \
     rm -rf /var/lib/apt/lists/*
