@@ -7,12 +7,13 @@ namespace Script
 {
 void CreateGameServerBindings(sol::state_view aState)
 {
-    auto table = aState.new_usertype<GameServer>("GameServer", sol::meta_function::construct, sol::no_constructor);
-    table["get"] = []() { return GameServer::Get(); };
-    table["Kill"] = &GameServer::Kill;
-    table["Kick"] = &GameServer::Kick;
+    auto type = aState.new_usertype<GameServer>("GameServer", sol::meta_function::construct, sol::no_constructor);
+    type["get"] = []() { return GameServer::Get(); };
+    type["Kill"] = &GameServer::Kill;
+    type["Kick"] = &GameServer::Kick;
+    type["GetTick"] = &GameServer::GetTick;
 
-    table["SendChatMessage"] = [](GameServer& aSelf, ConnectionId_t aConnectionId, const std::string& acMessage) {
+    type["SendChatMessage"] = [](GameServer& aSelf, ConnectionId_t aConnectionId, const std::string& acMessage) {
         NotifyChatMessageBroadcast notifyMessage{};
 
         std::regex escapeHtml{"<[^>]+>\\s+(?=<)|<[^>]+>"};
@@ -21,6 +22,6 @@ void CreateGameServerBindings(sol::state_view aState)
         notifyMessage.ChatMessage = std::regex_replace(acMessage, escapeHtml, "");
         GameServer::Get()->Send(aConnectionId, notifyMessage);
     };
-    // table["SendPacket"]
+    // type["SendPacket"]
 }
 } // namespace Script

@@ -24,7 +24,11 @@ struct ScriptService
     bool LoadScript(const std::filesystem::path& aPath);
 
     std::tuple<bool, String> HandlePlayerJoin(const ConnectionId_t aEntity) noexcept;
-    std::tuple<bool, String> HandleMove(const entt::entity aNpc) noexcept;
+
+    std::tuple<bool, String> HandleCharacterMove(const entt::entity aNpc) noexcept;
+    std::tuple<bool, String> HandleCharacterSpawn(const entt::entity aPlayer) noexcept;
+    std::tuple<bool, String> HandleCharacterDestoy(const entt::entity aPlayer) noexcept;
+
     std::tuple<bool, String> HandleChatMessage(const entt::entity aSender, const String& aMessage) noexcept;
 
     void HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisconnectReason aReason) noexcept;

@@ -349,6 +349,8 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
     const auto it = view.find(static_cast<entt::entity>(acEvent.ServerId));
     const auto& characterOwnerComponent = view.get<OwnerComponent>(*it);
 
+    GameServer::Get()->GetWorld().GetScriptService().HandleCharacterDestoy(*it);
+
     NotifyRemoveCharacter response;
     response.ServerId = acEvent.ServerId;
 
@@ -376,6 +378,8 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
 
     const auto& ownerComp = m_world.get<OwnerComponent>(acEvent.Entity);
     GameServer::Get()->SendToPlayersInRange(message, acEvent.Entity, ownerComp.GetOwner());
+
+    GameServer::Get()->GetWorld().GetScriptService().HandleCharacterSpawn(acEvent.Entity);
 }
 
 void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept
@@ -453,7 +457,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
 
         for (auto& action : update.ActionEvents)
         {
-            auto [canceled, reason] = GameServer::Get()->GetWorld().GetScriptService().HandleMove(entity);
+            auto [canceled, reason] = GameServer::Get()->GetWorld().GetScriptService().HandleCharacterMove(entity);
             if (canceled)
                 continue;
 

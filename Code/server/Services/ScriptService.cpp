@@ -104,9 +104,19 @@ void ScriptService::BindInbuiltFunctions()
     }
 }
 
-std::tuple<bool, String> ScriptService::HandleMove(const entt::entity aNpc) noexcept
+std::tuple<bool, String> ScriptService::HandleCharacterMove(const entt::entity aNpc) noexcept
 {
     return CallCancelableEvent("onCharacterMove", aNpc);
+}
+
+std::tuple<bool, String> ScriptService::HandleCharacterSpawn(const entt::entity aNpc) noexcept
+{
+    return CallCancelableEvent("onCharacterSpawn", aNpc);
+}
+
+std::tuple<bool, String> ScriptService::HandleCharacterDestoy(const entt::entity aNpc) noexcept
+{
+    return CallCancelableEvent("onCharacterDestroy", aNpc);
 }
 
 std::tuple<bool, String> ScriptService::HandlePlayerJoin(const ConnectionId_t aPlayer) noexcept

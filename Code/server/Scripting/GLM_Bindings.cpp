@@ -6,55 +6,55 @@ namespace
 
 void BindVec3(sol::state_view aState)
 {
-    auto vec3Type = aState.new_usertype<glm::vec3>(
+    auto type = aState.new_usertype<glm::vec3>(
         "vec3", sol::constructors<glm::vec3(), glm::vec3(float), glm::vec3(float, float, float)>());
 
-    vec3Type["x"] = &glm::vec3::x;
-    vec3Type["y"] = &glm::vec3::y;
-    vec3Type["z"] = &glm::vec3::z;
+    type["x"] = &glm::vec3::x;
+    type["y"] = &glm::vec3::y;
+    type["z"] = &glm::vec3::z;
 
     // Bind the common operations
-    vec3Type[sol::meta_function::addition] =
+    type[sol::meta_function::addition] =
         sol::overload(static_cast<glm::vec3 (*)(const glm::vec3&, const glm::vec3&)>(glm::operator+),
                       static_cast<glm::vec3 (*)(const glm::vec3&, float)>(glm::operator+),
                       static_cast<glm::vec3 (*)(float, const glm::vec3&)>(glm::operator+));
-    vec3Type[sol::meta_function::subtraction] =
+    type[sol::meta_function::subtraction] =
         sol::overload(static_cast<glm::vec3 (*)(const glm::vec3&, const glm::vec3&)>(glm::operator-),
                       static_cast<glm::vec3 (*)(const glm::vec3&, float)>(glm::operator-),
                       static_cast<glm::vec3 (*)(float, const glm::vec3&)>(glm::operator-));
-    vec3Type[sol::meta_function::multiplication] =
+    type[sol::meta_function::multiplication] =
         sol::overload(static_cast<glm::vec3 (*)(const glm::vec3&, const glm::vec3&)>(glm::operator*),
                       static_cast<glm::vec3 (*)(const glm::vec3&, float)>(glm::operator*),
                       static_cast<glm::vec3 (*)(float, const glm::vec3&)>(glm::operator*));
-    vec3Type[sol::meta_function::division] =
+    type[sol::meta_function::division] =
         sol::overload(static_cast<glm::vec3 (*)(const glm::vec3&, const glm::vec3&)>(glm::operator/),
                       static_cast<glm::vec3 (*)(const glm::vec3&, float)>(glm::operator/),
                       static_cast<glm::vec3 (*)(float, const glm::vec3&)>(glm::operator/));
-    vec3Type[sol::meta_function::equal_to] = [](const glm::vec3& a, const glm::vec3& b) -> bool { 
+    type[sol::meta_function::equal_to] = [](const glm::vec3& a, const glm::vec3& b) -> bool { 
         return a == b; };
 }
 
 void BindVec2(sol::state_view aState)
 {
-    auto vec2Type = aState.new_usertype<glm::vec2>(
+    auto type = aState.new_usertype<glm::vec2>(
         "vec2", sol::constructors<glm::vec2(), glm::vec2(float), glm::vec2(float, float)>());
-    vec2Type["x"] = &glm::vec2::x;
-    vec2Type["y"] = &glm::vec2::y;
+    type["x"] = &glm::vec2::x;
+    type["y"] = &glm::vec2::y;
 
     // Bind the common operations
-    vec2Type[sol::meta_function::addition] =
+    type[sol::meta_function::addition] =
         sol::overload(static_cast<glm::vec2 (*)(const glm::vec2&, const glm::vec2&)>(glm::operator+),
                       static_cast<glm::vec2 (*)(const glm::vec2&, float)>(glm::operator+),
                       static_cast<glm::vec2 (*)(float, const glm::vec2&)>(glm::operator+));
-    vec2Type[sol::meta_function::subtraction] =
+    type[sol::meta_function::subtraction] =
         sol::overload(static_cast<glm::vec2 (*)(const glm::vec2&, const glm::vec2&)>(glm::operator-),
                       static_cast<glm::vec2 (*)(const glm::vec2&, float)>(glm::operator-),
                       static_cast<glm::vec2 (*)(float, const glm::vec2&)>(glm::operator-));
-    vec2Type[sol::meta_function::multiplication] =
+    type[sol::meta_function::multiplication] =
         sol::overload(static_cast<glm::vec2 (*)(const glm::vec2&, const glm::vec2&)>(glm::operator*),
                       static_cast<glm::vec2 (*)(const glm::vec2&, float)>(glm::operator*),
                       static_cast<glm::vec2 (*)(float, const glm::vec2&)>(glm::operator*));
-    vec2Type[sol::meta_function::division] =
+    type[sol::meta_function::division] =
         sol::overload(static_cast<glm::vec2 (*)(const glm::vec2&, const glm::vec2&)>(glm::operator/),
                       static_cast<glm::vec2 (*)(const glm::vec2&, float)>(glm::operator/),
                       static_cast<glm::vec2 (*)(float, const glm::vec2&)>(glm::operator/));
@@ -65,28 +65,28 @@ void BindVec2(sol::state_view aState)
 // TBD
 void BindVec4(sol::state_view aState)
 {
-    auto vec4Type = aState.new_usertype<glm::vec4>(
+    auto type = aState.new_usertype<glm::vec4>(
         "vec4", sol::constructors<glm::vec4(), glm::vec4(float), glm::vec4(float, float, float, float)>());
-    vec4Type["x"] = &glm::vec4::x;
-    vec4Type["y"] = &glm::vec4::y;
-    vec4Type["z"] = &glm::vec4::z;
-    vec4Type["w"] = &glm::vec4::w;
+    type["x"] = &glm::vec4::x;
+    type["y"] = &glm::vec4::y;
+    type["z"] = &glm::vec4::z;
+    type["w"] = &glm::vec4::w;
 
 #if 0
       // Bind the common operations
-    vec4Type[sol::meta_function::addition] =
+    type[sol::meta_function::addition] =
         sol::overload(static_cast<glm::vec4 (*)(const glm::vec4&, const glm::vec4&)>(glm::operator+),
                       static_cast<glm::vec4 (*)(const glm::vec4&, float)>(glm::operator+),
                       static_cast<glm::vec4 (*)(float, const glm::vec4&)>(glm::operator+));
-    vec4Type[sol::meta_function::subtraction] =
+    type[sol::meta_function::subtraction] =
         sol::overload(static_cast<glm::vec4 (*)(const glm::vec4&, const glm::vec4&)>(glm::operator-),
                       static_cast<glm::vec4 (*)(const glm::vec4&, float)>(glm::operator-),
                       static_cast<glm::vec4 (*)(float, const glm::vec4&)>(glm::operator-));
-    vec4Type[sol::meta_function::multiplication] =
+    type[sol::meta_function::multiplication] =
         sol::overload(static_cast<glm::vec4 (*)(const glm::vec4&, const glm::vec4&)>(glm::operator*),
                       static_cast<glm::vec4 (*)(const glm::vec4&, float)>(glm::operator*),
                       static_cast<glm::vec4 (*)(float, const glm::vec4&)>(glm::operator*));
-    vec4Type[sol::meta_function::division] =
+    type[sol::meta_function::division] =
         sol::overload(static_cast<glm::vec4 (*)(const glm::vec4&, const glm::vec4&)>(glm::operator/),
                       static_cast<glm::vec4 (*)(const glm::vec4&, float)>(glm::operator/),
                       static_cast<glm::vec4 (*)(float, const glm::vec4&)>(glm::operator/));
@@ -95,33 +95,33 @@ void BindVec4(sol::state_view aState)
 
 void BindMat3(sol::state_view aState)
 {
-    auto mat3Type = aState.new_usertype<glm::mat3>(
+    auto type = aState.new_usertype<glm::mat3>(
         "mat3", sol::constructors<glm::mat3(), glm::mat3(float), glm::mat3(const glm::mat4&),
                                   glm::mat3(float, float, float, float, float, float, float, float, float)>());
 
     // Bind the member variables
-    mat3Type["[1]"] = sol::property([](const glm::mat3& mat) { return mat[0]; },
+    type["[1]"] = sol::property([](const glm::mat3& mat) { return mat[0]; },
                                     [](glm::mat3& mat, const glm::vec3& value) { mat[0] = value; });
-    mat3Type["[2]"] = sol::property([](const glm::mat3& mat) { return mat[1]; },
+    type["[2]"] = sol::property([](const glm::mat3& mat) { return mat[1]; },
                                     [](glm::mat3& mat, const glm::vec3& value) { mat[1] = value; });
-    mat3Type["[3]"] = sol::property([](const glm::mat3& mat) { return mat[2]; },
+    type["[3]"] = sol::property([](const glm::mat3& mat) { return mat[2]; },
                                     [](glm::mat3& mat, const glm::vec3& value) { mat[2] = value; });
 
     // Bind the common operations
-    mat3Type[sol::meta_function::addition] =
+    type[sol::meta_function::addition] =
         sol::overload(static_cast<glm::mat3 (*)(const glm::mat3&, const glm::mat3&)>(glm::operator+),
                       static_cast<glm::mat3 (*)(const glm::mat3&, float)>(glm::operator+),
                       static_cast<glm::mat3 (*)(float, const glm::mat3&)>(glm::operator+));
-    mat3Type[sol::meta_function::subtraction] =
+    type[sol::meta_function::subtraction] =
         sol::overload(static_cast<glm::mat3 (*)(const glm::mat3&, const glm::mat3&)>(glm::operator-),
                       static_cast<glm::mat3 (*)(const glm::mat3&, float)>(glm::operator-),
                       static_cast<glm::mat3 (*)(float, const glm::mat3&)>(glm::operator-));
-    mat3Type[sol::meta_function::multiplication] =
+    type[sol::meta_function::multiplication] =
         sol::overload(static_cast<glm::mat3 (*)(const glm::mat3&, const glm::mat3&)>(glm::operator*),
                       // static_cast<glm::mat3 (*)(const glm::mat3&, const glm::vec3&)>(glm::operator*),
                       static_cast<glm::mat3 (*)(const glm::mat3&, float)>(glm::operator*),
                       static_cast<glm::vec3 (*)(const glm::mat3&, const glm::vec3&)>(glm::operator*));
-    mat3Type[sol::meta_function::division] =
+    type[sol::meta_function::division] =
         sol::overload(static_cast<glm::mat3 (*)(const glm::mat3&, const glm::mat3&)>(glm::operator/),
                       static_cast<glm::mat3 (*)(const glm::mat3&, float)>(glm::operator/),
                       static_cast<glm::mat3 (*)(float, const glm::mat3&)>(glm::operator/));
