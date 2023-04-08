@@ -1,4 +1,6 @@
-template<typename... Args>
+#include <sol/sol.hpp>
+
+template <typename... Args>
 std::tuple<bool, String> ScriptService::CallCancelableEvent(const String& acName, Args&&... args) noexcept
 {
     m_eventCanceled = false;
@@ -7,7 +9,8 @@ std::tuple<bool, String> ScriptService::CallCancelableEvent(const String& acName
 
     for (auto& callback : callbacks)
     {
-        auto result = callback(std::forward<Args>(args)...);
+        sol::protected_function pf{callback};
+        auto result = pf(std::forward<Args>(args)...);
 
         if (!result.valid())
         {
@@ -22,14 +25,14 @@ std::tuple<bool, String> ScriptService::CallCancelableEvent(const String& acName
     return std::make_tuple(false, "");
 }
 
-template<typename... Args>
-void ScriptService::CallEvent(const String& acName, Args&&... args) noexcept
+template <typename... Args> void ScriptService::CallEvent(const String& acName, Args&&... args) noexcept
 {
     auto& callbacks = m_callbacks[acName];
 
     for (auto& callback : callbacks)
     {
-        auto result = callback(std::forward<Args>(args)...);
+        sol::protected_function pf{callback};
+        auto result = pf(std::forward<Args>(args)...);
         if (!result.valid())
         {
             sol::error err = result;

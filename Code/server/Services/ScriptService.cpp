@@ -18,6 +18,41 @@ namespace Script
 void CreateScriptBindings(sol::state& aState);
 }
 
+namespace
+{
+int ScriptExceptionHandler(lua_State* L, sol::optional<const std::exception&> maybe_exception,
+                         sol::string_view description)
+{
+    // L is the lua state, which you can wrap in a state_view if necessary
+    // maybe_exception will contain exception, if it exists
+    // description will either be the what() of the exception or a description saying that we hit the general-case
+    // catch(...)
+
+    // ...
+
+    fmt::print("An exception occurred in a function, here's what it says ");
+    if (maybe_exception)
+    {
+        fmt::print("(straight from the exception): ");
+        const std::exception& ex = *maybe_exception;
+        fmt::print("{}\n", ex.what());
+    }
+    else
+    {
+        fmt::print("(from the description parameter): ");
+        fmt::print("{}", std::string_view(description.data(), description.size()));
+        fmt::print("\n");
+    }
+
+
+    // you must push 1 element onto the stack to be
+    // transported through as the error object in Lua
+    // note that Lua -- and 99.5% of all Lua users and libraries -- expects a string
+    // so we push a single string (in our case, the description of the error)
+    return sol::stack::push(L, description);
+}
+}
+
 ScriptService::ScriptService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld), m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ScriptService::OnUpdate>(this)),
       m_playerEnterWorldConnection(
@@ -40,6 +75,8 @@ void ScriptService::Initialize(Resources::ResourceCollection& aCollection) noexc
 {
     auto lua = m_lua.Lock();
     auto& luaVm = lua.Get();
+    luaVm.set_exception_handler(ScriptExceptionHandler);
+
     m_globals = luaVm.globals();
 
     luaVm.open_libraries(sol::lib::base, sol::lib::string, sol::lib::io, sol::lib::math, sol::lib::package,
@@ -73,7 +110,7 @@ bool ScriptService::LoadScript(const std::filesystem::path& aPath)
 
         auto &env = m_sandboxes.emplace_back(luaVm, sol::create, luaVm.globals());
         
-        const sol::protected_function_result result = luaVm.script_file(aPath.string(), env);
+        const sol::protected_function_result result = luaVm.safe_script_file(aPath.string(), env);
         if (!result.valid())
         {
             const sol::error error = result;
@@ -178,7 +215,7 @@ void ScriptService::OnUpdate(const UpdateEvent& acEvent) noexcept
     {
         CallEvent("onUpdate", acEvent.Delta);
     }
-    catch (std::exception& exception)
+    catch (sol::error& exception)
     {
         spdlog::error("Script execution failure: {}", exception.what());
     }
