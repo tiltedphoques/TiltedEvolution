@@ -274,7 +274,7 @@ void GameServer::BindMessageHandlers()
 void GameServer::BindServerCommands()
 {
     m_commands.RegisterCommand<>("uptime", "Show how long the server has been running for", [this](Console::ArgStack&) {
-        UpTime uptime = GetUptime();
+        Uptime uptime = GetUptime();
         spdlog::get("ConOut")->info("Server uptime: {}w {}d {}h {}m", uptime.weeks, uptime.days, uptime.hours,
                                     uptime.minutes);
     });
@@ -868,7 +868,7 @@ void GameServer::UpdateSettings()
     SendToPlayers(notify);
 }
 
-GameServer::UpTime GameServer::GetUptime() const noexcept
+GameServer::Uptime GameServer::GetUptime() const noexcept
 {
     auto duration = std::chrono::high_resolution_clock::now() - m_startTime;
     auto weeks = std::chrono::duration_cast<std::chrono::weeks>(duration);

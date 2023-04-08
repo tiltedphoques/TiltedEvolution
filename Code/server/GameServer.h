@@ -85,34 +85,14 @@ struct GameServer final : Server
             aFunctor(id);
     }
 
-    struct UpTime
+    struct Uptime
     {
         int weeks;
         int days;
         int hours;
         int minutes;
-
-        // for Scripting
-        int GetWeeks() const
-        {
-            return weeks;
-        }
-        int GetDays() const
-        {
-            return days;
-        }
-
-        int GetHours() const
-        {
-            return hours;
-        }
-
-        int GetMintutes() const
-        {
-            return minutes;
-        }
     };
-    UpTime GetUptime() const noexcept;
+    Uptime GetUptime() const noexcept;
 
     World& GetWorld() const noexcept
     {
