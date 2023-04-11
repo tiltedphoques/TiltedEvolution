@@ -43,6 +43,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
+#include <sol/sol.hpp>
+
 using namespace std::chrono_literals;
 
 using TiltedPhoques::ConnectionId_t;

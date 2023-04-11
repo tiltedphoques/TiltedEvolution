@@ -16,8 +16,8 @@
 #include <AdminMessages/ClientAdminMessageFactory.h>
 #include <Messages/AuthenticationResponse.h>
 #include <Messages/ClientMessageFactory.h>
-#include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifyPlayerJoined.h>
+#include <Messages/NotifyPlayerLeft.h>
 #include <Messages/NotifySettingsChange.h>
 #include <console/ConsoleRegistry.h>
 #include <resources/ResourceCollection.h>
@@ -26,92 +26,93 @@ constexpr size_t kMaxServerNameLength = 128u;
 
 // -- Cvars --
 Console::Setting uServerPort{"GameServer:uPort", "Which port to host the server on", 10578u};
-Console::Setting uMaxPlayerCount{"GameServer:uMaxPlayerCount", "Maximum number of players allowed on the server (going over the default of 8 is not recommended)", 8u};
+Console::Setting uMaxPlayerCount{
+    "GameServer:uMaxPlayerCount",
+    "Maximum number of players allowed on the server (going over the default of 8 is not recommended)", 8u};
 Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick rate", true};
 
-Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list", "Dedicated Together Server"};
+Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
+                                   "Dedicated Together Server"};
 // Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
 
 // Gameplay
 // TODO: to make this easier for users, use game names for difficulty instead of int
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "In game difficulty (0 to 5)", 4u};
-Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
+Console::Setting bEnableGreetings{
+    "Gameplay:bEnableGreetings",
+    "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
-Console::Setting bSyncPlayerHomes{"Gameplay:bSyncPlayerHomes", "Sync chests and displays in player homes and other NoResetZones", false};
+Console::Setting bSyncPlayerHomes{"Gameplay:bSyncPlayerHomes",
+                                  "Sync chests and displays in player homes and other NoResetZones", false};
 Console::Setting bEnableDeathSystem{"Gameplay:bEnableDeathSystem", "Enables the custom multiplayer death system", true};
-Console::Setting uTimeScale{"Gameplay:uTimeScale", "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
+Console::Setting uTimeScale{
+    "Gameplay:uTimeScale",
+    "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
 // ModPolicy Stuff
-Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false, Console::SettingsFlags::kLocked};
-Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow clients with SKSE active to join", true, Console::SettingsFlags::kLocked};
-Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Organizer 2 to join", true, Console::SettingsFlags::kLocked};
+Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
+                                 Console::SettingsFlags::kLocked};
+Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow clients with SKSE active to join", true,
+                            Console::SettingsFlags::kLocked};
+Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow clients running Mod Organizer 2 to join", true,
+                           Console::SettingsFlags::kLocked};
 
 // -- Commands --
-Console::Command<> TogglePremium(
-    "TogglePremium", "Toggle Premium Tickrate on/off",
-    [](Console::ArgStack&)
-    {
-        bPremiumTickrate = !bPremiumTickrate;
-        spdlog::get("ConOut")->info("Premium Tickrate has been {}.", bPremiumTickrate == true ? "enabled" : "disabled");
-    });
+Console::Command<> TogglePremium("TogglePremium", "Toggle Premium Tickrate on/off", [](Console::ArgStack&) {
+    bPremiumTickrate = !bPremiumTickrate;
+    spdlog::get("ConOut")->info("Premium Tickrate has been {}.", bPremiumTickrate == true ? "enabled" : "disabled");
+});
 
-Console::Command<> TogglePvp(
-    "TogglePvp", "Toggle PvP on/off",
-    [](Console::ArgStack&)
-    {
-        bEnablePvp = !bEnablePvp;
-        spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
-        GameServer::Get()->UpdateSettings();
-    });
+Console::Command<> TogglePvp("TogglePvp", "Toggle PvP on/off", [](Console::ArgStack&) {
+    bEnablePvp = !bEnablePvp;
+    spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
+    GameServer::Get()->UpdateSettings();
+});
 
-Console::Command<int64_t> SetDifficulty(
-    "SetDifficulty", "Set server difficulty (0 being Novice and 5 being Legendary; default is 4)",
-    [](Console::ArgStack& aStack)
-    {
-        auto aDiff = aStack.Pop<int64_t>();
+Console::Command<int64_t> SetDifficulty("SetDifficulty",
+                                        "Set server difficulty (0 being Novice and 5 being Legendary; default is 4)",
+                                        [](Console::ArgStack& aStack) {
+                                            auto aDiff = aStack.Pop<int64_t>();
 
-        if (aDiff < 0 || aDiff > 5)
-        {
-            spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {}), setting difficulty to 4 (master).", aDiff);
+                                            if (aDiff < 0 || aDiff > 5)
+                                            {
+                                                spdlog::warn("Game difficulty is invalid (should be from 0 to 5, "
+                                                             "current value is {}), setting difficulty to 4 (master).",
+                                                             aDiff);
 
-            aDiff = 4;
-        }
+                                                aDiff = 4;
+                                            }
 
-        uDifficulty = (uint32_t)aDiff;
+                                            uDifficulty = (uint32_t)aDiff;
 
-        GameServer::Get()->UpdateSettings();
-        spdlog::get("ConOut")->info("Difficulty has been set to {}.", aDiff);
-    });
+                                            GameServer::Get()->UpdateSettings();
+                                            spdlog::get("ConOut")->info("Difficulty has been set to {}.", aDiff);
+                                        });
 
-Console::Command<> ShowVersion("version", "Show the version the server was compiled with", [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
+Console::Command<> ShowVersion("version", "Show the version the server was compiled with",
+                               [](Console::ArgStack&) { spdlog::get("ConOut")->info("Server " BUILD_COMMIT); });
 
-Console::Command<> CrashServer(
-    "crash", "Crashes the server, don't use!",
-    [](Console::ArgStack&)
-    {
-        int* i = 0;
-        *i = 42;
-    });
+Console::Command<> CrashServer("crash", "Crashes the server, don't use!", [](Console::ArgStack&) {
+    int* i = 0;
+    *i = 42;
+});
 
-Console::Command<> ShowMoPoStatus(
-    "ShowMOPOStats", "Shows the status of ModPolicy",
-    [](Console::ArgStack&)
-    {
-        auto formatStatus = [](bool aToggle)
-        {
-            return aToggle ? "yes" : "no";
-        };
+Console::Command<> ShowMoPoStatus("ShowMOPOStats", "Shows the status of ModPolicy", [](Console::ArgStack&) {
+    auto formatStatus = [](bool aToggle) { return aToggle ? "yes" : "no"; };
 
-        spdlog::get("ConOut")->info("Modcheck enabled: {}\nSKSE allowed: {}\nMO2 allowed: {}", formatStatus(bEnableModCheck), formatStatus(bAllowSKSE), formatStatus(bAllowMO2));
-    });
+    spdlog::get("ConOut")->info("Modcheck enabled: {}\nSKSE allowed: {}\nMO2 allowed: {}",
+                                formatStatus(bEnableModCheck), formatStatus(bAllowSKSE), formatStatus(bAllowMO2));
+});
 
 // -- Constants --
-constexpr char kBypassMoPoWarning[]{"ModCheck is disabled. This can lead to desync and other oddities. Make sure you know what you are doing. We "
-                                    "may not be able to assist you if ModCheck was disabled."};
+constexpr char kBypassMoPoWarning[]{
+    "ModCheck is disabled. This can lead to desync and other oddities. Make sure you know what you are doing. We "
+    "may not be able to assist you if ModCheck was disabled."};
 
-constexpr char kMopoRecordsMissing[]{"Failed to start: ModPolicy's ModCheck is enabled, but no mods are installed. Players won't be able "
-                                     "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
-                                     "Check the wiki, which can be found on skyrim-together.com, for more details."};
+constexpr char kMopoRecordsMissing[]{
+    "Failed to start: ModPolicy's ModCheck is enabled, but no mods are installed. Players won't be able "
+    "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
+    "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
 static uint16_t GetUserTickRate()
 {
@@ -135,9 +136,8 @@ ServerSettings GetSettings()
 }
 
 GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
-    : m_lastFrameTime(std::chrono::high_resolution_clock::now())
-    , m_commands(aConsole)
-    , m_requestStop(false)
+    : m_lastFrameTime(std::chrono::high_resolution_clock::now()),
+      m_startTime(std::chrono::high_resolution_clock::now()), m_commands(aConsole), m_requestStop(false)
 {
     BASE_ASSERT(s_pInstance == nullptr, "Server instance already exists?");
     s_pInstance = this;
@@ -151,16 +151,19 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
 
     if (uDifficulty.value_as<uint8_t>() > 5)
     {
-        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {}), setting difficulty to 4 (master).", uDifficulty.value_as<uint8_t>());
+        spdlog::warn("Game difficulty is invalid (should be from 0 to 5, current value is {}), setting difficulty to 4 "
+                     "(master).",
+                     uDifficulty.value_as<uint8_t>());
 
         uDifficulty = 4;
     }
 
     if (!bEnableDeathSystem)
     {
-        spdlog::warn("The multiplayer death system is disabled on this server. We recommend that you ONLY do this if you have"
-                     " a mod that replaces the vanilla death system. You should only disable our death system if you"
-                     " absolutely know what you are doing!");
+        spdlog::warn(
+            "The multiplayer death system is disabled on this server. We recommend that you ONLY do this if you have"
+            " a mod that replaces the vanilla death system. You should only disable our death system if you"
+            " absolutely know what you are doing!");
     }
 
     m_isPasswordProtected = strcmp(sPassword.value(), "") != 0;
@@ -193,6 +196,7 @@ void GameServer::Initialize()
         return;
 
     BindServerCommands();
+    m_pWorld->GetScriptService().Initialize(*m_pResources);
 }
 
 void GameServer::Kill()
@@ -222,12 +226,10 @@ bool GameServer::CheckMoPo()
 
 void GameServer::BindMessageHandlers()
 {
-    auto handlerGenerator = [this](auto& x)
-    {
+    auto handlerGenerator = [this](auto& x) {
         using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-        m_messageHandlers[T::Opcode] = [this](UniquePtr<ClientMessage>& apMessage, ConnectionId_t aConnectionId)
-        {
+        m_messageHandlers[T::Opcode] = [this](UniquePtr<ClientMessage>& apMessage, ConnectionId_t aConnectionId) {
             auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
 
             if (!pPlayer)
@@ -248,18 +250,17 @@ void GameServer::BindMessageHandlers()
     ClientMessageFactory::Visit(handlerGenerator);
 
     // Override authentication request
-    m_messageHandlers[AuthenticationRequest::Opcode] = [this](UniquePtr<ClientMessage>& apMessage, ConnectionId_t aConnectionId)
-    {
+    m_messageHandlers[AuthenticationRequest::Opcode] = [this](UniquePtr<ClientMessage>& apMessage,
+                                                              ConnectionId_t aConnectionId) {
         const auto pRealMessage = CastUnique<AuthenticationRequest>(std::move(apMessage));
         HandleAuthenticationRequest(aConnectionId, pRealMessage);
     };
 
-    auto adminHandlerGenerator = [this](auto& x)
-    {
+    auto adminHandlerGenerator = [this](auto& x) {
         using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-        m_adminMessageHandlers[T::Opcode] = [this](UniquePtr<ClientAdminMessage>& apMessage, ConnectionId_t aConnectionId)
-        {
+        m_adminMessageHandlers[T::Opcode] = [this](UniquePtr<ClientAdminMessage>& apMessage,
+                                                   ConnectionId_t aConnectionId) {
             const auto pRealMessage = CastUnique<T>(std::move(apMessage));
             m_pWorld->GetDispatcher().trigger(AdminPacketEvent<T>(pRealMessage.get(), aConnectionId));
         };
@@ -272,69 +273,66 @@ void GameServer::BindMessageHandlers()
 
 void GameServer::BindServerCommands()
 {
-    m_commands.RegisterCommand<>(
-        "players", "List all players on this server",
-        [&](Console::ArgStack&)
+    m_commands.RegisterCommand<>("uptime", "Show how long the server has been running for", [this](Console::ArgStack&) {
+        Uptime uptime = GetUptime();
+        spdlog::get("ConOut")->info("Server uptime: {}w {}d {}h {}m", uptime.weeks, uptime.days, uptime.hours,
+                                    uptime.minutes);
+    });
+
+    m_commands.RegisterCommand<>("players", "List all players on this server", [&](Console::ArgStack&) {
+        auto out = spdlog::get("ConOut");
+        uint32_t count = m_pWorld->GetPlayerManager().Count();
+        if (count == 0)
         {
-            auto out = spdlog::get("ConOut");
-            uint32_t count = m_pWorld->GetPlayerManager().Count();
-            if (count == 0)
-            {
-                out->warn("No players on here. Invite some friends!");
-                return;
-            }
+            out->warn("No players on here. Invite some friends!");
+            return;
+        }
 
-            out->info("<------Players-({})--->", count);
-            for (Player* pPlayer : m_pWorld->GetPlayerManager())
-            {
-                out->info("{}: {}", pPlayer->GetId(), pPlayer->GetUsername().c_str());
-            }
-        });
-
-    m_commands.RegisterCommand<>(
-        "mods", "List all installed mods on this server",
-        [&](Console::ArgStack&)
+        out->info("<------Players-({})--->", count);
+        for (Player* pPlayer : m_pWorld->GetPlayerManager())
         {
-            auto out = spdlog::get("ConOut");
-            auto& mods = m_pWorld->ctx().at<ModsComponent>().GetServerMods();
-            if (mods.size() == 0)
-            {
-                out->warn("No mods installed");
-                return;
-            }
+            out->info("{}: {}", pPlayer->GetId(), pPlayer->GetUsername().c_str());
+        }
+    });
 
-            out->info("<------Mods-({})--->", mods.size());
-            for (auto& it : mods)
-            {
-                out->info(it.first);
-            }
-        });
-
-    m_commands.RegisterCommand<>(
-        "resources", "List all loaded resources on the server",
-        [&](Console::ArgStack&)
+    m_commands.RegisterCommand<>("mods", "List all installed mods on this server", [&](Console::ArgStack&) {
+        auto out = spdlog::get("ConOut");
+        auto& mods = m_pWorld->ctx().at<ModsComponent>().GetServerMods();
+        if (mods.size() == 0)
         {
-            auto out = spdlog::get("ConOut");
-            if (!m_pResources || m_pResources->GetManifests().size() == 0)
-            {
-                out->warn("No resources loaded");
-                return;
-            }
+            out->warn("No mods installed");
+            return;
+        }
 
-            out->info("<------Resources-({})--->", m_pResources->GetManifests().size());
-            m_pResources->ForEachManifest([&](const auto& aManifest) { out->info("{} -> {}", aManifest.Name.c_str(), aManifest.Description.c_str()); });
+        out->info("<------Mods-({})--->", mods.size());
+        for (auto& it : mods)
+        {
+            out->info(it.first);
+        }
+    });
+
+    m_commands.RegisterCommand<>("resources", "List all loaded resources on the server", [&](Console::ArgStack&) {
+        auto out = spdlog::get("ConOut");
+        if (!m_pResources || m_pResources->GetManifests().size() == 0)
+        {
+            out->warn("No resources loaded");
+            return;
+        }
+
+        out->info("<------Resources-({})--->", m_pResources->GetManifests().size());
+        m_pResources->ForEachManifest([&](const auto& aManifest) {
+            out->info("{} -> {}", aManifest.Name.c_str(), aManifest.Description.c_str());
         });
+    });
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
 
-    m_commands.RegisterCommand<int64_t, int64_t>(
-        "SetTime", "Set ingame hour and minute",
-        [&](Console::ArgStack& aStack)
-        {
+    m_commands.RegisterCommand<int, int>(
+        "SetTime", "Set ingame hour and minute", [&](Console::ArgStack& aStack) {
             auto out = spdlog::get("ConOut");
 
-            auto hour = aStack.Pop<int64_t>();
-            auto minute = aStack.Pop<int64_t>();
+            auto hour = aStack.Pop<int>();
+            auto minute = aStack.Pop<int>();
             auto timescale = m_pWorld->GetCalendarService().GetTimeScale();
 
             bool time_set_successfully = m_pWorld->GetCalendarService().SetTime(hour, minute, timescale);
@@ -349,6 +347,7 @@ void GameServer::BindServerCommands()
             }
         });
 }
+
 /* Update Info fields from user facing CVARS.*/
 void GameServer::UpdateInfo()
 {
@@ -356,7 +355,8 @@ void GameServer::UpdateInfo()
 
     if (cServerName.length() > kMaxServerNameLength)
     {
-        spdlog::error("sServerName is longer than the limit of {} characters/bytes, and has been cut short", kMaxServerNameLength);
+        spdlog::error("sServerName is longer than the limit of {} characters/bytes, and has been cut short",
+                      kMaxServerNameLength);
         m_info.name = cServerName.substr(0U, kMaxServerNameLength);
     }
     else
@@ -378,7 +378,9 @@ void GameServer::UpdateTimeScale()
 
     if (!timescale_set_successfully)
     {
-        spdlog::warn("TimeScale is invalid (should be from 0 to 1000, current value is {}), setting TimeScale to 20 (default)", timescale);
+        spdlog::warn(
+            "TimeScale is invalid (should be from 0 to 1000, current value is {}), setting TimeScale to 20 (default)",
+            timescale);
 
         uTimeScale = 20u;
     }
@@ -443,7 +445,10 @@ void GameServer::OnDisconnection(const ConnectionId_t aConnectionId, EDisconnect
 
     auto* pPlayer = m_pWorld->GetPlayerManager().GetByConnectionId(aConnectionId);
 
-    spdlog::info("Connection ended {:x} - '{}' disconnected", aConnectionId, (pPlayer != NULL ? pPlayer->GetUsername().c_str() : "NULL"));
+    spdlog::info("Connection ended {:x} - '{}' disconnected", aConnectionId,
+                 (pPlayer != NULL ? pPlayer->GetUsername().c_str() : "NULL"));
+
+    m_pWorld->GetScriptService().HandlePlayerQuit(aConnectionId, aReason);
 
     if (pPlayer)
     {
@@ -498,7 +503,8 @@ void GameServer::Send(const ConnectionId_t aConnectionId, const ServerMessage& a
 
     acServerMessage.Serialize(writer);
 
-    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()),
+                                     static_cast<uint32_t>(writer.Size()));
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
@@ -514,7 +520,8 @@ void GameServer::Send(ConnectionId_t aConnectionId, const ServerAdminMessage& ac
 
     acServerMessage.Serialize(writer);
 
-    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()),
+                                     static_cast<uint32_t>(writer.Size()));
     Server::Send(aConnectionId, &packet);
 
     s_allocator.Reset();
@@ -539,7 +546,8 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Playe
 }
 
 // NOTE: this doesn't check objects in range, only characters in range.
-void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin, const Player* apExcludedPlayer) const
+void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
+                                      const Player* apExcludedPlayer) const
 {
     if (!m_pWorld->valid(acOrigin))
     {
@@ -569,7 +577,8 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     }
 }
 
-void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apExcludeSender) const
+void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
+                             const Player* apExcludeSender) const
 {
     if (!acPartyComponent.JoinedPartyId.has_value())
     {
@@ -590,7 +599,8 @@ void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyCo
     }
 }
 
-void GameServer::SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const entt::entity acOrigin, const Player* apExcludeSender) const
+void GameServer::SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
+                                    const entt::entity acOrigin, const Player* apExcludeSender) const
 {
     if (!acPartyComponent.JoinedPartyId.has_value())
     {
@@ -642,7 +652,8 @@ bool GameServer::ValidateAuthParams(ConnectionId_t aConnectionId, const UniquePt
     return false;
 }
 
-void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest)
+void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
+                                             const UniquePtr<AuthenticationRequest>& acRequest)
 {
     const auto info = GetConnectionInfo(aConnectionId);
 
@@ -653,8 +664,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     serverResponse.Version = BUILD_COMMIT;
 
     using RT = AuthenticationResponse::ResponseType;
-    auto sendKick = [&](const RT type)
-    {
+    auto sendKick = [&](const RT type) {
         serverResponse.Type = type;
         Send(aConnectionId, serverResponse);
         // the previous message is a lingering kick, it still gets delivered.
@@ -664,7 +674,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     // to make our testing life a bit easier.
     if (acRequest->Version != BUILD_COMMIT)
     {
-        spdlog::info("New player {:x} '{}' tried to connect with client {} - Version mismatch", aConnectionId, remoteAddress, acRequest->Version.c_str());
+        spdlog::info("New player {:x} '{}' tried to connect with client {} - Version mismatch", aConnectionId,
+                     remoteAddress, acRequest->Version.c_str());
         sendKick(RT::kWrongVersion);
         return;
     }
@@ -687,7 +698,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         if (mo2Problem)
             response += "MO2 ";
 
-        spdlog::info("New player {:x} '{}' tried to connect, but {}{} disallowed - Kicked.", aConnectionId, remoteAddress, response.c_str(), skseProblem && mo2Problem ? "are" : "is");
+        spdlog::info("New player {:x} '{}' tried to connect, but {}{} disallowed - Kicked.", aConnectionId,
+                     remoteAddress, response.c_str(), skseProblem && mo2Problem ? "are" : "is");
 
         serverResponse.SKSEActive = acRequest->SKSEActive;
         serverResponse.MO2Active = acRequest->MO2Active;
@@ -725,7 +737,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             // mods that may exist on the server, but not on the client
             for (const auto& entry : modsComponent.GetServerMods())
             {
-                const auto it = std::find_if(userMods.begin(), userMods.end(), [&](const Mods::Entry& it) { return it.Filename == entry.first; });
+                const auto it = std::find_if(userMods.begin(), userMods.end(),
+                                             [&](const Mods::Entry& it) { return it.Filename == entry.first; });
 
                 if (it == userMods.end())
                 {
@@ -741,7 +754,9 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
                 String text = PrettyPrintModList(modsToRemove.ModList);
                 // "ModPolicy: refusing connection {:x} because essential mods are missing: {}"
                 // for future reference ^
-                spdlog::info("ModPolicy: refusing connection {:x} because the following mods are installed on the client: {}", aConnectionId, text.c_str());
+                spdlog::info(
+                    "ModPolicy: refusing connection {:x} because the following mods are installed on the client: {}",
+                    aConnectionId, text.c_str());
 
                 serverResponse.UserMods.ModList = std::move(modsToRemove.ModList);
                 sendKick(RT::kModsMismatch);
@@ -757,7 +772,8 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         size_t i = 0;
         for (auto& mod : acRequest->UserMods.ModList)
         {
-            const uint32_t id = mod.IsLite ? modsComponent.AddLite(mod.Filename) : modsComponent.AddStandard(mod.Filename);
+            const uint32_t id =
+                mod.IsLite ? modsComponent.AddLite(mod.Filename) : modsComponent.AddStandard(mod.Filename);
 
             Mods::Entry entry;
             entry.Filename = mod.Filename;
@@ -769,7 +785,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             responseList.ModList.push_back(entry);
         }
 
-        auto* pPlayer = m_pWorld->GetPlayerManager().Create(aConnectionId);
+        Player* pPlayer = m_pWorld->GetPlayerManager().Create(aConnectionId);
         pPlayer->SetEndpoint(remoteAddress);
         pPlayer->SetDiscordId(acRequest->DiscordId);
         pPlayer->SetUsername(std::move(acRequest->Username));
@@ -777,10 +793,21 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         pPlayer->SetModIds(playerModsIds);
         pPlayer->SetLevel(acRequest->Level);
 
+        // this event is shit, needs to be fixed, i know
+        auto [canceled, reason] = m_pWorld->GetScriptService().HandlePlayerJoin(aConnectionId);
+        if (canceled)
+        {
+            spdlog::info("New player {:x} has a been rejected because \"{}\".", aConnectionId, reason.c_str());
+            Kick(aConnectionId);
+            m_pWorld->GetPlayerManager().Remove(pPlayer);
+            return;
+        }
+
         serverResponse.PlayerId = pPlayer->GetId();
 
         auto modList = PrettyPrintModList(acRequest->UserMods.ModList);
-        spdlog::info("New player '{}' [{:x}] connected with {} mods\n\t: {}", pPlayer->GetUsername().c_str(), aConnectionId, acRequest->UserMods.ModList.size(), modList.c_str());
+        spdlog::info("New player '{}' [{:x}] connected with {} mods\n\t: {}", pPlayer->GetUsername().c_str(),
+                     aConnectionId, acRequest->UserMods.ModList.size(), modList.c_str());
 
         serverResponse.Settings = GetSettings();
 
@@ -841,12 +868,26 @@ void GameServer::UpdateSettings()
     SendToPlayers(notify);
 }
 
+GameServer::Uptime GameServer::GetUptime() const noexcept
+{
+    auto duration = std::chrono::high_resolution_clock::now() - m_startTime;
+    auto weeks = std::chrono::duration_cast<std::chrono::weeks>(duration);
+    duration -= weeks;
+    auto days = std::chrono::duration_cast<std::chrono::days>(duration);
+    duration -= days;
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);
+    duration -= hours;
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);
+    return {weeks.count(), days.count(), hours.count(), minutes.count()};
+}
+
 void GameServer::UpdateTitle() const
 {
     const auto name = m_info.name.empty() ? "Private server" : m_info.name;
     const char* playerText = GetClientCount() <= 1 ? " player" : " players";
 
-    const auto title = fmt::format("{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT, name.c_str(), GetClientCount(), playerText, GetTickRate());
+    const auto title = fmt::format("{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT, name.c_str(),
+                                   GetClientCount(), playerText, GetTickRate());
 
 #if TP_PLATFORM_WINDOWS
     SetConsoleTitleA(title.c_str());

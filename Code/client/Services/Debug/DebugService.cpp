@@ -47,8 +47,6 @@
 #include <Games/Overrides.h>
 #include <OverlayApp.hpp>
 
-#include <BranchInfo.h>
-
 #include <EquipManager.h>
 #include <Forms/TESAmmo.h>
 #include <BSGraphics/BSGraphicsRenderer.h>
