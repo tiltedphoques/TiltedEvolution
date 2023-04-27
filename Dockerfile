@@ -6,9 +6,9 @@ ARG BRANCH=master
 WORKDIR /home/builder
 
 ENV XMAKE_ROOT=y
+SHELL ["/bin/bash", "-c"]
 
-RUN git clone --recursive -b ${BRANCH} ${REPO} ./str && \
-    cd str && xmake config -m release -y && xmake -y && xmake install -o package -y
+RUN source ~/.xmake/profile && git clone --recursive -b ${BRANCH} ${REPO} ./str && cd str && xmake config -m release -y && xmake -y && xmake install -o package -y
 
 
 # Building for x86_64

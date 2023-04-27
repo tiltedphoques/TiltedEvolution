@@ -161,19 +161,29 @@ bool ResourceCollection::LoadManifestData(const std::filesystem::path& aPath)
         return UnescapeAndStrip(pValue);
     };
 
+    auto readStringOptional = [&](const char* apName) -> TiltedPhoques::String
+    {
+        const char* pValue = ini.GetValue("Resource", apName, nullptr);
+        if (pValue == nullptr)
+        {
+            return "";
+        }
+        return UnescapeAndStrip(pValue);
+    };
+
     // read must haves
     manifest->Name = readString("name");
     manifest->Description = readString("description");
-    manifest->EntryPoint = readString("entrypoint");
-    if (manifest->Name.empty() || manifest->Description.empty() || manifest->EntryPoint.empty())
+    manifest->EntryPoint = readStringOptional("entrypoint");
+    if (manifest->Name.empty() || manifest->Description.empty())
     {
         return false;
     }
 
     // optional entries
-    manifest->License = readString("license");
-    manifest->Repository = readString("repository");
-    manifest->Homepage = readString("homepage");
+    manifest->License = readStringOptional("license");
+    manifest->Repository = readStringOptional("repository");
+    manifest->Homepage = readStringOptional("homepage");
 
     // lists of strings
     auto readStringList = [&ini](const char* apName) -> TiltedPhoques::Vector<TiltedPhoques::String>
