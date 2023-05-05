@@ -217,7 +217,7 @@ void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
 
     m_world.emplace_or_replace<CombatComponent>(*hitteeIt, acEvent.HitterId);
 
-    pHittee->StartCombatEx(pHitter);
+    pHittee->SetCombatTargetEx(pHitter);
 }
 
 void CombatService::RunTargetUpdates(const float acDelta) const noexcept
@@ -263,7 +263,7 @@ void CombatService::RunTargetUpdates(const float acDelta) const noexcept
             continue;
         }
 
-        pActor->StartCombatEx(pTarget);
+        pActor->SetCombatTargetEx(pTarget);
     }
 
     for (const auto entity : toRemove)
