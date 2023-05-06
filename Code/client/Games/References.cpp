@@ -29,6 +29,7 @@
 #include <AI/AIProcess.h>
 #include <Magic/MagicCaster.h>
 #include <Sky/Sky.h>
+#include <Games/Combat/CombatController.h>
 
 #include <Events/LockChangeEvent.h>
 #include <Events/InitPackageEvent.h>
@@ -805,6 +806,15 @@ void Actor::StartCombatEx(Actor* apTarget) noexcept
         StopCombat();
         StartCombat(apTarget);
     }
+}
+
+// TODO: ft
+void Actor::SetCombatTargetEx(Actor* apTarget) noexcept
+{
+#if TP_SKYRIM64
+    if (pCombatController)
+        pCombatController->SetTarget(apTarget);
+#endif
 }
 
 void Actor::StartCombat(Actor* apTarget) noexcept

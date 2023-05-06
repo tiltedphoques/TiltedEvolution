@@ -140,6 +140,7 @@ struct Actor : TESObjectREFR
     void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void UnequipItem(TESBoundObject* apObject) noexcept;
     void StartCombatEx(Actor* apTarget) noexcept;
+    void SetCombatTargetEx(Actor* apTarget) noexcept;
     void StartCombat(Actor* apTarget) noexcept;
     void StopCombat() noexcept;
 
