@@ -13,6 +13,7 @@
 #include <Events/HitEvent.h>
 
 #include <Games/Overrides.h>
+#include <PlayerCharacter.h>
 
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
 TP_THIS_FUNCTION(TCheckAddEffectTargetData, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
@@ -37,6 +38,15 @@ bool MagicTarget::AddTargetData::ShouldSync()
     return !pEffectItem->IsSummonEffect() && !pSpell->IsInvisibilitySpell() && !pSpell->IsWardSpell();
 }
 
+// Some effects are player specific, and do not need to be synced.
+bool MagicTarget::AddTargetData::IsForbiddenEffect(Actor* apTarget)
+{
+    if (apTarget != PlayerCharacter::Get())
+        return false;
+
+    return pEffectItem->IsNightVisionEffect();
+}
+
 Actor* MagicTarget::GetTargetAsActor()
 {
     TP_THIS_FUNCTION(TGetTargetAsActor, Actor*, MagicTarget);
@@ -48,7 +58,7 @@ Actor* MagicTarget::GetTargetAsActor()
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
     Actor* pTargetActor = apThis->GetTargetAsActor();
-    if (!pTargetActor)
+    if (!pTargetActor || arData.IsForbiddenEffect(pTargetActor))
         return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
 
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
