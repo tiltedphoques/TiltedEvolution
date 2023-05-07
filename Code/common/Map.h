@@ -10,6 +10,5 @@ struct Map
     Cell* At(int32_t aX, int32_t aY) noexcept;
 
 private:
-
     TiltedPhoques::Map<Coordinates, Cell> m_cells;
 };

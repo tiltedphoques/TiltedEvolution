@@ -15,6 +15,7 @@
 #include <Services/StringCacheService.h>
 #include <Services/CombatService.h>
 #include <Services/WeatherService.h>
+#include <Services/ScriptService.h>
 
 #include <es_loader/ESLoader.h>
 
@@ -48,6 +49,12 @@ World::World()
     {
         ctx().emplace<ModsComponent>().AddServerMod(it);
     }
+
+    // late initialize the ScriptService to ensure all components are valid
+    m_pScriptService = TiltedPhoques::MakeUnique<ScriptService>(*this, m_dispatcher);
 }
 
-World::~World() noexcept = default;
+World::~World()
+{
+    m_pScriptService.reset();
+}

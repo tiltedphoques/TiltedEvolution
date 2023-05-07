@@ -147,7 +147,7 @@ struct Actor : TESObjectREFR
     virtual void sub_10C();
     virtual void sub_10D();
     virtual void KillImpl(Actor* apAttacker, float aDamage, bool aSendEvent, bool aRagdollInstant);
-    virtual void sub_10F();
+    virtual void DrinkPotion(TESBoundObject* apItem, ExtraDataList* apExtraDataList); // 90% sure about this
     virtual void sub_110();
     virtual void sub_111();
     virtual void sub_112();
@@ -188,7 +188,7 @@ struct Actor : TESObjectREFR
     TESForm* GetEquippedAmmo() const noexcept;
     Actor* GetCommandingActor() const noexcept;
     // in reality this is a BGSLocation
-    TESForm *GetCurrentLocation();
+    TESForm* GetCurrentLocation();
     float GetActorValue(uint32_t aId) const noexcept;
     float GetActorPermanentValue(uint32_t aId) const noexcept;
     Inventory GetActorInventory() const noexcept;
@@ -238,6 +238,7 @@ struct Actor : TESObjectREFR
     void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void SpeakSound(const char* pFile);
     void StartCombatEx(Actor* apTarget) noexcept;
+    void SetCombatTargetEx(Actor* apTarget) noexcept;
     void StartCombat(Actor* apTarget) noexcept;
     void StopCombat() noexcept;
 
@@ -248,15 +249,9 @@ struct Actor : TESObjectREFR
         IS_ESSENTIAL = 1 << 18,
     };
 
-    bool IsMount() const noexcept
-    {
-        return flags2 & ActorFlags::IS_A_MOUNT;
-    }
+    bool IsMount() const noexcept { return flags2 & ActorFlags::IS_A_MOUNT; }
 
-    bool IsEssential() const noexcept
-    {
-        return flags2 & ActorFlags::IS_ESSENTIAL;
-    }
+    bool IsEssential() const noexcept { return flags2 & ActorFlags::IS_ESSENTIAL; }
     void SetEssential(bool aSetEssential) noexcept
     {
         if (aSetEssential)
@@ -265,13 +260,9 @@ struct Actor : TESObjectREFR
             flags2 &= ~ActorFlags::IS_ESSENTIAL;
     }
 
-    bool IsCommandedActor() const noexcept
-    {
-        return flags2 & ActorFlags::IS_COMMANDED_ACTOR;
-    }
+    bool IsCommandedActor() const noexcept { return flags2 & ActorFlags::IS_COMMANDED_ACTOR; }
 
 public:
-
     enum ChangeFlags : uint32_t
     {
         CHANGE_ACTOR_LIFESTATE = 1 << 10,
@@ -330,8 +321,8 @@ public:
     uint32_t unkE4;
     uint32_t unkE8;
     uint32_t unkEC;
-    uint32_t unk178; // F0
-    uint32_t unk17C; // F4
+    uint32_t unk178;               // F0
+    uint32_t unk17C;               // F4
     SpellItemEntry* spellItemHead; // F8
     BSTSmallArray<TESForm*> addedSpells;
     ActorMagicCaster* casters[4];
@@ -339,7 +330,7 @@ public:
     TESForm* equippedShout;
     uint32_t someRefrHandle;
     TESRace* race;
-    float weight; // set to -1.0 by extra container changes data ctor, asuming it's the weight 
+    float weight; // set to -1.0 by extra container changes data ctor, asuming it's the weight
     uint32_t flags2;
     void* unk200[4];
     struct BGSDialogueBranch* dialogueBranch;
@@ -361,21 +352,21 @@ public:
     BSRecursiveLock actorLock;
     uint8_t padActorEnd[0x2B0 - 0x284];
 
-    //void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);    
+    // void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);
 };
 
-static_assert(offsetof(Actor, currentProcess) == 0xF0);
-static_assert(offsetof(Actor, flags1) == 0xE0);
-static_assert(offsetof(Actor, actorValueOwner) == 0xB0);
-static_assert(offsetof(Actor, actorState) == 0xB8);
-static_assert(offsetof(Actor, flags2) == 0x1FC);
-static_assert(offsetof(Actor, unk194) == 0x270);
-static_assert(offsetof(Actor, fVoiceTimer) == 0x108);
-static_assert(offsetof(Actor, unk84) == 0xE8);
-static_assert(offsetof(Actor, unk17C) == 0x17C);
-static_assert(offsetof(Actor, pCombatController) == 0x158);
-static_assert(offsetof(Actor, magicItems) == 0x1C0);
-static_assert(offsetof(Actor, equippedShout) == 0x1E0);
-static_assert(offsetof(Actor, actorLock) == 0x27C);
-static_assert(sizeof(Actor) == 0x2B0);
+static_assert(offsetof(Actor, currentProcess) == 0xF8);
+static_assert(offsetof(Actor, flags1) == 0xE8);
+static_assert(offsetof(Actor, actorValueOwner) == 0xB8);
+static_assert(offsetof(Actor, actorState) == 0xC0);
+static_assert(offsetof(Actor, flags2) == 0x204);
+static_assert(offsetof(Actor, unk194) == 0x278);
+static_assert(offsetof(Actor, fVoiceTimer) == 0x110);
+static_assert(offsetof(Actor, unk84) == 0xF0);
+static_assert(offsetof(Actor, unk17C) == 0x184);
+static_assert(offsetof(Actor, pCombatController) == 0x160);
+static_assert(offsetof(Actor, magicItems) == 0x1C8);
+static_assert(offsetof(Actor, equippedShout) == 0x1E8);
+static_assert(offsetof(Actor, actorLock) == 0x284);
+static_assert(sizeof(Actor) == 0x2B8);
 static_assert(sizeof(Actor::SpellItemEntry) == 0x18);

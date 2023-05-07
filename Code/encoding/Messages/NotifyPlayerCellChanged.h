@@ -9,8 +9,8 @@ struct NotifyPlayerCellChanged final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyPlayerCellChanged;
 
-    NotifyPlayerCellChanged() : 
-        ServerMessage(Opcode)
+    NotifyPlayerCellChanged()
+        : ServerMessage(Opcode)
     {
     }
 

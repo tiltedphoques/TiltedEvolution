@@ -54,8 +54,6 @@
 #include <ExtraData/ExtraMapMarker.h>
 #include <OverlayApp.hpp>
 
-#include <BranchInfo.h>
-
 #include <EquipManager.h>
 #include <Forms/TESAmmo.h>
 #include <BSGraphics/BSGraphicsRenderer.h>
@@ -84,9 +82,7 @@ static void DrawBuildTag()
 {
     auto* pWindow = BSGraphics::GetMainWindow();
     const ImVec2 coord{50.f, static_cast<float>((pWindow->uiWindowHeight + 25) - 100)};
-    ImGui::GetBackgroundDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), coord,
-                                            ImColor::ImColor(255.f, 0.f, 0.f),
-                                            kBuildTag);
+    ImGui::GetBackgroundDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), coord, ImColor::ImColor(255.f, 0.f, 0.f), kBuildTag);
 }
 
 void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
@@ -103,9 +99,10 @@ void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
     m_actors.emplace_back(pActor);
 }
 
-DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport,
-                           ImguiService& aImguiService)
-    : m_dispatcher(aDispatcher), m_transport(aTransport), m_world(aWorld)
+DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport, ImguiService& aImguiService)
+    : m_dispatcher(aDispatcher)
+    , m_transport(aTransport)
+    , m_world(aWorld)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&DebugService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&DebugService::OnDraw>(this);
@@ -191,12 +188,12 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     else
         s_f6Pressed = false;
 
-    #if 0
+#if 0
     if (GetAsyncKeyState(VK_F10) & 0x8000)
     {
         UI::Get()->PrintActiveMenus();
     }
-    #endif
+#endif
 
     if (GetAsyncKeyState(VK_F7))
     {
@@ -328,7 +325,6 @@ void DebugService::OnDraw() noexcept
     }
 #if (!IS_MASTER)
 
-
     if (ImGui::BeginMenu("Components"))
     {
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
@@ -383,13 +379,13 @@ void DebugService::OnDraw() noexcept
         if (ImGui::Button("Crash Client"))
         {
 #if (!IS_MASTER)
+            spdlog::error("Crash client");
             int* m = 0;
             *m = 1338;
 #else
             ConnectionErrorEvent errorEvent{};
-            errorEvent.ErrorDetail =
-                "Skyrim Together never crashes ;)  With love, Yamashi, Force, Dragonisser, Cosideci.";
-             
+            errorEvent.ErrorDetail = "Skyrim Together never crashes ;)  With love, Yamashi, Force, Dragonisser, Cosideci.";
+
             m_world.GetRunner().Trigger(errorEvent);
 #endif
         }

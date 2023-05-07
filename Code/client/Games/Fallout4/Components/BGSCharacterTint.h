@@ -14,6 +14,6 @@ struct BGSCharacterTint
 
         void* unk8;
         uint16_t unk10; // 10 - type maybe ? copied from ctor
-        uint8_t unk12; // 12 - set to 0 in ctor
+        uint8_t unk12;  // 12 - set to 0 in ctor
     };
 };

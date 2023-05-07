@@ -1,20 +1,23 @@
 import { SettingService } from '../../setting.service';
 import { Asset } from '../asset';
 
-
 export class AudioAsset extends Asset<AudioBuffer> {
-  public constructor(content: AudioBuffer, private settings: SettingService) {
+  public constructor(
+    content: AudioBuffer,
+    private settingService: SettingService,
+  ) {
     super(content);
   }
 
   public play(): void {
-
     const gainNode = AudioAsset.context.createGain();
 
-    if(this.settings.isAudioMuted()) {
+    const isMuted = this.settingService.settings.muted.value;
+
+    if (isMuted) {
       gainNode.gain.value = 0.0;
     } else {
-      gainNode.gain.value = this.settings.getVolume();
+      gainNode.gain.value = this.settingService.settings.volume.getValue();
     }
     gainNode.connect(AudioAsset.context.destination);
 

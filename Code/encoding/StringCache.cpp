@@ -112,5 +112,4 @@ StringCache& StringCache::Get() noexcept
 
 StringCache::StringCache()
 {
-    
 }

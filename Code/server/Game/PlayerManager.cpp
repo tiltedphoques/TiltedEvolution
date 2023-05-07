@@ -1,9 +1,27 @@
 #include "PlayerManager.h"
 #include "Player.h"
 
+static PlayerManager* s_pInstance = nullptr;
+
 PlayerManager::PlayerManager()
 {
-    
+    s_pInstance = this;
+}
+
+PlayerManager::~PlayerManager() noexcept
+{
+    s_pInstance = nullptr;
+}
+
+PlayerManager* PlayerManager::Get() noexcept
+{
+    if (!s_pInstance)
+    {
+        spdlog::error("Invalid access to playermanager");
+        return nullptr;
+    }
+
+    return s_pInstance;
 }
 
 Player* PlayerManager::Create(ConnectionId_t aConnectionId) noexcept

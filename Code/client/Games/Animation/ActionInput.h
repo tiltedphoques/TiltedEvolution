@@ -16,9 +16,8 @@ struct ActionInput
 
     void Release();
 
-    GamePtr<Actor> actor; // 8
+    GamePtr<Actor> actor;          // 8
     GamePtr<TESObjectREFR> target; // 10
-    BGSAction* action; // 18
-    uint32_t unkInput; // 20
+    BGSAction* action;             // 18
+    uint32_t unkInput;             // 20
 };
-

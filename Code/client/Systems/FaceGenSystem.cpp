@@ -55,10 +55,8 @@ __declspec(noinline) NiTriBasedGeom* GetHeadTriBasedGeom(Actor* apActor, uint32_
 struct TextureHolder;
 TP_THIS_FUNCTION(TCreateResourceView, Ni2DBuffer*, TextureHolder, uint32_t, uint32_t);
 
-using TCreateTexture = NiRenderedTexture * (__fastcall)(BSFixedString& aName);
+using TCreateTexture = NiRenderedTexture*(__fastcall)(BSFixedString& aName);
 using TCreateTints = void(__fastcall)(const GameArray<TintMask*>& acTints, NiRenderedTexture* apTexture);
-
-
 
 void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFaceGenComponent) noexcept
 {
@@ -73,11 +71,13 @@ void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFac
 
     auto pTriBasedGeom = GetHeadTriBasedGeom(apActor, 1);
 
-    if (!pTriBasedGeom) return;
-    
+    if (!pTriBasedGeom)
+        return;
+
     BSShaderProperty* pShaderProperty = niptr_cast<BSShaderProperty>(pTriBasedGeom->effect);
 
-    if (!pShaderProperty) return;
+    if (!pShaderProperty)
+        return;
 
     pShaderProperty->IncRef();
 
@@ -124,14 +124,13 @@ void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFac
         }
 
         Memory::Free(tints.data);
-        
+
         pMaterial->renderedTexture = pTexture;
 
         aFaceGenComponent.Generated = true;
     }
 
     pShaderProperty->DecRef();
-    
 }
 
 void FaceGenSystem::Setup(World& aWorld, const entt::entity aEntity, const Tints& acTints) noexcept
@@ -158,6 +157,5 @@ void FaceGenSystem::Setup(World& aWorld, const entt::entity aEntity, const Tints
     TP_UNUSED(aEntity);
     TP_UNUSED(acTints);
 }
-
 
 #endif

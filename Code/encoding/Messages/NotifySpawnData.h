@@ -8,22 +8,15 @@ struct NotifySpawnData final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifySpawnData;
 
-    NotifySpawnData() : ServerMessage(Opcode)
+    NotifySpawnData()
+        : ServerMessage(Opcode)
     {
     }
 
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifySpawnData& acRhs) const noexcept
-    {
-        return Id == acRhs.Id &&
-               InitialActorValues == acRhs.InitialActorValues && 
-               InitialInventory == acRhs.InitialInventory &&
-               IsDead == acRhs.IsDead &&
-               IsWeaponDrawn == acRhs.IsWeaponDrawn &&
-               GetOpcode() == acRhs.GetOpcode();
-    }
+    bool operator==(const NotifySpawnData& acRhs) const noexcept { return Id == acRhs.Id && InitialActorValues == acRhs.InitialActorValues && InitialInventory == acRhs.InitialInventory && IsDead == acRhs.IsDead && IsWeaponDrawn == acRhs.IsWeaponDrawn && GetOpcode() == acRhs.GetOpcode(); }
 
     uint32_t Id;
     ActorValues InitialActorValues{};

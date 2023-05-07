@@ -10,4 +10,3 @@ struct TESRaceForm : BaseFormComponent
 
     TESRace* race;
 };
-

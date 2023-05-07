@@ -8,6 +8,6 @@
 struct TESObjectCONT : TESBoundAnimObject
 {
     TESContainer container;
-    TESFullName    fullName;
+    TESFullName fullName;
     // more stuff
 };

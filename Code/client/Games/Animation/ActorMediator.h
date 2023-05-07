@@ -4,7 +4,7 @@ struct TESActionData;
 
 struct ActorMediator
 {
-    virtual ~ActorMediator() {};
+    virtual ~ActorMediator(){};
 
     static ActorMediator* Get() noexcept;
 

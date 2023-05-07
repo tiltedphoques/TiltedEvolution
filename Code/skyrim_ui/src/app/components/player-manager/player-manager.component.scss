@@ -1,6 +1,6 @@
-@import "env";
+@import 'env';
 
-@import "functions/rem";
+@import 'functions/rem';
 
 :host {
   position: relative;
@@ -28,4 +28,3 @@ hr {
   display: flex;
   justify-content: center;
 }
-

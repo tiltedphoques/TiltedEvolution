@@ -116,4 +116,3 @@ void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateCh
     const entt::entity cEntity = static_cast<entt::entity>(message.Id);
     GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
 }
-

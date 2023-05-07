@@ -9,8 +9,8 @@ struct NotifyPlayerJoined final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyPlayerJoined;
 
-    NotifyPlayerJoined() : 
-        ServerMessage(Opcode)
+    NotifyPlayerJoined()
+        : ServerMessage(Opcode)
     {
     }
 

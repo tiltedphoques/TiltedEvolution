@@ -9,6 +9,7 @@ vsxmake2022
 .xmake
 vs2019
 
+build
 Build
 Build/*.log
 Build/*.torrent

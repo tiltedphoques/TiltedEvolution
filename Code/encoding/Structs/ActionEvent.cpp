@@ -7,29 +7,21 @@ using TiltedPhoques::Serialization;
 
 enum DifferentialFlags
 {
-    kActionId           = 1 << 0,
-    kTargetId           = 1 << 1,
-    kIdleId             = 1 << 2,
-    kState              = 1 << 3,
-    kType               = 1 << 4,
-    kEventName          = 1 << 5,
-    kTargetEventName    = 1 << 6,
-    kVariables          = 1 << 7
+    kActionId = 1 << 0,
+    kTargetId = 1 << 1,
+    kIdleId = 1 << 2,
+    kState = 1 << 3,
+    kType = 1 << 4,
+    kEventName = 1 << 5,
+    kTargetEventName = 1 << 6,
+    kVariables = 1 << 7
 };
 
 bool ActionEvent::operator==(const ActionEvent& acRhs) const noexcept
 {
-    return Tick == acRhs.Tick && 
-        // ActorId == acRhs.ActorId && // ActorId is a local field as it is filled up latter by the game client
-        ActionId == acRhs.ActionId &&
-        State1 == acRhs.State1 &&
-        State2 == acRhs.State2 &&
-        Type == acRhs.Type &&
-        TargetId == acRhs.TargetId && 
-        IdleId == acRhs.IdleId && 
-        EventName == acRhs.EventName && 
-        TargetEventName == acRhs.TargetEventName &&
-        Variables == acRhs.Variables;
+    return Tick == acRhs.Tick &&
+           // ActorId == acRhs.ActorId && // ActorId is a local field as it is filled up latter by the game client
+           ActionId == acRhs.ActionId && State1 == acRhs.State1 && State2 == acRhs.State2 && Type == acRhs.Type && TargetId == acRhs.TargetId && IdleId == acRhs.IdleId && EventName == acRhs.EventName && TargetEventName == acRhs.TargetEventName && Variables == acRhs.Variables;
 }
 
 bool ActionEvent::operator!=(const ActionEvent& acRhs) const noexcept
@@ -73,7 +65,7 @@ void ActionEvent::GenerateDifferential(const ActionEvent& aPrevious, TiltedPhoqu
         Serialization::WriteVarInt(aWriter, tickDiff);
     }
 
-    if(flags & kActionId)
+    if (flags & kActionId)
     {
         Serialization::WriteVarInt(aWriter, ActionId);
     }

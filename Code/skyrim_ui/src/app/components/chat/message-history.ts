@@ -1,12 +1,11 @@
 /** Helper for storing sent message history */
 export class MessageHistory {
-  
   private stack: string[] = [];
   private offset = 0;
   /** When the history exeeds this number, the first item will be removed */
   private maxHistoryLength: number;
 
-  constructor({maxHistoryLength}) {
+  constructor({ maxHistoryLength }) {
     this.maxHistoryLength = maxHistoryLength;
   }
 
@@ -30,13 +29,13 @@ export class MessageHistory {
     this.offset -= 1;
 
     const isHistotyEmpty = this.stack.length === 0;
-    if(isHistotyEmpty) {
+    if (isHistotyEmpty) {
       this.offset = 0;
       return fallback;
     }
 
     const isOffsetTooLow = this.offset < 0;
-    if(isOffsetTooLow) {
+    if (isOffsetTooLow) {
       this.offset = 0;
       return this.stack[this.offset];
     }

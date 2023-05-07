@@ -17,7 +17,7 @@ static WNDPROC RealWndProc = nullptr;
 static RendererWindow* g_RenderWindow = nullptr;
 
 static constexpr char kTogetherWindowName[]{"Fallout Together"};
-}
+} // namespace
 
 RendererWindow* GetMainWindow()
 {
@@ -29,8 +29,7 @@ bool RendererWindow::IsForeground()
     return GetForegroundWindow() == hWnd;
 }
 
-void (*Renderer_Init)(Renderer*, BSGraphics::RendererInitOSData*, const BSGraphics::ApplicationWindowProperties*,
-                      BSGraphics::RendererInitReturn*) = nullptr;
+void (*Renderer_Init)(Renderer*, BSGraphics::RendererInitOSData*, const BSGraphics::ApplicationWindowProperties*, BSGraphics::RendererInitReturn*) = nullptr;
 
 // WNDPROC seems to be part of the renderer
 LRESULT CALLBACK Hook_WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -41,8 +40,7 @@ LRESULT CALLBACK Hook_WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     return RealWndProc(hwnd, uMsg, wParam, lParam);
 }
 
-void Hook_Renderer_Init(BSGraphics::Renderer* self, BSGraphics::RendererInitOSData* aOSData,
-                        const BSGraphics::ApplicationWindowProperties* aFBData, BSGraphics::RendererInitReturn* aOut)
+void Hook_Renderer_Init(BSGraphics::Renderer* self, BSGraphics::RendererInitOSData* aOSData, const BSGraphics::ApplicationWindowProperties* aFBData, BSGraphics::RendererInitReturn* aOut)
 {
     // we feed this a shared icon as the resource directory of our former launcher data is already overwritten with the
     // game.
@@ -74,21 +72,23 @@ void Hook_StopTimer(int type)
     StopTimer(type);
 }
 
-static TiltedPhoques::Initializer s_viewportHooks([]() {
-    const VersionDbPtr<void> initWindowLoc(193855);
-    // patch dwStyle in BSGraphics::InitWindows
-    TiltedPhoques::Put(mem::pointer(initWindowLoc.GetPtr()) + 0xD7 + 1, WS_OVERLAPPEDWINDOW);
+static TiltedPhoques::Initializer s_viewportHooks(
+    []()
+    {
+        const VersionDbPtr<void> initWindowLoc(193855);
+        // patch dwStyle in BSGraphics::InitWindows
+        TiltedPhoques::Put(mem::pointer(initWindowLoc.GetPtr()) + 0xD7 + 1, WS_OVERLAPPEDWINDOW);
 
-    const VersionDbPtr<void> timerLoc(700870);
-    const VersionDbPtr<void> renderInit(564406);
+        const VersionDbPtr<void> timerLoc(700870);
+        const VersionDbPtr<void> renderInit(564406);
 
-    TiltedPhoques::SwapCall(mem::pointer(timerLoc.GetPtr()) + 0xE, StopTimer, &Hook_StopTimer);
+        TiltedPhoques::SwapCall(mem::pointer(timerLoc.GetPtr()) + 0xE, StopTimer, &Hook_StopTimer);
 
-    Renderer_Init = static_cast<decltype(Renderer_Init)>(renderInit.GetPtr());
+        Renderer_Init = static_cast<decltype(Renderer_Init)>(renderInit.GetPtr());
 
-    // Once we find a proper way to locate it for different versions, go back to swapcall
-    // TiltedPhoques::SwapCall(mem::pointer(initLoc.GetPtr()) + 0xD1A, Renderer_Init, &Hook_Renderer_Init);
-    TP_HOOK_IMMEDIATE(&Renderer_Init, &Hook_Renderer_Init);
-});
+        // Once we find a proper way to locate it for different versions, go back to swapcall
+        // TiltedPhoques::SwapCall(mem::pointer(initLoc.GetPtr()) + 0xD1A, Renderer_Init, &Hook_Renderer_Init);
+        TP_HOOK_IMMEDIATE(&Renderer_Init, &Hook_Renderer_Init);
+    });
 
-}
+} // namespace BSGraphics

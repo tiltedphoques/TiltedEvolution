@@ -1,6 +1,5 @@
 #pragma once
 
-
 using TiltedPhoques::Buffer;
 
 //! Network optimized 2d vector

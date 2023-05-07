@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <Structs/Movement.h>
 #include <Structs/ActionEvent.h>
 

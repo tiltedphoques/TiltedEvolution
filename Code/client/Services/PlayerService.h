@@ -22,8 +22,8 @@ struct NotifyPlayerCellChanged;
 struct GridCellCoords;
 
 /**
-* @brief Handles logic related to the local player.
-*/
+ * @brief Handles logic related to the local player.
+ */
 struct PlayerService
 {
     PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
@@ -32,7 +32,6 @@ struct PlayerService
     TP_NOCOPYMOVE(PlayerService);
 
 protected:
-
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
     void OnConnected(const ConnectedEvent& acEvent) noexcept;
     void OnDisconnected(const DisconnectedEvent& acEvent) noexcept;
@@ -49,19 +48,18 @@ protected:
 
 
 private:
-
     /**
-    * @brief Run the respawn timer, and if it hits 0, respawn the player.
-    */
+     * @brief Run the respawn timer, and if it hits 0, respawn the player.
+     */
     void RunRespawnUpdates(const double acDeltaTime) noexcept;
     void RunPostDeathUpdates(const double acDeltaTime) noexcept;
     /**
-    * @brief Make sure difficulty doesn't get changed while connected
-    */
+     * @brief Make sure difficulty doesn't get changed while connected
+     */
     void RunDifficultyUpdates() const noexcept;
     void RunLevelUpdates() const noexcept;
 
-    void ToggleDeathSystem(bool aSet) const noexcept;
+    void ToggleDeathSystem(bool aSet) noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
@@ -73,6 +71,18 @@ private:
     
     Vector<uint32_t> m_dummyHandles;
     TiltedPhoques::Map<uint32_t, uint32_t> m_mapHandles;
+
+    bool m_isDeathSystemEnabled = true;
+
+    bool m_knockdownStart = false;
+    double m_knockdownTimer = 0.0;
+
+    bool m_godmodeStart = false;
+    double m_godmodeTimer = 0.0;
+
+    uint32_t m_cachedMainSpellId = 0;
+    uint32_t m_cachedSecondarySpellId = 0;
+    uint32_t m_cachedPowerId = 0;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_connectedConnection;

@@ -59,7 +59,5 @@ static_assert(sizeof(ActiveEffect) == 0x90);
 
 namespace ActiveEffectFactory
 {
-    ActiveEffect* Activate(Actor* apCaster, MagicSystem::CastingSource aeCastingSource, MagicItem* apSpell,
-                           EffectItem* apEffectItem, TESBoundObject* apSource, bool abWornEnchantment);
+ActiveEffect* Activate(Actor* apCaster, MagicSystem::CastingSource aeCastingSource, MagicItem* apSpell, EffectItem* apEffectItem, TESBoundObject* apSource, bool abWornEnchantment);
 };
-

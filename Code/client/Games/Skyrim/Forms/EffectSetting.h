@@ -6,10 +6,9 @@
 #include <Components/BGSMenuDisplayObject.h>
 #include <Games/Magic/MagicSystem.h>
 
-
 struct EffectSetting : TESForm
 {
-    TESFullName    fullName;
+    TESFullName fullName;
     BGSMenuDisplayObject menuDisplayObject;
     BGSKeywordForm keywordForm;
     uintptr_t unk30;

@@ -7,15 +7,12 @@ bool IsUSVFSActive();
 
 class USVFSSentinel
 {
-  public:
+public:
     USVFSSentinel();
 
-    bool IsActive()
-    {
-        return m_usvfsHandle;
-    }
+    bool IsActive() { return m_usvfsHandle; }
 
-  private:
+private:
     HMODULE m_usvfsHandle;
 };
 } // namespace usvfs

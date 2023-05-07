@@ -1,7 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_TrollBehavior.h>
 
-
 AnimationGraphDescriptor_TrollBehavior::AnimationGraphDescriptor_TrollBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -57,21 +56,7 @@ AnimationGraphDescriptor_TrollBehavior::AnimationGraphDescriptor_TrollBehavior(A
     };
 
     uint64_t key = 12972242470338891659;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
-        AnimationGraphDescriptor(
-        {kbAnimationDriven,
-            kIsAttackReady,
-            kbAllowRotation,
-            kbHeadTrackingOff,
-            kisMoving,
-            kIsAttacking},
-        {kTurnDelta,
-            kDirection,
-            kSpeed,
-            kSampledSpeed,
-            kDirDamped,
-            kDirectionBlendA},
-        {kiSyncTurnState,
-            kiSyncIdleLocomotion}));
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key, AnimationGraphDescriptor({kbAnimationDriven, kIsAttackReady, kbAllowRotation, kbHeadTrackingOff, kisMoving, kIsAttacking}, {kTurnDelta, kDirection, kSpeed, kSampledSpeed, kDirDamped, kDirectionBlendA}, {kiSyncTurnState, kiSyncIdleLocomotion}));
 }

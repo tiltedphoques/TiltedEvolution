@@ -18,8 +18,7 @@ struct NiCamera : public NiAVObject
 
     bool WorldPtToScreenPt3(const NiPoint3& in, NiPoint3& out, float zeroTolerance = 1e-5f);
 
-    static bool WorldPtToScreenPt3(float* matrix, const NiRect<float>* port, const NiPoint3* p_in, float* x_out,
-                                   float* y_out, float* z_out, float zeroTolerance = 1e-5f);
+    static bool WorldPtToScreenPt3(float* matrix, const NiRect<float>* port, const NiPoint3* p_in, float* x_out, float* y_out, float* z_out, float zeroTolerance = 1e-5f);
 
     NiNode* parent;
     NiAVObject* unk;

@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_InsectsSmall.h>
 
-
-
-AnimationGraphDescriptor_InsectsSmall::AnimationGraphDescriptor_InsectsSmall(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_InsectsSmall::AnimationGraphDescriptor_InsectsSmall(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -81,7 +78,8 @@ AnimationGraphDescriptor_InsectsSmall::AnimationGraphDescriptor_InsectsSmall(
 
     uint64_t key = 11398773395717218432;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbAnimationDriven,
@@ -101,6 +99,5 @@ AnimationGraphDescriptor_InsectsSmall::AnimationGraphDescriptor_InsectsSmall(
                 kiSyncTurnState,
                 kiCombatState,
                 kiRecoilSelector,
-            }
-        ));
+            }));
 }

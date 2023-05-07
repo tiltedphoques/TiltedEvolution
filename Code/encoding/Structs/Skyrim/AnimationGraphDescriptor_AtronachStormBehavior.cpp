@@ -40,26 +40,30 @@ AnimationGraphDescriptor_AtronachStormBehavior::AnimationGraphDescriptor_Atronac
     };
 
     uint64_t key = 9011796343880008240;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbEquipOk,
-            kbWantCastLeft,
-            kbAnimationDriven,
-            kIsAttackReady,
-            kbMLh_Ready,
-            kbWantCastLeft,
-            kisCasting,
-            kbAllowRotation,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
+            {
+                kbEquipOk,
+                kbWantCastLeft,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kbMLh_Ready,
+                kbWantCastLeft,
+                kisCasting,
+                kbAllowRotation,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
             },
-        {kSpeed,
-            kDirection,
+            {
+                kSpeed,
+                kDirection,
             },
-        {kiSyncIdleLocomotion,
-            kiSyncDefaultState,
-            kiCombatStateID,
+            {
+                kiSyncIdleLocomotion,
+                kiSyncDefaultState,
+                kiCombatStateID,
             }));
 }

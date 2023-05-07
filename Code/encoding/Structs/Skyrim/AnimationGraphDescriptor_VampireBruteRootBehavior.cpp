@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_VampireBruteRootBehavior.h>
 
-
-
 AnimationGraphDescriptor_VampireBruteRootBehavior::AnimationGraphDescriptor_VampireBruteRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -70,27 +68,31 @@ AnimationGraphDescriptor_VampireBruteRootBehavior::AnimationGraphDescriptor_Vamp
     };
 
     uint64_t key = 6408297713843182476;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbEquipOk,
-            kbAnimationDriven,
-            kIsAttackReady,
-            kbAllowRotation,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbHeadTracking,
-            kbHeadTrackingOn,
-            kbCanHeadTrack,
+            {
+                kbEquipOk,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kbAllowRotation,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kbHeadTracking,
+                kbHeadTrackingOn,
+                kbCanHeadTrack,
             },
-        {kSpeed,
-            kTurnDelta,
-            kDirection,
-            kSpeedSampled,
+            {
+                kSpeed,
+                kTurnDelta,
+                kDirection,
+                kSpeedSampled,
             },
-        {kiSyncDefaultState,
-            kiSyncIdleLocomotion,
-            kiSyncTurnState,
+            {
+                kiSyncDefaultState,
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
             }));
 }

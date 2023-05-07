@@ -1,7 +1,5 @@
 
 #include <TiltedReverse/Code/reverse/include/Debug.hpp>
-#include <BranchInfo.h>
-
 #include "TargetConfig.h"
 #include "launcher.h"
 
@@ -33,20 +31,19 @@ static LaunchContext* g_context = nullptr;
 
 LaunchContext* GetLaunchContext()
 {
-    #if 0
+#if 0
     if (!g_context)
         __debugbreak();
-    #endif
+#endif
     return g_context;
 }
 
 // Everything is nothing, life is worth living, just look to the stars
-#define DIE_NOW(err)                                                                                                   \
-    {                                                                                                                  \
-        Die(err);                                                                                                      \
-        return false;                                                                                                  \
+#define DIE_NOW(err)  \
+    {                 \
+        Die(err);     \
+        return false; \
     }
-
 
 void SetMaxstdio()
 {
@@ -91,12 +88,8 @@ int StartUp(int argc, char** argv)
         const auto status = oobe::ReportModCompatabilityStatus();
         switch (status)
         {
-        case oobe::CompatabilityStatus::kDX11Unsupported:
-            ec = L"Device does not support DirectX 11";
-            break;
-        case oobe::CompatabilityStatus::kOldOS:
-            ec = L"Operating system unsupported. Please upgrade to Windows 8.1 or greater";
-            break;
+        case oobe::CompatabilityStatus::kDX11Unsupported: ec = L"Device does not support DirectX 11"; break;
+        case oobe::CompatabilityStatus::kOldOS: ec = L"Operating system unsupported. Please upgrade to Windows 8.1 or greater"; break;
         }
 
         if (ec)
@@ -153,6 +146,4 @@ void InitClient()
 // (https://github.com/ModOrganizer2/usvfs/blob/f8051c179dee114b7e06c5dab2482977c285d611/src/usvfs_dll/usvfs.cpp#L352)
 // Resume proc
 
-
 // InjectDLLRemoteThread ->SkipInit
-

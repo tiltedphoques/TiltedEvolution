@@ -28,7 +28,8 @@ struct ScriptProperty
         PROPERTY_REMOVED = 3,
     };
 
-    union Data {
+    union Data
+    {
         uint32_t m_formId;
         uint32_t m_integer;
         float m_float;
@@ -36,9 +37,9 @@ struct ScriptProperty
 
         struct Str
         {
-          const char* data;
-          size_t length;
-        } m_string {nullptr, 0};
+            const char* data;
+            size_t length;
+        } m_string{nullptr, 0};
     };
 
     void ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix) noexcept;
@@ -72,7 +73,7 @@ struct VMAD
 
 struct CNTO
 {
-    CNTO(){}
+    CNTO() {}
     CNTO(Buffer::Reader& aReader);
 
     uint32_t m_formId{};
@@ -81,7 +82,7 @@ struct CNTO
 
 struct WLST
 {
-    WLST(){}
+    WLST() {}
     WLST(Buffer::Reader& aReader, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix);
 
     uint32_t m_weatherId{}; // WTHR
@@ -91,20 +92,20 @@ struct WLST
 
 struct TNAM
 {
-    TNAM(){}
+    TNAM() {}
     TNAM(Buffer::Reader& aReader);
 
     uint8_t m_sunriseBegin{}; // times 10 minutes
-    uint8_t m_sunriseEnd{}; // times 10 minutes
-    uint8_t m_sunsetBegin{}; // times 10 minutes
-    uint8_t m_sunsetEnd{}; // times 10 minutes
-    uint8_t m_volatility{}; // 0-100
+    uint8_t m_sunriseEnd{};   // times 10 minutes
+    uint8_t m_sunsetBegin{};  // times 10 minutes
+    uint8_t m_sunsetEnd{};    // times 10 minutes
+    uint8_t m_volatility{};   // 0-100
     uint8_t m_moons{};
 };
 
 struct NAME
 {
-    NAME(){}
+    NAME() {}
     NAME(Buffer::Reader& aReader, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix);
 
     uint32_t m_baseId = 0;
@@ -112,7 +113,7 @@ struct NAME
 
 struct DOFT
 {
-    DOFT(){}
+    DOFT() {}
     DOFT(Buffer::Reader& aReader, TiltedPhoques::Map<uint8_t, uint32_t>& aParentToFormIdPrefix);
 
     uint32_t m_formId = 0;
@@ -120,7 +121,7 @@ struct DOFT
 
 struct ACBS
 {
-    ACBS(){}
+    ACBS() {}
     ACBS(Buffer::Reader& aReader);
 
     enum ActorFlags
@@ -141,7 +142,7 @@ struct ACBS
         kOppositeGenderAnims = 1 << 13,
         kSimpleActor = 1 << 14,
         kLoopedScript_m = 1 << 15, // ??
-        kLoopedAudio_m = 1 << 16, // ??
+        kLoopedAudio_m = 1 << 16,  // ??
         kGhostOrNonInteractable = 1 << 17,
         kInvulnerable = 1 << 18,
     };
@@ -200,7 +201,7 @@ static_assert(sizeof(ACBS) == 0x18);
 
 struct MAST
 {
-    MAST(){}
+    MAST() {}
     MAST(Buffer::Reader& aReader);
 
     String m_masterName = "";
@@ -303,7 +304,8 @@ struct TypedValue
 
     TYPE m_type = TYPE::UNK;
 
-    union {
+    union
+    {
         uint32_t m_int = 0;
         float m_float;
         bool m_bool;
@@ -312,9 +314,7 @@ struct TypedValue
 
 struct WCTR
 {
-    WCTR()
-    {
-    }
+    WCTR() {}
     WCTR(Buffer::Reader& aReader);
 
     int16_t m_x;
@@ -323,9 +323,7 @@ struct WCTR
 
 struct DNAM
 {
-    DNAM()
-    {
-    }
+    DNAM() {}
     DNAM(Buffer::Reader& aReader);
 
     float m_landLevel;
@@ -334,9 +332,7 @@ struct DNAM
 
 struct NVNM
 {
-    NVNM()
-    {
-    }
+    NVNM() {}
     NVNM(Buffer::Reader& aReader);
 
     struct Tri
@@ -387,4 +383,4 @@ struct NVNM
 static_assert(sizeof(glm::vec3) == 12);
 static_assert(sizeof(NVNM::Tri) == 16);
 
-} // namespace
+} // namespace Chunks

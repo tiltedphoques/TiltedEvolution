@@ -5,5 +5,4 @@
 
 struct TESObjectBOOK : TESBoundObject, TESFullName
 {
-
 };

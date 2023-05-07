@@ -10,7 +10,6 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <httplib.h>
 
-
 extern Console::Setting<uint32_t> uMaxPlayerCount;
 
 static constexpr char kMasterServerEndpoint[] =
@@ -21,23 +20,16 @@ static constexpr char kMasterServerEndpoint[] =
     "https://fallout-reborn-list.skyrim-together.com";
 #endif
 
-static Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer",
-                                        "Whether to list the server on the public server list", false};
+static Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer", "Whether to list the server on the public server list", false};
 
 ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
-    : m_world(aWorld), m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ServerListService::OnUpdate>(this)),
-      m_nextAnnounce(std::chrono::seconds(0))
+    : m_world(aWorld)
+    , m_updateConnection(aDispatcher.sink<UpdateEvent>().connect<&ServerListService::OnUpdate>(this))
+    , m_nextAnnounce(std::chrono::seconds(0))
 {
     if (!bAnnounceServer)
         spdlog::warn("bAnnounceServer is set to false. The server will not show up as a public server. "
                      "If you are just playing with friends, this is probably what you want.");
-
-    // TODO: list pw protected servers on server list
-    if (bAnnounceServer && GameServer::Get()->IsPasswordProtected())
-    {
-        spdlog::warn("Your server will not show up on the server list because this server has a password.");
-        bAnnounceServer = false;
-    }
 }
 
 void ServerListService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -64,18 +56,25 @@ void ServerListService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
     m_nextAnnounce = (std::chrono::steady_clock::now() + std::chrono::minutes(1));
 }
 
-void ServerListService::Announce() const noexcept
+void ServerListService::Announce() noexcept
 {
     auto* pServer = GameServer::Get();
     const auto& cInfo = pServer->GetInfo();
     auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
 
-    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url, pServer->GetPort(),
-                   cInfo.tick_rate, pc, uMaxPlayerCount.value_as<uint16_t>(), cInfo.tagList, bAnnounceServer);
+    if (bAnnounceServer)
+        m_flags |= kIsPublic;
+    if (GameServer::Get()->IsPasswordProtected())
+        m_flags |= kHasPassword;
+
+    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url,
+                        pServer->GetPort(), cInfo.tick_rate, pc, uMaxPlayerCount.value_as<uint16_t>(), cInfo.tagList,
+                        bAnnounceServer, GameServer::Get()->IsPasswordProtected(), m_flags);
 }
 
 void ServerListService::PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick,
-                                         uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList, bool aPublic) noexcept
+                                         uint16_t aPlayerCount, uint16_t aPlayerMaxCount, String acTagList,
+                                         bool aPublic, bool aPassword, int32 aFlags) noexcept
 {
     const std::string kVersion{BUILD_COMMIT};
     const httplib::Params params{
@@ -88,21 +87,23 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
         {"player_count", std::to_string(aPlayerCount)},
         {"max_player_count", std::to_string(aPlayerMaxCount)},
         {"tags", std::string(acTagList.c_str(), acTagList.size())},
-        {"public", aPublic ? "true" : "false" },
+        {"public", aPublic ? "true" : "false"},
+        {"pass", aPassword ? "true" : "false"},
+        {"flags", std::to_string(aFlags)},
     };
 
     httplib::Client client(kMasterServerEndpoint);
     client.enable_server_certificate_verification(false);
+    client.set_read_timeout(std::chrono::milliseconds(30000));
     const auto response = client.Post("/announce", params);
 
-    // If we send a 203 it means we banned this server
+    // If we send a 403 it means we banned this server
     if (response)
     {
         if (response->status == 403)
             GameServer::Get()->Kill();
         else if (response->status != 200)
             spdlog::error("Server list error! {}", response->body);
-
     }
     else
     {

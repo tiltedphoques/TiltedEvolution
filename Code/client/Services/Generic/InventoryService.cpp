@@ -54,10 +54,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
     auto view = m_world.view<FormIdComponent>();
 
-    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.FormId](auto entity) 
-    {
-        return view.get<FormIdComponent>(entity).Id == formId;
-    });
+    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.FormId](auto entity) { return view.get<FormIdComponent>(entity).Id == formId; });
 
     if (iter == std::end(view))
         return;
@@ -65,20 +62,19 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
     {
-        spdlog::error(__FUNCTION__ ": failed to find server id, target form id: {:X}, item id: {:X}, count: {}", 
-                      acEvent.FormId, acEvent.Item.BaseId.BaseId, acEvent.Item.Count);
+        spdlog::error(__FUNCTION__ ": failed to find server id, target form id: {:X}, item id: {:X}, count: {}", acEvent.FormId, acEvent.Item.BaseId.BaseId, acEvent.Item.Count);
         return;
     }
 
     RequestInventoryChanges request;
     request.ServerId = serverIdRes.value();
-    request.Item = std::move(acEvent.Item);
+    request.Item = acEvent.Item;
     request.Drop = acEvent.Drop;
+    request.UpdateClients = acEvent.UpdateClients;
 
     m_transport.Send(request);
 
-    spdlog::info("Sending item request, item: {:X}, count: {}, target object: {:X}", acEvent.Item.BaseId.BaseId, acEvent.Item.Count,
-                 acEvent.FormId);
+    spdlog::info("Sending item request, item: {:X}, count: {}, target object: {:X}", acEvent.Item.BaseId.BaseId, acEvent.Item.Count, acEvent.FormId);
 }
 
 void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEvent) noexcept
@@ -88,10 +84,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
 
     auto view = m_world.view<FormIdComponent>();
 
-    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.ActorId](auto entity) 
-    {
-        return view.get<FormIdComponent>(entity).Id == formId;
-    });
+    const auto iter = std::find_if(std::begin(view), std::end(view), [view, formId = acEvent.ActorId](auto entity) { return view.get<FormIdComponent>(entity).Id == formId; });
 
     if (iter == std::end(view))
         return;
@@ -99,8 +92,7 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
     if (!serverIdRes.has_value())
     {
-        spdlog::error(__FUNCTION__ ": failed to find server id, actor id: {:X}, item id: {:X}, unequip: {}, slot: {:X}", 
-                      acEvent.ActorId, acEvent.IsAmmo, acEvent.Unequip, acEvent.EquipSlotId);
+        spdlog::error(__FUNCTION__ ": failed to find server id, actor id: {:X}, item id: {:X}, isAmmo: {}, unequip: {}, slot: {:X}", acEvent.ActorId, acEvent.ItemId, acEvent.IsAmmo, acEvent.Unequip, acEvent.EquipSlotId);
         return;
     }
 
@@ -178,19 +170,28 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     uint32_t equipSlotId = modSystem.GetGameId(acMessage.EquipSlotId);
     TESForm* pEquipSlot = TESForm::GetById(equipSlotId);
 
+    // TODO: ft, does it have the same problem?
+#if TP_SKYRIM64
+    uint32_t slotId = 0;
+    if (pEquipSlot == DefaultObjectManager::Get().rightEquipSlot)
+        slotId = 1;
+
+    // There's a bug where double equipping something magically unequips something secretly.
+    // TODO: should this be done for armor as well?
+    // Also, find out why the client is sending two equip messages in the first place.
+    if (!acMessage.Unequip && pActor->GetEquippedWeapon(slotId) == pItem)
+        return;
+#endif
+
     auto* pEquipManager = EquipManager::Get();
 
 #if TP_SKYRIM64
     if (acMessage.IsSpell)
     {
-        uint32_t spellSlotId = 0;
-        if (pEquipSlot == DefaultObjectManager::Get().rightEquipSlot)
-            spellSlotId = 1;
-
         if (acMessage.Unequip)
-            pEquipManager->UnEquipSpell(pActor, pItem, spellSlotId);
+            pEquipManager->UnEquipSpell(pActor, pItem, slotId);
         else
-            pEquipManager->EquipSpell(pActor, pItem, spellSlotId);
+            pEquipManager->EquipSpell(pActor, pItem, slotId);
 
         return;
     }

@@ -1,6 +1,6 @@
 @function sides($sides) {
   @if type-of($sides) != list {
-    $sides: ( $sides );
+    $sides: ($sides);
   }
 
   @if length($sides) == 1 {

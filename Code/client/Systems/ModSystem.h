@@ -4,8 +4,8 @@ struct Mods;
 struct GameId;
 
 /**
-* @brief Makes sure that different clients can have independent load orders and mods.
-*/
+ * @brief Makes sure that different clients can have independent load orders and mods.
+ */
 struct ModSystem
 {
     ModSystem(entt::dispatcher& aDispatcher) noexcept;
@@ -19,11 +19,9 @@ struct ModSystem
     uint32_t GetGameId(const GameId& acGameId) const noexcept;
 
 protected:
-
     void HandleMods(const Mods& acMods) noexcept;
 
 private:
-
     struct GameMod
     {
         uint16_t id;

@@ -8,8 +8,8 @@ struct NotifyProjectileLaunch;
 struct HitEvent;
 
 /**
-* @brief Responsible for projectiles, combat agro, etc.
-*/
+ * @brief Responsible for projectiles, combat agro, etc.
+ */
 struct CombatService
 {
     CombatService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher);
@@ -36,4 +36,3 @@ private:
     entt::scoped_connection m_projectileLaunchConnection;
     entt::scoped_connection m_hitConnection;
 };
-

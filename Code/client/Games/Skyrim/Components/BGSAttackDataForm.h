@@ -4,7 +4,6 @@
 
 struct BGSAttackDataMap : NiRefObject
 {
-
 };
 
 struct BGSAttackDataForm : BaseFormComponent

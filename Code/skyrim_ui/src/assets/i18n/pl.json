@@ -1,0 +1,175 @@
+{
+  "INFO": "Polska lokalizacja do Skyrim Together: Reborn! Wersja: 1.4.0. Autor:<strong>Nutyo</strong>",
+
+  "COMPONENT": {
+    "CHAT": {
+      "SEND": "Wyślij",
+      "MESSAGE": "Wiadomość",
+      "MESSAGE_TOO_LONG": "Nie możesz wysłać wiadomości dłuższej niż {{chatMessageLengthLimit}} znaków."
+    },
+    "CONNECT": {
+      "INFO": {
+        "SERVER_ADDRESS": "połącz się do serwera używając jego pełnego adresu. Użyj formatu <strong>address:port</strong>. Standardowy port to <strong>10578</strong>.",
+        "HELGEN": "NIE Podłączaj się do żadnego serwera, kiedy jesteś w sekwencji intra w Helgen. Upewnij się, że wpierw uciekłeś z Helgen"
+      },
+      "ADDRESS": "Adres",
+      "PASSWORD": "Hasło",
+      "SAVE_PASSWORD": "Zapisz Hasło?",
+      "CONNECT": "połącz",
+      "CANCEL": "Anuluj",
+      "PUBLIC_SERVERS": "Serwery Publiczne",
+      "ERROR": {
+        "CONNECTION": "Nie można było cię połączyć to danego serwera. Upewnij się, że wpisałeś poprawny adres i że nie spotykają cię żadnę problemy z twoją siecią",
+        "VERSION_MISMATCH": "Nie można było cię połączyć do danego serwera, ponieważ nie jest na tej samej wersji Skyrima Together co ty.",
+        "INVALID_ADDRESS": "Adres jest w niepoprawnym formacie."
+      }
+    },
+    "DISCONNECT": {
+      "PROMPT": "Czy jesteś pewny, że chcesz się odłączyć?",
+      "PROCEED": "Przystępuj",
+      "CANCEL": "Anuluj"
+    },
+    "ERROR": {
+      "OK": "Ok"
+    },
+    "NOTIFICATIONS": {
+      "MESSAGE_FROM": "Wiadomość od",
+      "ACCEPT": "Zaakceptuj",
+      "DECLINE": "Odrzuć"
+    },
+    "PARTY_MENU": {
+      "ACCEPT_INVITE": "Zaakceptuj zaproszenie od {{name}}",
+      "LAUNCH_PARTY": "Stwórz Grupe",
+      "INVITES": "Zaproszenia",
+      "NO_INVITES": "Nie dostałeś żadnych zaproszeń",
+      "EXPERIENCE_WARNING": "Dla Optymalnego Doświadczenia w Questowaniu, upewnij się że przeczytałeś Przewodnik do gry na naszej wiki, którą możesz znaleźć na naszej stronie internetowej. <b>skyrim-together.com</b>. to jest małe wytłumaczenie paru rzeczy z Przewodnika:",
+      "GUIDELINES": {
+        "PARTY": "Tworząc Grupę, stajesz się jakbym takim \"hostem\", Znaczy Liderem Grupy.",
+        "PARTY_LEADER_TALK": "Tylko Lider Grupy może gadać z npcetami questowymi by progresować questy.",
+        "PARTY_LEADER_LOOT_QUESTITEMS": "Tylko Lider Grupy może zbierać przedmioty powiązane z questami.",
+        "KEEP_PARTY_LEADER": "Trzymaj się do jednego Lidera Grupy na Przejście Gry.",
+        "ONE_PARTY_PER_SERVER": "Trzymaj się do jednego Lidera Grupy na serwerze."
+      },
+      "NO_PLAYERS_IN_PARTY": "Nikogo nie ma w twojej Grupie, Zaproś innych graczy używając listy graczy!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Nazwa",
+        "LOCATION": "Lokalizacja"
+      },
+      "ACTIONS": {
+        "KICK": "Wyrzuć",
+        "TELEPORT": "Teleportuj",
+        "MAKE_LEADER": "Spraw Liderem"
+      },
+      "LEAVE_PARTY": "Odejdź z grupy"
+    },
+    "PARTY_LIST": {
+      "NO_OTHER_PLAYERS": "Nikogo tutaj nie ma poza nami Kurczakami!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Nazwa",
+        "LOCATION": "Lokalizacja"
+      },
+      "INVITE": "Zaproś"
+    },
+    "PLAYER_MANAGER": {
+      "PLAYER_LIST": "Lista Graczy",
+      "PARTY_MENU": "Menu Grupy",
+      "BACK": "Wróć"
+    },
+    "ROOT": {
+      "CONNECT": "Połącz",
+      "DISCONNECT": "Odłącz",
+      "RECONNECT": "Odłącz się i połącz z powrotem",
+      "PLAYER_MANAGER": "Menedżer Graczy",
+      "SETTINGS": "Ustawienia",
+      "CONNECTION_IN_PROGRESS": "Podłączanie jest w trakcie"
+    },
+    "SERVER_LIST": {
+      "SEARCH": "Szukaj...",
+      "REFRESH": "Odswież",
+      "BACK": "wróć",
+      "LOADING": "ładowanie...",
+      "NO_SERVERS": "serwery publiczne są niedostępne",
+      "HIDE_MISMATCHED_SERVERS": "Chowaj Serwery z nie kompatibilną wersją",
+      "HIDE_FULL_SERVERS": "Chowaj pełne serwery",
+      "SERVER_COUNT": "Pokazywanie {{filteredCount}} z {{count}} serwerów",
+      "TABLE_HEADERS": {
+        "NAME": "Nazwa Serwera",
+        "PLAYERS": "Gracze / Max",
+        "COUNTRY": "Kraj",
+        "FAVORITE": "Ulubione"
+      },
+      "JOIN": "dołącz"
+    },
+    "SETTINGS": {
+      "VERSION": {
+        "HEADER": "Wersja",
+        "INFO": "Aktualnie Zainstalowana:",
+        "OUTDATED": "Wersja jest przestarzała. Polecane jest zaktualizowanie."
+      },
+      "AUDIO": "Audio",
+      "MUTE_UI": "Wycisz UI",
+      "UI_VOLUME": "Głośność UI",
+      "PARTY": "Grupa",
+      "SHOW_PARTY": "Pokaż Grupę",
+      "AUTO_HIDE_PARTY": "Automatycznie Chowaj Grupę",
+      "AUTO_HIDE_PARTY_LENGTH": "Automatycznie Chowaj UI grupy po czasie",
+      "PARTY_ANCHOR": "Pozycja",
+      "PARTY_ANCHOR_POSITION": {
+        "TOP_LEFT": "Górny lewy",
+        "TOP_RIGHT": "Górny prawy",
+        "BOTTOM_RIGHT": "Dolny prawy",
+        "BOTTOM_LEFT": "Dolny lewy"
+      },
+      "PARTY_ANCHOR_OFFSET_X": "Przesunięcie w poziomie",
+      "PARTY_ANCHOR_OFFSET_Y": "Przesunięcie pionowe",
+      "LENGTH": "{{length}}s",
+      "UI": "UI",
+      "LANGUAGE": "Język",
+      "DEBUG": "Debug",
+      "SHOW_DEBUG_INFO": "Pokaż informacje Debugowania",
+      "FONT_SIZE": "Wielkość Czcionki",
+      "FONT_SIZES": {
+        "XS": "Bardzo Mała",
+        "S": "Mała",
+        "M": "Średnia",
+        "L": "Duża",
+        "XL": "Bardzo Duża"
+      },
+      "BACK": "Wróć"
+    }
+  },
+  "SERVICE": {
+    "CLIENT": {
+      "CONNECTION_LOST": "Stracono połączenie, próbujemy się podłączyć z powrotem. {{remainingReconnectionAttempt}} pozostałych prób.",
+      "CONNECTED": "Pomyślnie nawiązano połączenie z serwerem.",
+      "DISCONNECTED": "Rozłączono z serwerem."
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "Dostępne Komendy Czatu: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' nie jest rozpoznawane jako Komenda."
+    },
+    "GROUP": {
+      "LEVEL_UP": "{{name}} Osiągnął Poziom {{level}}.",
+      "ALREADY_IN_GROUP": "Jesteś już w grupie, by dołączyć do innej grupy wyjdź z grupy w której jesteś teraz.",
+      "KICK_NO_PARTY_LEADER": "Nie możesz Wyrzucić innych graczy z grupy ponieważ nie jesteś liderem grupy.",
+      "MAKE_LEADER_NO_PARTY_LEADER": "Nie możesz sprawić by inny gracz w grupie stał się liderem, nie będąc samemu liderem."
+    },
+    "ERROR": {
+      "ERRORS": {
+        "WRONG_VERSION": "Ten Serwer spodziewa się wersji {{expectedVersion}} ale ty jesteś na wersji {{version}}.",
+        "MODS_MISMATCH": "Ten Serwer Ma włączoną modpolicy {{mods}}",
+        "MODS_MISMATCH_REMOVE": "Usuń następujące mody aby dołączyć:\n{{mods}}",
+        "MODS_MISMATCH_INSTALL": "Zainstaluj następujące mody abyś mógł dołączyć:\n{{mods}}",
+        "CLIENT_MODS_DISALLOWED": "Ten serwer nie pozwala na mody {{mods}}. Usuń je by dołończyć.",
+        "WRONG_PASSWORD": "Hasło które wpisałeś jest niepoprawne.",
+        "NO_REASON": "Serwer odmówił połączenia brak powodu.",
+        "SERVER_FULL": "Ten Serwer jest Pełen."
+      }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} Zaprosił cię do drużyny"
+    }
+  }
+}

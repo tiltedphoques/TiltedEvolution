@@ -1,8 +1,7 @@
-@import "env";
+@import 'env';
 
-@import "functions/mod";
-@import "mixins/gapped-vertical";
-
+@import 'functions/mod';
+@import 'mixins/gapped-vertical';
 
 :host {
   @include gapped-vertical($-size-gap);
@@ -17,7 +16,8 @@ p {
 .app-notifications-icon {
   flex: 0 0 1rem;
   margin-right: $-size-gap * 0.5;
-  background: url(../../../assets/images/arrow/east.svg) center / contain no-repeat;
+  background: url(../../../assets/images/arrow/east.svg) center / contain
+    no-repeat;
 }
 
 .app-notifications-content {

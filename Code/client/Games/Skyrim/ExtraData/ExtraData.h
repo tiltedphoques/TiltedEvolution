@@ -47,4 +47,3 @@ struct BSExtraData
 static_assert(offsetof(BSExtraData, type) == 0x12);
 static_assert(sizeof(BSExtraData) == 0x18);
 #endif
-

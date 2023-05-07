@@ -7,8 +7,8 @@ struct TESObjectREFR;
 struct PapyrusFunctionRegisterEvent;
 
 /**
-* @brief Handles registering and executing Papyrus functions.
-*/
+ * @brief Handles registering and executing Papyrus functions.
+ */
 struct PapyrusService
 {
     PapyrusService(entt::dispatcher& aDispatcher) noexcept;
@@ -21,26 +21,23 @@ struct PapyrusService
     void HandlePapyrusFunctionEvent(const PapyrusFunctionRegisterEvent&) noexcept;
 
 private:
-
     Map<String, void*> m_functions;
 
-    entt::scoped_connection m_papyrusFunctionRegisterConnection;  
+    entt::scoped_connection m_papyrusFunctionRegisterConnection;
 };
 
 template <class Return, class Type, class... Args> struct PapyrusFunction
 {
     using TFunction = Return(__fastcall*)(BSScript::IVirtualMachine*, uint32_t, const Type*, Args...);
 
-    PapyrusFunction(const void* apAddress) : m_pFunction(reinterpret_cast<TFunction>(apAddress))
+    PapyrusFunction(const void* apAddress)
+        : m_pFunction(reinterpret_cast<TFunction>(apAddress))
     {
     }
 
-    Return operator()(const Type* apThis, Args... args) const noexcept
-    {
-        return m_pFunction(GameVM::Get()->virtualMachine, 0, apThis, std::forward<Args>(args)...);
-    }
+    Return operator()(const Type* apThis, Args... args) const noexcept { return m_pFunction(GameVM::Get()->virtualMachine, 0, apThis, std::forward<Args>(args)...); }
 
-  private:
+private:
     TFunction m_pFunction;
 };
 
@@ -48,16 +45,14 @@ template <class Return, class... Args> struct GlobalPapyrusFunction
 {
     using TFunction = Return(__fastcall*)(BSScript::IVirtualMachine*, Args...);
 
-    GlobalPapyrusFunction(const void* apAddress) : m_pFunction(reinterpret_cast<TFunction>(apAddress))
+    GlobalPapyrusFunction(const void* apAddress)
+        : m_pFunction(reinterpret_cast<TFunction>(apAddress))
     {
     }
 
-    Return operator()(Args... args) const noexcept
-    {
-        return m_pFunction(GameVM::Get()->virtualMachine, std::forward<Args>(args)...);
-    }
+    Return operator()(Args... args) const noexcept { return m_pFunction(GameVM::Get()->virtualMachine, std::forward<Args>(args)...); }
 
-  private:
+private:
     TFunction m_pFunction;
 };
 
@@ -72,7 +67,8 @@ template <class Return, class Type, class... Args> struct LatentPapyrusFunction
 {
     using TFunction = Return(__fastcall*)(BSScript::IVirtualMachine*, uint32_t, const RefrOrInventoryObj&, Args...);
 
-    LatentPapyrusFunction(const void* apAddress) : m_pFunction(reinterpret_cast<TFunction>(apAddress))
+    LatentPapyrusFunction(const void* apAddress)
+        : m_pFunction(reinterpret_cast<TFunction>(apAddress))
     {
     }
 
@@ -83,7 +79,7 @@ template <class Return, class Type, class... Args> struct LatentPapyrusFunction
         return m_pFunction(GameVM::Get()->virtualMachine, 0, self, std::forward<Args>(args)...);
     }
 
-  private:
+private:
     TFunction m_pFunction;
 };
 

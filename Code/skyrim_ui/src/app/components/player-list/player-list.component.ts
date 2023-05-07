@@ -6,7 +6,6 @@ import { GroupService } from 'src/app/services/group.service';
 import { PlayerListService } from 'src/app/services/player-list.service';
 import { Player } from '../../models/player';
 
-
 @Component({
   selector: 'app-player-list',
   templateUrl: './player-list.component.html',
@@ -14,7 +13,6 @@ import { Player } from '../../models/player';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayerListComponent {
-
   playerList$: Observable<(Player & { isMember: boolean })[]>;
   playerListLength$: Observable<number>;
   isPartyLeader$: Observable<boolean>;
@@ -37,22 +35,27 @@ export class PlayerListComponent {
           isMember: members.includes(player.id),
         }));
       }),
-      share({ connector: () => new ReplaySubject(1), resetOnRefCountZero: true }),
+      share({
+        connector: () => new ReplaySubject(1),
+        resetOnRefCountZero: true,
+      }),
     );
-    this.playerListLength$ = this.playerList$
-      .pipe(
-        map(players => players?.length ?? 0),
-      );
-    this.isPartyLeader$ = this.groupService.group
-      .asObservable()
-      .pipe(
-        map(group => group.isEnabled && group.owner == this.clientService.localPlayerId),
-        share({ connector: () => new ReplaySubject(1), resetOnRefCountZero: true }),
-      );
+    this.playerListLength$ = this.playerList$.pipe(
+      map(players => players?.length ?? 0),
+    );
+    this.isPartyLeader$ = this.groupService.group.asObservable().pipe(
+      map(
+        group =>
+          group.isEnabled && group.owner == this.clientService.localPlayerId,
+      ),
+      share({
+        connector: () => new ReplaySubject(1),
+        resetOnRefCountZero: true,
+      }),
+    );
   }
 
   public sendPartyInvite(inviteeId: number) {
     this.playerListService.sendPartyInvite(inviteeId);
   }
-
 }

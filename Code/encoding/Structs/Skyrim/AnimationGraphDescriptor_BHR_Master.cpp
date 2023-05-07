@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_BHR_Master.h>
 
-
-
 AnimationGraphDescriptor_BHR_Master::AnimationGraphDescriptor_BHR_Master(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -161,65 +159,50 @@ AnimationGraphDescriptor_BHR_Master::AnimationGraphDescriptor_BHR_Master(Animati
         kbDisableInterp = 151,
         kfPhonemeDefaultWeight = 152,
     };
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, m_key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, m_key,
         AnimationGraphDescriptor(
             // Bools
-            {kbAnimationDriven,
-            kbVoiceReady,
-            kbWantCastVoice,
-            kIsAttackReady,
-            kIsShouting,
-            kisMoving,
-            kbSpeedSynced,
-            kIsOnGround,
-            kbLookAtTarget,
-            kbCanLookAtTarget,
-            kbEquipOk,
-            kIsBusy,
-            kbIsSynced,
-            kIsFlapping,
-            kIsGliding,
-            kHasTweenSpeed,
-            kIsTurningLeft,
-            kIsTurningRight,
-            kIsMovingForward,
-            kBSLookAtModifier_CanLookOutsideLimit,
-            kMoveDirZ,
-            kbFullyMotionDriven,
-            kbNoFootIK,
-            kbFootIK,
-            kLookAtOutOfRange,},
+            {
+                kbAnimationDriven, kbVoiceReady,        kbWantCastVoice,  kIsAttackReady,
+                kIsShouting,       kisMoving,           kbSpeedSynced,    kIsOnGround,
+                kbLookAtTarget,    kbCanLookAtTarget,   kbEquipOk,        kIsBusy,
+                kbIsSynced,        kIsFlapping,         kIsGliding,       kHasTweenSpeed,
+                kIsTurningLeft,    kIsTurningRight,     kIsMovingForward, kBSLookAtModifier_CanLookOutsideLimit,
+                kMoveDirZ,         kbFullyMotionDriven, kbNoFootIK,       kbFootIK,
+                kLookAtOutOfRange,
+            },
             // Floats
-            {kPitch,
-            kTurnDelta,
-            kDirection,
-            kSpeed,
-            kTargetSpeed,
-            kTurnDeltaDamped,
-            kPitchDeltaDamped,
-            kTargetSpeedDamped,
-            kMaxSpeedDamped,
-            kLookAtHeadingMaxAngle,
-            km_errorOut,
-            kFlightPitchBlend,
-            kTweenEntryDirection,
-            kLipBigAah,
-            kLipDST,
-            kLipEee,
-            kLipFV,
-            kPitchDelta,
-            kDistToGoal,
-            kPathAngle,
-            kBSLookAtModifier_m_onGain,
-            kBSLookAtModifier_m_offGain,
-            kTimeStep, // Probably shouldn't sync this
-            kDirectionDamped,
-            kTurnDeltaTarget,
-            kPitchDeltaTarget,
-            kFlightPitchBlendTarget,},
+            {
+                kPitch,
+                kTurnDelta,
+                kDirection,
+                kSpeed,
+                kTargetSpeed,
+                kTurnDeltaDamped,
+                kPitchDeltaDamped,
+                kTargetSpeedDamped,
+                kMaxSpeedDamped,
+                kLookAtHeadingMaxAngle,
+                km_errorOut,
+                kFlightPitchBlend,
+                kTweenEntryDirection,
+                kLipBigAah,
+                kLipDST,
+                kLipEee,
+                kLipFV,
+                kPitchDelta,
+                kDistToGoal,
+                kPathAngle,
+                kBSLookAtModifier_m_onGain,
+                kBSLookAtModifier_m_offGain,
+                kTimeStep, // Probably shouldn't sync this
+                kDirectionDamped,
+                kTurnDeltaTarget,
+                kPitchDeltaTarget,
+                kFlightPitchBlendTarget,
+            },
             // Integers
-            {kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiState}));
+            {kiSyncIdleLocomotion, kiSyncTurnState, kiState}));
 }

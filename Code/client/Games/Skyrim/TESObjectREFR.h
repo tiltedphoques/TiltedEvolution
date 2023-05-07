@@ -218,5 +218,5 @@ struct TESObjectREFR : TESForm
     uint16_t referenceFlags;
 };
 
-static_assert(sizeof(TESObjectREFR) == 0x98);
+static_assert(sizeof(TESObjectREFR) == 0xA0);
 static_assert(offsetof(TESObjectREFR, loadedState) == 0x68);

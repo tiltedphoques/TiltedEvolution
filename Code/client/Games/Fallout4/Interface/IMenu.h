@@ -2,7 +2,7 @@
 
 class UserEvents
 {
-  public:
+public:
     enum INPUT_CONTEXT_ID : int
     {
         ICI_MAIN_GAMEPLAY = 0x0,
@@ -55,7 +55,6 @@ struct __declspec(align(8)) Scaleform_RefCountImplCore
     volatile int RefCount;
 };
 
-
 struct IMenu : Scaleform_RefCountImplCore, BSInputEventUser
 {
     enum UI_MENU_FLAGS : int32_t
@@ -102,25 +101,16 @@ struct IMenu : Scaleform_RefCountImplCore, BSInputEventUser
         *val &= ~auiFlag;
     }
 
-    bool PausesGame() const
-    {
-        return uiMenuFlags & UIMF_PAUSES_GAME;
-    }
+    bool PausesGame() const { return uiMenuFlags & UIMF_PAUSES_GAME; }
 
-    bool FreezesBackground() const
-    {
-        return uiMenuFlags & UIMF_FREEZE_FRAME_BACKGROUND;
-    }
+    bool FreezesBackground() const { return uiMenuFlags & UIMF_FREEZE_FRAME_BACKGROUND; }
 
-    bool FreezesFramePause() const
-    {
-        return uiMenuFlags & UIMF_FREEZE_FRAME_PAUSE;
-    }
+    bool FreezesFramePause() const { return uiMenuFlags & UIMF_FREEZE_FRAME_PAUSE; }
 
     // force the game to generate a vt
     virtual void m1() = 0;
 
-    char menuObj[0x20 -8]; // scaleform var.
+    char menuObj[0x20 - 8]; // scaleform var.
     void* pMovie;
     BSFixedString CustomRendererName;
     BSFixedString MenuName;

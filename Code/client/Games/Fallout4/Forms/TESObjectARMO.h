@@ -5,7 +5,8 @@
 
 struct BGSTypedFormValuePair
 {
-    union SharedVal {
+    union SharedVal
+    {
         unsigned int i;
         float f;
     };

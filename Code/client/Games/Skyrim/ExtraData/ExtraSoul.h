@@ -21,4 +21,3 @@ struct ExtraSoul : BSExtraData
 };
 
 static_assert(sizeof(ExtraSoul) == 0x18);
-

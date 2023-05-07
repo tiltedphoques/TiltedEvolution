@@ -17,11 +17,14 @@ template <typename T> struct ErrorOr
 
 template <typename T> struct ResultAnd
 {
-    explicit ResultAnd(T x) : val(x)
+    explicit ResultAnd(T x)
+        : val(x)
     {
     }
 
-    ResultAnd(const char* msg, T x) : val(x), msg(msg)
+    ResultAnd(const char* msg, T x)
+        : val(x)
+        , msg(msg)
     {
     }
 
@@ -32,31 +35,18 @@ template <typename T> struct ResultAnd
 // Never make this class static
 class ConsoleRegistry
 {
-  public:
+public:
     ConsoleRegistry(const char* acLoggerName);
     ~ConsoleRegistry();
 
     void RegisterNatives();
     void BindStaticItems();
 
-    template <typename... Ts>
-    inline void RegisterCommand(const char* acName, const char* acDesc, std::function<void(ArgStack&)> func)
-    {
-        AddCommand(
-            TiltedPhoques::CastUnique<CommandBase>(TiltedPhoques::MakeUnique<Command<Ts...>>(acName, acDesc, func)));
-    }
+    template <typename... Ts> inline void RegisterCommand(const char* acName, const char* acDesc, std::function<void(ArgStack&)> func) { AddCommand(TiltedPhoques::CastUnique<CommandBase>(TiltedPhoques::MakeUnique<Command<Ts...>>(acName, acDesc, func))); }
 
-    inline void RegisterSetting(const char* acName, const char* acDesc, const char* acString)
-    {
-        AddSetting(
-            TiltedPhoques::CastUnique<SettingBase>(TiltedPhoques::MakeUnique<StringSetting>(acName, acDesc, acString)));
-    }
+    inline void RegisterSetting(const char* acName, const char* acDesc, const char* acString) { AddSetting(TiltedPhoques::CastUnique<SettingBase>(TiltedPhoques::MakeUnique<StringSetting>(acName, acDesc, acString))); }
 
-    template <typename T> inline void RegisterSetting(const char* acName, const char* acDesc, const T acDefault)
-    {
-        AddSetting(
-            TiltedPhoques::CastUnique<SettingBase>(TiltedPhoques::MakeUnique<Setting<T>>(acName, acDesc, acDefault)));
-    }
+    template <typename T> inline void RegisterSetting(const char* acName, const char* acDesc, const T acDefault) { AddSetting(TiltedPhoques::CastUnique<SettingBase>(TiltedPhoques::MakeUnique<Setting<T>>(acName, acDesc, acDefault))); }
 
     enum class ExecutionResult
     {
@@ -72,10 +62,7 @@ class ConsoleRegistry
 
     // Note that this is not thread safe, call this from the same thread you requested
     // the execution from.
-    auto& GetCommandHistory() const noexcept
-    {
-        return m_commandHistory;
-    }
+    auto& GetCommandHistory() const noexcept { return m_commandHistory; }
 
     // Call this from your main thread, this will drain the work item queue.
     bool Update();
@@ -92,20 +79,16 @@ class ConsoleRegistry
             functor(c);
     }
 
-    void MarkDirty() noexcept
-    {
-        m_requestFlush = true;
-    }
+    void MarkDirty() noexcept { m_requestFlush = true; }
 
-  private:
+private:
     void AddCommand(TiltedPhoques::UniquePtr<CommandBase> apCommand);
     void AddSetting(TiltedPhoques::UniquePtr<SettingBase> apSetting);
     void StoreCommandInHistory(const TiltedPhoques::String& acLine);
 
-    ResultAnd<bool> CreateArgStack(const CommandBase* apCommand, const TiltedPhoques::String* acStringArgs,
-                                   ArgStack& aStackOut);
+    ResultAnd<bool> CreateArgStack(const CommandBase* apCommand, const TiltedPhoques::String* acStringArgs, ArgStack& aStackOut);
 
-  private:
+private:
     std::mutex m_listLock;
     TiltedPhoques::Vector<CommandBase*> m_commands;
     TiltedPhoques::Vector<SettingBase*> m_settings;

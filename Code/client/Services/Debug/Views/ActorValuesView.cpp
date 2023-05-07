@@ -12,15 +12,14 @@ void DebugService::DrawActorValuesView()
 
     ImGui::Begin("Actor values");
 
-    //for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
+    // for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
     {
         ActorValueOwner& actorValueOwner = pActor->actorValueOwner;
         // TODO: ft
-    #if TP_SKYRIM64
-        float health[3] {actorValueOwner.GetValue(24), actorValueOwner.GetBaseValue(24),
-                        actorValueOwner.GetPermanentValue(24)};
+#if TP_SKYRIM64
+        float health[3]{actorValueOwner.GetValue(24), actorValueOwner.GetBaseValue(24), actorValueOwner.GetPermanentValue(24)};
         ImGui::InputFloat3("Health (val/base/perm)", health, "%.3f", ImGuiInputTextFlags_ReadOnly);
-    #endif
+#endif
     }
 
     ImGui::End();

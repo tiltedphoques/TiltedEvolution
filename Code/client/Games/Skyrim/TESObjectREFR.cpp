@@ -26,7 +26,8 @@
 
 TP_THIS_FUNCTION(TActivate, void, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
 TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner);
-TP_THIS_FUNCTION(TRemoveInventoryItem, BSPointerHandle<TESObjectREFR>*, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc, const NiPoint3* apRotate);
+TP_THIS_FUNCTION(
+    TRemoveInventoryItem, BSPointerHandle<TESObjectREFR>*, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc, const NiPoint3* apRotate);
 TP_THIS_FUNCTION(TPlayAnimationAndWait, bool, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apAnimation, BSFixedString* apEventName);
 TP_THIS_FUNCTION(TPlayAnimation, bool, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apEventName);
 
@@ -44,33 +45,32 @@ void TESObjectREFR::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& a
 {
     TESForm::Save_Reversed(aChangeFlags, aWriter);
 
-    if(aChangeFlags & CHANGE_REFR_BASEOBJECT)
+    if (aChangeFlags & CHANGE_REFR_BASEOBJECT)
     {
         // save baseForm->formID;
         // we don't because each player has it's own form id system
     }
 
-    if(aChangeFlags & CHANGE_REFR_SCALE)
+    if (aChangeFlags & CHANGE_REFR_SCALE)
     {
         // So skyrim does some weird conversion shit here, we are going to do the same for now
         float fScale = scale;
         fScale /= 100.f;
-        aWriter.WriteBytes((uint8_t*)& fScale, 4);
+        aWriter.WriteBytes((uint8_t*)&fScale, 4);
     }
 
-    // So skyrim 
+    // So skyrim
     uint32_t extraFlags = 0xA6021C40;
-    if(formType == Character)
+    if (formType == Character)
         extraFlags = 0xA6061840;
 
-    if(aChangeFlags & extraFlags)
+    if (aChangeFlags & extraFlags)
     {
         // We have flags to save
     }
 
-    if(aChangeFlags & (CHANGE_REFR_INVENTORY | CHANGE_REFR_LEVELED_INVENTORY))
+    if (aChangeFlags & (CHANGE_REFR_INVENTORY | CHANGE_REFR_LEVELED_INVENTORY))
     {
-        
     }
 
     if (aChangeFlags & CHANGE_REFR_ANIMATION)
@@ -78,8 +78,6 @@ void TESObjectREFR::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& a
         // do something with animations
         // get extradata 0x41
     }
-
-
 }
 
 #endif
@@ -106,7 +104,7 @@ ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
     TP_THIS_FUNCTION(TGetContainterChanges, ExtraContainerChanges::Data*, const TESObjectREFR);
 
     POINTER_SKYRIMSE(TGetContainterChanges, s_getContainerChangs, 16040);
-    
+
     return TiltedPhoques::ThisCall(s_getContainerChangs, this);
 }
 
@@ -269,8 +267,7 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
 
         TP_ASSERT(pEnchantment, "No Enchantment created or found.");
 
-        pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge,
-                                           arEntry.ExtraEnchantRemoveUnequip);
+        pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge, arEntry.ExtraEnchantRemoveUnequip);
     }
 
     if (arEntry.ExtraPoisonId != 0)
@@ -404,9 +401,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
 
     for (auto& entry : extraInventory.Entries)
     {
-        auto duplicate = std::find_if(minimizedExtraInventory.Entries.begin(), minimizedExtraInventory.Entries.end(), [entry](const Inventory::Entry& newEntry) { 
-            return newEntry.CanBeMerged(entry);
-        });
+        auto duplicate = std::find_if(minimizedExtraInventory.Entries.begin(), minimizedExtraInventory.Entries.end(), [entry](const Inventory::Entry& newEntry) { return newEntry.CanBeMerged(entry); });
 
         if (duplicate == std::end(minimizedExtraInventory.Entries))
         {
@@ -424,9 +419,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
         if (entry.ContainsExtraData())
             continue;
 
-        auto duplicate = std::find_if(inventory.Entries.begin(), inventory.Entries.end(), [entry](const Inventory::Entry& newEntry) { 
-            return newEntry.CanBeMerged(entry);
-        });
+        auto duplicate = std::find_if(inventory.Entries.begin(), inventory.Entries.end(), [entry](const Inventory::Entry& newEntry) { return newEntry.CanBeMerged(entry); });
 
         if (duplicate == std::end(inventory.Entries))
             continue;
@@ -437,8 +430,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
 
     spdlog::debug("MinExtraInventory count after: {}", minimizedExtraInventory.Entries.size());
 
-    inventory.Entries.insert(inventory.Entries.end(), minimizedExtraInventory.Entries.begin(),
-                                 minimizedExtraInventory.Entries.end());
+    inventory.Entries.insert(inventory.Entries.end(), minimizedExtraInventory.Entries.begin(), minimizedExtraInventory.Entries.end());
 
     spdlog::debug("Inventory count before: {}", inventory.Entries.size());
 
@@ -490,8 +482,7 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
     TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
     if (!pObject)
     {
-        spdlog::warn("{}: Object to add not found, {:X}:{:X}.", __FUNCTION__, arEntry.BaseId.ModId,
-                     arEntry.BaseId.BaseId);
+        spdlog::warn("{}: Object to add not found, {:X}:{:X}.", __FUNCTION__, arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
         return;
     }
 
@@ -653,7 +644,8 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIte
     TiltedPhoques::ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
 }
 
-BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc, const NiPoint3* apRotate)
+BSPointerHandle<TESObjectREFR>*
+TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, TESBoundObject* apItem, int32_t aCount, ITEM_REMOVE_REASON aReason, ExtraDataList* apExtraList, TESObjectREFR* apMoveToRef, const NiPoint3* apDropLoc, const NiPoint3* apRotate)
 {
     if (!ScopedInventoryOverride::IsOverriden())
     {
@@ -680,22 +672,24 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObj
     return TiltedPhoques::ThisCall(RealRemoveInventoryItem, apThis, apResult, apItem, aCount, aReason, apExtraList, apMoveToRef, apDropLoc, apRotate);
 }
 
-static TiltedPhoques::Initializer s_objectReferencesHooks([]() {
-    POINTER_SKYRIMSE(TActivate, s_activate, 19796);
-    POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 19708);
-    POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 19689);
-    POINTER_SKYRIMSE(TPlayAnimationAndWait, s_playAnimationAndWait, 56206);
-    POINTER_SKYRIMSE(TPlayAnimation, s_playAnimation, 56205);
+static TiltedPhoques::Initializer s_objectReferencesHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TActivate, s_activate, 19796);
+        POINTER_SKYRIMSE(TAddInventoryItem, s_addInventoryItem, 19708);
+        POINTER_SKYRIMSE(TRemoveInventoryItem, s_removeInventoryItem, 19689);
+        POINTER_SKYRIMSE(TPlayAnimationAndWait, s_playAnimationAndWait, 56206);
+        POINTER_SKYRIMSE(TPlayAnimation, s_playAnimation, 56205);
 
-    RealActivate = s_activate.Get();
-    RealAddInventoryItem = s_addInventoryItem.Get();
-    RealRemoveInventoryItem = s_removeInventoryItem.Get();
-    RealPlayAnimationAndWait = s_playAnimationAndWait.Get();
-    RealPlayAnimation = s_playAnimation.Get();
+        RealActivate = s_activate.Get();
+        RealAddInventoryItem = s_addInventoryItem.Get();
+        RealRemoveInventoryItem = s_removeInventoryItem.Get();
+        RealPlayAnimationAndWait = s_playAnimationAndWait.Get();
+        RealPlayAnimation = s_playAnimation.Get();
 
-    TP_HOOK(&RealActivate, HookActivate);
-    TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
-    TP_HOOK(&RealRemoveInventoryItem, HookRemoveInventoryItem);
-    TP_HOOK(&RealPlayAnimationAndWait, HookPlayAnimationAndWait);
-    TP_HOOK(&RealPlayAnimation, HookPlayAnimation);
-});
+        TP_HOOK(&RealActivate, HookActivate);
+        TP_HOOK(&RealAddInventoryItem, HookAddInventoryItem);
+        TP_HOOK(&RealRemoveInventoryItem, HookRemoveInventoryItem);
+        TP_HOOK(&RealPlayAnimationAndWait, HookPlayAnimationAndWait);
+        TP_HOOK(&RealPlayAnimation, HookPlayAnimation);
+    });

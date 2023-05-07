@@ -3,13 +3,9 @@ import { Sound, SoundService } from '../services/sound.service';
 
 @Directive({
   selector: 'input[type="radio"]',
-  providers: [
-    SoundService
-  ]
 })
 // @ts-ignore
 export class RadioDirective {
-
   constructor(private readonly soundService: SoundService) {}
 
   @HostListener('change')

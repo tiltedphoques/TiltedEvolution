@@ -65,13 +65,13 @@ void Console::Update(AdminApp& aApp)
 
     auto& style = ImGui::GetStyle();
     auto inputLineHeight = ImGui::GetTextLineHeight() + style.ItemInnerSpacing.y * 2;
-    
+
     if (ImGui::ListBoxHeader("##ConsoleHeader", ImVec2(-1, -(inputLineHeight + style.ItemSpacing.y))))
     {
         ImGuiListClipper clipper;
         clipper.Begin(m_outputLines.size());
         while (clipper.Step())
-            for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i) 
+            for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
             {
                 auto& item = m_outputLines[i];
                 ImGui::PushID(i);
@@ -93,25 +93,24 @@ void Console::Update(AdminApp& aApp)
                 ImGui::SetScrollHereY();
             m_outputScroll = false;
         }
-        
+
         ImGui::ListBoxFooter();
     }
-    
+
     if (m_focusConsoleInput)
     {
         ImGui::SetKeyboardFocusHere();
         m_focusConsoleInput = false;
     }
     ImGui::SetNextItemWidth(-FLT_MIN);
-    const auto execute = ImGui::InputText("##InputCommand", m_Command, std::size(m_Command),
-                                          ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory,  &HandleConsoleHistory, this);
+    const auto execute = ImGui::InputText("##InputCommand", m_Command, std::size(m_Command), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackHistory, &HandleConsoleHistory, this);
     ImGui::SetItemDefaultFocus();
     if (execute)
     {
         m_consoleHistoryIndex = m_consoleHistory.size();
         m_consoleHistory.push_back(m_Command);
         m_newConsoleHistory = true;
-        
+
         if (m_inputClear)
         {
             std::memset(m_Command, 0, sizeof(m_Command));
@@ -135,7 +134,7 @@ void Console::Log(const TiltedPhoques::String& acpText)
         }
 
         if (first != second)
-            m_outputLines.emplace_back(acpText.substr(first, second-first));
+            m_outputLines.emplace_back(acpText.substr(first, second - first));
 
         first = second + 1;
     }

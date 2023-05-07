@@ -28,11 +28,11 @@ struct TiltedOnlineApp final : App
 
     static void InstallHooks2();
 
-  protected:
+protected:
     void InstallHooks();
     void UninstallHooks();
 
-  private:
+private:
 #if (!IS_MASTER)
     CrashHandler m_crashHandler;
 #elif

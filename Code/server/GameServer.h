@@ -13,6 +13,11 @@ struct AuthenticationRequest;
 struct Player;
 struct PartyComponent;
 
+namespace Resources
+{
+struct ResourceCollection;
+}
+
 namespace Console
 {
 class ConsoleRegistry;
@@ -80,7 +85,21 @@ struct GameServer final : Server
             aFunctor(id);
     }
 
-protected:
+    struct Uptime
+    {
+        int weeks;
+        int days;
+        int hours;
+        int minutes;
+    };
+    Uptime GetUptime() const noexcept;
+
+    World& GetWorld() const noexcept
+    {
+        return *m_pWorld;
+    }
+
+  protected:
     bool ValidateAuthParams(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
     void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
 
@@ -90,10 +109,11 @@ protected:
     void OnConnection(ConnectionId_t aHandle) override;
     void OnDisconnection(ConnectionId_t aConnectionId, EDisconnectReason aReason) override;
 
-private:
+  private:
     void UpdateTitle() const;
 
-private:
+  private:
+    std::chrono::high_resolution_clock::time_point m_startTime;
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
     std::function<void(UniquePtr<ClientMessage>&, ConnectionId_t)> m_messageHandlers[kClientOpcodeMax];
     std::function<void(UniquePtr<ClientAdminMessage>&, ConnectionId_t)> m_adminMessageHandlers[kClientAdminOpcodeMax];
@@ -101,11 +121,13 @@ private:
     bool m_isPasswordProtected{};
 
     Info m_info{};
-    UniquePtr<World> m_pWorld;
+    UniquePtr<Resources::ResourceCollection> m_pResources;
     Console::ConsoleRegistry& m_commands;
 
     TiltedPhoques::Set<ConnectionId_t> m_adminSessions;
     TiltedPhoques::Map<ConnectionId_t, entt::entity> m_connectionToEntity;
+
+    UniquePtr<World> m_pWorld;
 
     bool m_requestStop;
 

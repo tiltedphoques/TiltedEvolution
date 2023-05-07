@@ -22,7 +22,6 @@ struct StringCache
     static StringCache& Get() noexcept;
 
 private:
-
     TiltedPhoques::Vector<TiltedPhoques::String> m_idToString;
     mutable TiltedPhoques::Set<TiltedPhoques::String> m_wantedStrings;
     TiltedPhoques::Map<TiltedPhoques::String, uint32_t> m_stringToId;

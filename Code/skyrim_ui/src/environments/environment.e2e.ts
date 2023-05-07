@@ -1,6 +1,8 @@
 import { APP_INITIALIZER, Provider } from '@angular/core';
-import { mockSkyrimTogether, SkyrimtogetherMock } from '../app/mock/skyrimtogether.mock';
-
+import {
+  mockSkyrimTogether,
+  SkyrimtogetherMock,
+} from '../app/mock/skyrimtogether.mock';
 
 mockSkyrimTogether();
 
@@ -9,6 +11,8 @@ export const environment = {
   game: false,
   urlProtocol: 'http',
   url: 'localhost:4200',
+  githubUrl: 'https://api.github.com/repos/tiltedphoques/TiltedEvolution/tags',
+  overwriteVersion: "",
   chatMessageLengthLimit: 512,
   nbReconnectionAttempts: 5,
 

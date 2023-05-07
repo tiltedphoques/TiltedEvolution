@@ -8,7 +8,7 @@
 namespace
 {
 constexpr char kSkyrimServerDSN[] = R"(https://6aff0a6955754bdebfffb064813b9042@o228105.ingest.sentry.io/6303666)";
-constexpr char kSkyrimClientDSN[] =  R"(https://96c601d451c94b32adb826aa62c6d50f@o228105.ingest.sentry.io/6269770)";
+constexpr char kSkyrimClientDSN[] = R"(https://96c601d451c94b32adb826aa62c6d50f@o228105.ingest.sentry.io/6269770)";
 
 constexpr char kFalloutServerDSN[] = R"(https://2a3d561652734ca78e539c3fb5219a38@o228105.ingest.sentry.io/6303669)";
 constexpr char kFalloutClientDSN[] = R"(https://63886f8f9ef54328bc3373b07750a028@o228105.ingest.sentry.io/6273696)";
@@ -19,18 +19,12 @@ spdlog::level::level_enum TranslateSentryLevel(sentry_level_t aSentryLevel)
 
     switch (aSentryLevel)
     {
-    case SENTRY_LEVEL_DEBUG:
-        return ll::debug;
-    case SENTRY_LEVEL_INFO:
-        return ll::info;
-    case SENTRY_LEVEL_WARNING:
-        return ll::warn;
-    case SENTRY_LEVEL_ERROR:
-        return ll::err;
-    case SENTRY_LEVEL_FATAL:
-        return ll::critical;
-    default:
-        return ll::trace;
+    case SENTRY_LEVEL_DEBUG: return ll::debug;
+    case SENTRY_LEVEL_INFO: return ll::info;
+    case SENTRY_LEVEL_WARNING: return ll::warn;
+    case SENTRY_LEVEL_ERROR: return ll::err;
+    case SENTRY_LEVEL_FATAL: return ll::critical;
+    default: return ll::trace;
     }
 }
 
@@ -44,7 +38,7 @@ void SentryLogHandler(sentry_level_t aLogLevel, const char* aFormat, va_list aAr
     spdlog::default_logger()->log(level, rawBuffer);
 }
 
-    // here for future implementation :D
+// here for future implementation :D
 #if 0
     {
 
@@ -67,7 +61,7 @@ void SentryLogHandler(sentry_level_t aLogLevel, const char* aFormat, va_list aAr
 
 sentry_value_t BeforeSendHandler(sentry_value_t event, void* hint, void* closure)
 {
-    //MessageBoxW(nullptr, L"BeforeSend", 0, 0);
+    // MessageBoxW(nullptr, L"BeforeSend", 0, 0);
     return event;
 }
 
@@ -95,7 +89,7 @@ void InstallCrashHandler(bool aServer, bool aSkyrim)
 
     sentry_options_set_auto_session_tracking(options, false);
     sentry_options_set_symbolize_stacktraces(options, true);
-    //sentry_options_set_before_send(options, BeforeSendHandler, nullptr);
+    // sentry_options_set_before_send(options, BeforeSendHandler, nullptr);
 
 #if 0
     sentry_options_set_debug(options, 1);

@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_Spriggan.h>
 
-
-
 AnimationGraphDescriptor_Spriggan::AnimationGraphDescriptor_Spriggan(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -55,31 +53,35 @@ AnimationGraphDescriptor_Spriggan::AnimationGraphDescriptor_Spriggan(AnimationGr
 
     uint64_t key = 10099378323021197839;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbEquipOk,
-            kbAnimationDriven,
-            kIsAttackReady,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbHeadTracking,
-            kbHeadTrackingOn,
-            kbCanHeadTrack,
-            kbMLh_Ready,
-            kbMRh_Ready,
-            kbNoHeadTrack,
-            kisCasting,
-            kbWantCastLeft,
+            {
+                kbEquipOk,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kbHeadTracking,
+                kbHeadTrackingOn,
+                kbCanHeadTrack,
+                kbMLh_Ready,
+                kbMRh_Ready,
+                kbNoHeadTrack,
+                kisCasting,
+                kbWantCastLeft,
             },
-        {kSpeed,
-            kTurnDelta,
-            kDirection,
-            kSpeedSampled,
+            {
+                kSpeed,
+                kTurnDelta,
+                kDirection,
+                kSpeedSampled,
             },
-        {kiSyncDefaultState,
-            kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiState,
+            {
+                kiSyncDefaultState,
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiState,
             }));
 }

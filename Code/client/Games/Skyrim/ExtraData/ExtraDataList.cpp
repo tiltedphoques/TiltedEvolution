@@ -15,7 +15,7 @@ ExtraDataList* ExtraDataList::New() noexcept
 
 bool ExtraDataList::Contains(ExtraDataType aType) const
 {
-    if(bitfield)
+    if (bitfield)
     {
         const auto value = static_cast<uint32_t>(aType);
         const auto index = value >> 3;
