@@ -8,6 +8,7 @@ struct EnterInteriorCellRequest;
 struct EnterExteriorCellRequest;
 struct PlayerRespawnRequest;
 struct PlayerLevelRequest;
+
 /**
  * @brief Handles player specific actions that might change the information needed by other clients about that player.
  */

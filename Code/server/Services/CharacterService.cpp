@@ -40,7 +40,6 @@
 #include <Messages/NotifySubtitle.h>
 #include <Messages/NotifyActorTeleport.h>
 #include <Messages/NotifyRelinquishControl.h>
-#include <Messages/NotifyPlayerPosition.h>
 
 namespace
 {

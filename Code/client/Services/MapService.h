@@ -65,7 +65,7 @@ struct MapService
     bool m_inMap;
     bool m_waypointActive;
     int m_invalidHandle = -1;
-    int m_initDummyMarkers = 10;
+    int m_initDummyMarkers = 30;
 
     int32_t m_serverDifficulty = 6;
     int32_t m_previousDifficulty = 6;
