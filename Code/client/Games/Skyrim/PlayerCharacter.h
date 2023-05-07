@@ -134,12 +134,9 @@ struct PlayerCharacter : Actor
         uint64_t instanceCount;
     };
 
-    uint8_t pad1[0x588 - sizeof(Actor)];
-    GameArray<ObjectiveInstance> objectives;
-    //uint8_t pad1[0x580 - sizeof(Actor) - 112 - 0x10];
-    uint8_t pad1[0x4F8 - sizeof(Actor)];
+    uint8_t pad1[0x500 - sizeof(Actor)];
     creation::BSTArray<uint32_t> CurrentMapmarkerRefHandles;
-    char pad510[0x580 - 0x510];
+    uint8_t pad510[0x588 - 0x518];
     GameArray<ObjectiveInstance> objectives; 
     uint8_t pad588[0x9B0 - 0x598];
     Skills** pSkills;

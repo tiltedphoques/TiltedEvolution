@@ -78,7 +78,9 @@
 
 #include <Games/TES.h>
 #include <World.h>
+#if TP_SKYRIM64
 #include <Interface/HUD/MapMarker_ExtraData.h>
+#endif
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
@@ -1452,11 +1454,6 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     {
         pActor->SetIgnoreFriendlyHit(true);
         pActor->SetPlayerRespawnMode();
-        MapMarkerData* pMarkerData = MapMarkerData::New();
-        pMarkerData->name.value.Set(pActor->baseForm->GetName());
-        pMarkerData->cOriginalFlags = pMarkerData->cFlags = MapMarkerData::Flag::VISIBLE;
-        pMarkerData->sType = MapMarkerData::Type::kCity;
-        pActor->extraData.SetMarkerData(pMarkerData);
         m_world.emplace_or_replace<PlayerComponent>(aEntity, acMessage.PlayerId);
     }
 

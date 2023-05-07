@@ -1,3 +1,4 @@
+#if TP_SKYRIM64
 #include <Services/MapService.h>
 
 #include <World.h>
@@ -381,3 +382,4 @@ uint32_t MapService::GetDummyMarker() noexcept
 
     return m_dummyHandles.back();
 }
+#endif

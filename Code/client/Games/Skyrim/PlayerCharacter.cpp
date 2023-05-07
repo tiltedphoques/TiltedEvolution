@@ -140,11 +140,6 @@ void PlayerCharacter::RemoveMapmarkerRef(uint32_t aMapRef)
 char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1,
                       bool aUnk2)
 {
-    // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation
-    // sync
-    if (apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden())
-    {
-        auto& modSystem = World::Get().GetModSystem();
     auto& modSystem = World::Get().GetModSystem();
 
     Inventory::Entry item{};

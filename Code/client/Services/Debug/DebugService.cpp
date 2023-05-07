@@ -50,8 +50,6 @@
 
 #include <Games/Misc/SubtitleManager.h>
 #include <Games/Overrides.h>
-#include <Camera/PlayerCamera.h>
-#include <ExtraData/ExtraMapMarker.h>
 #include <OverlayApp.hpp>
 
 #include <EquipManager.h>
@@ -61,6 +59,8 @@
 
 // TODO: ft
 #if TP_SKYRIM64
+#include <ExtraData/ExtraMapMarker.h>
+#include <Camera/PlayerCamera.h>
 #include <AI/Movement/PlayerControls.h>
 #include <Interface/IMenu.h>
 #include <Camera/PlayerCamera.h>
@@ -217,6 +217,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            #if TP_SKYRIM64
             PlayerCharacter* pPlayer = PlayerCharacter::Get();
             for (uint32_t handle : pPlayer->CurrentMapmarkerRefHandles)
             {
@@ -228,6 +229,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
                 const char* pEditorId = pData->pMarkerData->name.value.AsAscii();
                 spdlog::critical("Form id: {:X}, name: {}", pRefr->formID, pEditorId ? pEditorId : "NONE");
             }
+            #endif
 
         #if 0
             static bool s_enabled = true;

@@ -93,12 +93,14 @@ void TESForm::SetSkipSaveFlag(bool aSet) noexcept
         flags &= ~flag;*/
 }
 
+#if TP_SKYRIM64
 void TESForm::SetTemporary()
 {
     TP_THIS_FUNCTION(SetTemporary, void, TESForm);
     POINTER_SKYRIMSE(SetTemporary, setTemporary, 14642);
     TiltedPhoques::ThisCall(setTemporary, this);
 }
+#endif
 
 uint32_t TESForm::GetChangeFlags() const noexcept
 {

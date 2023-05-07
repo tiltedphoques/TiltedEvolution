@@ -47,11 +47,13 @@ World::World()
     ctx().emplace<InventoryService>(*this, m_dispatcher, m_transport);
     ctx().emplace<MagicService>(*this, m_dispatcher, m_transport);
     ctx().emplace<CommandService>(*this, m_transport, m_dispatcher);
-    ctx().emplace<MapService>(*this, m_dispatcher, m_transport);
     ctx().emplace<PlayerService>(*this, m_dispatcher, m_transport);
     ctx().emplace<StringCacheService>(m_dispatcher);
     ctx().emplace<CombatService>(*this, m_transport, m_dispatcher);
     ctx().emplace<WeatherService>(*this, m_transport, m_dispatcher);
+#if TP_SKYRIM64
+    ctx().emplace<MapService>(*this, m_dispatcher, m_transport);
+#endif
 }
 
 World::~World() = default;

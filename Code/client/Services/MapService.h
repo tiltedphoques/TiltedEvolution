@@ -1,4 +1,5 @@
 #pragma once
+#if TP_SKYRIM64
 
 struct World;
 struct TransportService;
@@ -88,3 +89,4 @@ struct MapService
     entt::scoped_connection m_mapOpenConnection;
     entt::scoped_connection m_mapCloseConnection;
 };
+#endif

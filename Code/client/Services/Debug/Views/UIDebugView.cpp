@@ -1,11 +1,14 @@
 
+#if TP_SKYRIM64
 #include <Forms/TESObject.h>
 #include <Games/Skyrim/Interface/UI.h>
 #include <Games/Skyrim/PlayerCharacter.h>
 #include <Interface/HUD/MapMarker_ExtraData.h>
 #include <Services/DebugService.h>
 #include <imgui.h>
+#endif
 
+#if TP_SKYRIM64
 static uint32_t SpawnOurMapmarker(TESObjectREFR* apRefr, const char* apName, const MapMarkerData::Type aType)
 {
     MapMarkerData* pMarkerData = MapMarkerData::New();
@@ -45,9 +48,11 @@ static void SpawnMapmarker2(const char* apName, float posoff, int i)
 
     SpawnOurMapmarker(pRefr, apName, (MapMarkerData::Type)i);
 }
+#endif
 
 void DebugService::DrawUIView()
 {
+    #if TP_SKYRIM64
     ImGui::MenuItem("Show build tag", nullptr, &m_showBuildTag);
     if (ImGui::Button("Log all open windows"))
     {
@@ -88,4 +93,5 @@ void DebugService::DrawUIView()
     {
         PlayerCharacter::Get()->RemoveMapmarkerRef(g_TestMapmarkerHandle);
     }
+    #endif
 }

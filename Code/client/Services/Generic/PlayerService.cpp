@@ -27,7 +27,6 @@
 
 #include <Structs/ServerSettings.h>
 
-#include <Interface/Menus/MapMenu.h>
 #include <Interface/UI.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
@@ -37,7 +36,6 @@
 #include <AI/AIProcess.h>
 #include <EquipManager.h>
 #include <Forms/TESWorldSpace.h>
-#include <ExtraData/ExtraMapMarker.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)

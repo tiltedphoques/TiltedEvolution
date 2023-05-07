@@ -16,12 +16,12 @@ public:
     static VersionDb& Get();
 
 private:
-    TiltedPhoques::Map<uintptr_t, uintptr_t> _data;
-    TiltedPhoques::Map<uintptr_t, uintptr_t> _rdata;
+    std::map<unsigned long long, unsigned long long> _data;
+    std::map<unsigned long long, unsigned long long> _rdata;
     int _ver[4];
     std::string _verStr;
     std::string _moduleName;
-    uintptr_t _base;
+    unsigned long long _base;
 
     template <typename T> static T read(std::ifstream& file)
     {
@@ -42,20 +42,20 @@ public:
 
     const std::map<unsigned long long, unsigned long long>& GetOffsetMap() const { return _data; }
 
-    void* FindAddressById(uintptr_t id) const
+    void* FindAddressById(unsigned long long id) const
     {
-        uintptr_t b = _base;
+        unsigned long long b = _base;
         if (b == 0)
             return NULL;
 
-        uintptr_t offset = 0;
+        unsigned long long offset = 0;
         if (!FindOffsetById(id, offset))
             return NULL;
 
         return ToPointer(b + offset);
     }
 
-    bool FindOffsetById(uintptr_t id, uintptr_t& result) const
+    bool FindOffsetById(unsigned long long id, unsigned long long& result) const
     {
         auto itr = _data.find(id);
         if (itr != _data.end())
@@ -66,17 +66,17 @@ public:
         return false;
     }
 
-    bool FindIdByAddress(void* ptr, uintptr_t& result) const
+    bool FindIdByAddress(void* ptr, unsigned long long& result) const
     {
-        uintptr_t b = _base;
+        unsigned long long b = _base;
         if (b == 0)
             return false;
 
-        uintptr_t addr = FromPointer(ptr);
+        unsigned long long addr = FromPointer(ptr);
         return FindIdByOffset(addr - b, result);
     }
 
-    bool FindIdByOffset(uintptr_t offset, uintptr_t& result) const
+    bool FindIdByOffset(unsigned long long offset, unsigned long long& result) const
     {
         auto itr = _rdata.find(offset);
         if (itr == _rdata.end())
@@ -237,7 +237,7 @@ public:
 
         {
             HMODULE handle = GetModuleHandleA(NULL);
-            _base = (uintptr_t)handle;
+            _base = (unsigned long long)handle;
         }
 
         int ptrSize = read<int>(file);
@@ -248,10 +248,10 @@ public:
         unsigned char b1, b2;
         unsigned short w1, w2;
         unsigned int d1, d2;
-        uintptr_t q1, q2;
-        uintptr_t pvid = 0;
-        uintptr_t poffset = 0;
-        uintptr_t tpoffset;
+        unsigned long long q1, q2;
+        unsigned long long pvid = 0;
+        unsigned long long poffset = 0;
+        unsigned long long tpoffset;
         for (int i = 0; i < addrCount; i++)
         {
             type = read<unsigned char>(file);
@@ -293,7 +293,7 @@ public:
             }
             }
 
-            tpoffset = (high & 8) != 0 ? (poffset / (uintptr_t)ptrSize) : poffset;
+            tpoffset = (high & 8) != 0 ? (poffset / (unsigned long long)ptrSize) : poffset;
 
             switch (high & 7)
             {
@@ -327,7 +327,7 @@ public:
             }
 
             if ((high & 8) != 0)
-                q2 *= (uintptr_t)ptrSize;
+                q2 *= (unsigned long long)ptrSize;
 
             _data[q1] = q2;
             _rdata[q2] = q1;
@@ -345,13 +345,13 @@ public:
         if (!f.good())
             return false;
 
-        for (auto& it : _data)
+        for (auto itr = _data.begin(); itr != _data.end(); itr++)
         {
             f << std::dec;
-            f << it.first;
+            f << itr->first;
             f << '\t';
             f << std::hex;
-            f << it.second + 0x140000000;
+            f << itr->second + 0x140000000;
             f << '\n';
         }
 
