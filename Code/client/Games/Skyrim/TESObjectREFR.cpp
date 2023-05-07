@@ -594,8 +594,9 @@ void TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, u
 {
     Actor* pActivator = Cast<Actor>(apActivator);
 
-    // Exclude books from activation since reading them removes them from the cell
-    if (pActivator && apObjectToGet->formType != FormType::Book)
+    // Exclude books from activation since only reading them removes them from the cell
+    // Note: Books are now unsynced 
+    if (pActivator && apThis->baseForm->formType != FormType::Book)
         World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aUnk1, aCount, aDefaultProcessing));
 
     return TiltedPhoques::ThisCall(RealActivate, apThis, apActivator, aUnk1, apObjectToGet, aCount, aDefaultProcessing);
