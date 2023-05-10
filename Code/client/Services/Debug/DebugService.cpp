@@ -51,6 +51,7 @@
 #include <Forms/TESAmmo.h>
 #include <BSGraphics/BSGraphicsRenderer.h>
 #include <Interface/UI.h>
+#include <Games/Combat/CombatController.h>
 
 // TODO: ft
 #if TP_SKYRIM64
@@ -77,6 +78,9 @@ static void DrawBuildTag()
 
 void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
 {
+    if (m_actors.size())
+        return;
+
     const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
     auto pActor = Actor::Create(pPlayerBaseForm);
@@ -208,6 +212,10 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             s_f8Pressed = true;
 
             PlaceActorInWorld();
+        #if 0
+            Actor* pEnemy = Cast<Actor>(TESForm::GetById(0x29602));
+            pEnemy->pCombatController->SetTarget(m_actors[0]);
+        #endif
         }
     }
     else
