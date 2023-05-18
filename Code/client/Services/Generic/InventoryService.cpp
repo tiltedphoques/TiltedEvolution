@@ -170,19 +170,28 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     uint32_t equipSlotId = modSystem.GetGameId(acMessage.EquipSlotId);
     TESForm* pEquipSlot = TESForm::GetById(equipSlotId);
 
+    // TODO: ft, does it have the same problem?
+#if TP_SKYRIM64
+    uint32_t slotId = 0;
+    if (pEquipSlot == DefaultObjectManager::Get().rightEquipSlot)
+        slotId = 1;
+
+    // There's a bug where double equipping something magically unequips something secretly.
+    // TODO: should this be done for armor as well?
+    // Also, find out why the client is sending two equip messages in the first place.
+    if (!acMessage.Unequip && pActor->GetEquippedWeapon(slotId) == pItem)
+        return;
+#endif
+
     auto* pEquipManager = EquipManager::Get();
 
 #if TP_SKYRIM64
     if (acMessage.IsSpell)
     {
-        uint32_t spellSlotId = 0;
-        if (pEquipSlot == DefaultObjectManager::Get().rightEquipSlot)
-            spellSlotId = 1;
-
         if (acMessage.Unequip)
-            pEquipManager->UnEquipSpell(pActor, pItem, spellSlotId);
+            pEquipManager->UnEquipSpell(pActor, pItem, slotId);
         else
-            pEquipManager->EquipSpell(pActor, pItem, spellSlotId);
+            pEquipManager->EquipSpell(pActor, pItem, slotId);
 
         return;
     }

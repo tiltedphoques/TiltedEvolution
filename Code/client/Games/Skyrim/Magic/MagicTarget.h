@@ -45,6 +45,7 @@ struct MagicTarget
         bool CheckAddEffect(void* arArgs, float afResistance);
 
         bool ShouldSync();
+        bool IsForbiddenEffect(Actor* apTarget);
 
         Actor* pCaster;
         MagicItem* pSpell;
