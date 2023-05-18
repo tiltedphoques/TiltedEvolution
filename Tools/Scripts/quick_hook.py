@@ -1,4 +1,3 @@
-import idautils
 import idc
 import ida_typeinf
 import ida_kernwin
