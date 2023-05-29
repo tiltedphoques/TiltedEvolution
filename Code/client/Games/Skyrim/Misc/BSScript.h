@@ -308,6 +308,8 @@ struct BSScript
         bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult, StackFrame* apStackFrame) override;
     };
 
+    // Bad PoC code
+#if 0
     template <class... T> struct EventArguments : IFunctionArguments
     {
         using Tuple = std::tuple<EventArguments...>;
@@ -331,6 +333,7 @@ struct BSScript
 
         Tuple args;
     };
+#endif
 };
 
 template <> void BSScript::Variable::Set(int32_t aValue) noexcept;
