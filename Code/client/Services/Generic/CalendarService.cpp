@@ -31,14 +31,14 @@ void CalendarService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
 {
     // disable the game clock
     ToggleGameClock(false);
-    m_onlineTime.TimeScale = acMessage.TimeModel.TimeScale;
-    m_onlineTime.Time = acMessage.TimeModel.Time;
+    m_onlineTime.TimeScale = acMessage.timeModel.TimeScale;
+    m_onlineTime.Time = acMessage.timeModel.Time;
 
     if (m_shouldSyncCalendar)
     {
-        m_onlineTime.Day = acMessage.TimeModel.Day;
-        m_onlineTime.Month = acMessage.TimeModel.Month;
-        m_onlineTime.Year = acMessage.TimeModel.Year;
+        m_onlineTime.Day = acMessage.timeModel.Day;
+        m_onlineTime.Month = acMessage.timeModel.Month;
+        m_onlineTime.Year = acMessage.timeModel.Year;
     }
     else
     {

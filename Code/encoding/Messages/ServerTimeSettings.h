@@ -18,5 +18,5 @@ struct ServerTimeSettings final : ServerMessage
     bool operator==(const ServerTimeSettings& achRhs) const noexcept;
     bool operator!=(const ServerTimeSettings& achRhs) const noexcept;
 
-    TimeModel TimeModel;
+    TimeModel timeModel;
 };

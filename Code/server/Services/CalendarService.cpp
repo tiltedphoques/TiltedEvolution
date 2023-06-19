@@ -46,11 +46,11 @@ void CalendarService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
         m_timeModel.Month = acEvent.PlayerTime.Month;
         m_timeModel.Year = acEvent.PlayerTime.Year;
     }
-    timeMsg.TimeModel.TimeScale = m_timeModel.TimeScale;
-    timeMsg.TimeModel.Time = m_timeModel.Time;
-    timeMsg.TimeModel.Day = m_timeModel.Day;
-    timeMsg.TimeModel.Month = m_timeModel.Month;
-    timeMsg.TimeModel.Year = m_timeModel.Year;
+    timeMsg.timeModel.TimeScale = m_timeModel.TimeScale;
+    timeMsg.timeModel.Time = m_timeModel.Time;
+    timeMsg.timeModel.Day = m_timeModel.Day;
+    timeMsg.timeModel.Month = m_timeModel.Month;
+    timeMsg.timeModel.Year = m_timeModel.Year;
 
     if (playerHasFurthestTime)
         GameServer::Get()->SendToPlayers(timeMsg);
@@ -70,11 +70,11 @@ bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept
         m_timeModel.Time = static_cast<float>(aHours) + minutes;
 
         ServerTimeSettings timeMsg;
-        timeMsg.TimeModel.TimeScale = m_timeModel.TimeScale;
-        timeMsg.TimeModel.Time = m_timeModel.Time;
-        timeMsg.TimeModel.Day = m_timeModel.Day;
-        timeMsg.TimeModel.Month = m_timeModel.Month;
-        timeMsg.TimeModel.Year = m_timeModel.Year;
+        timeMsg.timeModel.TimeScale = m_timeModel.TimeScale;
+        timeMsg.timeModel.Time = m_timeModel.Time;
+        timeMsg.timeModel.Day = m_timeModel.Day;
+        timeMsg.timeModel.Month = m_timeModel.Month;
+        timeMsg.timeModel.Year = m_timeModel.Year;
         GameServer::Get()->SendToLoaded(timeMsg);
         return true;
     }
@@ -111,11 +111,11 @@ bool CalendarService::SetTimeScale(float aScale) noexcept
         m_timeModel.TimeScale = aScale;
 
         ServerTimeSettings timeMsg;
-        timeMsg.TimeModel.TimeScale = m_timeModel.TimeScale;
-        timeMsg.TimeModel.Time = m_timeModel.Time;
-        timeMsg.TimeModel.Day = m_timeModel.Day;
-        timeMsg.TimeModel.Month = m_timeModel.Month;
-        timeMsg.TimeModel.Year = m_timeModel.Year;
+        timeMsg.timeModel.TimeScale = m_timeModel.TimeScale;
+        timeMsg.timeModel.Time = m_timeModel.Time;
+        timeMsg.timeModel.Day = m_timeModel.Day;
+        timeMsg.timeModel.Month = m_timeModel.Month;
+        timeMsg.timeModel.Year = m_timeModel.Year;
         GameServer::Get()->SendToPlayers(timeMsg);
         return true;
     }
