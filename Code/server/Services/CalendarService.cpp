@@ -72,6 +72,9 @@ bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept
         ServerTimeSettings timeMsg;
         timeMsg.TimeModel.TimeScale = m_timeModel.TimeScale;
         timeMsg.TimeModel.Time = m_timeModel.Time;
+        timeMsg.TimeModel.Day = m_timeModel.Day;
+        timeMsg.TimeModel.Month = m_timeModel.Month;
+        timeMsg.TimeModel.Year = m_timeModel.Year;
         GameServer::Get()->SendToLoaded(timeMsg);
         return true;
     }
@@ -110,6 +113,9 @@ bool CalendarService::SetTimeScale(float aScale) noexcept
         ServerTimeSettings timeMsg;
         timeMsg.TimeModel.TimeScale = m_timeModel.TimeScale;
         timeMsg.TimeModel.Time = m_timeModel.Time;
+        timeMsg.TimeModel.Day = m_timeModel.Day;
+        timeMsg.TimeModel.Month = m_timeModel.Month;
+        timeMsg.TimeModel.Year = m_timeModel.Year;
         GameServer::Get()->SendToPlayers(timeMsg);
         return true;
     }
