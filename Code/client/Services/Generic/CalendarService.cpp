@@ -30,12 +30,22 @@ CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, T
 void CalendarService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
 {
     // disable the game clock
+    ToggleGameClock(false);
     m_onlineTime.TimeScale = acMessage.TimeModel.TimeScale;
     m_onlineTime.Time = acMessage.TimeModel.Time;
-    m_onlineTime.Day = acMessage.TimeModel.Day;
-    m_onlineTime.Month = acMessage.TimeModel.Month;
-    m_onlineTime.Year = acMessage.TimeModel.Year;
-    ToggleGameClock(false);
+
+    if (m_shouldSyncCalendar)
+    {
+        m_onlineTime.Day = acMessage.TimeModel.Day;
+        m_onlineTime.Month = acMessage.TimeModel.Month;
+        m_onlineTime.Year = acMessage.TimeModel.Year;
+    }
+    else
+    {
+        m_onlineTime.Day = m_offlineTime.Day;
+        m_onlineTime.Month = m_offlineTime.Month;
+        m_onlineTime.Year = m_offlineTime.Year;
+    }
 }
 
 void CalendarService::OnDisconnected(const DisconnectedEvent&) noexcept
@@ -98,13 +108,10 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
 
         m_onlineTime.Update(delta);
         pGameTime->TimeScale->f = m_onlineTime.TimeScale;
-        if (m_shouldSyncCalendar)
-        {
-            pGameTime->GameDay->i = m_onlineTime.Day;
-            pGameTime->GameMonth->i = m_onlineTime.Month;
-            pGameTime->GameYear->i = m_onlineTime.Year;
-        }
-        pGameTime->GameDaysPassed->f = (m_onlineTime.Time * (1.f / 24.f)) + pGameTime->GameDay->i;
+        pGameTime->GameDay->i = m_onlineTime.Day;
+        pGameTime->GameMonth->i = m_onlineTime.Month;
+        pGameTime->GameYear->i = m_onlineTime.Year;
+        pGameTime->GameDaysPassed->f = (m_onlineTime.Time * (1.f / 24.f)) + m_onlineTime.Day;
 
         // time transition in
         if (m_fadeTimer < kTransitionSpeed)
