@@ -11,6 +11,8 @@
 #include <Forms/TESWorldSpace.h>
 #include <Forms/TESObjectCELL.h>
 
+#include <TimeManager.h>
+
 #include <Forms/TESNPC.h>
 #include <TiltedOnlinePCH.h>
 #include <World.h>
@@ -150,6 +152,14 @@ void TransportService::OnConnected()
     modSystem.GetServerModId(pPlayer->parentCell->formID, request.CellId);
 
     request.Level = pPlayer->GetLevel();
+
+    auto* pGameTime = TimeData::Get();
+    request.PlayerTime.Day = pGameTime->GameDay->i;
+    request.PlayerTime.Month = pGameTime->GameMonth->i;
+    request.PlayerTime.Year = pGameTime->GameYear->i;
+    request.PlayerTime.Time = pGameTime->GameHour->f;
+    request.PlayerTime.TimeScale = pGameTime->TimeScale->f;
+
 
     Send(request);
 }

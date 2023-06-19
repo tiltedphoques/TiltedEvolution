@@ -3,15 +3,14 @@
 #include <GameServer.h>
 #include <World.h>
 
-#include <Events/UpdateEvent.h>
 #include <Events/PlayerJoinEvent.h>
+#include <Events/UpdateEvent.h>
 
 #include <Messages/ServerTimeSettings.h>
 
 #include "Game/Player.h"
 
-CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher)
-    : m_world(aWorld)
+CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher) : m_world(aWorld)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CalendarService::OnUpdate>(this);
     m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&CalendarService::OnPlayerJoin>(this);
@@ -33,12 +32,24 @@ void CalendarService::OnUpdate(const UpdateEvent&) noexcept
     m_timeModel.Update(delta);
 }
 
-void CalendarService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
+void CalendarService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 {
     ServerTimeSettings timeMsg;
-    timeMsg.TimeScale = m_timeModel.TimeScale;
-    timeMsg.Time = m_timeModel.Time;
-
+    if (!m_timeSetFromFirstPlayer)
+    {
+        // Note that this doesn't set timescale because the server config should set that.
+        // Day/Month/Year also won't be set on client unless Client/Services/Generic/CalendarService.kSyncGameDates is set to true
+        m_timeModel.Time = acEvent.PlayerTime.Time;
+        m_timeModel.Day = acEvent.PlayerTime.Day;
+        m_timeModel.Month = acEvent.PlayerTime.Month;
+        m_timeModel.Year = acEvent.PlayerTime.Year;
+        m_timeSetFromFirstPlayer = true;
+    }
+    timeMsg.TimeModel.TimeScale = m_timeModel.TimeScale;
+    timeMsg.TimeModel.Time = m_timeModel.Time;
+    timeMsg.TimeModel.Day = m_timeModel.Day;
+    timeMsg.TimeModel.Month = m_timeModel.Month;
+    timeMsg.TimeModel.Year = m_timeModel.Year;
     acEvent.pPlayer->Send(timeMsg);
 }
 
@@ -54,8 +65,8 @@ bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept
         m_timeModel.Time = static_cast<float>(aHours) + minutes;
 
         ServerTimeSettings timeMsg;
-        timeMsg.TimeScale = m_timeModel.TimeScale;
-        timeMsg.Time = m_timeModel.Time;
+        timeMsg.TimeModel.TimeScale = m_timeModel.TimeScale;
+        timeMsg.TimeModel.Time = m_timeModel.Time;
         GameServer::Get()->SendToLoaded(timeMsg);
         return true;
     }
@@ -92,8 +103,8 @@ bool CalendarService::SetTimeScale(float aScale) noexcept
         m_timeModel.TimeScale = aScale;
 
         ServerTimeSettings timeMsg;
-        timeMsg.TimeScale = m_timeModel.TimeScale;
-        timeMsg.Time = m_timeModel.Time;
+        timeMsg.TimeModel.TimeScale = m_timeModel.TimeScale;
+        timeMsg.TimeModel.Time = m_timeModel.Time;
         GameServer::Get()->SendToPlayers(timeMsg);
         return true;
     }

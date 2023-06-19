@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+using TiltedPhoques::Buffer;
+
 struct TimeModel
 {
     // Default time: 01/01/01 at 12:00
@@ -13,4 +15,10 @@ struct TimeModel
 
     void Update(uint64_t aDelta);
     [[nodiscard]] static int GetNumerOfDaysByMonthIndex(int index);
+
+    void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
+    void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
+
+    bool operator==(const TimeModel& acRhs) const noexcept;
+    bool operator!=(const TimeModel& acRhs) const noexcept;
 };

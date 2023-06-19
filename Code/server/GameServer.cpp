@@ -841,7 +841,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             Send(pPlayer->GetConnectionId(), notify);
         }
 
-        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId));
+        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId, acRequest->PlayerTime));
     }
     /*
         else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())

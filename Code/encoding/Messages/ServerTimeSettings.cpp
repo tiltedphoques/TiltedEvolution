@@ -1,23 +1,10 @@
 
 #include <Messages/ServerTimeSettings.h>
 
-void ServerTimeSettings::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
-{
-    // poor man's std::bitcast
-    aWriter.WriteBits(*reinterpret_cast<const uint32_t*>(&TimeScale), 32);
-    aWriter.WriteBits(*reinterpret_cast<const uint32_t*>(&Time), 32);
-}
+void ServerTimeSettings::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept { TimeModel.Serialize(aWriter); }
 
-void ServerTimeSettings::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
-{
-    uint64_t tmp = 0;
-    uint32_t cVal = 0;
+void ServerTimeSettings::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept { TimeModel.Deserialize(aReader); }
 
-    aReader.ReadBits(tmp, 32);
-    cVal = tmp & 0xFFFFFFFF;
-    TimeScale = *reinterpret_cast<float*>(&cVal);
+bool ServerTimeSettings::operator==(const ServerTimeSettings& achRhs) const noexcept { return GetOpcode() == achRhs.GetOpcode() && TimeModel == achRhs.TimeModel; }
 
-    aReader.ReadBits(tmp, 32);
-    cVal = tmp & 0xFFFFFFFF;
-    Time = *reinterpret_cast<float*>(&cVal);
-}
+bool ServerTimeSettings::operator!=(const ServerTimeSettings& achRhs) const noexcept { return !this->operator==(achRhs); }

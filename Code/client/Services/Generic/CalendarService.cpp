@@ -1,15 +1,24 @@
 #include <Services/CalendarService.h>
 
-#include <World.h>
-#include <Events/UpdateEvent.h>
 #include <Events/DisconnectedEvent.h>
+#include <Events/UpdateEvent.h>
 #include <Messages/ServerTimeSettings.h>
+#include <World.h>
 
-#include <TimeManager.h>
-#include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
+#include <PlayerCharacter.h>
+#include <TimeManager.h>
 
 constexpr float kTransitionSpeed = 5.f;
+
+/// <summary>
+/// Enabling setting time back to normal when disconnecting. Saving when online uses online time anyway.
+/// </summary>
+const bool kSetBackToOfflineTimeOnDisconnect = false;
+/// <summary>
+/// Set to true to enable Date/Month/Year syncing. Not recommended due to potential quest issues.
+/// </summary>
+const bool kSyncGameDates = false;
 
 bool CalendarService::s_gameClockLocked = false;
 
@@ -19,8 +28,7 @@ bool CalendarService::AllowGameTick() noexcept
 }
 
 CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport)
-    : m_world(aWorld)
-    , m_transport(aTransport)
+    : m_world(aWorld), m_transport(aTransport)
 {
     m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&CalendarService::OnTimeUpdate>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CalendarService::HandleUpdate>(this);
@@ -30,8 +38,11 @@ CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, T
 void CalendarService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
 {
     // disable the game clock
-    m_onlineTime.TimeScale = acMessage.TimeScale;
-    m_onlineTime.Time = acMessage.Time;
+    m_onlineTime.TimeScale = acMessage.TimeModel.TimeScale;
+    m_onlineTime.Time = acMessage.TimeModel.Time;
+    m_onlineTime.Day = acMessage.TimeModel.Day;
+    m_onlineTime.Month = acMessage.TimeModel.Month;
+    m_onlineTime.Year = acMessage.TimeModel.Year;
     ToggleGameClock(false);
 }
 
@@ -62,19 +73,28 @@ void CalendarService::ToggleGameClock(bool aEnable)
     auto* pGameTime = TimeData::Get();
     if (aEnable)
     {
-        pGameTime->GameDay->i = m_offlineTime.Day;
-        pGameTime->GameMonth->i = m_offlineTime.Month;
-        pGameTime->GameYear->i = m_offlineTime.Year;
-        pGameTime->TimeScale->f = m_offlineTime.TimeScale;
-        pGameTime->GameDaysPassed->f = (m_offlineTime.Time * (1.f / 24.f)) + m_offlineTime.Day;
-        pGameTime->GameHour->f = m_offlineTime.Time;
+        if (kSetBackToOfflineTimeOnDisconnect)
+        {
+            if (kSyncGameDates)
+            {
+                pGameTime->GameDay->i = m_offlineTime.Day;
+                pGameTime->GameMonth->i = m_offlineTime.Month;
+                pGameTime->GameYear->i = m_offlineTime.Year;
+                pGameTime->GameDaysPassed->f = (m_offlineTime.Time * (1.f / 24.f)) + m_offlineTime.Day;
+            }
+            pGameTime->TimeScale->f = m_offlineTime.TimeScale;
+            pGameTime->GameHour->f = m_offlineTime.Time;
+        }
         m_switchToOffline = false;
     }
     else
     {
-        m_offlineTime.Day = pGameTime->GameDay->i;
-        m_offlineTime.Month = pGameTime->GameMonth->i;
-        m_offlineTime.Year = pGameTime->GameYear->i;
+        if (kSyncGameDates)
+        {
+            m_offlineTime.Day = pGameTime->GameDay->i;
+            m_offlineTime.Month = pGameTime->GameMonth->i;
+            m_offlineTime.Year = pGameTime->GameYear->i;
+        }
         m_offlineTime.Time = pGameTime->GameHour->f;
         m_offlineTime.TimeScale = pGameTime->TimeScale->f;
     }
@@ -119,11 +139,14 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
         m_lastTick = now;
 
         m_onlineTime.Update(delta);
-        pGameTime->GameDay->i = m_onlineTime.Day;
-        pGameTime->GameMonth->i = m_onlineTime.Month;
-        pGameTime->GameYear->i = m_onlineTime.Year;
         pGameTime->TimeScale->f = m_onlineTime.TimeScale;
-        pGameTime->GameDaysPassed->f = (m_onlineTime.Time * (1.f / 24.f)) + m_onlineTime.Day;
+        if (kSyncGameDates)
+        {
+            pGameTime->GameDay->i = m_onlineTime.Day;
+            pGameTime->GameMonth->i = m_onlineTime.Month;
+            pGameTime->GameYear->i = m_onlineTime.Year;
+        }
+        pGameTime->GameDaysPassed->f = (m_onlineTime.Time * (1.f / 24.f)) + pGameTime->GameDay->i;
 
         // time transition in
         if (m_fadeTimer < kTransitionSpeed)
