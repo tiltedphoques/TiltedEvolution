@@ -11,11 +11,6 @@
 
 constexpr float kTransitionSpeed = 5.f;
 
-/// <summary>
-/// Enabling setting time back to normal when disconnecting. Saving when online uses online time anyway.
-/// </summary>
-const bool kSetBackToOfflineTimeOnDisconnect = false;
-
 bool CalendarService::s_gameClockLocked = false;
 
 bool CalendarService::AllowGameTick() noexcept
@@ -47,7 +42,7 @@ void CalendarService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
     // signal a time transition
     m_fadeTimer = 0.f;
-    m_switchToOffline = true;
+    ToggleGameClock(true);
 }
 
 void CalendarService::OnServerSettingsReceived(const ServerSettings& aSettings) noexcept
@@ -73,30 +68,11 @@ float CalendarService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) c
 void CalendarService::ToggleGameClock(bool aEnable)
 {
     auto* pGameTime = TimeData::Get();
-    if (aEnable)
-    {
-        if (m_shouldSyncCalendar)
-        {
-            pGameTime->GameDay->i = m_offlineTime.Day;
-            pGameTime->GameMonth->i = m_offlineTime.Month;
-            pGameTime->GameYear->i = m_offlineTime.Year;
-            pGameTime->GameDaysPassed->f = (m_offlineTime.Time * (1.f / 24.f)) + m_offlineTime.Day;
-        }
-        pGameTime->TimeScale->f = m_offlineTime.TimeScale;
-        pGameTime->GameHour->f = m_offlineTime.Time;
-        m_switchToOffline = false;
-    }
-    else
-    {
-        if (m_shouldSyncCalendar)
-        {
-            m_offlineTime.Day = pGameTime->GameDay->i;
-            m_offlineTime.Month = pGameTime->GameMonth->i;
-            m_offlineTime.Year = pGameTime->GameYear->i;
-        }
-        m_offlineTime.Time = pGameTime->GameHour->f;
-        m_offlineTime.TimeScale = pGameTime->TimeScale->f;
-    }
+    m_offlineTime.Day = pGameTime->GameDay->i;
+    m_offlineTime.Month = pGameTime->GameMonth->i;
+    m_offlineTime.Year = pGameTime->GameYear->i;
+    m_offlineTime.Time = pGameTime->GameHour->f;
+    m_offlineTime.TimeScale = pGameTime->TimeScale->f;
 
     s_gameClockLocked = !aEnable;
 }
@@ -112,23 +88,6 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
             m_lastTick = m_world.GetTick();
 
         const auto now = m_world.GetTick();
-
-        if (m_switchToOffline)
-        {
-            // time transition out
-            if (m_fadeTimer < kTransitionSpeed)
-            {
-                pGameTime->GameHour->f = TimeInterpolate(m_onlineTime, m_offlineTime);
-                // before we quit here we fire this event
-                if ((m_fadeTimer + updateDelta) > kTransitionSpeed)
-                {
-                    m_fadeTimer += updateDelta;
-                    ToggleGameClock(true);
-                }
-                else
-                    m_fadeTimer += updateDelta;
-            }
-        }
 
         // we got disconnected or the client got ahead of us
         if (now < m_lastTick)

@@ -37,7 +37,6 @@ private:
     TimeModel m_onlineTime;
     TimeModel m_offlineTime;
     float m_fadeTimer = 0.f;
-    bool m_switchToOffline = false;
     bool m_shouldSyncCalendar = false;
     static bool s_gameClockLocked;
 
