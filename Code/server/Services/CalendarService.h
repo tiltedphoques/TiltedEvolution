@@ -38,7 +38,6 @@ private:
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnPlayerJoin(const PlayerJoinEvent&) noexcept;
 
-    bool m_timeSetFromFirstPlayer = false;
     TimeModel m_timeModel;
     uint64_t m_lastTick = 0;
 

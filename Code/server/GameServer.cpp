@@ -49,6 +49,9 @@ Console::Setting bEnableDeathSystem{"Gameplay:bEnableDeathSystem", "Enables the 
 Console::Setting uTimeScale{
     "Gameplay:uTimeScale",
     "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
+Console::Setting bSyncPlayerCalendar{
+    "Gameplay:bSyncPlayerCalendar",
+    "Syncs up all player calendars to be the same day, month, and year. This uses the date of the player with the furthest ahead date at connection.", false};
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
                                  Console::SettingsFlags::kLocked};
@@ -132,6 +135,7 @@ ServerSettings GetSettings()
     settings.PvpEnabled = bEnablePvp;
     settings.SyncPlayerHomes = bSyncPlayerHomes;
     settings.DeathSystemEnabled = bEnableDeathSystem;
+    settings.SyncPlayerCalendar = bSyncPlayerCalendar;
     return settings;
 }
 

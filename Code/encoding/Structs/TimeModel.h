@@ -14,7 +14,9 @@ struct TimeModel
     int Day = 1;
 
     void Update(uint64_t aDelta);
+    float GetTimeInDays() const noexcept;
     [[nodiscard]] static int GetNumerOfDaysByMonthIndex(int index);
+
 
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;

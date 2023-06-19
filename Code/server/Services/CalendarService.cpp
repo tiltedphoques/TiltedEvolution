@@ -35,22 +35,27 @@ void CalendarService::OnUpdate(const UpdateEvent&) noexcept
 void CalendarService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 {
     ServerTimeSettings timeMsg;
-    if (!m_timeSetFromFirstPlayer)
+    //the player with the furthest date is used
+    bool playerHasFurthestTime = acEvent.PlayerTime.GetTimeInDays() > m_timeModel.GetTimeInDays();
+
+    if (playerHasFurthestTime)
     {
         // Note that this doesn't set timescale because the server config should set that.
-        // Day/Month/Year also won't be set on client unless Client/Services/Generic/CalendarService.kSyncGameDates is set to true
         m_timeModel.Time = acEvent.PlayerTime.Time;
         m_timeModel.Day = acEvent.PlayerTime.Day;
         m_timeModel.Month = acEvent.PlayerTime.Month;
         m_timeModel.Year = acEvent.PlayerTime.Year;
-        m_timeSetFromFirstPlayer = true;
     }
     timeMsg.TimeModel.TimeScale = m_timeModel.TimeScale;
     timeMsg.TimeModel.Time = m_timeModel.Time;
     timeMsg.TimeModel.Day = m_timeModel.Day;
     timeMsg.TimeModel.Month = m_timeModel.Month;
     timeMsg.TimeModel.Year = m_timeModel.Year;
-    acEvent.pPlayer->Send(timeMsg);
+
+    if (playerHasFurthestTime)
+        GameServer::Get()->SendToPlayers(timeMsg);
+    else
+        acEvent.pPlayer->Send(timeMsg);
 }
 
 bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept

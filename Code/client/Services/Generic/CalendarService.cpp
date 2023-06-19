@@ -15,10 +15,6 @@ constexpr float kTransitionSpeed = 5.f;
 /// Enabling setting time back to normal when disconnecting. Saving when online uses online time anyway.
 /// </summary>
 const bool kSetBackToOfflineTimeOnDisconnect = false;
-/// <summary>
-/// Set to true to enable Date/Month/Year syncing. Not recommended due to potential quest issues.
-/// </summary>
-const bool kSyncGameDates = false;
 
 bool CalendarService::s_gameClockLocked = false;
 
@@ -33,6 +29,7 @@ CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, T
     m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&CalendarService::OnTimeUpdate>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CalendarService::HandleUpdate>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&CalendarService::OnDisconnected>(this);
+    m_settingsConnection = aDispatcher.sink<ServerSettings>().connect<&CalendarService::OnServerSettingsReceived>(this);
 }
 
 void CalendarService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
@@ -51,6 +48,11 @@ void CalendarService::OnDisconnected(const DisconnectedEvent&) noexcept
     // signal a time transition
     m_fadeTimer = 0.f;
     m_switchToOffline = true;
+}
+
+void CalendarService::OnServerSettingsReceived(const ServerSettings& aSettings) noexcept
+{
+    m_shouldSyncCalendar = aSettings.SyncPlayerCalendar;
 }
 
 float CalendarService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const
@@ -73,23 +75,20 @@ void CalendarService::ToggleGameClock(bool aEnable)
     auto* pGameTime = TimeData::Get();
     if (aEnable)
     {
-        if (kSetBackToOfflineTimeOnDisconnect)
+        if (m_shouldSyncCalendar)
         {
-            if (kSyncGameDates)
-            {
-                pGameTime->GameDay->i = m_offlineTime.Day;
-                pGameTime->GameMonth->i = m_offlineTime.Month;
-                pGameTime->GameYear->i = m_offlineTime.Year;
-                pGameTime->GameDaysPassed->f = (m_offlineTime.Time * (1.f / 24.f)) + m_offlineTime.Day;
-            }
-            pGameTime->TimeScale->f = m_offlineTime.TimeScale;
-            pGameTime->GameHour->f = m_offlineTime.Time;
+            pGameTime->GameDay->i = m_offlineTime.Day;
+            pGameTime->GameMonth->i = m_offlineTime.Month;
+            pGameTime->GameYear->i = m_offlineTime.Year;
+            pGameTime->GameDaysPassed->f = (m_offlineTime.Time * (1.f / 24.f)) + m_offlineTime.Day;
         }
+        pGameTime->TimeScale->f = m_offlineTime.TimeScale;
+        pGameTime->GameHour->f = m_offlineTime.Time;
         m_switchToOffline = false;
     }
     else
     {
-        if (kSyncGameDates)
+        if (m_shouldSyncCalendar)
         {
             m_offlineTime.Day = pGameTime->GameDay->i;
             m_offlineTime.Month = pGameTime->GameMonth->i;
@@ -140,7 +139,7 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
 
         m_onlineTime.Update(delta);
         pGameTime->TimeScale->f = m_onlineTime.TimeScale;
-        if (kSyncGameDates)
+        if (m_shouldSyncCalendar)
         {
             pGameTime->GameDay->i = m_onlineTime.Day;
             pGameTime->GameMonth->i = m_onlineTime.Month;

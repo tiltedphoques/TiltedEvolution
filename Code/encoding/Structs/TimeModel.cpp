@@ -45,6 +45,16 @@ void TimeModel::Update(uint64_t aDelta)
     }
 }
 
+float TimeModel::GetTimeInDays() const noexcept
+{
+    float totalDays = Year * 365;
+    for (int i = 0; i < Month; i++)
+        totalDays += GetNumerOfDaysByMonthIndex(i);
+    totalDays += Day;
+    totalDays += (Time / 24.f);
+    return totalDays;
+}
+
 void TimeModel::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     // poor man's std::bitcast
@@ -90,4 +100,7 @@ bool TimeModel::operator==(const TimeModel& achRhs) const noexcept
         Year == achRhs.Year;
 }
 
-bool TimeModel::operator!=(const TimeModel& achRhs) const noexcept { return !this->operator==(achRhs); }
+bool TimeModel::operator!=(const TimeModel& achRhs) const noexcept
+{
+    return !this->operator==(achRhs);
+}
