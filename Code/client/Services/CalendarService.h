@@ -24,7 +24,6 @@ private:
     void OnTimeUpdate(const ServerTimeSettings&) noexcept;
     void HandleUpdate(const UpdateEvent&) noexcept;
     void OnDisconnected(const DisconnectedEvent&) noexcept;
-    void OnServerSettingsReceived(const ServerSettings&) noexcept;
 
     void ToggleGameClock(bool aEnable);
     float TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const;
@@ -32,15 +31,14 @@ private:
     entt::scoped_connection m_timeUpdateConnection;
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_disconnectedConnection;
-    entt::scoped_connection m_settingsConnection;
 
     TimeModel m_onlineTime;
     TimeModel m_offlineTime;
     float m_fadeTimer = 0.f;
-    bool m_shouldSyncCalendar = false;
     static bool s_gameClockLocked;
 
     uint64_t m_lastTick = 0;
+    uint64_t m_lastLogTick = 0;
     World& m_world;
     TransportService& m_transport;
 };

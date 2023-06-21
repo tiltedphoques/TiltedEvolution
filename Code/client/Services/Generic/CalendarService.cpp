@@ -24,7 +24,6 @@ CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, T
     m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&CalendarService::OnTimeUpdate>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CalendarService::HandleUpdate>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&CalendarService::OnDisconnected>(this);
-    m_settingsConnection = aDispatcher.sink<ServerSettings>().connect<&CalendarService::OnServerSettingsReceived>(this);
 }
 
 void CalendarService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
@@ -34,7 +33,7 @@ void CalendarService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
     m_onlineTime.TimeScale = acMessage.timeModel.TimeScale;
     m_onlineTime.Time = acMessage.timeModel.Time;
 
-    if (m_shouldSyncCalendar)
+    if (m_world.GetServerSettings().SyncPlayerCalendar)
     {
         m_onlineTime.Day = acMessage.timeModel.Day;
         m_onlineTime.Month = acMessage.timeModel.Month;
@@ -53,11 +52,6 @@ void CalendarService::OnDisconnected(const DisconnectedEvent&) noexcept
     // signal a time transition
     m_fadeTimer = 0.f;
     ToggleGameClock(true);
-}
-
-void CalendarService::OnServerSettingsReceived(const ServerSettings& aSettings) noexcept
-{
-    m_shouldSyncCalendar = aSettings.SyncPlayerCalendar;
 }
 
 float CalendarService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const
