@@ -73,17 +73,38 @@ bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept
         minutes = floor(minutes * 100) / 1000;
         m_timeModel.Time = static_cast<float>(aHours) + minutes;
 
-        ServerTimeSettings timeMsg;
-        timeMsg.timeModel.TimeScale = m_timeModel.TimeScale;
-        timeMsg.timeModel.Time = m_timeModel.Time;
-        timeMsg.timeModel.Day = m_timeModel.Day;
-        timeMsg.timeModel.Month = m_timeModel.Month;
-        timeMsg.timeModel.Year = m_timeModel.Year;
-        GameServer::Get()->SendToLoaded(timeMsg);
+        SendTimeResync();
         return true;
     }
-
     return false;
+}
+
+bool CalendarService::SetDate(int aDay, int aMonth, float aYear) noexcept
+{
+    if (aMonth >= 0 && aMonth < 12 && aYear >= 0 && aYear <= 999)
+    {
+        auto maxDays = m_timeModel.GetNumberOfDaysByMonthIndex(aMonth);
+        if (aDay >= 0 && aDay < maxDays)
+        {
+            m_timeModel.Day = aDay;
+            m_timeModel.Month = aMonth;
+            m_timeModel.Year = aYear;
+            SendTimeResync();
+            return true;
+        }
+    }
+    return false;
+}
+
+void CalendarService::SendTimeResync() noexcept
+{
+    ServerTimeSettings timeMsg;
+    timeMsg.timeModel.TimeScale = m_timeModel.TimeScale;
+    timeMsg.timeModel.Time = m_timeModel.Time;
+    timeMsg.timeModel.Day = m_timeModel.Day;
+    timeMsg.timeModel.Month = m_timeModel.Month;
+    timeMsg.timeModel.Year = m_timeModel.Year;
+    GameServer::Get()->SendToLoaded(timeMsg);
 }
 
 CalendarService::TTime CalendarService::GetTime() const noexcept

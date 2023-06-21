@@ -350,6 +350,26 @@ void GameServer::BindServerCommands()
                 out->error("Hour must be between 0-23 and minute must be between 0-59");
             }
         });
+
+    m_commands.RegisterCommand<int64_t, int64_t, int64_t>(
+        "SetDate", "Set ingame day, month, and year", [&](Console::ArgStack& aStack) {
+            auto out = spdlog::get("ConOut");
+
+            auto day = aStack.Pop<int64_t>();
+            auto month = aStack.Pop<int64_t>();
+            auto year = aStack.Pop<int64_t>();
+
+            bool time_set_successfully = m_pWorld->GetCalendarService().SetDate(day, month, year);
+
+            if (time_set_successfully)
+            {
+                out->info("Time set to {:02}/{:02}:{:02}", month, day, year);
+            }
+            else
+            {
+                out->error("Day must be between 0 and 31, month must be between 0 and 11, and year must be between 0 and 999.");
+            }
+        });
 }
 
 /* Update Info fields from user facing CVARS.*/

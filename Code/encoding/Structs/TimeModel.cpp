@@ -1,6 +1,5 @@
 #include <Structs/TimeModel.h>
 #include <TiltedCore/Serialization.hpp>
-#include <format>
 
 using TiltedPhoques::Serialization;
 

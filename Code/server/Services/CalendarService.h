@@ -23,6 +23,7 @@ public:
     using TDate = std::tuple<int, int, int>;
 
     bool SetTime(int aHour, int aMinutes, float aScale) noexcept;
+    bool SetDate(int aDay, int aMonth, float aYear) noexcept;
 
     // returns hours, minutes
     TTime GetTime() const noexcept;
@@ -37,6 +38,7 @@ public:
 private:
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnPlayerJoin(const PlayerJoinEvent&) noexcept;
+    void SendTimeResync() noexcept;
 
     TimeModel m_timeModel;
     uint64_t m_lastTick = 0;
