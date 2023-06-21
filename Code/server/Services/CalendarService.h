@@ -40,6 +40,7 @@ private:
 
     TimeModel m_timeModel;
     uint64_t m_lastTick = 0;
+    bool m_timeSetFromFirstPlayer = false;
 
     World& m_world;
 

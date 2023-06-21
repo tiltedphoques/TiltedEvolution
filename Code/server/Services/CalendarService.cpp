@@ -35,13 +35,17 @@ void CalendarService::OnUpdate(const UpdateEvent&) noexcept
 void CalendarService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 {
     ServerTimeSettings timeMsg;
-    //the player with the furthest date is used
+    // the player with the furthest date is used
     bool playerHasFurthestTime = acEvent.PlayerTime.GetTimeInDays() > m_timeModel.GetTimeInDays();
 
     if (playerHasFurthestTime)
     {
         // Note that this doesn't set timescale because the server config should set that.
-        m_timeModel.Time = acEvent.PlayerTime.Time;
+        if (!m_timeSetFromFirstPlayer)
+        {
+            m_timeModel.Time = acEvent.PlayerTime.Time;
+            m_timeSetFromFirstPlayer = true;
+        }
         m_timeModel.Day = acEvent.PlayerTime.Day;
         m_timeModel.Month = acEvent.PlayerTime.Month;
         m_timeModel.Year = acEvent.PlayerTime.Year;
