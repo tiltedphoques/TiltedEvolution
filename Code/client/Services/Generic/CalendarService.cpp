@@ -72,9 +72,9 @@ float CalendarService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) c
 void CalendarService::ToggleGameClock(bool aEnable)
 {
     auto* pGameTime = TimeData::Get();
-    m_offlineTime.Day = pGameTime->GameDay->i;
-    m_offlineTime.Month = pGameTime->GameMonth->i;
-    m_offlineTime.Year = pGameTime->GameYear->i;
+    m_offlineTime.Day = pGameTime->GameDay->f;
+    m_offlineTime.Month = pGameTime->GameMonth->f;
+    m_offlineTime.Year = pGameTime->GameYear->f;
     m_offlineTime.Time = pGameTime->GameHour->f;
     m_offlineTime.TimeScale = pGameTime->TimeScale->f;
 
@@ -102,9 +102,9 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
 
         m_onlineTime.Update(delta);
         pGameTime->TimeScale->f = m_onlineTime.TimeScale;
-        pGameTime->GameDay->i = m_onlineTime.Day;
-        pGameTime->GameMonth->i = m_onlineTime.Month;
-        pGameTime->GameYear->i = m_onlineTime.Year;
+        pGameTime->GameDay->f = m_onlineTime.Day;
+        pGameTime->GameMonth->f = m_onlineTime.Month;
+        pGameTime->GameYear->f = m_onlineTime.Year;
         pGameTime->GameDaysPassed->f = (m_onlineTime.Time * (1.f / 24.f)) + m_onlineTime.Day;
 
         // time transition in

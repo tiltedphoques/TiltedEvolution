@@ -154,12 +154,11 @@ void TransportService::OnConnected()
     request.Level = pPlayer->GetLevel();
 
     auto* pGameTime = TimeData::Get();
-    request.PlayerTime.Day = pGameTime->GameDay->i;
-    request.PlayerTime.Month = pGameTime->GameMonth->i;
-    request.PlayerTime.Year = pGameTime->GameYear->i;
-    request.PlayerTime.Time = pGameTime->GameHour->f;
     request.PlayerTime.TimeScale = pGameTime->TimeScale->f;
-
+    request.PlayerTime.Time = pGameTime->GameHour->f;
+    request.PlayerTime.Year = pGameTime->GameYear->f;
+    request.PlayerTime.Month = pGameTime->GameMonth->f;
+    request.PlayerTime.Day = pGameTime->GameDay->f;
 
     Send(request);
 }

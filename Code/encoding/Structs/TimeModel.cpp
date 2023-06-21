@@ -1,19 +1,14 @@
-
 #include <Structs/TimeModel.h>
 #include <TiltedCore/Serialization.hpp>
+#include <format>
 
 using TiltedPhoques::Serialization;
 
-const int cDayLengthArray[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+const uint32_t cDayLengthArray[12] = {31u, 28u, 31u, 30u, 31u, 30u, 31u, 31u, 30u, 31u, 30u, 31u};
 
-int TimeModel::GetNumerOfDaysByMonthIndex(int aIndex)
+uint32_t TimeModel::GetNumberOfDaysByMonthIndex(int aIndex)
 {
-    if (aIndex < 12)
-    {
-        return cDayLengthArray[aIndex];
-    }
-
-    return 0;
+    return cDayLengthArray[aIndex % 12];
 }
 
 void TimeModel::Update(uint64_t aDelta)
@@ -21,35 +16,23 @@ void TimeModel::Update(uint64_t aDelta)
     float deltaSeconds = static_cast<float>(aDelta) / 1000.f;
     Time += (deltaSeconds * (TimeScale * 0.00027777778f));
 
-    if (Time > 24.f)
+    Day += static_cast<uint32_t>(Time / 24.f);
+    Time = std::fmod(Time, 24.f);
+
+    while (Day > GetNumberOfDaysByMonthIndex(Month))
     {
-        int maxDays = GetNumerOfDaysByMonthIndex(Month);
-
-        while (Time > 24.f)
-        {
-            Time = Time + -24.f;
-            Day++;
-        }
-
-        if (Day > maxDays)
-        {
-            Month++;
-            Day = Day - maxDays;
-
-            if (Month > 12)
-            {
-                Month = Month + -12;
-                Year++;
-            }
-        }
+        Day -= GetNumberOfDaysByMonthIndex(Month);
+        Month++;
     }
+    Year += Month / 12;
+    Month %= 12;
 }
 
 float TimeModel::GetTimeInDays() const noexcept
 {
-    float totalDays = Year * 365;
-    for (int i = 0; i < Month; i++)
-        totalDays += GetNumerOfDaysByMonthIndex(i);
+    float totalDays = static_cast<float>(Year) * 365.f;
+    for (uint32_t i = 0u; i < Month; i++)
+        totalDays += GetNumberOfDaysByMonthIndex(i);
     totalDays += Day;
     totalDays += (Time / 24.f);
     return totalDays;
@@ -57,50 +40,18 @@ float TimeModel::GetTimeInDays() const noexcept
 
 void TimeModel::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
-    // poor man's std::bitcast
-    aWriter.WriteBits(*reinterpret_cast<const uint32_t*>(&TimeScale), 32);
-    aWriter.WriteBits(*reinterpret_cast<const uint32_t*>(&Time), 32);
-    aWriter.WriteBits(*reinterpret_cast<const uint32_t*>(&Day), 32);
-    aWriter.WriteBits(*reinterpret_cast<const uint32_t*>(&Month), 32);
-    aWriter.WriteBits(*reinterpret_cast<const uint32_t*>(&Year), 32);
+    Serialization::WriteFloat(aWriter, TimeScale);
+    Serialization::WriteFloat(aWriter, Time);
+    Serialization::WriteVarInt(aWriter, Day);
+    Serialization::WriteVarInt(aWriter, Month);
+    Serialization::WriteVarInt(aWriter, Year);
 }
 
 void TimeModel::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
-    uint64_t tmp = 0;
-    uint32_t cVal = 0;
-
-    aReader.ReadBits(tmp, 32);
-    cVal = tmp & 0xFFFFFFFF;
-    TimeScale = *reinterpret_cast<float*>(&cVal);
-
-    aReader.ReadBits(tmp, 32);
-    cVal = tmp & 0xFFFFFFFF;
-    Time = *reinterpret_cast<float*>(&cVal);
-
-    aReader.ReadBits(tmp, 32);
-    cVal = tmp & 0xFFFFFFFF;
-    Day = *reinterpret_cast<int*>(&cVal);
-
-    aReader.ReadBits(tmp, 32);
-    cVal = tmp & 0xFFFFFFFF;
-    Month = *reinterpret_cast<int*>(&cVal);
-
-    aReader.ReadBits(tmp, 32);
-    cVal = tmp & 0xFFFFFFFF;
-    Year = *reinterpret_cast<int*>(&cVal);
-}
-
-bool TimeModel::operator==(const TimeModel& achRhs) const noexcept
-{
-    return TimeScale == achRhs.TimeScale &&
-        Time == achRhs.Time &&
-        Day == achRhs.Day &&
-        Month == achRhs.Month &&
-        Year == achRhs.Year;
-}
-
-bool TimeModel::operator!=(const TimeModel& achRhs) const noexcept
-{
-    return !this->operator==(achRhs);
+    TimeScale = Serialization::ReadFloat(aReader);
+    Time = Serialization::ReadFloat(aReader);
+    Day = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    Month = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    Year = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }
