@@ -10,10 +10,9 @@ uint32_t TimeModel::GetNumberOfDaysByMonthIndex(int aIndex)
     return cDayLengthArray[aIndex % 12];
 }
 
-void TimeModel::Update(uint64_t aDelta)
+void TimeModel::Update(uint64_t aDeltaTick)
 {
-    float deltaSeconds = static_cast<float>(aDelta) / 1000.f;
-    Time += (deltaSeconds * (TimeScale * 0.00027777778f));
+    Time += GetDeltaTime(aDeltaTick);
 
     Day += static_cast<uint32_t>(Time / 24.f);
     Time = std::fmod(Time, 24.f);
@@ -25,6 +24,12 @@ void TimeModel::Update(uint64_t aDelta)
     }
     Year += Month / 12;
     Month %= 12;
+}
+
+float TimeModel::GetDeltaTime(uint64_t aDeltaTick) const noexcept
+{
+    float deltaSeconds = static_cast<float>(aDeltaTick) / 1000.f;
+    return (deltaSeconds * (TimeScale * 0.00027777778f));
 }
 
 float TimeModel::GetTimeInDays() const noexcept
