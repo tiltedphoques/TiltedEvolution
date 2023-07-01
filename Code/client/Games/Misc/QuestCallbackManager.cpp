@@ -12,7 +12,7 @@ QuestCallbackManager* QuestCallbackManager::Get() noexcept
 void QuestCallbackManager::RegisterQuest(uint32_t formId)
 {
     using TRegisterQuest = void(QuestCallbackManager*, uint32_t);
-    POINTER_SKYRIMSE(TRegisterQuest, RegisterQuest, 53711);
+    POINTER_SKYRIMSE(TRegisterQuest, RegisterQuest, 53711); // TODO: according to our IDB, this is "GameScript::QuestCallbackMgr::WaitForQuestStartImpl", investigate.
     POINTER_FALLOUT4(TRegisterQuest, RegisterQuest, 1186742);
 
     RegisterQuest(this, formId);
