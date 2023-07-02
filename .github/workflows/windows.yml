@@ -7,6 +7,7 @@ on:
       - master
       - bluedove
       - prerel
+      - dev
 jobs:
   build:
     strategy:
@@ -30,7 +31,7 @@ jobs:
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
       with:
-        xmake-version: '2.7.6'
+        xmake-version: '2.6.5'
 
     # Install node
     #- name: Setup nodejs
@@ -74,11 +75,11 @@ jobs:
       run: xmake.exe
 
     # Create install
-    #- name: Bundle package
-    #  run: xmake.exe install -o packaged
+    - name: Bundle package
+      run: xmake.exe install -o packaged
 
     # Upload artifacts
-    #- uses: actions/upload-artifact@v2
-    #  with:
-    #    name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}
-    #    path: packaged/bin/**
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}
+        path: packaged/bin/**
