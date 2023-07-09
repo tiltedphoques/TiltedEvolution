@@ -98,6 +98,8 @@ struct TESForm : BaseFormComponent
     void SetSkipSaveFlag(bool aSet) noexcept;
     uint32_t GetChangeFlags() const noexcept;
 
+    void SetTemporary();
+
     bool GetIgnoreFriendlyHit() const noexcept { return (flags & IGNORE_FRIENDLY_HITS) != 0; }
     void SetIgnoreFriendlyHit(bool aSet) noexcept
     {

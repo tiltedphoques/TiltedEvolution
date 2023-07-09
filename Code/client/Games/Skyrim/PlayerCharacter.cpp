@@ -1,25 +1,28 @@
-#include <PlayerCharacter.h>
 #include <Games/ActorExtension.h>
+#include <PlayerCharacter.h>
 
 #include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
 
 #include <Games/Overrides.h>
 
+#include <Events/AddExperienceEvent.h>
 #include <Events/InventoryChangeEvent.h>
 #include <Events/LeaveBeastFormEvent.h>
-#include <Events/AddExperienceEvent.h>
 
 #include <World.h>
 
-#include <Games/Skyrim/Forms/ActorValueInfo.h>
 #include <Games/ActorExtension.h>
-#include <Games/TES.h>
 #include <Games/References.h>
+#include <Games/Skyrim/Forms/ActorValueInfo.h>
+#include <Games/TES.h>
 
 #include <Forms/TESObjectCELL.h>
+#include <BSCore/BSSpinLock.h>
 
 int32_t PlayerCharacter::LastUsedCombatSkill = -1;
 
+namespace
+{
 TP_THIS_FUNCTION(TPickUpObject, char, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2);
 TP_THIS_FUNCTION(TSetBeastForm, void, void, void* apUnk1, void* apUnk2, bool aEntering);
 TP_THIS_FUNCTION(TAddSkillExperience, void, PlayerCharacter, int32_t aSkill, float aExperience);
@@ -29,6 +32,9 @@ static TPickUpObject* RealPickUpObject = nullptr;
 static TSetBeastForm* RealSetBeastForm = nullptr;
 static TAddSkillExperience* RealAddSkillExperience = nullptr;
 static TCalculateExperience* RealCalculateExperience = nullptr;
+
+BSSpinLock* MapLock = nullptr;
+} // namespace
 
 void PlayerCharacter::SetGodMode(bool aSet) noexcept
 {
@@ -115,7 +121,24 @@ void PlayerCharacter::PayCrimeGoldToAllFactions() noexcept
     }
 }
 
-char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
+void PlayerCharacter::AddMapmarkerRef(uint32_t aMapRef)
+{
+    BSScopedSpinLock _(*MapLock);
+    CurrentMapmarkerRefHandles.Add(aMapRef);
+}
+
+void PlayerCharacter::RemoveMapmarkerRef(uint32_t aMapRef)
+{
+    BSScopedSpinLock _(*MapLock);
+
+    // yes... thats really how bethesda does it...
+    auto index = CurrentMapmarkerRefHandles.Find(aMapRef);
+    if (index != -1)
+        CurrentMapmarkerRefHandles.Remove(index, 1);
+}
+
+char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1,
+                      bool aUnk2)
 {
     auto& modSystem = World::Get().GetModSystem();
 
@@ -201,8 +224,11 @@ static TiltedPhoques::Initializer s_playerCharacterHooks(
         RealAddSkillExperience = s_addSkillExperience.Get();
         RealCalculateExperience = s_calculateExperience.Get();
 
-        TP_HOOK(&RealPickUpObject, HookPickUpObject);
-        TP_HOOK(&RealSetBeastForm, HookSetBeastForm);
-        TP_HOOK(&RealAddSkillExperience, HookAddSkillExperience);
-        TP_HOOK(&RealCalculateExperience, HookCalculateExperience);
-    });
+    TP_HOOK(&RealPickUpObject, HookPickUpObject);
+    TP_HOOK(&RealSetBeastForm, HookSetBeastForm);
+    TP_HOOK(&RealAddSkillExperience, HookAddSkillExperience);
+    TP_HOOK(&RealCalculateExperience, HookCalculateExperience);
+
+    const VersionDbPtr<uint8_t> mapLockloc(404255);
+    MapLock = reinterpret_cast<decltype(MapLock)>(mapLockloc.Get());
+});

@@ -3,6 +3,7 @@
 #include <Actor.h>
 #include <Misc/TintMask.h>
 #include <Forms/ActorValueInfo.h>
+#include <BSCore/BSTArray.h>
 
 struct Skills
 {
@@ -118,6 +119,9 @@ struct PlayerCharacter : Actor
 
     void PayCrimeGoldToAllFactions() noexcept;
 
+    void AddMapmarkerRef(uint32_t aMapRef);
+    void RemoveMapmarkerRef(uint32_t aMapRef);
+
     struct Objective
     {
         BSFixedString name;
@@ -130,8 +134,10 @@ struct PlayerCharacter : Actor
         uint64_t instanceCount;
     };
 
-    uint8_t pad1[0x588 - sizeof(Actor)];
-    GameArray<ObjectiveInstance> objectives;
+    uint8_t pad1[0x500 - sizeof(Actor)];
+    creation::BSTArray<uint32_t> CurrentMapmarkerRefHandles;
+    uint8_t pad510[0x588 - 0x518];
+    GameArray<ObjectiveInstance> objectives; 
     uint8_t pad588[0x9B0 - 0x598];
     Skills** pSkills;
     uint8_t pad9B8[0xAC8 - 0x9B8];

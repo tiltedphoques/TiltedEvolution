@@ -55,6 +55,7 @@ private:
     void DrawActorValuesView();
     void DrawQuestDebugView();
     void DrawCellView();
+    void DrawUIView();
     void DrawProcessView();
     void DrawWeatherView();
 

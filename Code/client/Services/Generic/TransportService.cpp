@@ -149,6 +149,9 @@ void TransportService::OnConnected()
 
     modSystem.GetServerModId(pPlayer->parentCell->formID, request.CellId);
 
+    TES* pTes = TES::Get();
+    request.CenterCoords = {pTes->centerGridX, pTes->centerGridY};
+
     request.Level = pPlayer->GetLevel();
 
     Send(request);

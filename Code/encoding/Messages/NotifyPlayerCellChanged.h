@@ -3,6 +3,7 @@
 #include "Message.h"
 
 #include <Structs/GameId.h>
+#include <Structs/GridCellCoords.h>
 
 struct NotifyPlayerCellChanged final : ServerMessage
 {
@@ -18,9 +19,17 @@ struct NotifyPlayerCellChanged final : ServerMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifyPlayerCellChanged& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && PlayerId == acRhs.PlayerId && WorldSpaceId == acRhs.WorldSpaceId && CellId == acRhs.CellId; }
+    bool operator==(const NotifyPlayerCellChanged& acRhs) const noexcept
+    {
+        return GetOpcode() == acRhs.GetOpcode() &&
+               PlayerId == acRhs.PlayerId &&
+               WorldSpaceId == acRhs.WorldSpaceId &&
+               CellId == acRhs.CellId &&
+               CenterCoords == acRhs.CenterCoords;
+    }
 
     uint32_t PlayerId;
     GameId WorldSpaceId;
     GameId CellId;
+    GridCellCoords CenterCoords;
 };

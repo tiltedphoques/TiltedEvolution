@@ -7,39 +7,38 @@
 #include <Services/QuestService.h>
 #include <Services/TransportService.h>
 
-#include <Games/References.h>
 #include <Games/Misc/SubtitleManager.h>
+#include <Games/References.h>
 
 #include <Forms/TESNPC.h>
 #include <Forms/TESQuest.h>
 
 #include <Components.h>
 
-#include <Systems/InterpolationSystem.h>
 #include <Systems/AnimationSystem.h>
 #include <Systems/CacheSystem.h>
 #include <Systems/FaceGenSystem.h>
+#include <Systems/InterpolationSystem.h>
 
 #include <Events/ActorAddedEvent.h>
 #include <Events/ActorRemovedEvent.h>
-#include <Events/UpdateEvent.h>
+#include <Events/AddExperienceEvent.h>
 #include <Events/ConnectedEvent.h>
+#include <Events/DialogueEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/InitPackageEvent.h>
 #include <Events/LeaveBeastFormEvent.h>
-#include <Events/AddExperienceEvent.h>
-#include <Events/DialogueEvent.h>
+#include <Events/MountEvent.h>
+#include <Events/ProjectileLaunchedEvent.h>
 #include <Events/SubtitleEvent.h>
 #include <Events/MoveActorEvent.h>
 #include <Events/PartyJoinedEvent.h>
+#include <Events/UpdateEvent.h>
 
-#include <Structs/ActionEvent.h>
-#include <Messages/CancelAssignmentRequest.h>
 #include <Messages/AssignCharacterRequest.h>
 #include <Messages/AssignCharacterResponse.h>
-#include <Messages/ServerReferencesMoveRequest.h>
-#include <Messages/ClientReferencesMoveRequest.h>
+#include <Messages/CancelAssignmentRequest.h>
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
@@ -49,31 +48,46 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
 #include <Messages/RequestOwnershipClaim.h>
+#include <Messages/ClientReferencesMoveRequest.h>
 #include <Messages/MountRequest.h>
-#include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
-#include <Messages/NotifyNewPackage.h>
-#include <Messages/RequestRespawn.h>
-#include <Messages/NotifyRespawn.h>
-#include <Messages/SyncExperienceRequest.h>
-#include <Messages/NotifySyncExperience.h>
-#include <Messages/DialogueRequest.h>
 #include <Messages/NotifyDialogue.h>
-#include <Messages/SubtitleRequest.h>
+#include <Messages/NotifyFactionsChanges.h>
+#include <Messages/NotifyMount.h>
+#include <Messages/NotifyNewPackage.h>
+#include <Messages/NotifyOwnershipTransfer.h>
+#include <Messages/NotifyProjectileLaunch.h>
+#include <Messages/NotifyRemoveCharacter.h>
+#include <Messages/NotifyRespawn.h>
+#include <Messages/NotifySpawnData.h>
 #include <Messages/NotifySubtitle.h>
+#include <Messages/NotifySyncExperience.h>
+#include <Messages/ProjectileLaunchRequest.h>
+#include <Messages/RequestFactionsChanges.h>
+#include <Messages/RequestOwnershipClaim.h>
+#include <Messages/RequestOwnershipTransfer.h>
+#include <Messages/RequestRespawn.h>
+#include <Messages/RequestSpawnData.h>
+#include <Messages/ServerReferencesMoveRequest.h>
+#include <Messages/SubtitleRequest.h>
+#include <Messages/SyncExperienceRequest.h>
+#include <Structs/ActionEvent.h>
 #include <Messages/NotifyActorTeleport.h>
 #include <Messages/NotifyRelinquishControl.h>
+#include <Messages/DialogueRequest.h>
 
-#include <World.h>
 #include <Games/TES.h>
+#include <World.h>
+#if TP_SKYRIM64
+#include <Interface/HUD/MapMarker_ExtraData.h>
+#endif
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
-    : m_world(aWorld)
-    , m_dispatcher(aDispatcher)
-    , m_transport(aTransport)
+    : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
 {
     m_referenceAddedConnection = m_dispatcher.sink<ActorAddedEvent>().connect<&CharacterService::OnActorAdded>(this);
-    m_referenceRemovedConnection = m_dispatcher.sink<ActorRemovedEvent>().connect<&CharacterService::OnActorRemoved>(this);
+    m_referenceRemovedConnection =
+        m_dispatcher.sink<ActorRemovedEvent>().connect<&CharacterService::OnActorRemoved>(this);
 
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&CharacterService::OnUpdate>(this);
     m_actionConnection = m_dispatcher.sink<ActionEvent>().connect<&CharacterService::OnActionEvent>(this);
@@ -81,25 +95,36 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_connectedConnection = m_dispatcher.sink<ConnectedEvent>().connect<&CharacterService::OnConnected>(this);
     m_disconnectedConnection = m_dispatcher.sink<DisconnectedEvent>().connect<&CharacterService::OnDisconnected>(this);
 
-    m_assignCharacterConnection = m_dispatcher.sink<AssignCharacterResponse>().connect<&CharacterService::OnAssignCharacter>(this);
-    m_characterSpawnConnection = m_dispatcher.sink<CharacterSpawnRequest>().connect<&CharacterService::OnCharacterSpawn>(this);
-    m_referenceMovementSnapshotConnection = m_dispatcher.sink<ServerReferencesMoveRequest>().connect<&CharacterService::OnReferencesMoveRequest>(this);
-    m_factionsConnection = m_dispatcher.sink<NotifyFactionsChanges>().connect<&CharacterService::OnFactionsChanges>(this);
-    m_ownershipTransferConnection = m_dispatcher.sink<NotifyOwnershipTransfer>().connect<&CharacterService::OnOwnershipTransfer>(this);
-    m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
-    m_remoteSpawnDataReceivedConnection = m_dispatcher.sink<NotifySpawnData>().connect<&CharacterService::OnRemoteSpawnDataReceived>(this);
+    m_assignCharacterConnection =
+        m_dispatcher.sink<AssignCharacterResponse>().connect<&CharacterService::OnAssignCharacter>(this);
+    m_characterSpawnConnection =
+        m_dispatcher.sink<CharacterSpawnRequest>().connect<&CharacterService::OnCharacterSpawn>(this);
+    m_referenceMovementSnapshotConnection =
+        m_dispatcher.sink<ServerReferencesMoveRequest>().connect<&CharacterService::OnReferencesMoveRequest>(this);
+    m_factionsConnection =
+        m_dispatcher.sink<NotifyFactionsChanges>().connect<&CharacterService::OnFactionsChanges>(this);
+    m_ownershipTransferConnection =
+        m_dispatcher.sink<NotifyOwnershipTransfer>().connect<&CharacterService::OnOwnershipTransfer>(this);
+    m_removeCharacterConnection =
+        m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
+    m_remoteSpawnDataReceivedConnection =
+        m_dispatcher.sink<NotifySpawnData>().connect<&CharacterService::OnRemoteSpawnDataReceived>(this);
 
     m_mountConnection = m_dispatcher.sink<MountEvent>().connect<&CharacterService::OnMountEvent>(this);
     m_notifyMountConnection = m_dispatcher.sink<NotifyMount>().connect<&CharacterService::OnNotifyMount>(this);
 
-    m_initPackageConnection = m_dispatcher.sink<InitPackageEvent>().connect<&CharacterService::OnInitPackageEvent>(this);
+    m_initPackageConnection =
+        m_dispatcher.sink<InitPackageEvent>().connect<&CharacterService::OnInitPackageEvent>(this);
     m_newPackageConnection = m_dispatcher.sink<NotifyNewPackage>().connect<&CharacterService::OnNotifyNewPackage>(this);
 
     m_notifyRespawnConnection = m_dispatcher.sink<NotifyRespawn>().connect<&CharacterService::OnNotifyRespawn>(this);
-    m_leaveBeastFormConnection = m_dispatcher.sink<LeaveBeastFormEvent>().connect<&CharacterService::OnLeaveBeastForm>(this);
+    m_leaveBeastFormConnection =
+        m_dispatcher.sink<LeaveBeastFormEvent>().connect<&CharacterService::OnLeaveBeastForm>(this);
 
-    m_addExperienceEventConnection = m_dispatcher.sink<AddExperienceEvent>().connect<&CharacterService::OnAddExperienceEvent>(this);
-    m_syncExperienceConnection = m_dispatcher.sink<NotifySyncExperience>().connect<&CharacterService::OnNotifySyncExperience>(this);
+    m_addExperienceEventConnection =
+        m_dispatcher.sink<AddExperienceEvent>().connect<&CharacterService::OnAddExperienceEvent>(this);
+    m_syncExperienceConnection =
+        m_dispatcher.sink<NotifySyncExperience>().connect<&CharacterService::OnNotifySyncExperience>(this);
 
     m_dialogueEventConnection = m_dispatcher.sink<DialogueEvent>().connect<&CharacterService::OnDialogueEvent>(this);
     m_dialogueSyncConnection = m_dispatcher.sink<NotifyDialogue>().connect<&CharacterService::OnNotifyDialogue>(this);
@@ -406,7 +431,10 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
             if (cNpcId == 0)
             {
-                spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod, base: {:X}:{:X}, form: {:X}:{:X}", acMessage.BaseId.BaseId, acMessage.BaseId.ModId, acMessage.FormId.BaseId, acMessage.FormId.ModId);
+                spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod, base: {:X}:{:X}, "
+                              "form: {:X}:{:X}",
+                              acMessage.BaseId.BaseId, acMessage.BaseId.ModId, acMessage.FormId.BaseId,
+                              acMessage.FormId.ModId);
                 return;
             }
 
@@ -720,7 +748,7 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
     std::optional<uint32_t> riderServerIdRes = Utils::GetServerId(cRiderEntity);
     if (!riderServerIdRes.has_value())
     {
-        spdlog::error("{}: failed to find server id", __FUNCTION__);
+        spdlog::error(__FUNCTION__ ": failed to find server id");
         return;
     }
 
@@ -742,7 +770,11 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
     }
 
     if (m_world.try_get<RemoteComponent>(cMountEntity))
+    {
         TakeOwnership(acEvent.MountID, *mountServerIdRes, cMountEntity);
+    }
+        
+
 
     MountRequest request;
     request.MountId = mountServerIdRes.value();
@@ -1041,7 +1073,7 @@ void CharacterService::OnNotifyActorTeleport(const NotifyActorTeleport& acMessag
     Actor* pActor = Cast<Actor>(TESForm::GetById(cActorId));
     if (!pActor)
     {
-        spdlog::error(__FUNCTION__ ": failed to retrieve actor to teleport.");
+        spdlog::error(__FUNCTION__ ": failed to retrieve actor to teleport, actor id: {:X}", acMessage.FormId.BaseId);
         return;
     }
 
@@ -1586,6 +1618,7 @@ void CharacterService::RunFactionsUpdates() const noexcept
 
 void CharacterService::RunSpawnUpdates() const noexcept
 {
+
     auto invisibleView = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent, WaitingFor3D>(entt::exclude<FormIdComponent>);
     Vector<entt::entity> entities(invisibleView.begin(), invisibleView.end());
 

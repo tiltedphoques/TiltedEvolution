@@ -11,6 +11,7 @@
 #include <Services/DiscordService.h>
 #include <Services/ObjectService.h>
 #include <Services/QuestService.h>
+#include <Services/MapService.h>
 #include <Services/ActorValueService.h>
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
@@ -50,6 +51,9 @@ World::World()
     ctx().emplace<StringCacheService>(m_dispatcher);
     ctx().emplace<CombatService>(*this, m_transport, m_dispatcher);
     ctx().emplace<WeatherService>(*this, m_transport, m_dispatcher);
+#if TP_SKYRIM64
+    ctx().emplace<MapService>(*this, m_dispatcher, m_transport);
+#endif
 }
 
 World::~World() = default;

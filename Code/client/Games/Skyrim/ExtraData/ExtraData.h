@@ -16,6 +16,7 @@ enum class ExtraDataType : uint32_t
     Health = 0x25,
     Charge = 0x28,
     Teleport = 0x2B,
+    MapMarker = 0x2C,
     LeveledCreature = 0x2D,
     CannotWear = 0x3D,
     Poison = 0x3E,

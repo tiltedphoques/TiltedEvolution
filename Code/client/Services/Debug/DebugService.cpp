@@ -5,17 +5,19 @@
 #include <Havok/BShkbHkxDB.h>
 #include <Havok/hkbBehaviorGraph.h>
 
-#include <Services/ImguiService.h>
 #include <Services/DebugService.h>
-#include <Services/TransportService.h>
+#include <Services/ImguiService.h>
 #include <Services/PapyrusService.h>
 #include <Services/QuestService.h>
+#include <Services/TransportService.h>
 
-#include <Events/UpdateEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
+
+#include <Events/UpdateEvent.h>
 #include <Events/MoveActorEvent.h>
 #include <Events/ConnectionErrorEvent.h>
+
 
 #include <Games/References.h>
 
@@ -43,6 +45,9 @@
 
 #include <Messages/RequestRespawn.h>
 
+#include <Interface/IMenu.h>
+#include <Interface/UI.h>
+
 #include <Games/Misc/SubtitleManager.h>
 #include <Games/Overrides.h>
 #include <OverlayApp.hpp>
@@ -54,6 +59,7 @@
 
 // TODO: ft
 #if TP_SKYRIM64
+#include <ExtraData/ExtraMapMarker.h>
 #include <Camera/PlayerCamera.h>
 #include <AI/Movement/PlayerControls.h>
 #include <Interface/IMenu.h>
@@ -61,10 +67,14 @@
 #include <DefaultObjectManager.h>
 #include <Misc/InventoryEntry.h>
 #include <Misc/MiddleProcess.h>
+#include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
+#include <Games/Skyrim/Forms/TESAmmo.h>
+#include <Games/Skyrim/Interface/UI.h>
 #endif
 
 #include <imgui.h>
 #include <inttypes.h>
+
 extern thread_local bool g_overrideFormId;
 
 constexpr char kBuildTag[] = "Build: " BUILD_COMMIT " " BUILD_BRANCH " EVO\nBuilt: " __TIMESTAMP__;
@@ -207,7 +217,47 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            #if TP_SKYRIM64
+            PlayerCharacter* pPlayer = PlayerCharacter::Get();
+            for (uint32_t handle : pPlayer->CurrentMapmarkerRefHandles)
+            {
+                TESObjectREFR* pRefr = TESObjectREFR::GetByHandle(handle);
+                ExtraMapMarker* pData = Cast<ExtraMapMarker>(pRefr->extraData.GetByType(ExtraDataType::MapMarker));
+                if (!pData || !pData->pMarkerData)
+                    continue;
+
+                const char* pEditorId = pData->pMarkerData->name.value.AsAscii();
+                spdlog::critical("Form id: {:X}, name: {}", pRefr->formID, pEditorId ? pEditorId : "NONE");
+            }
+            #endif
+
+        #if 0
+            static bool s_enabled = true;
+
+            FadeOutGame(s_enabled, true, 1.f, true, 0.f);
+
+            s_enabled = !s_enabled;
+
+            static bool s_enabled = true;
+            static bool s_firstPerson = false;
+
+            auto* pCamera = PlayerCamera::Get();
+            auto* pPlayerControls = PlayerControls::GetInstance();
+
+            if (s_enabled)
+            {
+                s_firstPerson = pCamera->IsFirstPerson();
+                pCamera->ForceFirstPerson();
+            }
+            else
+            {
+                s_firstPerson ? pCamera->ForceFirstPerson() : pCamera->ForceThirdPerson();
+            }
+
+            pPlayerControls->SetCamSwitch(s_enabled);
+
+            s_enabled = !s_enabled;
+        #endif
         }
     }
     else

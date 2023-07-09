@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Forms/TESForm.h>
+#include <TESObjectREFR.h>
 
 struct TESObject : TESForm
 {
