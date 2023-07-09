@@ -217,6 +217,42 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
+            //m_world.GetOverlayService().Reload();
+
+            Actor* pActor = Cast<Actor>(TESForm::GetById(m_formId));
+            if (pActor)
+            {
+                //TESNPC* pNpc = Cast<TESNPC>(pActor->baseForm);
+
+
+
+
+                uint32_t oldBase = Cast<TESNPC>(pActor->baseForm)->GetTemplateBase()->formID;
+
+                using TRecalcLeveledActor = bool(Actor*, uint32_t);
+                POINTER_SKYRIMSE(TRecalcLeveledActor, fn, 37323);
+
+                //while (oldBase != 0x23AB7)
+                do
+                {
+                    bool result = fn(pActor, 0xFFFFFFFF);
+                
+                    uint32_t newBase = Cast<TESNPC>(pActor->baseForm)->GetTemplateBase()->formID;
+
+                    spdlog::info("Form id: {:X}, old base id: {:X}, new base id: {:X}, result: {}", pActor->formID, oldBase, newBase, result);
+
+                    oldBase = newBase;
+                } while (oldBase != 0x39D66);
+
+                
+                TP_THIS_FUNCTION(TQueueRef, void, void, TESObjectREFR*, uint64_t, bool);
+                POINTER_SKYRIMSE(TQueueRef, s_queueRef, 13057);
+
+                POINTER_SKYRIMSE(void*, s_modelLoader, 400332);
+
+                TiltedPhoques::ThisCall(s_queueRef, *s_modelLoader.Get(), pActor, 1, false);
+            }
+          
             #if TP_SKYRIM64
             PlayerCharacter* pPlayer = PlayerCharacter::Get();
             for (uint32_t handle : pPlayer->CurrentMapmarkerRefHandles)

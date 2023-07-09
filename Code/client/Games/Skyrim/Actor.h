@@ -241,6 +241,7 @@ struct Actor : TESObjectREFR
     void SetCombatTargetEx(Actor* apTarget) noexcept;
     void StartCombat(Actor* apTarget) noexcept;
     void StopCombat() noexcept;
+    bool TrySetLeveledActor(uint32_t aTargetBaseFormId) noexcept;
 
     enum ActorFlags
     {

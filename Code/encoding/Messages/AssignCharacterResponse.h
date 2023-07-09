@@ -21,8 +21,19 @@ struct AssignCharacterResponse final : ServerMessage
 
     bool operator==(const AssignCharacterResponse& achRhs) const noexcept
     {
-        return GetOpcode() == achRhs.GetOpcode() && Cookie == achRhs.Cookie && ServerId == achRhs.ServerId && PlayerId == achRhs.PlayerId && Position == achRhs.Position && CellId == achRhs.CellId && WorldSpaceId == achRhs.WorldSpaceId && AllActorValues == achRhs.AllActorValues &&
-               CurrentInventory == achRhs.CurrentInventory && Owner == achRhs.Owner && IsDead == achRhs.IsDead && IsWeaponDrawn == achRhs.IsWeaponDrawn;
+        return GetOpcode() == achRhs.GetOpcode() &&
+               Cookie == achRhs.Cookie &&
+               ServerId == achRhs.ServerId &&
+               PlayerId == achRhs.PlayerId &&
+               Position == achRhs.Position &&
+               CellId == achRhs.CellId &&
+               WorldSpaceId == achRhs.WorldSpaceId &&
+               AllActorValues == achRhs.AllActorValues &&
+               CurrentInventory == achRhs.CurrentInventory &&
+               BaseId == achRhs.BaseId &&
+               Owner == achRhs.Owner &&
+               IsDead == achRhs.IsDead &&
+               IsWeaponDrawn == achRhs.IsWeaponDrawn;
     }
 
     uint32_t Cookie{};
@@ -33,7 +44,8 @@ struct AssignCharacterResponse final : ServerMessage
     GameId WorldSpaceId{};
     ActorValues AllActorValues{};
     Inventory CurrentInventory{};
-    bool Owner{false};
+    GameId BaseId{};
+    bool Owner{ false };
     bool IsDead{};
     bool IsWeaponDrawn{};
 };
