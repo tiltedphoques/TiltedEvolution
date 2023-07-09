@@ -42,7 +42,7 @@
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Accepteer uitnodiging van {{name}}",
-      "LAUNCH_PARTY" : "Maak groep",
+      "LAUNCH_PARTY": "Maak groep",
       "EXPERIENCE_WARNING": "Voor een optimale 'questing' ervaring, lees de speelgids op onze wiki, welke je kan vinden op onze website, <b>skyrim-together.com</b>. Hier is een korte opsomming van de richtlijnen:",
       "GUIDELINES": {
         "PARTY": "Door het maken van een groep, word jij een soort van  \"host\", aka de groepsleider.",

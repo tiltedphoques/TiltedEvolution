@@ -14,6 +14,7 @@ MenuControls* MenuControls::GetInstance()
 
 #include <Services/TransportService.h>
 
-static TiltedPhoques::Initializer s_init([]() {
+static TiltedPhoques::Initializer s_init(
+    []() {
 
-});
+    });

@@ -2,7 +2,7 @@
 
 class CrashHandler
 {
-  public:
+public:
     CrashHandler();
     ~CrashHandler();
 

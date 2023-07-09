@@ -76,7 +76,7 @@ void DebugService::DrawPartyView()
                     }
                 }
             }
-            
+
             ImGui::PopID();
         }
 
@@ -87,10 +87,9 @@ void DebugService::DrawPartyView()
             auto playerCount = 0;
             for (auto& player : partyService.GetPlayers())
             {
-                if (std::find(std::begin(members), std::end(members), player.first) !=
-                    std::end(members))
+                if (std::find(std::begin(members), std::end(members), player.first) != std::end(members))
                     continue;
-                
+
                 playerCount++;
                 ImGui::BulletText(player.second.c_str());
                 ImGui::SameLine(100);
@@ -101,7 +100,7 @@ void DebugService::DrawPartyView()
                     m_transport.Send(request);
                 }
             }
-            
+
             if (playerCount == 0)
             {
                 ImGui::BulletText("<No one online>");
@@ -114,8 +113,7 @@ void DebugService::DrawPartyView()
         auto itor = invitations.find(player.first);
         if (itor != std::end(invitations))
         {
-            if (std::find(std::begin(members), std::end(members), player.first) !=
-                std::end(members))
+            if (std::find(std::begin(members), std::end(members), player.first) != std::end(members))
                 continue;
 
             ImGui::Text(player.second.c_str());
@@ -151,4 +149,3 @@ void DebugService::DrawPartyView()
 
     ImGui::End();
 }
-

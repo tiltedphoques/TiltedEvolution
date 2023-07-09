@@ -31,7 +31,7 @@ if has_config("unitybuild") then
 end
 
 add_requires(
-    "entt", 
+    "entt v3.10.0", 
     "recastnavigation", 
     "tiltedcore", 
     "cryptopp", 
@@ -45,17 +45,26 @@ add_requires(
 
 add_requireconfs("cpp-httplib", {configs = {ssl = true}})
 add_requireconfs("sentry-native", { configs = { backend = "crashpad" } })
+--[[
 add_requireconfs("magnum", { configs = { sdl2 = true }})
 add_requireconfs("magnum-integration",  { configs = { imgui = true }})
 add_requireconfs("magnum-integration.magnum",  { configs = { sdl2 = true }})
 add_requireconfs("magnum-integration.imgui", { override = true })
+--]]
 
 if is_plat("windows") then
     add_requires(
         "discord", 
-        "imgui", 
+        "imgui"
+    )
+    --[[
+    add_requires(
+        "discord", 
+        "imgui",
         "magnum", 
-        "magnum-integration")
+        "magnum-integration"
+    )
+    --]]
 end
 
 before_build(function (target)

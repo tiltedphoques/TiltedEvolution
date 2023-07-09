@@ -5,8 +5,8 @@ struct IDXGISwapChain;
 struct OverlayService;
 
 /**
-* @brief Runs the renderer for D3D11.
-*/
+ * @brief Runs the renderer for D3D11.
+ */
 struct RenderSystemD3D11
 {
     RenderSystemD3D11(OverlayService& aOverlay, ImguiService& aImguiService);
@@ -23,7 +23,6 @@ struct RenderSystemD3D11
     void OnReset(IDXGISwapChain* apSwapChain);
 
 private:
-
     IDXGISwapChain* m_pSwapChain;
     OverlayService& m_overlay;
     ImguiService& m_imguiService;

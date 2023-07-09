@@ -28,8 +28,8 @@ PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcep
     , m_partyAcceptInviteConnection(aDispatcher.sink<PacketEvent<PartyAcceptInviteRequest>>().connect<&PartyService::OnPartyAcceptInvite>(this))
     , m_partyLeaveConnection(aDispatcher.sink<PacketEvent<PartyLeaveRequest>>().connect<&PartyService::OnPartyLeave>(this))
     , m_partyCreateConnection(aDispatcher.sink<PacketEvent<PartyCreateRequest>>().connect<&PartyService::OnPartyCreate>(this))
-    , m_partyChangeLeaderConnection(aDispatcher.sink<PacketEvent<PartyChangeLeaderRequest>>().connect<&PartyService::OnPartyChangeLeader>(this)),
-      m_partyKickConnection(aDispatcher.sink<PacketEvent<PartyKickRequest>>().connect<&PartyService::OnPartyKick>(this))
+    , m_partyChangeLeaderConnection(aDispatcher.sink<PacketEvent<PartyChangeLeaderRequest>>().connect<&PartyService::OnPartyChangeLeader>(this))
+    , m_partyKickConnection(aDispatcher.sink<PacketEvent<PartyKickRequest>>().connect<&PartyService::OnPartyKick>(this))
 {
 }
 
@@ -100,7 +100,7 @@ void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PartyService::OnPartyCreate(const PacketEvent<PartyCreateRequest>& acPacket) noexcept
 {
-    Player *const player = acPacket.pPlayer;
+    Player* const player = acPacket.pPlayer;
     auto& inviterPartyComponent = player->GetParty();
 
     spdlog::debug("[PartyService]: Received request to create party");
@@ -126,7 +126,7 @@ void PartyService::OnPartyChangeLeader(const PacketEvent<PartyChangeLeaderReques
 
     spdlog::debug("[PartyService]: Received request to change party leader to {}", message.PartyMemberPlayerId);
 
-    if (!pNewLeader) 
+    if (!pNewLeader)
     {
         spdlog::error("[PartyService]: Player {} does not exist¨. Cannot change paty leader", message.PartyMemberPlayerId);
         return;
@@ -160,7 +160,7 @@ void PartyService::OnPartyKick(const PacketEvent<PartyKickRequest>& acPacket) no
 
     spdlog::debug("[PartyService]: Received request to change party leader to {}", message.PartyMemberPlayerId);
 
-    if (!pKick) 
+    if (!pKick)
     {
         spdlog::error("[PartyService]: Player {} does not exist. Cannot kick", message.PartyMemberPlayerId);
         return;
@@ -189,6 +189,7 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 
     notify.WorldSpaceId = acEvent.WorldSpaceId;
     notify.CellId = acEvent.CellId;
+    notify.CenterCoords = acEvent.CenterCoords;
 
     notify.Level = acEvent.pPlayer->GetLevel();
 

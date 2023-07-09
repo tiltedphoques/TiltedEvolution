@@ -11,7 +11,8 @@ struct AssignCharacterResponse final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kAssignCharacterResponse;
 
-    AssignCharacterResponse() : ServerMessage(Opcode)
+    AssignCharacterResponse()
+        : ServerMessage(Opcode)
     {
     }
 

@@ -295,8 +295,7 @@ void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoin
     TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
     if (!pObject)
     {
-        spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId,
-                     arEntry.BaseId.BaseId);
+        spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
         return;
     }
 
@@ -309,8 +308,7 @@ void Actor::DropObject(TESBoundObject* apObject, int32_t aCount, NiPoint3* apPoi
 {
     BGSObjectInstance object(apObject, nullptr);
 
-    TP_THIS_FUNCTION(TDropObject, BSPointerHandle<TESObjectREFR>*, Actor, BSPointerHandle<TESObjectREFR>*,
-                     BGSObjectInstance*, void*, int32_t, NiPoint3*, NiPoint3*);
+    TP_THIS_FUNCTION(TDropObject, BSPointerHandle<TESObjectREFR>*, Actor, BSPointerHandle<TESObjectREFR>*, BGSObjectInstance*, void*, int32_t, NiPoint3*, NiPoint3*);
     POINTER_FALLOUT4(TDropObject, dropObject, 1482294);
 
     BSPointerHandle<TESObjectREFR> result{};
@@ -366,12 +364,10 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     }
 }
 
-TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue,
-                 ActorValueInfo* apActorValueInfo);
+TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue, ActorValueInfo* apActorValueInfo);
 static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
-void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue,
-                      ActorValueInfo* apActorValueInfo)
+void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue, ActorValueInfo* apActorValueInfo)
 {
     const auto* pValueModEffect = Cast<ValueModifierEffect>(apThis);
 
@@ -439,29 +435,31 @@ void Actor::SpeakSound(const char* pFile)
     TiltedPhoques::ThisCall(RealSpeakSoundFunction, this, pFile, handle, nullptr, 0, false, nullptr, false, true, false);
 }
 
-static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
-    POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 1027501);
-    POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 1331729);
-    POINTER_FALLOUT4(TActorDestructor, s_actorDtor, 1104083);
-    POINTER_FALLOUT4(TDamageActor, s_damageActor, 1539011);
-    // TODO: not sure about this ID, seems to interfere with jump when hooked?
-    POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 703727);
-    POINTER_FALLOUT4(TRunDetection, s_runDetection, 906785);
-    POINTER_FALLOUT4(TSpeakSoundFunction, s_speakSoundFunction, 1567997);
+static TiltedPhoques::Initializer s_specificReferencesHooks(
+    []()
+    {
+        POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 1027501);
+        POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 1331729);
+        POINTER_FALLOUT4(TActorDestructor, s_actorDtor, 1104083);
+        POINTER_FALLOUT4(TDamageActor, s_damageActor, 1539011);
+        // TODO: not sure about this ID, seems to interfere with jump when hooked?
+        POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 703727);
+        POINTER_FALLOUT4(TRunDetection, s_runDetection, 906785);
+        POINTER_FALLOUT4(TSpeakSoundFunction, s_speakSoundFunction, 1567997);
 
-    RealActorConstructor = s_actorCtor.Get();
-    RealActorConstructor2 = s_actorCtor2.Get();
-    RealActorDestructor = s_actorDtor.Get();
-    RealDamageActor = s_damageActor.Get();
-    RealApplyActorEffect = s_applyActorEffect.Get();
-    RealRunDetection = s_runDetection.Get();
-    RealSpeakSoundFunction = s_speakSoundFunction.Get();
+        RealActorConstructor = s_actorCtor.Get();
+        RealActorConstructor2 = s_actorCtor2.Get();
+        RealActorDestructor = s_actorDtor.Get();
+        RealDamageActor = s_damageActor.Get();
+        RealApplyActorEffect = s_applyActorEffect.Get();
+        RealRunDetection = s_runDetection.Get();
+        RealSpeakSoundFunction = s_speakSoundFunction.Get();
 
-    TP_HOOK(&RealActorConstructor, HookActorContructor);
-    TP_HOOK(&RealActorConstructor2, HookActorContructor2);
-    TP_HOOK(&RealActorDestructor, HookActorDestructor);
-    TP_HOOK(&RealDamageActor, HookDamageActor);
-    TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
-    TP_HOOK(&RealRunDetection, HookRunDetection);
-    TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
-});
+        TP_HOOK(&RealActorConstructor, HookActorContructor);
+        TP_HOOK(&RealActorConstructor2, HookActorContructor2);
+        TP_HOOK(&RealActorDestructor, HookActorDestructor);
+        TP_HOOK(&RealDamageActor, HookDamageActor);
+        TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
+        TP_HOOK(&RealRunDetection, HookRunDetection);
+        TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
+    });

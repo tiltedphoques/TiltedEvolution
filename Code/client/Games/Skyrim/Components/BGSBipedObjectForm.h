@@ -24,4 +24,3 @@ struct BGSBipedObjectForm : BaseFormComponent
     uint32_t bitfield;
     uint32_t unk8;
 };
-

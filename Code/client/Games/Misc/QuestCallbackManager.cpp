@@ -1,6 +1,5 @@
 #include <TiltedOnlinePCH.h>
 
-
 #include <Games/Misc/QuestCallbackManager.h>
 
 QuestCallbackManager* QuestCallbackManager::Get() noexcept

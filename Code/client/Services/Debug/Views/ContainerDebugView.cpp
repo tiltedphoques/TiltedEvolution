@@ -62,8 +62,7 @@ void DebugService::DrawContainerDebugView()
 
     ImGui::Begin("Inventory");
 
-    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32,
-                       ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
 
     if (ImGui::Button("Look up"))
     {
@@ -96,26 +95,27 @@ void DebugService::DrawContainerDebugView()
 
             if (ImGui::Button("Equip"))
             {
-                World::Get().GetRunner().Queue([entry, actorId = pActor->formID]() {
-                    auto& modSystem = World::Get().GetModSystem();
-                    uint32_t itemId = modSystem.GetGameId(entry.BaseId);
-                    TESForm* pItem = TESForm::GetById(itemId);
-                    Actor* pActor = Cast<Actor>(TESForm::GetById(actorId));
-                    EquipManager::Get()->Equip(pActor, pItem, nullptr, entry.Count,
-                                               DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-                });
+                World::Get().GetRunner().Queue(
+                    [entry, actorId = pActor->formID]()
+                    {
+                        auto& modSystem = World::Get().GetModSystem();
+                        uint32_t itemId = modSystem.GetGameId(entry.BaseId);
+                        TESForm* pItem = TESForm::GetById(itemId);
+                        Actor* pActor = Cast<Actor>(TESForm::GetById(actorId));
+                        EquipManager::Get()->Equip(pActor, pItem, nullptr, entry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+                    });
             }
             if (ImGui::Button("Unequip"))
             {
-                World::Get().GetRunner().Queue([entry, actorId = pActor->formID]() {
-                    auto& modSystem = World::Get().GetModSystem();
-                    uint32_t itemId = modSystem.GetGameId(entry.BaseId);
-                    TESForm* pItem = TESForm::GetById(itemId);
-                    Actor* pActor = Cast<Actor>(TESForm::GetById(actorId));
-                    EquipManager::Get()->UnEquip(pActor, pItem, nullptr, entry.Count,
-                                                 DefaultObjectManager::Get().rightEquipSlot, false, true, false, false,
-                                                 nullptr);
-                });
+                World::Get().GetRunner().Queue(
+                    [entry, actorId = pActor->formID]()
+                    {
+                        auto& modSystem = World::Get().GetModSystem();
+                        uint32_t itemId = modSystem.GetGameId(entry.BaseId);
+                        TESForm* pItem = TESForm::GetById(itemId);
+                        Actor* pActor = Cast<Actor>(TESForm::GetById(actorId));
+                        EquipManager::Get()->UnEquip(pActor, pItem, nullptr, entry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false, nullptr);
+                    });
             }
 
             int itemCount = entry.Count;
@@ -180,8 +180,7 @@ void DebugService::DrawContainerDebugView()
 
     ImGui::Begin("Inventory");
 
-    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32,
-                       ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
 
     if (ImGui::Button("Look up"))
     {

@@ -10,8 +10,10 @@
 #include <Structs/Skyrim/AnimationGraphDescriptor_VampireLordBehavior.h>
 
 #include <Events/AddTargetEvent.h>
+#include <Events/HitEvent.h>
 
 #include <Games/Overrides.h>
+#include <PlayerCharacter.h>
 
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
 TP_THIS_FUNCTION(TCheckAddEffectTargetData, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
@@ -33,9 +35,16 @@ bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
 
 bool MagicTarget::AddTargetData::ShouldSync()
 {
-    return !pEffectItem->IsSummonEffect() &&
-           !pSpell->IsInvisibilitySpell() &&
-           !pSpell->IsWardSpell();
+    return !pEffectItem->IsSummonEffect() && !pSpell->IsInvisibilitySpell() && !pSpell->IsWardSpell();
+}
+
+// Some effects are player specific, and do not need to be synced.
+bool MagicTarget::AddTargetData::IsForbiddenEffect(Actor* apTarget)
+{
+    if (apTarget != PlayerCharacter::Get())
+        return false;
+
+    return pEffectItem->IsNightVisionEffect();
 }
 
 Actor* MagicTarget::GetTargetAsActor()
@@ -49,7 +58,7 @@ Actor* MagicTarget::GetTargetAsActor()
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
     Actor* pTargetActor = apThis->GetTargetAsActor();
-    if (!pTargetActor)
+    if (!pTargetActor || arData.IsForbiddenEffect(pTargetActor))
         return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
 
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
@@ -116,6 +125,8 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         }
         else if (pCasterExtension->IsRemotePlayer())
         {
+            // Send out a HitEvent because TakeDamage is never triggered.
+            World::Get().GetRunner().Trigger(HitEvent(arData.pCaster->formID, pTargetActor->formID));
             return false;
         }
     }
@@ -146,17 +157,18 @@ bool TP_MAKE_THISCALL(HookFindTargets, MagicCaster, float afEffectivenessMult, i
     return TiltedPhoques::ThisCall(RealFindTargets, apThis, afEffectivenessMult, aruiTargetCount, apSource, abLoadCast, abAdjust);
 }
 
-static TiltedPhoques::Initializer s_magicTargetHooks([]() {
-    POINTER_SKYRIMSE(TAddTarget, addTarget, 34526);
-    POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 34525);
-    POINTER_SKYRIMSE(TFindTargets, findTargets, 34410);
+static TiltedPhoques::Initializer s_magicTargetHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TAddTarget, addTarget, 34526);
+        POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 34525);
+        POINTER_SKYRIMSE(TFindTargets, findTargets, 34410);
 
-    RealAddTarget = addTarget.Get();
-    RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
-    RealFindTargets = findTargets.Get();
+        RealAddTarget = addTarget.Get();
+        RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
+        RealFindTargets = findTargets.Get();
 
-    TP_HOOK(&RealAddTarget, HookAddTarget);
-    TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
-    TP_HOOK(&RealFindTargets, HookFindTargets);
-});
-
+        TP_HOOK(&RealAddTarget, HookAddTarget);
+        TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
+        TP_HOOK(&RealFindTargets, HookFindTargets);
+    });

@@ -5,15 +5,14 @@
 #include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
 
-#include <Events/CommandEvent.h>
-
 #include <Messages/SendChatMessageRequest.h>
 #include <Messages/TeleportRequest.h>
 
 #include <World.h>
 
 OverlayClient::OverlayClient(TransportService& aTransport, TiltedPhoques::OverlayRenderHandler* apHandler)
-    : TiltedPhoques::OverlayClient(apHandler), m_transport(aTransport)
+    : TiltedPhoques::OverlayClient(apHandler)
+    , m_transport(aTransport)
 {
 }
 
@@ -21,8 +20,7 @@ OverlayClient::~OverlayClient() noexcept
 {
 }
 
-bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                                             CefProcessId source_process, CefRefPtr<CefProcessMessage> message)
+bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefProcessId source_process, CefRefPtr<CefProcessMessage> message)
 {
     if (message->GetName() == "ui-event")
     {
@@ -95,9 +93,7 @@ void OverlayClient::ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs)
 
     std::string endpoint = baseIp + ":" + std::to_string(port);
 
-    World::Get().GetRunner().Queue([endpoint] { 
-        World::Get().GetTransport().Connect(endpoint);
-    });
+    World::Get().GetRunner().Queue([endpoint] { World::Get().GetTransport().Connect(endpoint); });
 }
 
 void OverlayClient::ProcessDisconnectMessage()
@@ -107,20 +103,15 @@ void OverlayClient::ProcessDisconnectMessage()
 
 void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
 {
-    std::string contents = aEventArgs->GetString(0).ToString();
+    std::string contents = aEventArgs->GetString(1).ToString();
     if (!contents.empty())
     {
-        if (contents[0] == '/')
-        {
-            World::Get().GetRunner().Trigger(CommandEvent(std::move(String(contents))));
-        }
-        else
-        {
-            SendChatMessageRequest messageRequest;
-            messageRequest.ChatMessage = aEventArgs->GetString(0).ToString();
-            spdlog::debug("Received Message from UI and will send it to server: " + messageRequest.ChatMessage);
-            m_transport.Send(messageRequest);
-        }
+        SendChatMessageRequest messageRequest;
+        messageRequest.MessageType = static_cast<ChatMessageType>(aEventArgs->GetInt(0));
+        messageRequest.ChatMessage = contents;
+
+        spdlog::info(L"Send chat message of type {}: '{}' ", messageRequest.MessageType, aEventArgs->GetString(1).ToWString());
+        m_transport.Send(messageRequest);
     }
 }
 

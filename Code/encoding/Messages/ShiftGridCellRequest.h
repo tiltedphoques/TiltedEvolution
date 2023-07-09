@@ -10,7 +10,8 @@ struct ShiftGridCellRequest final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kShiftGridCellRequest;
 
-    ShiftGridCellRequest() : ClientMessage(Opcode)
+    ShiftGridCellRequest()
+        : ClientMessage(Opcode)
     {
     }
 
@@ -19,15 +20,8 @@ struct ShiftGridCellRequest final : ClientMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const ShiftGridCellRequest& acRhs) const noexcept
-    {
-        return GetOpcode() == acRhs.GetOpcode() &&
-            WorldSpaceId == acRhs.WorldSpaceId &&
-            PlayerCell == acRhs.PlayerCell &&
-            CenterCoords == acRhs.CenterCoords &&
-            Cells == acRhs.Cells;
-    }
-    
+    bool operator==(const ShiftGridCellRequest& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && WorldSpaceId == acRhs.WorldSpaceId && PlayerCell == acRhs.PlayerCell && CenterCoords == acRhs.CenterCoords && Cells == acRhs.Cells; }
+
     GameId WorldSpaceId;
     GameId PlayerCell;
     GridCellCoords CenterCoords;

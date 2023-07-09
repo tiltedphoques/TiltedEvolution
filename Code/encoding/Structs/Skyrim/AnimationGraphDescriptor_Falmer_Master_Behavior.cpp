@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_Falmer_Master_Behavior.h>
 
-
-
 AnimationGraphDescriptor_Falmer_Master_Behavior::AnimationGraphDescriptor_Falmer_Master_Behavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -84,29 +82,33 @@ AnimationGraphDescriptor_Falmer_Master_Behavior::AnimationGraphDescriptor_Falmer
     };
 
     uint64_t key = 3009402738794250552;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbEquipOk,
-            kbAnimationDriven,
-            kIsAttackReady,
-            kIsBlocking,
-            kbAllowRotation,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbHeadTracking,
-            kbWeapReady,
-            kIsBashing,
+            {
+                kbEquipOk,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kIsBlocking,
+                kbAllowRotation,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kbHeadTracking,
+                kbWeapReady,
+                kIsBashing,
             },
-        {kSpeed,
-            kTurnDelta,
-            kDirection,
-            kSpeedSampled,
+            {
+                kSpeed,
+                kTurnDelta,
+                kDirection,
+                kSpeedSampled,
             },
-        {kcurrentDefaultState,
-            kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiCombatState,
+            {
+                kcurrentDefaultState,
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiCombatState,
             }));
 }

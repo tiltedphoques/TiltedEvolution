@@ -124,6 +124,14 @@
       "LANGUAGE": "Langues",
       "DEBUG": "Debug",
       "SHOW_DEBUG_INFO": "Afficher les informations de débogage",
+      "FONT_SIZE": "Taille de la police",
+      "FONT_SIZES": {
+        "XS": "Très petite",
+        "S": "Petite",
+        "M": "Moyenne",
+        "L": "Grande",
+        "XL": "Très grande"
+      },
       "BACK": "Retour"
     }
   },
@@ -132,6 +140,10 @@
       "CONNECTION_LOST": "Connexion perdue, tentative de reconnexion. {{remainingReconnectionAttempt}} tentatives.",
       "CONNECTED": "Connexion réussie au serveur.",
       "DISCONNECTED": "Déconnectée du serveur."
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "Commandes de chat disponibles : {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' n'est pas reconnu en tant que commande."
     },
     "GROUP": {
       "LEVEL_UP": "{{name}} a atteint le niveau {{level}}.",

@@ -86,14 +86,15 @@ void TP_MAKE_THISCALL(HookFire, void, TESObjectREFR* apSource, uint32_t aEquipIn
     return TiltedPhoques::ThisCall(RealFire, apThis, apSource, aEquipIndex, apAmmo, apPoison);
 }
 
-static TiltedPhoques::Initializer s_projectileHooks([]() {
-    POINTER_FALLOUT4(TLaunch, s_launch, 1452335);
-    POINTER_FALLOUT4(TFire, fire, 1056038);
+static TiltedPhoques::Initializer s_projectileHooks(
+    []()
+    {
+        POINTER_FALLOUT4(TLaunch, s_launch, 1452335);
+        POINTER_FALLOUT4(TFire, fire, 1056038);
 
-    RealLaunch = s_launch.Get();
-    RealFire = fire.Get();
+        RealLaunch = s_launch.Get();
+        RealFire = fire.Get();
 
-    TP_HOOK(&RealLaunch, HookLaunch);
-    TP_HOOK(&RealFire, HookFire);
-});
-
+        TP_HOOK(&RealLaunch, HookLaunch);
+        TP_HOOK(&RealFire, HookFire);
+    });

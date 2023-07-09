@@ -10,6 +10,7 @@ import { environment } from '../environments/environment';
 import { ActionButtonsComponent } from './components/action-buttons/action-buttons.component';
 import { ChatComponent } from './components/chat/chat.component';
 import { ConnectComponent } from './components/connect/connect.component';
+import { ConnectPasswordComponent } from './components/connect-password/connect-password.component';
 import { DebugComponent } from './components/debug/debug.component';
 import { DisconnectComponent } from './components/disconnect/disconnect.component';
 import { DropdownOptionComponent } from './components/dropdown/dropdown-option.component';
@@ -36,6 +37,7 @@ import { SliderDirective } from './directives/slider.directive';
 import { CheckboxDirective } from './directives/checkbox.directive';
 import { AssetService } from './services/asset.service';
 import { ClientService } from './services/client.service';
+import { ChatService } from './services/chat.service';
 import { ErrorService } from './services/error.service';
 import { GroupService } from './services/group.service';
 import { PlayerListService } from './services/player-list.service';
@@ -44,11 +46,11 @@ import { SoundService } from './services/sound.service';
 import { StoreService } from './services/store.service';
 import { TranslocoRootModule } from './transloco-root.module';
 
-
 @NgModule({
   declarations: [
     ChatComponent,
     ConnectComponent,
+    ConnectPasswordComponent,
     DebugComponent,
     DisconnectComponent,
     DropdownComponent,
@@ -89,6 +91,7 @@ import { TranslocoRootModule } from './transloco-root.module';
   ],
   providers: [
     ClientService,
+    ChatService,
     AssetService,
     SoundService,
     ErrorService,
@@ -101,5 +104,4 @@ import { TranslocoRootModule } from './transloco-root.module';
   ],
   bootstrap: [RootComponent],
 })
-export class AppModule {
-}
+export class AppModule {}

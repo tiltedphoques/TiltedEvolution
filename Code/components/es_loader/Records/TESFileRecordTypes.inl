@@ -59,7 +59,7 @@ enum class ChunkId : uint32_t
     MO3F_ID = 0x46334f4d,
     MO4F_ID = 0x46344f4d,
     MO5F_ID = 0x46354f4d,
-    CVPA_ID = 0x41505643,
+    CVPA_ID = 0x41505643, //
     CDIX_ID = 0x58494443,
     FVPA_ID = 0x41505646,
     KFFZ_ID = 0x5a46464b,

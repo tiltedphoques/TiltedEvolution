@@ -29,6 +29,7 @@
 #include <AI/AIProcess.h>
 #include <Magic/MagicCaster.h>
 #include <Sky/Sky.h>
+#include <Games/Combat/CombatController.h>
 
 #include <Events/LockChangeEvent.h>
 #include <Events/InitPackageEvent.h>
@@ -85,7 +86,7 @@ float* GetVATSSelectTargetTimeMultiplier() noexcept
     return s_vatsSelectTargetMult.Get();
 }
 #endif
-}
+} // namespace Settings
 
 namespace GameplayFormulas
 {
@@ -111,13 +112,13 @@ float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexce
 
     // TODO(cosideci): this seems problematic? It may not register the kill for others?
     // Disabled for now, cause this check seems to have totally broken everything, let's see what happens.
-    //if (!aKillMove || multiplier < 1.0)
-        realDamage = aDamage * multiplier;
+    // if (!aKillMove || multiplier < 1.0)
+    realDamage = aDamage * multiplier;
 
     return realDamage;
 }
 
-}
+} // namespace GameplayFormulas
 
 // TODO: ft
 void FadeOutGame(bool aFadingOut, bool aBlackFade, float aFadeDuration, bool aRemainVisible, float aSecondsToFade) noexcept
@@ -133,7 +134,7 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 {
     TESObjectREFR* pResult = nullptr;
 
-    using TGetRefrByHandle = void(uint32_t& aHandle, TESObjectREFR*& apResult);
+    using TGetRefrByHandle = void(uint32_t & aHandle, TESObjectREFR * &apResult);
 
     POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 17201);
     POINTER_FALLOUT4(TGetRefrByHandle, s_getRefrByHandle, 1152089);
@@ -197,9 +198,8 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
             if (!pGraph)
                 return;
-        
-            if (!pGraph->behaviorGraph || !pGraph->behaviorGraph->stateMachine ||
-                !pGraph->behaviorGraph->stateMachine->name)
+
+            if (!pGraph->behaviorGraph || !pGraph->behaviorGraph->stateMachine || !pGraph->behaviorGraph->stateMachine->name)
                 return;
 
             auto* pExtendedActor = pActor->GetExtension();
@@ -212,8 +212,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
                     pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey();
             }
 
-            auto pDescriptor =
-                AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
+            auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
             if (!pDescriptor)
                 return;
@@ -222,7 +221,7 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
             if (!pVariableSet)
                 return;
-            
+
             aVariables.Booleans = 0;
 
             aVariables.Floats.resize(pDescriptor->FloatLookupTable.size());
@@ -321,9 +320,8 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
 
             if (!pGraph)
                 return;
-            
-            if (!pGraph->behaviorGraph || !pGraph->behaviorGraph->stateMachine ||
-                !pGraph->behaviorGraph->stateMachine->name)
+
+            if (!pGraph->behaviorGraph || !pGraph->behaviorGraph->stateMachine || !pGraph->behaviorGraph->stateMachine->name)
                 return;
 
             auto* pActor = Cast<Actor>(this);
@@ -334,17 +332,16 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
             if (pExtendedActor->GraphDescriptorHash == 0)
                 pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey();
 
-            auto pDescriptor =
-                AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
+            auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
             if (!pDescriptor)
                 return;
 
             const auto* pVariableSet = pGraph->behaviorGraph->animationVariables;
-            
+
             if (!pVariableSet)
                 return;
-            
+
             for (size_t i = 0; i < pDescriptor->BooleanLookUpTable.size(); ++i)
             {
                 const auto idx = pDescriptor->BooleanLookUpTable[i];
@@ -459,8 +456,7 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
 {
     ScopedReferencesOverride recursionGuard;
 
-    TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*,
-                     const NiPoint3&, const NiPoint3&);
+    TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*, const NiPoint3&, const NiPoint3&);
 
     POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 56626);
     POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 1332435);
@@ -508,7 +504,6 @@ uint16_t Actor::GetLevel() const noexcept
     POINTER_FALLOUT4(TGetLevel, s_getLevel, 661618);
     return TiltedPhoques::ThisCall(s_getLevel, this);
 }
-
 
 void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
 {
@@ -644,12 +639,12 @@ void Actor::SetLevelMod(uint32_t aLevel) noexcept
 
 ActorExtension* Actor::GetExtension() noexcept
 {
-    if(AsExActor())
+    if (AsExActor())
     {
         return static_cast<ActorExtension*>(AsExActor());
     }
 
-    if(AsExPlayerCharacter())
+    if (AsExPlayerCharacter())
     {
         return static_cast<ActorExtension*>(AsExPlayerCharacter());
     }
@@ -776,10 +771,10 @@ void Actor::SetPlayerRespawnMode(bool aSet) noexcept
 
 void Actor::SetEssentialEx(bool aSet) noexcept
 {
-    SetEssential(true);
+    SetEssential(aSet);
     TESNPC* pBase = Cast<TESNPC>(baseForm);
     if (pBase)
-        pBase->actorData.SetEssential(true);
+        pBase->actorData.SetEssential(aSet);
 }
 
 void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
@@ -849,6 +844,15 @@ void Actor::StartCombatEx(Actor* apTarget) noexcept
     }
 }
 
+// TODO: ft
+void Actor::SetCombatTargetEx(Actor* apTarget) noexcept
+{
+#if TP_SKYRIM64
+    if (pCombatController)
+        pCombatController->SetTarget(apTarget);
+#endif
+}
+
 void Actor::StartCombat(Actor* apTarget) noexcept
 {
 #if TP_SKYRIM64
@@ -890,6 +894,17 @@ void Sky::ForceWeather(TESWeather* apWeather) noexcept
     TiltedPhoques::ThisCall(RealForceWeather, this, apWeather, true);
 }
 
+void Sky::ReleaseWeatherOverride() noexcept
+{
+#if TP_SKYRIM64
+    TP_THIS_FUNCTION(TReleaseWeatherOverride, void, Sky);
+    POINTER_SKYRIMSE(TReleaseWeatherOverride, releaseWeatherOverride, 26244);
+    // TODO(ft)
+
+    TiltedPhoques::ThisCall(releaseWeatherOverride, this);
+#endif
+}
+
 void Sky::ResetWeather() noexcept
 {
     TP_THIS_FUNCTION(TResetWeather, void, Sky);
@@ -927,7 +942,7 @@ char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
 
 void TP_MAKE_THISCALL(HookRotateX, TESObjectREFR, float aAngle)
 {
-    if(apThis->formType == Actor::Type)
+    if (apThis->formType == Actor::Type)
     {
         const auto pActor = static_cast<Actor*>(apThis);
         // We don't allow remotes to move
@@ -1032,27 +1047,31 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
         formId = pObject->formID;
 
     // TODO: ft
-    //World::Get().GetDebugService().SetDebugId(formId);
+    // World::Get().GetDebugService().SetDebugId(formId);
 
     return TiltedPhoques::ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }
 
 void TP_MAKE_THISCALL(HookSetWeather, Sky, TESWeather* apWeather, bool abOverride, bool abAccelerate)
 {
+#if 0
     spdlog::debug("Set weather form id: {:X}, override: {}, accelerate: {}", apWeather ? apWeather->formID : 0, abOverride, abAccelerate);
 
     if (!Sky::s_shouldUpdateWeather)
         return;
+#endif
 
     TiltedPhoques::ThisCall(RealSetWeather, apThis, apWeather, abOverride, abAccelerate);
 }
 
 void TP_MAKE_THISCALL(HookForceWeather, Sky, TESWeather* apWeather, bool abOverride)
 {
+#if 0
     spdlog::debug("Force weather form id: {:X}, override: {}", apWeather ? apWeather->formID : 0, abOverride);
 
     if (!Sky::s_shouldUpdateWeather)
         return;
+#endif
 
     TiltedPhoques::ThisCall(RealForceWeather, apThis, apWeather, abOverride);
 }
@@ -1062,13 +1081,27 @@ static TUpdateWeather* RealUpdateWeather = nullptr;
 
 void TP_MAKE_THISCALL(HookUpdateWeather, Sky)
 {
+#if 0
     if (!Sky::s_shouldUpdateWeather)
         return;
+#endif
 
     TiltedPhoques::ThisCall(RealUpdateWeather, apThis);
 }
 
-TiltedPhoques::Initializer s_referencesHooks([]()
+TP_THIS_FUNCTION(TAddDeathItems, void, Actor);
+static TAddDeathItems* RealAddDeathItems = nullptr;
+
+void TP_MAKE_THISCALL(HookAddDeathItems, Actor)
+{
+    if (apThis->GetExtension()->IsRemote())
+        return;
+
+    TiltedPhoques::ThisCall(RealAddDeathItems, apThis);
+}
+
+TiltedPhoques::Initializer s_referencesHooks(
+    []()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
         POINTER_FALLOUT4(TSetPosition, s_setPosition, 1101833);
@@ -1108,6 +1141,10 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         // TODO(ft): verify
         POINTER_FALLOUT4(TUpdateWeather, updateWeather, 1278860);
 
+        POINTER_SKYRIMSE(TAddDeathItems, addDeathItems, 37198);
+        // TODO(ft): verify
+        POINTER_FALLOUT4(TAddDeathItems, addDeathItems, 708754);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
@@ -1116,13 +1153,14 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         RealLockChange = s_lockChange.Get();
         RealCheckForNewPackage = s_checkForNewPackage.Get();
         RealInitFromPackage = s_initFromPackage.Get();
-        // TODO: ft
-    #if TP_SKYRIM64
+    // TODO: ft
+#if TP_SKYRIM64
         RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
-    #endif
+#endif
         RealSetWeather = setWeather.Get();
         RealForceWeather = forceWeather.Get();
         RealUpdateWeather = updateWeather.Get();
+        RealAddDeathItems = addDeathItems.Get();
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -1136,5 +1174,5 @@ TiltedPhoques::Initializer s_referencesHooks([]()
         TP_HOOK(&RealSetWeather, HookSetWeather);
         TP_HOOK(&RealForceWeather, HookForceWeather);
         TP_HOOK(&RealUpdateWeather, HookUpdateWeather);
+        TP_HOOK(&RealAddDeathItems, HookAddDeathItems);
     });
-

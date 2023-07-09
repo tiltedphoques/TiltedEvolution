@@ -8,17 +8,16 @@ struct UpdateEvent;
 struct RequestQuestUpdate;
 
 /**
-* @brief Dispatch quest sync messages.
-* 
-* This service is currently not in use.
-*/
+ * @brief Dispatch quest sync messages.
+ *
+ * This service is currently not in use.
+ */
 class QuestService
 {
 public:
     QuestService(World& aWorld, entt::dispatcher& aDispatcher);
 
 private:
-
     void OnQuestChanges(const PacketEvent<RequestQuestUpdate>& aChanges) noexcept;
 
     World& m_world;

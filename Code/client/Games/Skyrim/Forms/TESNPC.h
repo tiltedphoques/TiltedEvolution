@@ -48,7 +48,7 @@ struct TESNPC : TESActorBase
         BGSTextureSet* headTexture;
     };
 
-    TESRaceForm    raceForm;
+    TESRaceForm raceForm;
     BGSOverridePackCollection overridePacks;
     void* unkDC;
     uint8_t unk0E0[0x24];
@@ -82,7 +82,7 @@ struct TESNPC : TESActorBase
 
     struct Color
     {
-        uint8_t   red, green, blue;
+        uint8_t red, green, blue;
     } color;
 
     GameArray<BGSRelationship*>* relationships;

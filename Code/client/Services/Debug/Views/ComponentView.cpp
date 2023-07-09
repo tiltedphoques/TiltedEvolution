@@ -65,7 +65,8 @@ static __declspec(noinline) bool DrawInWorldSpace(TESObjectREFR* apRefr, ImVec2&
     };
 
     // implements HUDMarkerData::CalculateFloatingMarkerPositionAndVisiblity from FO4
-    auto IsVisible = [](const ImVec2& aVec2, const NiRect<float>& aScreenBounds, const float zCoordGame) {
+    auto IsVisible = [](const ImVec2& aVec2, const NiRect<float>& aScreenBounds, const float zCoordGame)
+    {
         if (aVec2.x >= aScreenBounds.left && aVec2.x <= aScreenBounds.right)
         {
             if (aVec2.y >= aScreenBounds.top &&
@@ -109,9 +110,7 @@ void DebugService::DrawComponentDebugView()
     if (!m_formId)
         return;
 
-    auto entityIt = std::find_if(view.begin(), view.end(), [id = m_formId, view](auto entity) {
-        return view.get<FormIdComponent>(entity).Id == id;
-    });
+    auto entityIt = std::find_if(view.begin(), view.end(), [id = m_formId, view](auto entity) { return view.get<FormIdComponent>(entity).Id == id; });
 
     if (entityIt == view.end())
         return;
@@ -128,16 +127,14 @@ void DebugService::DrawComponentDebugView()
 
             if (auto serverIdRes = Utils::GetServerId(entity))
             {
-                ImGui::InputScalar("Server ID", ImGuiDataType_U32, &(*serverIdRes), 0, 0, "%" PRIx32,
-                                   ImGuiInputTextFlags_CharsHexadecimal);
+                ImGui::InputScalar("Server ID", ImGuiDataType_U32, &(*serverIdRes), 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
             }
 
             if (auto* pComponent = m_world.try_get<LocalComponent>(entity))
             {
                 if (ImGui::CollapsingHeader("LocalComponent"))
                 {
-                    ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &pComponent->IsDead, 0, 0, "%" PRIx8,
-                                       ImGuiInputTextFlags_CharsHexadecimal);
+                    ImGui::InputScalar("Is dead?", ImGuiDataType_U8, &pComponent->IsDead, 0, 0, "%" PRIx8, ImGuiInputTextFlags_CharsHexadecimal);
                 }
             }
 
@@ -154,8 +151,7 @@ void DebugService::DrawComponentDebugView()
             {
                 if (ImGui::CollapsingHeader("RemoteComponent"))
                 {
-                    ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &pComponent->CachedRefId, 0, 0,
-                                       "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
+                    ImGui::InputScalar("Cached ref ID", ImGuiDataType_U32, &pComponent->CachedRefId, 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);
                 }
             }
 
@@ -163,8 +159,7 @@ void DebugService::DrawComponentDebugView()
             {
                 if (ImGui::CollapsingHeader("InterpolationComponent"))
                 {
-                    ImGui::Text("%f,%f,%f\n", pComponent->Position.x, pComponent->Position.y,
-                                pComponent->Position.z);
+                    ImGui::Text("%f,%f,%f\n", pComponent->Position.x, pComponent->Position.y, pComponent->Position.z);
                 }
             }
 
@@ -183,18 +178,13 @@ void DebugService::DrawComponentDebugView()
             {
                 if (ImGui::CollapsingHeader("RemoteAnimationComponent"))
                 {
-                    ImGui::Text("EventName: %s\nTargetEventName: %s\nState1: %u\nState2: %u",
-                                pComponent->LastRanAction.EventName.c_str(),
-                                pComponent->LastRanAction.TargetEventName.c_str(),
-                                pComponent->LastRanAction.State1,
-                                pComponent->LastRanAction.State2);
+                    ImGui::Text("EventName: %s\nTargetEventName: %s\nState1: %u\nState2: %u", pComponent->LastRanAction.EventName.c_str(), pComponent->LastRanAction.TargetEventName.c_str(), pComponent->LastRanAction.State1, pComponent->LastRanAction.State2);
                 }
                 // ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 30.f, screenPos,
                 //                                         ImColor::ImColor(255.f, 0.f, 0.f), buf);
             }
 
             ImGui::End();
-
         }
     }
 }

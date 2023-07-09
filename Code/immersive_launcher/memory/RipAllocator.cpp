@@ -8,7 +8,7 @@ static uint8_t* globalPointer = &highrip[0];
 
 void* RipAllocateN(size_t blockLength)
 {
-    void *p = static_cast<void*>(globalPointer);
+    void* p = static_cast<void*>(globalPointer);
     globalPointer += blockLength;
     return p;
 }
@@ -16,5 +16,4 @@ void* RipAllocateN(size_t blockLength)
 // TBD
 void RipFree(void* apBlock)
 {
-
 }

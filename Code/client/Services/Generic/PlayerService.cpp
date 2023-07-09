@@ -8,6 +8,7 @@
 #include <Events/GridCellChangeEvent.h>
 #include <Events/CellChangeEvent.h>
 #include <Events/PlayerDialogueEvent.h>
+#include <Events/PlayerMapMarkerUpdateEvent.h>
 #include <Events/PlayerLevelEvent.h>
 #include <Events/PartyJoinedEvent.h>
 #include <Events/PartyLeftEvent.h>
@@ -17,20 +18,29 @@
 #include <Messages/ShiftGridCellRequest.h>
 #include <Messages/EnterExteriorCellRequest.h>
 #include <Messages/EnterInteriorCellRequest.h>
+#include <Messages/NotifyPlayerLeft.h>
+#include <Messages/NotifyPlayerJoined.h>
 #include <Messages/PlayerDialogueRequest.h>
 #include <Messages/PlayerLevelRequest.h>
+#include <Messages/NotifyPlayerPosition.h>
+#include <Messages/NotifyPlayerCellChanged.h>
 
 #include <Structs/ServerSettings.h>
 
+#include <Interface/UI.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESGlobal.h>
 #include <Games/Overrides.h>
 #include <Games/References.h>
 #include <AI/AIProcess.h>
+#include <EquipManager.h>
+#include <Forms/TESWorldSpace.h>
 
-PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
-    : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
+PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
+    : m_world(aWorld)
+    , m_dispatcher(aDispatcher)
+    , m_transport(aTransport)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&PlayerService::OnUpdate>(this);
     m_connectedConnection = m_dispatcher.sink<ConnectedEvent>().connect<&PlayerService::OnConnected>(this);
@@ -43,17 +53,6 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_playerLevelConnection = m_dispatcher.sink<PlayerLevelEvent>().connect<&PlayerService::OnPlayerLevelEvent>(this);
     m_partyJoinedConnection = aDispatcher.sink<PartyJoinedEvent>().connect<&PlayerService::OnPartyJoinedEvent>(this);
     m_partyLeftConnection = aDispatcher.sink<PartyLeftEvent>().connect<&PlayerService::OnPartyLeftEvent>(this);
-}
-
-namespace
-{
-bool isDeathSystemEnabled = true;
-
-bool knockdownStart = false;
-double knockdownTimer = 0.0;
-
-bool godmodeStart = false;
-double godmodeTimer = 0.0;
 }
 
 void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -84,7 +83,9 @@ void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
-    PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
+    auto* pPlayer = PlayerCharacter::Get();
+
+    pPlayer->SetDifficulty(m_previousDifficulty);
     m_serverDifficulty = m_previousDifficulty = 6;
 
     ToggleDeathSystem(false);
@@ -206,7 +207,7 @@ void PlayerService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
         pWorldEncountersEnabled->f = 1.f;
     }
 #elif TP_FALLOUT4
-        // TODO: ft
+    // TODO: ft
 #endif
 }
 
@@ -220,14 +221,14 @@ void PlayerService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
         pWorldEncountersEnabled->f = 0.f;
     }
 #elif TP_FALLOUT4
-        // TODO: ft
+    // TODO: ft
 #endif
 }
 
 // TODO: ft (verify)
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 {
-    if (!isDeathSystemEnabled)
+    if (!m_isDeathSystemEnabled)
         return;
 
     static bool s_startTimer = false;
@@ -235,6 +236,12 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer->actorState.IsBleedingOut())
     {
+#if TP_SKYRIM64
+        m_cachedMainSpellId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
+        m_cachedSecondarySpellId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;
+        m_cachedPowerId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
+#endif
+
         s_startTimer = false;
         return;
     }
@@ -259,12 +266,25 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     {
         pPlayer->RespawnPlayer();
 
-        knockdownTimer = 1.5;
-        knockdownStart = true;
+        m_knockdownTimer = 1.5;
+        m_knockdownStart = true;
 
         m_transport.Send(PlayerRespawnRequest());
 
         s_startTimer = false;
+
+#if TP_SKYRIM64
+        auto* pEquipManager = EquipManager::Get();
+        TESForm* pSpell = TESForm::GetById(m_cachedMainSpellId);
+        if (pSpell)
+            pEquipManager->EquipSpell(pPlayer, pSpell, 0);
+        pSpell = TESForm::GetById(m_cachedSecondarySpellId);
+        if (pSpell)
+            pEquipManager->EquipSpell(pPlayer, pSpell, 1);
+        pSpell = TESForm::GetById(m_cachedPowerId);
+        if (pSpell)
+            pEquipManager->EquipShout(pPlayer, pSpell);
+#endif
     }
 }
 
@@ -272,38 +292,38 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 // Doesn't seem to respawn quite yet
 void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
 {
-    if (!isDeathSystemEnabled)
+    if (!m_isDeathSystemEnabled)
         return;
 
     // If a player dies in ragdoll, it gets stuck.
     // This code ragdolls the player again upon respawning.
     // It also makes the player invincible for 5 seconds.
-    if (knockdownStart)
+    if (m_knockdownStart)
     {
-        knockdownTimer -= acDeltaTime;
-        if (knockdownTimer <= 0.0)
+        m_knockdownTimer -= acDeltaTime;
+        if (m_knockdownTimer <= 0.0)
         {
             PlayerCharacter::SetGodMode(true);
-            godmodeStart = true;
-            godmodeTimer = 10.0;
+            m_godmodeStart = true;
+            m_godmodeTimer = 10.0;
 
             PlayerCharacter* pPlayer = PlayerCharacter::Get();
             pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
 
             FadeOutGame(false, true, 0.5f, true, 2.f);
 
-            knockdownStart = false;
+            m_knockdownStart = false;
         }
     }
 
-    if (godmodeStart)
+    if (m_godmodeStart)
     {
-        godmodeTimer -= acDeltaTime;
-        if (godmodeTimer <= 0.0)
+        m_godmodeTimer -= acDeltaTime;
+        if (m_godmodeTimer <= 0.0)
         {
             PlayerCharacter::SetGodMode(false);
 
-            godmodeStart = false;
+            m_godmodeStart = false;
         }
     }
 }
@@ -343,9 +363,9 @@ void PlayerService::RunLevelUpdates() const noexcept
     }
 }
 
-void PlayerService::ToggleDeathSystem(bool aSet) const noexcept
+void PlayerService::ToggleDeathSystem(bool aSet) noexcept
 {
-    isDeathSystemEnabled = aSet;
+    m_isDeathSystemEnabled = aSet;
 
     PlayerCharacter::Get()->SetPlayerRespawnMode(aSet);
 }

@@ -39,37 +39,33 @@
 #include <Forms/TESObjectCELL.h>
 #include <Games/ActorExtension.h>
 
-using TiltedPhoques::OverlayRenderHandlerD3D11;
 using TiltedPhoques::OverlayRenderHandler;
+using TiltedPhoques::OverlayRenderHandlerD3D11;
 
 struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHandlerD3D11::Renderer
 {
-    explicit D3D11RenderProvider(RenderSystemD3D11* apRenderSystem) : m_pRenderSystem(apRenderSystem) {}
+    explicit D3D11RenderProvider(RenderSystemD3D11* apRenderSystem)
+        : m_pRenderSystem(apRenderSystem)
+    {
+    }
 
     OverlayRenderHandler* Create() override
     {
         auto* pHandler = new OverlayRenderHandlerD3D11(this);
-    #if TP_SKYRIM64
+#if TP_SKYRIM64
         pHandler->SetVisible(true);
-    #else
+#else
         pHandler->SetVisible(false);
-    #endif
+#endif
 
         return pHandler;
     }
 
-    [[nodiscard]] HWND GetWindow() override
-    {
-        return m_pRenderSystem->GetWindow();
-    }
+    [[nodiscard]] HWND GetWindow() override { return m_pRenderSystem->GetWindow(); }
 
-    [[nodiscard]] IDXGISwapChain* GetSwapChain() const noexcept override
-    {
-        return m_pRenderSystem->GetSwapChain();
-    }
+    [[nodiscard]] IDXGISwapChain* GetSwapChain() const noexcept override { return m_pRenderSystem->GetSwapChain(); }
 
 private:
-
     RenderSystemD3D11* m_pRenderSystem;
 };
 
@@ -114,7 +110,8 @@ float CalculateHealthPercentage(Actor* apActor) noexcept
 }
 
 OverlayService::OverlayService(World& aWorld, TransportService& transport, entt::dispatcher& aDispatcher)
-    : m_world(aWorld), m_transport(transport)
+    : m_world(aWorld)
+    , m_transport(transport)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&OverlayService::OnUpdate>(this);
     m_connectedConnection = aDispatcher.sink<ConnectedEvent>().connect<&OverlayService::OnConnectedEvent>(this);
@@ -252,8 +249,10 @@ void OverlayService::SendSystemMessage(const std::string& acMessage)
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage);
-    m_pOverlay->ExecuteAsync("systemMessage", pArguments);
+    pArguments->SetInt(0, kSystemMessage);
+    pArguments->SetString(1, acMessage);
+
+    m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
 void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
@@ -268,8 +267,7 @@ void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
     float percentage = CalculateHealthPercentage(pActor);
 
     auto view = m_world.view<FormIdComponent, PlayerComponent>();
-    auto entityIt = std::find_if(view.begin(), view.end(),
-                                 [view, aFormId](auto aEntity) { return view.get<FormIdComponent>(aEntity).Id == aFormId; });
+    auto entityIt = std::find_if(view.begin(), view.end(), [view, aFormId](auto aEntity) { return view.get<FormIdComponent>(aEntity).Id == aFormId; });
 
     if (entityIt == view.end())
     {
@@ -345,8 +343,10 @@ void OverlayService::OnChatMessageReceived(const NotifyChatMessageBroadcast& acM
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage.PlayerName.c_str());
+    pArguments->SetInt(0, (int)acMessage.MessageType);
     pArguments->SetString(1, acMessage.ChatMessage.c_str());
+    pArguments->SetString(2, acMessage.PlayerName.c_str());
+
     m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
@@ -356,9 +356,11 @@ void OverlayService::OnPlayerDialogue(const NotifyPlayerDialogue& acMessage) noe
         return;
 
     auto pArguments = CefListValue::Create();
-    pArguments->SetString(0, acMessage.Name.c_str());
+    pArguments->SetInt(0, kPlayerDialogue);
     pArguments->SetString(1, acMessage.Text.c_str());
-    m_pOverlay->ExecuteAsync("dialogueMessage", pArguments);
+    pArguments->SetString(2, acMessage.Name.c_str());
+
+    m_pOverlay->ExecuteAsync("message", pArguments);
 }
 
 void OverlayService::OnConnectionError(const ConnectionErrorEvent& acConnectedEvent) const noexcept
@@ -479,7 +481,7 @@ void OverlayService::RunDebugDataUpdates() noexcept
     m_pOverlay->ExecuteAsync("debugData", pArguments);
 }
 
-// TODO(cosideci): this whole thing is a really hacky solution to 
+// TODO(cosideci): this whole thing is a really hacky solution to
 // health sync code being somewhat broken for players.
 void OverlayService::RunPlayerHealthUpdates() noexcept
 {

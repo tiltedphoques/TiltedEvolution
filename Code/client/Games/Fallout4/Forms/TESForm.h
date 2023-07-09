@@ -101,13 +101,13 @@ struct TESForm : BaseFormComponent
     virtual void sub_46();
     virtual void sub_47();
 
-    //void CopyFromEx(TESForm* rhs);
+    // void CopyFromEx(TESForm* rhs);
     void Save(std::string apSaveBuffer) noexcept;
     void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);
     void SetSkipSaveFlag(bool aSet) noexcept;
     uint32_t GetChangeFlags() const noexcept;
 
-    void SetIgnoreFriendlyHit(bool aSet) noexcept 
+    void SetIgnoreFriendlyHit(bool aSet) noexcept
     {
         // TODO: fallout 4 impl
         return;

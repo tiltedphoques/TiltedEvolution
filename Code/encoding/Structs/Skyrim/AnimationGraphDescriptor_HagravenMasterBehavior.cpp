@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_HagravenMasterBehavior.h>
 
-
-
 AnimationGraphDescriptor_HagravenMasterBehavior::AnimationGraphDescriptor_HagravenMasterBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -165,32 +163,36 @@ AnimationGraphDescriptor_HagravenMasterBehavior::AnimationGraphDescriptor_Hagrav
     };
 
     uint64_t key = 3017922126943190855;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbEquipOk,
-            kbAnimationDriven,
-            kIsAttackReady,
-            kbAllowRotation,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbHeadTracking,
-            kbHeadTrackingOn,
-            kbWeapReady,
-            kisCasting,
-            kbCanHeadTrack,
-            kbWantCastLeft,
-            kbMLh_Ready,
+            {
+                kbEquipOk,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kbAllowRotation,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kbHeadTracking,
+                kbHeadTrackingOn,
+                kbWeapReady,
+                kisCasting,
+                kbCanHeadTrack,
+                kbWantCastLeft,
+                kbMLh_Ready,
             },
-        {kSpeed,
-            kTurnDelta,
-            kDirection,
-            kSpeedSampled,
-            kturnSpeedMult,
+            {
+                kSpeed,
+                kTurnDelta,
+                kDirection,
+                kSpeedSampled,
+                kturnSpeedMult,
             },
-        {kiSyncDefaultState,
-            kiSyncIdleLocomotion,
-            kiSyncTurnState,
+            {
+                kiSyncDefaultState,
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
             }));
 }

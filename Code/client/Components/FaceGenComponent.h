@@ -10,6 +10,6 @@ struct FaceGenComponent
 {
     FaceGenComponent() noexcept {}
 
-    bool Generated{ false };
+    bool Generated{false};
     Tints FaceTints{};
 };

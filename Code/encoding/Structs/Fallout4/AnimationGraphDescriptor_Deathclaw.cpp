@@ -1,8 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Deathclaw.h>
 
-AnimationGraphDescriptor_Deathclaw::AnimationGraphDescriptor_Deathclaw(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Deathclaw::AnimationGraphDescriptor_Deathclaw(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -114,7 +113,8 @@ AnimationGraphDescriptor_Deathclaw::AnimationGraphDescriptor_Deathclaw(
 
     uint64_t key = 13518681907060316898;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kLookAtOutOfRange,
@@ -160,6 +160,5 @@ AnimationGraphDescriptor_Deathclaw::AnimationGraphDescriptor_Deathclaw(
                 kcHitReactionBodyPart,
                 kiState,
                 kiSyncSprintState,
-            }
-        ));
+            }));
 }

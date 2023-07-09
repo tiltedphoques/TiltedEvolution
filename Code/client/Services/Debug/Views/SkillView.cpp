@@ -28,8 +28,7 @@ void DebugService::DrawSkillView()
         ImGui::InputFloat("Level threshold", &pSkill.levelThreshold, 0, 0, "%.3f", ImGuiInputTextFlags_ReadOnly);
 
         uint32_t legendaryLevel = pSkills->legendaryLevels[i];
-        ImGui::InputScalar("Legendary level", ImGuiDataType_U32, (void*)&legendaryLevel, nullptr, nullptr, nullptr,
-                           ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputScalar("Legendary level", ImGuiDataType_U32, (void*)&legendaryLevel, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
     }
 
     ImGui::End();

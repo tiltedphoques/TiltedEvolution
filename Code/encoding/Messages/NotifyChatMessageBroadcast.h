@@ -8,7 +8,8 @@ struct NotifyChatMessageBroadcast final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyChatMessageBroadcast;
 
-    NotifyChatMessageBroadcast() : ServerMessage(Opcode)
+    NotifyChatMessageBroadcast()
+        : ServerMessage(Opcode)
     {
     }
 
@@ -17,13 +18,9 @@ struct NotifyChatMessageBroadcast final : ServerMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifyChatMessageBroadcast& acRhs) const noexcept
-    {
-        return GetOpcode() == acRhs.GetOpcode() &&
-               PlayerName == acRhs.PlayerName && 
-               ChatMessage == acRhs.ChatMessage;
-    }
+    bool operator==(const NotifyChatMessageBroadcast& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && MessageType == acRhs.MessageType && PlayerName == acRhs.PlayerName && ChatMessage == acRhs.ChatMessage; }
 
+    ChatMessageType MessageType;
     TiltedPhoques::String PlayerName;
     TiltedPhoques::String ChatMessage;
 };

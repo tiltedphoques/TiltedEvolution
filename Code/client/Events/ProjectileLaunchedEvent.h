@@ -1,8 +1,8 @@
 #pragma once
 
 /**
-* @brief Dispatched when a local projectile has been launched.
-*/
+ * @brief Dispatched when a local projectile has been launched.
+ */
 struct ProjectileLaunchedEvent
 {
     NiPoint3 Origin;

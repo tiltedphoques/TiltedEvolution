@@ -1,7 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_FrostbiteSpider.h>
 
-
 AnimationGraphDescriptor_FrostbiteSpider::AnimationGraphDescriptor_FrostbiteSpider(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -46,28 +45,32 @@ AnimationGraphDescriptor_FrostbiteSpider::AnimationGraphDescriptor_FrostbiteSpid
 
     uint64_t key = 1928879069472700161;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbAnimationDriven,
-            kbAllowRotation,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
-            kbMLh_Ready,
-            kbEquipOk,
-            kIsAttackReady,
-            kbWantCastLeft,
+            {
+                kbAnimationDriven,
+                kbAllowRotation,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
+                kbMLh_Ready,
+                kbEquipOk,
+                kIsAttackReady,
+                kbWantCastLeft,
             },
-        {kSpeed,
-            kTurnDelta,
-            kturnSpeedMult,
-            kDirection,
-            kSpeedSampled,
+            {
+                kSpeed,
+                kTurnDelta,
+                kturnSpeedMult,
+                kDirection,
+                kSpeedSampled,
             },
-        {kiLeftHandType,
-            kiSyncIdleLocomotion,
-            kiSyncTurnState,
-            kiCombatStance,
-            kiCurrentStateID,
+            {
+                kiLeftHandType,
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
+                kiCombatStance,
+                kiCurrentStateID,
             }));
 }

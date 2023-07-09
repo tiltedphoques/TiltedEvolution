@@ -3,7 +3,8 @@
 struct CombatComponent
 {
     CombatComponent() = delete;
-    CombatComponent(uint32_t aTargetFormId) : TargetFormId(aTargetFormId)
+    CombatComponent(uint32_t aTargetFormId)
+        : TargetFormId(aTargetFormId)
     {
     }
 

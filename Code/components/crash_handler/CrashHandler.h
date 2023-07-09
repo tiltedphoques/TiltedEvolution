@@ -5,13 +5,7 @@ void UninstallCrashHandler();
 
 struct ScopedCrashHandler
 {
-    ScopedCrashHandler(bool aServer = false, bool aSkyrim = true)
-    {
-        InstallCrashHandler(aServer, aSkyrim);
-    }
+    ScopedCrashHandler(bool aServer = false, bool aSkyrim = true) { InstallCrashHandler(aServer, aSkyrim); }
 
-    ~ScopedCrashHandler()
-    {
-        UninstallCrashHandler();
-    }
+    ~ScopedCrashHandler() { UninstallCrashHandler(); }
 };

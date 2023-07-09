@@ -1,8 +1,10 @@
-<div class="app-connect">
-  <p [innerHtml]="'COMPONENT.CONNECT.INFO.SERVER_ADDRESS' | transloco"></p>
-  <p style="color:rgb(247, 54, 54);">
-    {{ 'COMPONENT.CONNECT.INFO.HELGEN' | transloco }}
-  </p>
+<div class="container">
+  <div class="instructions">
+    <p [innerHtml]="'COMPONENT.CONNECT.INFO.SERVER_ADDRESS' | transloco"></p>
+    <p class="warning">
+      {{ 'COMPONENT.CONNECT.INFO.HELGEN' | transloco }}
+    </p>
+  </div>
 
   <input
     #input
@@ -11,33 +13,38 @@
     (keydown.enter)="connect()"
     [(ngModel)]="address"
     spellcheck="false"
-  >
+  />
   <input
     type="text"
     [placeholder]="'COMPONENT.CONNECT.PASSWORD' | transloco"
     spellcheck="false"
     [(ngModel)]="password"
     (keydown.enter)="connect()"
-  >
+  />
   <span class="save-password">
-    <input 
-      type="checkbox"
-      id="save-password"
-      [(ngModel)]="savePassword"
-    />
-    <label for="save-password">{{ 'COMPONENT.CONNECT.SAVE_PASSWORD' | transloco }}</label>
+    <input type="checkbox" id="save-password" [(ngModel)]="savePassword" />
+    <label for="save-password">{{
+      'COMPONENT.CONNECT.SAVE_PASSWORD' | transloco
+    }}</label>
   </span>
 
-
   <app-action-buttons>
-    <button [disabled]="connecting" (click)="connect()" data-style-ornament="simple">
+    <button
+      [disabled]="connecting"
+      (click)="connect()"
+      data-style-ornament="simple"
+    >
       {{ 'COMPONENT.CONNECT.CONNECT' | transloco }}
     </button>
-    <button [disabled]="connecting" (click)="cancel()" data-style-ornament="simple">
+    <button
+      [disabled]="connecting"
+      (click)="cancel()"
+      data-style-ornament="simple"
+    >
       {{ 'COMPONENT.CONNECT.CANCEL' | transloco }}
     </button>
   </app-action-buttons>
-  <hr>
+  <hr />
   <button (click)="openServerList()" data-style-ornament="simple">
     {{ 'COMPONENT.CONNECT.PUBLIC_SERVERS' | transloco }}
   </button>

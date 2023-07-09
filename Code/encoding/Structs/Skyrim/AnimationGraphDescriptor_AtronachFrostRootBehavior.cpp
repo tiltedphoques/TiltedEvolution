@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_AtronachFrostRootBehavior.h>
 
-
-
 AnimationGraphDescriptor_AtronachFrostRootBehavior::AnimationGraphDescriptor_AtronachFrostRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -58,23 +56,27 @@ AnimationGraphDescriptor_AtronachFrostRootBehavior::AnimationGraphDescriptor_Atr
     };
 
     uint64_t key = 14566708169643289121;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbEquipOk,
-            kbAnimationDriven,
-            kIsAttackReady,
-            kbAllowRotation,
-            kIsRecoiling,
-            kIsStaggering,
-            kIsAttacking,
+            {
+                kbEquipOk,
+                kbAnimationDriven,
+                kIsAttackReady,
+                kbAllowRotation,
+                kIsRecoiling,
+                kIsStaggering,
+                kIsAttacking,
             },
-        {kSpeed,
-            kTurnDelta,
-            kDirection,
-            kSpeedSampled,
+            {
+                kSpeed,
+                kTurnDelta,
+                kDirection,
+                kSpeedSampled,
             },
-        {kiSyncIdleLocomotion,
-            kiSyncTurnState,
+            {
+                kiSyncIdleLocomotion,
+                kiSyncTurnState,
             }));
 }

@@ -19,9 +19,9 @@ struct BSScript
         void Clear() noexcept;
         Object* GetObject() const noexcept;
 
-        template<class T> void Set(T aValue) noexcept
+        template <class T> void Set(T aValue) noexcept
         {
-            //static_assert(false);
+            // static_assert(false);
         }
 
         template <class T> T* ExtractComplexType() noexcept;
@@ -38,7 +38,7 @@ struct BSScript
             kMax = 16
         };
 
-        union Data 
+        union Data
         {
             int32_t i;
             const char* s;
@@ -109,9 +109,7 @@ struct BSScript
             Variable* vars;
         };
 
-        virtual ~IFunctionArguments()
-        {
-        }
+        virtual ~IFunctionArguments() {}
 
         virtual void Prepare(Statement* apUnk) noexcept = 0;
     };
@@ -135,15 +133,9 @@ struct BSScript
 
     struct StackFrame
     {
-        uint32_t GetPageForFrame()
-        {
-            return pParent->GetPageForFrame(this);
-        }
+        uint32_t GetPageForFrame() { return pParent->GetPageForFrame(this); }
 
-        Variable* GetStackFrameVariable(uint32_t aIndex, uint32_t aPageHint)
-        {
-            return pParent->GetStackFrameVariable(this, aIndex, aPageHint);
-        }
+        Variable* GetStackFrameVariable(uint32_t aIndex, uint32_t aPageHint) { return pParent->GetStackFrameVariable(this, aIndex, aPageHint); }
 
         Stack* pParent;
     };
@@ -162,11 +154,7 @@ struct BSScript
         virtual void sub_07();
         virtual void* GetObjectForHandle(uint32_t aType, uint64_t aHandle);
 
-        template <class T>
-        T* GetObjectForHandle(uint64_t aHandle)
-        {
-            return (T*)(BSScript::IObjectHandlePolicy::Get()->GetObjectForHandle((uint32_t)T::Type, aHandle));
-        }
+        template <class T> T* GetObjectForHandle(uint64_t aHandle) { return (T*)(BSScript::IObjectHandlePolicy::Get()->GetObjectForHandle((uint32_t)T::Type, aHandle)); }
     };
 
     struct IVirtualMachine
@@ -243,15 +231,8 @@ struct BSScript
         bool CanBeCalledFromTasklets() override;
         void SetCallableFromTasklets(bool aCallable) override;
 
-        virtual bool HasCallback()
-        {
-            return false;
-        }
-        virtual bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID,
-                                         Variable* apResult, StackFrame* apStackFrame)
-        {
-            return false;
-        }
+        virtual bool HasCallback() { return false; }
+        virtual bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult, StackFrame* apStackFrame) { return false; }
 
         struct Parameters
         {
@@ -301,10 +282,7 @@ struct BSScript
             TiltedPhoques::ThisCall(ctor, this, apFunctionName, apClassName, aIsStatic, aParameterCount);
         }
 
-        bool HasCallback() override
-        {
-            return pFunction != nullptr;
-        }
+        bool HasCallback() override { return pFunction != nullptr; }
 
         void* pFunction;
     };
@@ -316,29 +294,28 @@ struct BSScript
     {
         using FunctionType = bool(Actor* pBase);
 
-        IsRemotePlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction,
-                           Variable::Type aType);
+        IsRemotePlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction, Variable::Type aType);
 
-        bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult,
-                                 StackFrame* apStackFrame) override;
+        bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult, StackFrame* apStackFrame) override;
     };
 
     struct IsPlayerFunc : NativeFunction
     {
         using FunctionType = bool(Actor* pBase);
 
-        IsPlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction,
-                           Variable::Type aType);
+        IsPlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction, Variable::Type aType);
 
-        bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult,
-                                 StackFrame* apStackFrame) override;
+        bool MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult, StackFrame* apStackFrame) override;
     };
 
+    // Bad PoC code
+#if 0
     template <class... T> struct EventArguments : IFunctionArguments
     {
         using Tuple = std::tuple<EventArguments...>;
 
-        EventArguments(T... args) : args(std::forward<T>(args)...)
+        EventArguments(T... args)
+            : args(std::forward<T>(args)...)
         {
         }
 
@@ -348,21 +325,15 @@ struct BSScript
         {
             apStatement->SetSize(std::tuple_size_v<std::remove_reference_t<Tuple>>);
 
-            PrepareImplementation(apStatement,
-                                  std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
+            PrepareImplementation(apStatement, std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
         }
 
     private:
-
-        template <std::size_t... Is>
-        void PrepareImplementation(IFunctionArguments::Statement* apStatement,
-                                   std::index_sequence<Is...>) noexcept
-        {
-            ((apStatement->vars[Is].Set(std::get<Is>(args))), ...);
-        }
+        template <std::size_t... Is> void PrepareImplementation(IFunctionArguments::Statement* apStatement, std::index_sequence<Is...>) noexcept { ((apStatement->vars[Is].Set(std::get<Is>(args))), ...); }
 
         Tuple args;
     };
+#endif
 };
 
 template <> void BSScript::Variable::Set(int32_t aValue) noexcept;

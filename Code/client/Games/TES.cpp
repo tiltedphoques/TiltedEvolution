@@ -17,4 +17,3 @@ ProcessLists* ProcessLists::Get() noexcept
 
     return *processLists.Get();
 }
-

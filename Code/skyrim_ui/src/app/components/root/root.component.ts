@@ -7,25 +7,31 @@ import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.an
 import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
-import { SettingService } from '../../services/setting.service';
+import {
+  SettingService,
+  fontSizeToPixels,
+} from '../../services/setting.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { UiRepository } from '../../store/ui.repository';
 import { ChatComponent } from '../chat/chat.component';
 import { GroupComponent } from '../group/group.component';
 import { controlsAnimation } from './controls.animation';
 import { notificationsAnimation } from './notifications.animation';
-
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   templateUrl: './root.component.html',
   styleUrls: ['./root.component.scss'],
-  animations: [controlsAnimation, fadeInOutActiveAnimation, notificationsAnimation],
+  animations: [
+    controlsAnimation,
+    fadeInOutActiveAnimation,
+    notificationsAnimation,
+  ],
   host: { 'data-app-root-game': environment.game.toString() },
   providers: [DestroyService],
 })
 export class RootComponent implements OnInit {
-
   /* ### ENUMS ### */
   readonly RootView = View;
 
@@ -35,7 +41,8 @@ export class RootComponent implements OnInit {
   menuOpen$ = this.client.openingMenuChange.asObservable();
   inGame$ = this.client.inGameStateChange.asObservable();
   active$ = this.client.activationStateChange.asObservable();
-  connectionInProgress$ = this.client.isConnectionInProgressChange.asObservable();
+  connectionInProgress$ =
+    this.client.isConnectionInProgressChange.asObservable();
 
   @ViewChild('chat') private chatComp!: ChatComponent;
   @ViewChild(GroupComponent) private groupComponent: GroupComponent;
@@ -49,12 +56,15 @@ export class RootComponent implements OnInit {
     private readonly settingService: SettingService,
     public readonly overlay: Overlay, // used for mockup
   ) {
-    this.translocoService.setActiveLang(this.settingService.getLanguage());
+    this.translocoService.setActiveLang(
+      this.settingService.settings.language.getValue(),
+    );
   }
 
   public ngOnInit(): void {
     this.onInGameStateSubscription();
     this.onActivationStateSubscription();
+    this.onFontSizeSubscription();
   }
 
   public onInGameStateSubscription() {
@@ -71,12 +81,27 @@ export class RootComponent implements OnInit {
     this.client.activationStateChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(state => {
-        if (this.client.inGameStateChange.getValue() && state && !this.uiRepository.isViewOpen()) {
+        if (
+          this.client.inGameStateChange.getValue() &&
+          state &&
+          !this.uiRepository.isViewOpen()
+        ) {
           setTimeout(() => this.chatComp.focus(), 100);
         }
         if (!state) {
           this.closeView();
         }
+      });
+  }
+
+  public onFontSizeSubscription() {
+    this.settingService.settings.fontSize
+      .pipe(
+        takeUntil(this.destroy$),
+        map(size => fontSizeToPixels[size]),
+      )
+      .subscribe(size => {
+        document.documentElement.setAttribute('style', `font-size: ${size}px;`);
       });
   }
 
@@ -96,9 +121,5 @@ export class RootComponent implements OnInit {
 
   public reconnect(): void {
     this.client.reconnect();
-  }
-
-  updateGroupPosition() {
-    this.groupComponent?.updatePosition();
   }
 }

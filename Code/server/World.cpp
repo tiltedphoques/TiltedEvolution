@@ -8,12 +8,14 @@
 #include <Services/ActorValueService.h>
 #include <Services/AdminService.h>
 #include <Services/InventoryService.h>
+#include <Services/MapService.h>
 #include <Services/MagicService.h>
 #include <Services/OverlayService.h>
 #include <Services/CommandService.h>
 #include <Services/StringCacheService.h>
 #include <Services/CombatService.h>
 #include <Services/WeatherService.h>
+#include <Services/ScriptService.h>
 
 #include <es_loader/ESLoader.h>
 
@@ -24,6 +26,7 @@ World::World()
 
     ctx().emplace<CharacterService>(*this, m_dispatcher);
     ctx().emplace<PlayerService>(*this, m_dispatcher);
+    ctx().emplace<MapService>(*this, m_dispatcher);
     ctx().emplace<CalendarService>(*this, m_dispatcher);
     ctx().emplace<ObjectService>(*this, m_dispatcher);
     ctx().emplace<ModsComponent>();
@@ -46,6 +49,12 @@ World::World()
     {
         ctx().emplace<ModsComponent>().AddServerMod(it);
     }
+
+    // late initialize the ScriptService to ensure all components are valid
+    m_pScriptService = TiltedPhoques::MakeUnique<ScriptService>(*this, m_dispatcher);
 }
 
-World::~World() noexcept = default;
+World::~World()
+{
+    m_pScriptService.reset();
+}

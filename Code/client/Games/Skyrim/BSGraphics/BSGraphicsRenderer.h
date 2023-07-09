@@ -74,7 +74,6 @@ struct RendererData
     ID3D11Device* pDevice;         // 0x0038
     ID3D11DeviceContext* pContext; // 0x0040
 
-
     // UNSURE starting from here...
     BSGraphics::RendererWindow RenderWindowA[32]; // V
     BSGraphics::RenderTarget pRenderTargetsA[101];
@@ -89,7 +88,7 @@ struct RendererData
 struct Renderer
 {
     bool bSkipNextPresent;
-    void(*ResetRenderTargets)();
+    void (*ResetRenderTargets)();
     BSGraphics::RendererData Data;
 };
 
@@ -115,8 +114,8 @@ struct RendererInitOSData
 // former WindowConfig
 struct ApplicationWindowProperties
 {
-    uint32_t uiWidth; //V
-    uint32_t uiHeight;//V
+    uint32_t uiWidth;  // V
+    uint32_t uiHeight; // V
     int iX;
     int iY;
     uint32_t uiRefreshRate;

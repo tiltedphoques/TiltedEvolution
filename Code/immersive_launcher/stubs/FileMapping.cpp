@@ -102,7 +102,7 @@ NTSTATUS WINAPI TP_LdrGetDllHandle(PWSTR DllPath, PULONG DllCharacteristics, PUN
     return RealLdrGetDllHandle(DllPath, DllCharacteristics, DllName, DllHandle);
 }
 
-NTSTATUS WINAPI TP_LdrGetDllHandleEx(ULONG Flags, PWSTR DllPath, PULONG DllCharacteristics, UNICODE_STRING* DllName, PVOID *DllHandle) 
+NTSTATUS WINAPI TP_LdrGetDllHandleEx(ULONG Flags, PWSTR DllPath, PULONG DllCharacteristics, UNICODE_STRING* DllName, PVOID* DllHandle)
 {
     if (DllName && std::wcsncmp(TARGET_NAME L".exe", DllName->Buffer, DllName->Length) == 0)
     {
@@ -154,8 +154,7 @@ bool NeedsToFool(void* pRbp, bool* wantsTruth = nullptr)
     }
 #endif
 
-    if (hMod == NtInternal::ThePeb()->pImageBase || 
-        hMod == nullptr /*This is a hook, virtual allocd, not owned by anybody, so we assign ownership to the ST directory*/)
+    if (hMod == NtInternal::ThePeb()->pImageBase || hMod == nullptr /*This is a hook, virtual allocd, not owned by anybody, so we assign ownership to the ST directory*/)
     {
         if (wantsTruth)
             *wantsTruth = true;
@@ -190,10 +189,7 @@ DWORD WINAPI TP_GetModuleFileNameW(HMODULE aModule, LPWSTR alpFilename, DWORD aS
 
 struct ScopedOSHeapItem
 {
-    ScopedOSHeapItem(size_t aSize)
-    {
-        m_pBlock = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, aSize);
-    }
+    ScopedOSHeapItem(size_t aSize) { m_pBlock = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, aSize); }
 
     ~ScopedOSHeapItem()
     {
@@ -232,9 +228,7 @@ DWORD WINAPI TP_GetModuleFileNameA(HMODULE aModule, char* alpFileName, DWORD aBu
     RtlInitUnicodeString(&source, pBuffer);
 
     // convert using the proper OS function
-    ANSI_STRING dest{.Length = static_cast<USHORT>(result),
-                     .MaximumLength = static_cast<USHORT>(aBufferSize),
-                     .Buffer = alpFileName};
+    ANSI_STRING dest{.Length = static_cast<USHORT>(result), .MaximumLength = static_cast<USHORT>(aBufferSize), .Buffer = alpFileName};
     if (RtlUnicodeStringToAnsiString(&dest, &source, FALSE) != 0)
         return 0;
 
@@ -262,8 +256,8 @@ NTSTATUS WINAPI TP_LdrLoadDll(const wchar_t* apPath, uint32_t* apFlags, UNICODE_
 }
 } // namespace
 
-#define VALIDATE(x)                                                                                                    \
-    if (x != MH_OK)                                                                                                    \
+#define VALIDATE(x) \
+    if (x != MH_OK) \
         Die(L"CoreStubsInit(): Fatal Minhook error.", true);
 
 // pre eat hook?? loadmodule hook??
@@ -279,24 +273,20 @@ void CoreStubsInit()
     {
         // we need two hooks here, even if this is kinda redundant, since we want to capture the RBP register
         // to detect if its game code, or launcher code being executed
-        VALIDATE(MH_CreateHookApi(L"KernelBase.dll", "GetModuleFileNameW", &TP_GetModuleFileNameW,
-                                  (void**)&RealGetModuleFileNameW));
-        VALIDATE(MH_CreateHookApi(L"KernelBase.dll", "GetModuleFileNameA", &TP_GetModuleFileNameA,
-                                  (void**)&RealGetModuleFileNameA));
+        VALIDATE(MH_CreateHookApi(L"KernelBase.dll", "GetModuleFileNameW", &TP_GetModuleFileNameW, (void**)&RealGetModuleFileNameW));
+        VALIDATE(MH_CreateHookApi(L"KernelBase.dll", "GetModuleFileNameA", &TP_GetModuleFileNameA, (void**)&RealGetModuleFileNameA));
     }
     else
     {
         // https://github.com/ModOrganizer2/usvfs/blob/master/src/usvfs_dll/hooks/kernel32.h#L42
-        VALIDATE(MH_CreateHookApi(L"usvfs_x64.dll", "?hook_GetModuleFileNameW@usvfs@@YAKPEAUHINSTANCE__@@PEA_WK@Z",
-                                  &TP_GetModuleFileNameW, (void**)&RealGetModuleFileNameW));
-        VALIDATE(MH_CreateHookApi(L"KernelBase.dll", "GetModuleFileNameA", &TP_GetModuleFileNameA,
-                                  (void**)&RealGetModuleFileNameA));
+        VALIDATE(MH_CreateHookApi(L"usvfs_x64.dll", "?hook_GetModuleFileNameW@usvfs@@YAKPEAUHINSTANCE__@@PEA_WK@Z", &TP_GetModuleFileNameW, (void**)&RealGetModuleFileNameW));
+        VALIDATE(MH_CreateHookApi(L"KernelBase.dll", "GetModuleFileNameA", &TP_GetModuleFileNameA, (void**)&RealGetModuleFileNameA));
     }
 
     // SKSE calls
     // https://github.com/ianpatt/skse64/blob/d79e8f081194f538c24d493e1b57331d837a25c0/skse64_common/Utilities.cpp#L11
 
-    //VALIDATE(MH_CreateHookApi(L"ntdll.dll", "LdrGetDllHandle", &TP_LdrGetDllHandle, (void**)&RealLdrGetDllHandle));
+    // VALIDATE(MH_CreateHookApi(L"ntdll.dll", "LdrGetDllHandle", &TP_LdrGetDllHandle, (void**)&RealLdrGetDllHandle));
     VALIDATE(MH_CreateHookApi(L"ntdll.dll", "LdrGetDllHandleEx", &TP_LdrGetDllHandleEx, (void**)&RealLdrGetDllHandleEx));
 
     // TODO(Vince): we need some check if usvfs already fucked with this?

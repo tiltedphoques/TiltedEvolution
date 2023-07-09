@@ -1,6 +1,5 @@
 #include <TiltedOnlinePCH.h>
 
-
 #include "Services/DiscordService.h"
 #include "Events/UpdateEvent.h"
 
@@ -13,11 +12,9 @@
 
 #define DISCORD_OVERLAY_ENABLE 0
 
-IDiscordUserEvents DiscordService::s_mUserEvents = {
-    DiscordService::OnUserUpdate
-};
+IDiscordUserEvents DiscordService::s_mUserEvents = {DiscordService::OnUserUpdate};
 
-DiscordService::DiscordService(entt::dispatcher &aDispatcher)
+DiscordService::DiscordService(entt::dispatcher& aDispatcher)
 {
     // initialize persistant rich presence data
     m_ActivityState.instance = false;
@@ -26,18 +23,19 @@ DiscordService::DiscordService(entt::dispatcher &aDispatcher)
     strcpy_s(m_ActivityState.details, "Loading");
     strcpy_s(m_ActivityState.assets.large_image, "logo");
 
-    m_cellChangeConnection =
-        aDispatcher.sink<LocationChangeEvent>().connect<&DiscordService::OnLocationChangeEvent>(this);
+    m_cellChangeConnection = aDispatcher.sink<LocationChangeEvent>().connect<&DiscordService::OnLocationChangeEvent>(this);
 
 #if DISCORD_OVERLAY_ENABLE
-    auto &d3d11 = TiltedPhoques::D3D11Hook::Get();
-    d3d11.OnCreate.Connect([&](IDXGISwapChain *pSwapchain) { InitOverlay(pSwapchain); });
-    d3d11.OnPresent.Connect([&](IDXGISwapChain *) { 
-        if (m_bOverlayEnabled)
+    auto& d3d11 = TiltedPhoques::D3D11Hook::Get();
+    d3d11.OnCreate.Connect([&](IDXGISwapChain* pSwapchain) { InitOverlay(pSwapchain); });
+    d3d11.OnPresent.Connect(
+        [&](IDXGISwapChain*)
         {
-            m_pOverlayMgr->on_present(m_pOverlayMgr);
-        }
-    });
+            if (m_bOverlayEnabled)
+            {
+                m_pOverlayMgr->on_present(m_pOverlayMgr);
+            }
+        });
 #endif
 }
 
@@ -51,15 +49,15 @@ void DiscordService::OnUserUpdate(void* userp)
 
 void DiscordService::OnLocationChangeEvent() noexcept
 {
-    auto *pPlayer = PlayerCharacter::Get();
+    auto* pPlayer = PlayerCharacter::Get();
 
     // we'll disable this inbuilt location tracker
     // in case the user requests a custom discord presence
     if (!m_bCustomPresence && pPlayer)
     {
-        //auto *pLocation = pPlayer->GetCurrentLocation();
-        auto *pLocation = pPlayer->locationForm;
-        auto *pWorldspace = pPlayer->GetWorldSpace();
+        // auto *pLocation = pPlayer->GetCurrentLocation();
+        auto* pLocation = pPlayer->locationForm;
+        auto* pWorldspace = pPlayer->GetWorldSpace();
         bool updateTimestamp = false;
 
         if (pLocation)
@@ -68,8 +66,7 @@ void DiscordService::OnLocationChangeEvent() noexcept
         if (pWorldspace)
         {
             if (pWorldspace->fullName.value.data)
-                strncpy_s(m_ActivityState.state, pWorldspace->fullName.value.AsAscii(),
-                             sizeof(DiscordActivity::state));
+                strncpy_s(m_ActivityState.state, pWorldspace->fullName.value.AsAscii(), sizeof(DiscordActivity::state));
 
             if (m_lastWorldspaceId != pWorldspace->formID)
             {
@@ -89,22 +86,25 @@ void DiscordService::UpdatePresence(bool newTimeStamp)
         if (newTimeStamp)
             m_ActivityState.timestamps.start = time(nullptr);
 
-        m_pActivity->update_activity(m_pActivity, &m_ActivityState, nullptr, [](void *, EDiscordResult result) {
-            if (result != EDiscordResult::DiscordResult_Ok)
+        m_pActivity->update_activity(
+            m_pActivity, &m_ActivityState, nullptr,
+            [](void*, EDiscordResult result)
             {
-                spdlog::error("Failed to update discord presence ({})", static_cast<int>(result));
-            }
-        });
+                if (result != EDiscordResult::DiscordResult_Ok)
+                {
+                    spdlog::error("Failed to update discord presence ({})", static_cast<int>(result));
+                }
+            });
     }
 }
 
-void DiscordService::InitOverlay(IDXGISwapChain *pSwapchain)
+void DiscordService::InitOverlay(IDXGISwapChain* pSwapchain)
 {
     m_pOverlayMgr->is_enabled(m_pOverlayMgr, &m_bOverlayEnabled);
 
     // attempt to unlock it
     m_pOverlayMgr->set_locked(m_pOverlayMgr, false, nullptr, nullptr);
-   // spdlog::info("Enabled discord overlay! ({})", static_cast<int>(result));
+    // spdlog::info("Enabled discord overlay! ({})", static_cast<int>(result));
 }
 
 void DiscordService::WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -117,7 +117,7 @@ void DiscordService::WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
         m_bOverlayEnabled = false;
         return;
     }
-  
+
 #if DISCORD_OVERLAY_ENABLE
     if (!m_bOverlayEnabled)
         return;
@@ -127,22 +127,20 @@ void DiscordService::WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
     case WM_KEYDOWN:
     case WM_KEYUP:
     case WM_SYSKEYDOWN:
-    case WM_SYSKEYUP: {
+    case WM_SYSKEYUP:
+    {
         bool down = ((msg == WM_KEYDOWN) || (msg == WM_SYSKEYDOWN));
         if (down && wParam == VK_F6)
         {
-            m_pOverlayMgr->set_locked(m_pOverlayMgr, false, nullptr, [](void *, EDiscordResult result) { 
-                spdlog::info("unlocking discord overlay ({})", static_cast<int>(result));
-                });
+            m_pOverlayMgr->set_locked(m_pOverlayMgr, false, nullptr, [](void*, EDiscordResult result) { spdlog::info("unlocking discord overlay ({})", static_cast<int>(result)); });
         }
 
-      /*  if (wParam < 256)
-            m_pOverlayMgr->key_event(m_pOverlayMgr, down, reinterpret_cast<const char *>(wParam),
-                                     EDiscordKeyVariant::DiscordKeyVariant_Normal);*/
+        /*  if (wParam < 256)
+              m_pOverlayMgr->key_event(m_pOverlayMgr, down, reinterpret_cast<const char *>(wParam),
+                                       EDiscordKeyVariant::DiscordKeyVariant_Normal);*/
         break;
     }
-    default:
-        return;
+    default: return;
     }
 #endif
 }
@@ -156,7 +154,7 @@ bool DiscordService::Init()
     if (!pHandle)
         return false;
 
-    auto *f_pDiscordCreate = (decltype(&DiscordCreate))(GetProcAddress(pHandle, "DiscordCreate"));
+    auto* f_pDiscordCreate = (decltype(&DiscordCreate))(GetProcAddress(pHandle, "DiscordCreate"));
 
     if (!f_pDiscordCreate)
         return false;
@@ -204,21 +202,23 @@ bool DiscordService::Init()
     m_ActivityState.application_id = params.client_id;
     UpdatePresence(true);
 
-    //TODO (Force): i want to move this away from its own thread
-    //this is done because discord needs to be ticked before world
-    static std::thread updateThread([&]() { 
-        Base::SetCurrentThreadName("DiscordCallbacks");
-
-        while (!m_bRequestThreadKillHack)
+    // TODO (Force): i want to move this away from its own thread
+    // this is done because discord needs to be ticked before world
+    static std::thread updateThread(
+        [&]()
         {
-            const auto runResult = m_pCore->run_callbacks(m_pCore);
-            if (runResult != DiscordResult_Ok)
-                break;
+            Base::SetCurrentThreadName("DiscordCallbacks");
 
-            //update at "60" fps 
-            std::this_thread::sleep_for(std::chrono::milliseconds(16));
-        }
-    });
+            while (!m_bRequestThreadKillHack)
+            {
+                const auto runResult = m_pCore->run_callbacks(m_pCore);
+                if (runResult != DiscordResult_Ok)
+                    break;
+
+                // update at "60" fps
+                std::this_thread::sleep_for(std::chrono::milliseconds(16));
+            }
+        });
     updateThread.detach();
 
     return true;

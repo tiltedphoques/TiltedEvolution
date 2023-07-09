@@ -9,7 +9,6 @@
 #include <SaveLoad.h>
 #include <Games/Overrides.h>
 
-
 TESForm* TESForm::GetById(const uint32_t aId)
 {
     using TGetFormById = TESForm*(uint32_t);
@@ -82,7 +81,7 @@ void TESForm::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter
 
 void TESForm::SetSkipSaveFlag(bool aSet) noexcept
 {
-    if(aSet)
+    if (aSet)
     {
         unk10 = 0xFFFF;
     }
@@ -93,6 +92,15 @@ void TESForm::SetSkipSaveFlag(bool aSet) noexcept
     else
         flags &= ~flag;*/
 }
+
+#if TP_SKYRIM64
+void TESForm::SetTemporary()
+{
+    TP_THIS_FUNCTION(SetTemporary, void, TESForm);
+    POINTER_SKYRIMSE(SetTemporary, setTemporary, 14642);
+    TiltedPhoques::ThisCall(setTemporary, this);
+}
+#endif
 
 uint32_t TESForm::GetChangeFlags() const noexcept
 {
@@ -115,13 +123,13 @@ uint32_t TESForm::GetChangeFlags() const noexcept
     POINTER_SKYRIMSE(Unk*, s_singleton, 403330);
 
     const auto pUnk = *(s_singleton.Get());
-    
+
     ChangeFlags changeFlags;
     const auto cResult = TiltedPhoques::ThisCall(internalGetChangeFlags, pUnk->unk330, formID, changeFlags);
     if (!cResult)
         return 0;
 
-	return changeFlags.flags;
+    return changeFlags.flags;
 }
 
 TESNPC* TESNPC::Create(const String& acBuffer, const uint32_t aChangeFlags) noexcept

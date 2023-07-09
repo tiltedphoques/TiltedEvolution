@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_GiantRootBehavior.h>
 
-
-
 AnimationGraphDescriptor_GiantRootBehavior::AnimationGraphDescriptor_GiantRootBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -71,22 +69,7 @@ AnimationGraphDescriptor_GiantRootBehavior::AnimationGraphDescriptor_GiantRootBe
     };
 
     uint64_t key = 14787123347890181413;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
-        AnimationGraphDescriptor(
-        {kbAnimationDriven,
-            kIsAttackReady,
-            kIsStaggering,
-            kbEquipOk,
-            kbHeadTrackingOn,
-            kbAllowRotation},
-        {kSpeed,
-            kDirection,
-            kTurnDelta,
-            kSpeedSampled},
-        {kiSyncIdleLocomotion,
-            kiSyncDefaultState,
-            kiSyncTurnState,
-            kiState,
-            kiStateCurrent}));
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key, AnimationGraphDescriptor({kbAnimationDriven, kIsAttackReady, kIsStaggering, kbEquipOk, kbHeadTrackingOn, kbAllowRotation}, {kSpeed, kDirection, kTurnDelta, kSpeedSampled}, {kiSyncIdleLocomotion, kiSyncDefaultState, kiSyncTurnState, kiState, kiStateCurrent}));
 }

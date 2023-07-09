@@ -38,7 +38,6 @@ EquipManager* EquipManager::Get() noexcept
     return *s_singleton.Get();
 }
 
-
 bool EquipManager::EquipObject(Actor* apActor, BGSObjectInstance& arObject, uint32_t auiStackID, uint32_t auiNumber, const BGSEquipSlot* apSlot, bool abQueueEquip, bool abForceEquip, bool abPlaySounds, bool abApplyNow, bool abLocked)
 {
     spdlog::warn("EquipObject {:X}", arObject.pObject->formID);
@@ -85,7 +84,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, BGSObjectInstanc
         evt.Count = arParams.uiNumber;
         evt.ItemId = apItem->pObject->formID;
         // TODO: equip slot stuff
-        //evt.EquipSlotId
+        // evt.EquipSlotId
 
         World::Get().GetRunner().Trigger(evt);
     }
@@ -112,7 +111,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, BGSObjectInsta
         evt.ItemId = apItem->pObject->formID;
         evt.Unequip = true;
         // TODO: equip slot stuff
-        //evt.EquipSlotId
+        // evt.EquipSlotId
 
         World::Get().GetRunner().Trigger(evt);
     }
@@ -120,14 +119,15 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, BGSObjectInsta
     return TiltedPhoques::ThisCall(RealUnEquip, apThis, apActor, apItem, arParams);
 }
 
-static TiltedPhoques::Initializer s_equipmentHooks([]()
-{
-    POINTER_FALLOUT4(TEquip, s_equipFunc, 1474879);
-    POINTER_FALLOUT4(TUnEquip, s_unequipFunc, 1265293);
+static TiltedPhoques::Initializer s_equipmentHooks(
+    []()
+    {
+        POINTER_FALLOUT4(TEquip, s_equipFunc, 1474879);
+        POINTER_FALLOUT4(TUnEquip, s_unequipFunc, 1265293);
 
-    RealUnEquip = s_unequipFunc.Get();
-    RealEquip = s_equipFunc.Get();
+        RealUnEquip = s_unequipFunc.Get();
+        RealEquip = s_equipFunc.Get();
 
-    TP_HOOK(&RealUnEquip, UnEquipHook);
-    TP_HOOK(&RealEquip, EquipHook);
-});
+        TP_HOOK(&RealUnEquip, UnEquipHook);
+        TP_HOOK(&RealEquip, EquipHook);
+    });

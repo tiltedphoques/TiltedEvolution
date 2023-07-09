@@ -9,9 +9,9 @@ struct NotifyPartyJoined final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyPartyJoined;
 
-    NotifyPartyJoined() :
-        ServerMessage(Opcode),
-        IsLeader(false)
+    NotifyPartyJoined()
+        : ServerMessage(Opcode)
+        , IsLeader(false)
     {
     }
 
@@ -20,13 +20,7 @@ struct NotifyPartyJoined final : ServerMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifyPartyJoined& acRhs) const noexcept
-    {
-        return GetOpcode() == acRhs.GetOpcode() &&
-                PlayerIds == acRhs.PlayerIds &&
-                IsLeader == acRhs.IsLeader &&
-                LeaderPlayerId == acRhs.LeaderPlayerId;
-    }
+    bool operator==(const NotifyPartyJoined& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && PlayerIds == acRhs.PlayerIds && IsLeader == acRhs.IsLeader && LeaderPlayerId == acRhs.LeaderPlayerId; }
 
     Vector<uint32_t> PlayerIds{};
     bool IsLeader;

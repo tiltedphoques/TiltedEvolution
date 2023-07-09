@@ -10,7 +10,8 @@ struct WaitingFor3D
 {
     WaitingFor3D(const CharacterSpawnRequest& aSpawnRequest)
         : SpawnRequest(aSpawnRequest)
-    {}
+    {
+    }
 
     CharacterSpawnRequest SpawnRequest{};
 };

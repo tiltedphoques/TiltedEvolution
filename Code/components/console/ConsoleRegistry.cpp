@@ -92,22 +92,27 @@ void ConsoleRegistry::RegisterNatives()
 {
     spdlog::trace("ConsoleRegistry::RegisterNatives()");
 
-    RegisterCommand<>("help", "Show a list of commands", [&](const ArgStack&) {
-        m_out->info("<------Commands-({})--->", m_commands.size());
-        for (CommandBase* c : m_commands)
+    RegisterCommand<>(
+        "help", "Show a list of commands",
+        [&](const ArgStack&)
         {
-            m_out->info("/{}:  {}", c->m_name, c->m_desc);
-        }
-        m_out->info("<------Variables-({})--->", m_settings.size());
-        for (SettingBase* s : m_settings)
-        {
-            if (!s->IsHidden())
-                m_out->info("{}:  {}", s->name, s->desc);
-        }
-    });
+            m_out->info("<------Commands-({})--->", m_commands.size());
+            for (CommandBase* c : m_commands)
+            {
+                m_out->info("/{}:  {}", c->m_name, c->m_desc);
+            }
+            m_out->info("<------Variables-({})--->", m_settings.size());
+            for (SettingBase* s : m_settings)
+            {
+                if (!s->IsHidden())
+                    m_out->info("{}:  {}", s->name, s->desc);
+            }
+        });
 
     RegisterCommand<const char*, const char*>(
-        "set", R"(Set a setting e.g "set mysetting true")", [&](ArgStack& aStack) {
+        "set", R"(Set a setting e.g "set mysetting true")",
+        [&](ArgStack& aStack)
+        {
             const TiltedPhoques::String variableName{aStack.Pop<TiltedPhoques::String>()};
             if (variableName.empty())
             {
@@ -126,28 +131,20 @@ void ConsoleRegistry::RegisterNatives()
                 const auto value{aStack.Pop<TiltedPhoques::String>()};
                 switch (pSetting->type)
                 {
-                case SettingBase::Type::kBoolean: {
+                case SettingBase::Type::kBoolean:
+                {
                     auto result = BoolifyString(value);
                     if (result.has_value())
                         pSetting->data.as_boolean = *result;
                     break;
                 }
-                case SettingBase::Type::kInt:
-                    pSetting->data.as_int32 = ConvertStringValue(value.c_str(), pSetting->data.as_int32);
-                    break;
-                case SettingBase::Type::kUInt:
-                    pSetting->data.as_uint32 = ConvertStringValue(value.c_str(), pSetting->data.as_uint32);
-                    break;
-                case SettingBase::Type::kInt64:
-                    pSetting->data.as_int64 = ConvertStringValue(value.c_str(), pSetting->data.as_int64);
-                    break;
-                case SettingBase::Type::kUInt64:
-                    pSetting->data.as_uint64 = ConvertStringValue(value.c_str(), pSetting->data.as_uint64);
-                    break;
-                case SettingBase::Type::kFloat:
-                    pSetting->data.as_float = ConvertStringValue(value.c_str(), pSetting->data.as_float);
-                    break;
-                case SettingBase::Type::kString: {
+                case SettingBase::Type::kInt: pSetting->data.as_int32 = ConvertStringValue(value.c_str(), pSetting->data.as_int32); break;
+                case SettingBase::Type::kUInt: pSetting->data.as_uint32 = ConvertStringValue(value.c_str(), pSetting->data.as_uint32); break;
+                case SettingBase::Type::kInt64: pSetting->data.as_int64 = ConvertStringValue(value.c_str(), pSetting->data.as_int64); break;
+                case SettingBase::Type::kUInt64: pSetting->data.as_uint64 = ConvertStringValue(value.c_str(), pSetting->data.as_uint64); break;
+                case SettingBase::Type::kFloat: pSetting->data.as_float = ConvertStringValue(value.c_str(), pSetting->data.as_float); break;
+                case SettingBase::Type::kString:
+                {
                     static_cast<StringSetting*>(pSetting)->StoreValue(*pSetting, value.c_str());
                     break;
                 }
@@ -186,8 +183,7 @@ void ConsoleRegistry::AddSetting(TiltedPhoques::UniquePtr<SettingBase> apSetting
 CommandBase* ConsoleRegistry::FindCommand(const char* acName)
 {
     // TODO: Maybe lookup by some hash...
-    auto it = std::find_if(m_commands.begin(), m_commands.end(),
-                           [&](CommandBase* apCommand) { return std::strcmp(apCommand->m_name, acName) == 0; });
+    auto it = std::find_if(m_commands.begin(), m_commands.end(), [&](CommandBase* apCommand) { return std::strcmp(apCommand->m_name, acName) == 0; });
     if (it == m_commands.end())
         return nullptr;
     return *it;
@@ -196,8 +192,7 @@ CommandBase* ConsoleRegistry::FindCommand(const char* acName)
 SettingBase* ConsoleRegistry::FindSetting(const char* acName)
 {
     // TODO: Maybe lookup by some hash...
-    auto it = std::find_if(m_settings.begin(), m_settings.end(),
-                           [&](SettingBase* apSetting) { return std::strcmp(apSetting->name, acName) == 0; });
+    auto it = std::find_if(m_settings.begin(), m_settings.end(), [&](SettingBase* apSetting) { return std::strcmp(apSetting->name, acName) == 0; });
     if (it == m_settings.end())
         return nullptr;
     return *it;
@@ -267,9 +262,7 @@ void ConsoleRegistry::StoreCommandInHistory(const TiltedPhoques::String& acLine)
     }
 }
 
-ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand,
-                                                const TiltedPhoques::String* acStringArgs,
-                                                ArgStack& aStackOut)
+ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand, const TiltedPhoques::String* acStringArgs, ArgStack& aStackOut)
 {
     CommandBase::Type* pType = apCommand->m_pArgIndicesArray;
     for (size_t i = 0; i < apCommand->m_argCount; i++)
@@ -277,7 +270,8 @@ ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand,
         auto& stringArg = acStringArgs[i];
         switch (*pType)
         {
-        case CommandBase::Type::kBoolean: {
+        case CommandBase::Type::kBoolean:
+        {
             auto result = BoolifyString(stringArg);
             if (result.has_value())
             {
@@ -286,7 +280,8 @@ ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand,
             }
             return ResultAnd("Expected boolean argument", false);
         }
-        case CommandBase::Type::kNumeric: {
+        case CommandBase::Type::kNumeric:
+        {
             if (!IsNumber(stringArg))
             {
                 return ResultAnd("Expected argument of type numeric", false);
@@ -302,11 +297,8 @@ ResultAnd<bool> ConsoleRegistry::CreateArgStack(const CommandBase* apCommand,
             aStackOut.Push(value);
             break;
         }
-        case CommandBase::Type::kString:
-            aStackOut.Push(stringArg);
-            break;
-        default:
-            return ResultAnd("Couldn't handle value type", false);
+        case CommandBase::Type::kString: aStackOut.Push(stringArg); break;
+        default: return ResultAnd("Couldn't handle value type", false);
         }
         pType++;
     }

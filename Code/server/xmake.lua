@@ -1,5 +1,7 @@
 local function istable(t) return type(t) == 'table' end
 
+add_requires("sol2", {configs = {lua = "lua"}})
+
 local function build_server()
     set_kind("shared")
     set_group("Server")
@@ -18,6 +20,7 @@ local function build_server()
     add_deps(
         "CommonLib",
         "Console",
+        "Resources",
         "ESLoader",
         "CrashHandler",
         "BaseLib",

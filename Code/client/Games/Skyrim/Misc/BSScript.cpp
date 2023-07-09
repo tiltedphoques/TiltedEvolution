@@ -80,13 +80,12 @@ BSScript::Object* BSScript::Variable::GetObject() const noexcept
     return data.pObj;
 }
 
-template <class T>
-T* BSScript::Variable::ExtractComplexType() noexcept
+template <class T> T* BSScript::Variable::ExtractComplexType() noexcept
 {
     auto* pPolicy = GameVM::Get()->virtualMachine->GetObjectHandlePolicy();
     BSScript::Object* pBaseObject = GetObject();
 
-    if (!pBaseObject && !pPolicy)
+    if (!pBaseObject || !pPolicy)
         return nullptr;
 
     uint64_t handle = pBaseObject->GetHandle();
@@ -137,11 +136,14 @@ uint32_t BSScript::NativeFunctionBase::GetParamCount()
 
 void BSScript::NativeFunctionBase::GetParam(uint32_t aIndex, BSFixedString& apNameOut, Variable::Type& aTypeOut)
 {
-    if (aIndex < parameters.size) {
+    if (aIndex < parameters.size)
+    {
         auto& elem = parameters.data[aIndex];
         apNameOut = elem.name;
         aTypeOut = elem.type;
-    } else {
+    }
+    else
+    {
         apNameOut = "";
         aTypeOut = Variable::Type::kEmpty;
     }
@@ -167,8 +169,7 @@ bool BSScript::NativeFunctionBase::GetIsEmpty()
     return false;
 }
 
-auto BSScript::NativeFunctionBase::GetFunctionType()
-    -> FunctionType
+auto BSScript::NativeFunctionBase::GetFunctionType() -> FunctionType
 {
     return FunctionType::kNormal;
 }
@@ -209,10 +210,13 @@ bool BSScript::NativeFunctionBase::TranslateIPToLineNumber(uint32_t, uint32_t& a
 
 bool BSScript::NativeFunctionBase::GetVarNameForStackIndex(std::uint32_t aIndex, BSFixedString& aNameOut)
 {
-    if (aIndex < parameters.capacity) {
+    if (aIndex < parameters.capacity)
+    {
         aNameOut = parameters.data[aIndex].name;
         return true;
-    } else {
+    }
+    else
+    {
         aNameOut = "";
         return false;
     }
@@ -228,7 +232,7 @@ void BSScript::NativeFunctionBase::SetCallableFromTasklets(bool aCallable)
     isCallableFromTask = aCallable;
 }
 
-BSScript::IsRemotePlayerFunc::IsRemotePlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction, Variable::Type aType) 
+BSScript::IsRemotePlayerFunc::IsRemotePlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction, Variable::Type aType)
     : NativeFunction(apFunctionName, apClassName, true, 1)
 {
     pFunction = reinterpret_cast<void*>(aFunction);
@@ -257,7 +261,7 @@ bool BSScript::IsRemotePlayerFunc::MarshallAndDispatch(Variable* apBaseVar, IVir
     return true;
 }
 
-BSScript::IsPlayerFunc::IsPlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction, Variable::Type aType) 
+BSScript::IsPlayerFunc::IsPlayerFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction, Variable::Type aType)
     : NativeFunction(apFunctionName, apClassName, true, 1)
 {
     pFunction = reinterpret_cast<void*>(aFunction);

@@ -1,11 +1,15 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { takeUntil } from 'rxjs';
 import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';
 import { PopupNotification } from '../../models/popup-notification';
 import { DestroyService } from '../../services/destroy.service';
 import { GroupService } from '../../services/group.service';
 import { PopupNotificationService } from '../../services/popup-notification.service';
-
 
 @Component({
   selector: 'app-notification-popup-container',
@@ -16,7 +20,6 @@ import { PopupNotificationService } from '../../services/popup-notification.serv
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationPopupContainerComponent implements OnInit {
-
   notifications: PopupNotification[] = [];
 
   constructor(
@@ -24,8 +27,7 @@ export class NotificationPopupContainerComponent implements OnInit {
     private readonly groupService: GroupService,
     private readonly popupNotificationService: PopupNotificationService,
     private readonly cdr: ChangeDetectorRef,
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.popupNotificationService.message$
@@ -57,5 +59,4 @@ export class NotificationPopupContainerComponent implements OnInit {
     this.notifications = [];
     this.cdr.detectChanges();
   }
-
 }

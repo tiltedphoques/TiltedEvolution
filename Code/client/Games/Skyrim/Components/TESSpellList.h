@@ -10,9 +10,9 @@ struct TESSpellList : BaseFormComponent
 {
     struct Lists
     {
-        SpellItem** spells{ nullptr };
-        TESForm** unk4{ nullptr };
-        TESShout** shouts{ nullptr };
+        SpellItem** spells{nullptr};
+        TESForm** unk4{nullptr};
+        TESShout** shouts{nullptr};
         uint32_t spellCount{0};
         uint32_t unk4Count{0};
         uint32_t shoultCount{0};
@@ -24,4 +24,3 @@ struct TESSpellList : BaseFormComponent
 };
 
 static_assert(sizeof(TESSpellList::Lists) == 0x28);
-

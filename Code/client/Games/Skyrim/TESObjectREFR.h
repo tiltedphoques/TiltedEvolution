@@ -29,6 +29,8 @@ enum class ITEM_REMOVE_REASON
 
 struct TESObjectREFR : TESForm
 {
+    static TESObjectREFR* New() noexcept;
+
     enum ChangeFlags : uint32_t
     {
         CHANGE_REFR_MOVE = 1 << 1,
@@ -49,6 +51,8 @@ struct TESObjectREFR : TESForm
 
     static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
     static uint32_t* GetNullHandle() noexcept;
+
+    void GetHandle(uint32_t& aHandle) noexcept;
 
     static void GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept;
     static ExtraDataList* GetExtraDataFromItem(const Inventory::Entry& arEntry) noexcept;
@@ -198,6 +202,8 @@ struct TESObjectREFR : TESForm
     void AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSettingInventory = false) noexcept;
     void UpdateItemList(TESForm* pUnkForm) noexcept;
 
+    bool IsInInteriorCell() noexcept;
+
     BSHandleRefObject handleRefObject;
     uintptr_t unk1C;
     IAnimationGraphManagerHolder animationGraphHolder;
@@ -212,5 +218,5 @@ struct TESObjectREFR : TESForm
     uint16_t referenceFlags;
 };
 
-static_assert(sizeof(TESObjectREFR) == 0x98);
+static_assert(sizeof(TESObjectREFR) == 0xA0);
 static_assert(offsetof(TESObjectREFR, loadedState) == 0x68);

@@ -3,7 +3,7 @@
 #include <Forms/TESForm.h>
 #include <Components/TESFullName.h>
 
-struct TESWorldSpace : TESForm 
+struct TESWorldSpace : TESForm
 {
     virtual ~TESWorldSpace();
 

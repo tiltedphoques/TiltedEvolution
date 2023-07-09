@@ -1,7 +1,13 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { PopupNotification } from '../../models/popup-notification';
 import { DestroyService } from '../../services/destroy.service';
-
 
 @Component({
   selector: 'app-notification-popup',
@@ -10,7 +16,6 @@ import { DestroyService } from '../../services/destroy.service';
   providers: [DestroyService],
 })
 export class NotificationPopupComponent implements OnInit, OnDestroy {
-
   eraseTimer: number | null = null;
   eraseTimingStart?: number;
   eraseTTL: number;
@@ -58,5 +63,4 @@ export class NotificationPopupComponent implements OnInit, OnDestroy {
   async clickNotification() {
     this.remove.emit(true);
   }
-
 }

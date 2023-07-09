@@ -6,7 +6,8 @@ struct PartyLeaveRequest final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kPartyLeaveRequest;
 
-    PartyLeaveRequest() : ClientMessage(Opcode)
+    PartyLeaveRequest()
+        : ClientMessage(Opcode)
     {
     }
 
@@ -15,8 +16,5 @@ struct PartyLeaveRequest final : ClientMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const PartyLeaveRequest& achRhs) const noexcept
-    {
-        return GetOpcode() == achRhs.GetOpcode();
-    }
+    bool operator==(const PartyLeaveRequest& achRhs) const noexcept { return GetOpcode() == achRhs.GetOpcode(); }
 };

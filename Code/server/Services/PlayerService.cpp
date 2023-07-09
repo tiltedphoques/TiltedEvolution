@@ -1,6 +1,7 @@
 #include "Events/CharacterInteriorCellChangeEvent.h"
 #include "Events/CharacterExteriorCellChangeEvent.h"
 #include "Events/PlayerLeaveCellEvent.h"
+#include <Events/UpdateEvent.h>
 
 #include <Services/PlayerService.h>
 #include <Services/CharacterService.h>
@@ -17,6 +18,7 @@
 #include <Messages/PlayerLevelRequest.h>
 #include <Messages/NotifyPlayerLevel.h>
 #include <Messages/NotifyPlayerCellChanged.h>
+#include <Messages/NotifyPlayerPosition.h>
 
 namespace
 {
@@ -33,6 +35,7 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexc
 {
 }
 
+
 void SendPlayerCellChanged(const Player* apPlayer) noexcept
 {
     auto& cellComponent = apPlayer->GetCellComponent();
@@ -41,6 +44,7 @@ void SendPlayerCellChanged(const Player* apPlayer) noexcept
     notify.PlayerId = apPlayer->GetId();
     notify.WorldSpaceId = cellComponent.WorldSpaceId;
     notify.CellId = cellComponent.Cell;
+    notify.CenterCoords = cellComponent.CenterCoords;
 
     GameServer::Get()->SendToPlayers(notify, apPlayer);
 }
@@ -67,11 +71,7 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         if (ownedComponent.GetOwner() == pPlayer)
             continue;
 
-        const auto cellIt = std::find_if(std::begin(message.Cells), std::end(message.Cells),
-            [Cells = message.Cells, CharacterCell = characterCellComponent.Cell](auto playerCell)
-        {
-           return playerCell == CharacterCell;
-        });
+        const auto cellIt = std::find_if(std::begin(message.Cells), std::end(message.Cells), [Cells = message.Cells, CharacterCell = characterCellComponent.Cell](auto playerCell) { return playerCell == CharacterCell; });
 
         if (cellIt == std::end(message.Cells))
         {
@@ -170,7 +170,7 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
 
             GameId goldId(0, 0xF);
             int32_t goldCount = inventoryComponent.Content.GetEntryCountById(goldId);
-            int32_t goldToRemove = goldCount * goldLossFactor;
+            int32_t goldToRemove = static_cast<int32_t>(goldCount * goldLossFactor);
 
             Inventory::Entry entry{};
             entry.BaseId = goldId;

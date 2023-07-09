@@ -25,21 +25,11 @@ struct BSFixedString
             return pIterator;
         }
 
-        [[nodiscard]] bool IsAscii() const noexcept
-        {
-            return (GetExternData()->flags & 0x8000) == 0;
-        }
+        [[nodiscard]] bool IsAscii() const noexcept { return (GetExternData()->flags & 0x8000) == 0; }
 
-        [[nodiscard]] const char* AsAscii() const
-        {
-            return reinterpret_cast<const char*>(GetExternData()->data);
-        }
+        [[nodiscard]] const char* AsAscii() const { return reinterpret_cast<const char*>(GetExternData()->data); }
 
-        [[nodiscard]] const wchar_t* AsWide() const
-        {
-            return reinterpret_cast<const wchar_t*>(GetExternData()->data);
-        }
-
+        [[nodiscard]] const wchar_t* AsWide() const { return reinterpret_cast<const wchar_t*>(GetExternData()->data); }
     };
 
     static_assert(offsetof(Data, data) == 0x18);
@@ -54,20 +44,11 @@ struct BSFixedString
     void Release() noexcept;
     void Set(const char* acpStr) noexcept;
 
-    [[nodiscard]] bool IsAscii() const noexcept
-    {
-        return data->IsAscii();
-    }
+    [[nodiscard]] bool IsAscii() const noexcept { return data->IsAscii(); }
 
-    [[nodiscard]] const char* AsAscii() const
-    {
-        return data ? data->AsAscii() : nullptr;
-    }
+    [[nodiscard]] const char* AsAscii() const { return data ? data->AsAscii() : nullptr; }
 
-    [[nodiscard]] const wchar_t* AsWide() const
-    {
-        return data ? data->AsWide() : nullptr;
-    }
+    [[nodiscard]] const wchar_t* AsWide() const { return data ? data->AsWide() : nullptr; }
 
     Data* data;
 };

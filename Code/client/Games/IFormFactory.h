@@ -14,10 +14,5 @@ struct IFormFactory
 
     static IFormFactory* GetForType(const FormType aId) noexcept;
 
-    template<class T>
-    static T* Create()
-    {
-        return static_cast<T*>(GetForType(T::Type)->Create());
-    }
+    template <class T> static T* Create() { return static_cast<T*>(GetForType(T::Type)->Create()); }
 };
-

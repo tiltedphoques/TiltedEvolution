@@ -33,11 +33,13 @@
       "OK": "确定"
     },
     "NOTIFICATIONS": {
-      "MESSAGE_FROM": "消息自"
+      "MESSAGE_FROM": "消息自",
+      "ACCEPT": "接受",
+      "DECLINE": "拒绝"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "接受{{name}}的邀请。",
-      "LAUNCH_PARTY" : "组建团队",
+      "LAUNCH_PARTY": "组建团队",
       "INVITES": "邀请",
       "NO_INVITES": "您没有收到任何邀请",
       "EXPERIENCE_WARNING": "为保证最优的任务体验，请阅读<b>skyrim-together.com</b>上的游玩指导。其摘要如下：",
@@ -116,20 +118,32 @@
         "BOTTOM_LEFT": "左下"
       },
       "PARTY_ANCHOR_OFFSET_X": "水平偏移",
-      "PARTY_ANCHOR_OFFSET_Y": "铅垂偏移",
+      "PARTY_ANCHOR_OFFSET_Y": "垂直偏移",
       "LENGTH": "{{length}}秒",
       "UI": "UI",
       "LANGUAGE": "语言",
       "DEBUG": "调试",
       "SHOW_DEBUG_INFO": "显示调试信息",
+      "FONT_SIZE": "字体大小",
+      "FONT_SIZES": {
+        "XS": "特小",
+        "S": "小",
+        "M": "中",
+        "L": "大",
+        "XL": "特大"
+      },
       "BACK": "返回"
     }
   },
   "SERVICE": {
     "CLIENT": {
-      "CONNECTION_LOST": "连接已丢失，正在重新连接。剩余{{remainingReconnectionAttempt}次尝试。",
-      "CONNECTED": "成功连接至服务器",
-      "DISCONNECTED": "与服务器断开连接"
+      "CONNECTION_LOST": "连接已丢失，正在重新连接。剩余{{remainingReconnectionAttempt}}次尝试。",
+      "CONNECTED": "成功连接至服务器。",
+      "DISCONNECTED": "与服务器断开连接。"
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "可用的聊天指令：{{cmds}}",
+      "COMMAND_NOT_FOUND": "未能识别指令：“{{cmd}}”"
     },
     "GROUP": {
       "LEVEL_UP": "{{name}}升级至{{level}}级。",

@@ -1,14 +1,15 @@
-@import "functions/rem";
-@import "functions/mod";
+@import 'functions/rem';
+@import 'functions/mod';
 
-@import "env";
+@import 'env';
 
 :host {
   position: relative;
   display: flex;
   gap: 1em;
   width: 70vw;
-  --server-list-row-height: calc(16 * 100vw / 1920 * 2);
+  --server-list-font-size: 1rem;
+  --server-list-row-height: 2rem;
 }
 
 .server-list-action-bar {
@@ -58,7 +59,7 @@
 }
 
 .scrollbar-offset {
-  margin-right: rem($-size-font, 16px);
+  margin-right: 1rem;
   //overflow-y: scroll;
 }
 
@@ -84,11 +85,10 @@
 
 .search-list-server {
   display: inline-block;
-  background-color: rgba($color: #292929, $alpha: 0.60);
+  background-color: rgba($color: #292929, $alpha: 0.6);
   font-size: 0.85rem;
   border-radius: 7px;
   height: 1.5rem;
-  border: none;
 }
 
 .server-list {
@@ -100,7 +100,6 @@
   cdk-virtual-scroll-viewport {
     overflow-y: scroll;
   }
-
 
   .server-list-table {
     width: 100%;
@@ -115,12 +114,13 @@
       width: 100%;
       border-bottom: 1px solid grey;
       border-collapse: separate;
+      font-size: var(--server-list-font-size);
 
       &.odd {
         background: transparentize(mod($-color-background, 1), 0.95);
       }
 
-      :first-child {
+      :nth-child(2) {
         flex: 1 1 auto;
       }
 
@@ -138,7 +138,7 @@
     }
 
     .offline {
-      background-color: #ff9494
+      background-color: #ff9494;
     }
 
     .server-compatible {
@@ -175,4 +175,3 @@
     }
   }
 }
-

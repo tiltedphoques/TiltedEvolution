@@ -52,13 +52,15 @@ void TP_MAKE_THISCALL(HookInterruptCast, ActorMagicCaster, bool abRefund)
     TiltedPhoques::ThisCall(RealInterruptCast, apThis, abRefund);
 }
 
-static TiltedPhoques::Initializer s_actorMagicCasterHooks([]() {
-    POINTER_SKYRIMSE(TSpellCast, s_spellCast, 34144);
-    POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 34140);
+static TiltedPhoques::Initializer s_actorMagicCasterHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TSpellCast, s_spellCast, 34144);
+        POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 34140);
 
-    RealSpellCast = s_spellCast.Get();
-    RealInterruptCast = s_interruptCast.Get();
+        RealSpellCast = s_spellCast.Get();
+        RealInterruptCast = s_interruptCast.Get();
 
-    TP_HOOK(&RealSpellCast, HookSpellCast);
-    TP_HOOK(&RealInterruptCast, HookInterruptCast);
-});
+        TP_HOOK(&RealSpellCast, HookSpellCast);
+        TP_HOOK(&RealInterruptCast, HookInterruptCast);
+    });
