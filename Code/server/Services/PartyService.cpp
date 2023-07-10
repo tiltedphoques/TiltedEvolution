@@ -219,7 +219,7 @@ void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket
             spdlog::debug("[PartyService]: Inviter not in party, cancelling invite.");
             return;
         }
-        else if (inviteePartyComponent.JoinedPartyId)
+        else if (inviteePartyComponent.JoinedPartyId == inviterPartyComponent.JoinedPartyId)
         {
             spdlog::debug("[PartyService]: Invitee in party already, cancelling invite.");
             return;
@@ -283,8 +283,8 @@ void PartyService::OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteReques
         if (selfPartyComponent.JoinedPartyId) // Remove from party if in one already. TODO: Decide if player needs to be out of party first
         {
             spdlog::debug("[PartyService]: Invitee already in party, cancelling.");
-            // RemovePlayerFromParty(pSelf, false); // skip sending left event, will override with SendPartyJoinedEvent
-            return;
+            RemovePlayerFromParty(pSelf); // skip sending left event, will override with SendPartyJoinedEvent
+            //return;
         }
 
         party.Members.push_back(pSelf);
