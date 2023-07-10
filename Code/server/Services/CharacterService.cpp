@@ -233,7 +233,6 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.Owner = isOwner;
             response.AllActorValues = actorValuesComponent.CurrentActorValues;
             response.CurrentInventory = inventoryComponent.Content;
-            response.BaseId = characterComponent.BaseId.Id;
             response.IsDead = characterComponent.IsDead();
             response.IsWeaponDrawn = characterComponent.IsWeaponDrawn();
             response.PlayerId = characterComponent.PlayerId;
@@ -593,6 +592,12 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     if (!isCustom)
     {
         m_world.emplace<FormIdComponent>(cEntity, gameId.BaseId, gameId.ModId);
+    }
+    else if (baseId != GameId{} && !isTemporary)
+    {
+        m_world.destroy(cEntity);
+        spdlog::warn("Unexpected NpcId, player {:x} might be forging packets", acMessage.pPlayer->GetConnectionId());
+        return;
     }
 
     auto* const pServer = GameServer::Get();
