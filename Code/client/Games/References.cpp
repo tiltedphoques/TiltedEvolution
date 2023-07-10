@@ -586,42 +586,6 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
     return pActor;
 }
 
-bool Actor::TrySetLeveledActor(uint32_t aTargetBaseFormId) noexcept
-{
-    TP_THIS_FUNCTION(TRecalcLeveledActor, bool, Actor, uint32_t);
-    POINTER_SKYRIMSE(TRecalcLeveledActor, recalcLeveledActor, 37323);
-
-    bool result = false;
-
-    for (int i = 0; i < 30; i++)
-    {
-        TESNPC* pNpc = Cast<TESNPC>(baseForm);
-        TESNPC* pBaseNpc = pNpc->GetTemplateBase();
-        if (pBaseNpc && pBaseNpc->formID == aTargetBaseFormId)
-        {
-            result = true;
-            break;
-        }
-
-        TiltedPhoques::ThisCall(recalcLeveledActor, this, aTargetBaseFormId);
-    }
-
-    TESNPC* pNpc = Cast<TESNPC>(baseForm);
-    TESNPC* pBaseNpc = pNpc->GetTemplateBase();
-    result = pBaseNpc && pBaseNpc->formID == aTargetBaseFormId;
-
-    spdlog::error("base npc: {:X}, result: {}", pBaseNpc->formID, result);
-
-    TP_THIS_FUNCTION(TQueueRef, void, void, TESObjectREFR*, uint64_t, bool);
-    POINTER_SKYRIMSE(TQueueRef, s_queueRef, 13057);
-
-    POINTER_SKYRIMSE(void*, s_modelLoader, 400332);
-
-    TiltedPhoques::ThisCall(s_queueRef, *s_modelLoader.Get(), this, 1, false);
-
-    return result;
-}
-
 void Actor::SetLevelMod(uint32_t aLevel) noexcept
 {
     TP_THIS_FUNCTION(TActorSetLevelMod, void, ExtraDataList, uint32_t);
