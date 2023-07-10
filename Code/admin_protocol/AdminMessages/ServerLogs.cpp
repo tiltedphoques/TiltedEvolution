@@ -1,6 +1,5 @@
 #include "ServerLogs.h"
 
-
 void ServerLogs::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteString(aWriter, Logs);

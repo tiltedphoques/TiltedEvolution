@@ -1,51 +1,41 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, Subject, Subscription, timer } from 'rxjs';
-import { Player } from '../models/player';
-import { NotificationType, PopupNotification } from '../models/popup-notification';
+import { Injectable } from '@angular/core';
+import { faHandshakeSimple } from '@fortawesome/free-solid-svg-icons';
+import { Subject } from 'rxjs';
+import { PopupNotification } from '../models/popup-notification';
 import { Sound, SoundService } from './sound.service';
-
 
 @Injectable({
   providedIn: 'root',
 })
-export class PopupNotificationService implements OnDestroy {
+export class PopupNotificationService {
+  private message = new Subject<PopupNotification>();
+  public message$ = this.message.asObservable();
+  private messagesCleared = new Subject<void>();
+  public messagesCleared$ = this.messagesCleared.asObservable();
 
-  private messageSubject = new Subject<PopupNotification>();
-  private timerSubscription: Subscription;
+  constructor(private readonly soundService: SoundService) {}
 
-  constructor(
-    private readonly soundService: SoundService,
-  ) {
-  }
-
-  ngOnDestroy() {
-    if (this.timerSubscription) {
-      this.timerSubscription.unsubscribe();
-    }
-  }
-
-  public get message(): Observable<PopupNotification> {
-    return this.messageSubject.asObservable();
-  }
-
-  public setMessage(msg: string, typeNotification: NotificationType, player?: Player) {
-    if (this.timerSubscription) {
-      this.timerSubscription.unsubscribe();
-    }
-
-    this.messageSubject.next({ message: msg, type: typeNotification, player: player });
-
+  public addMessage(notification: PopupNotification) {
+    this.message.next(notification);
     this.soundService.play(Sound.Focus);
+  }
 
-    const source = timer(3000);
-
-    this.timerSubscription = source.subscribe(() => {
-      this.messageSubject.next({ message: '', type: NotificationType.Connection, player: undefined });
+  public addPartyInvite(from: string, callback: () => void) {
+    this.addMessage({
+      messageKey: 'SERVICE.PLAYER_LIST.PARTY_INVITE',
+      messageParams: { from },
+      icon: faHandshakeSimple,
+      duration: 30000,
+      actions: [
+        {
+          nameKey: 'COMPONENT.NOTIFICATIONS.ACCEPT',
+          callback,
+        },
+      ],
     });
   }
 
-  public clearMessage() {
-    this.messageSubject.next({ message: '' });
+  public clearMessages() {
+    this.messagesCleared.next();
   }
-
 }

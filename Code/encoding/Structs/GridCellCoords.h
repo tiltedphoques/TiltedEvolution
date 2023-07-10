@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <Structs/Vector3_NetQuantize.h>
 #include <limits>
 
@@ -25,10 +24,7 @@ struct GridCellCoords
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
 
-    void Reset() noexcept
-    {
-        X = Y = std::numeric_limits<int32_t>::max();
-    }
+    void Reset() noexcept { X = Y = std::numeric_limits<int32_t>::max(); }
 
     int32_t X{};
     int32_t Y{};

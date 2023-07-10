@@ -1,8 +1,6 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_DraugrBehavior.h>
 
-
-
 AnimationGraphDescriptor_DraugrBehavior::AnimationGraphDescriptor_DraugrBehavior(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
@@ -87,29 +85,10 @@ AnimationGraphDescriptor_DraugrBehavior::AnimationGraphDescriptor_DraugrBehavior
     };
 
     uint64_t key = 1556693752012287718;
-    
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
-        {kbAnimationDriven,
-            kIsAttackReady,
-            kbAllowRotation,
-            kIsFiringBow,
-            kIsEquipping,
-            kIsUnequipping,
-            kbWeapReady,
-            kbEquipOk,
-            kbMLh_Ready,
-            kbCastReady,
-            kbCanHeadTrack,
-            kbHeadTracking},
-        {kTurnDelta,
-            kDirection,
-            kSpeed,
-            kSampledSpeed},
-        {kiSyncTurnState,
-            kiRightHandType,
-            kiLeftHandType,
-            kiSyncIdleLocomotion,
-            kcurrentDefaultState,
-            kiState}));
+            {kbAnimationDriven, kIsAttackReady, kbAllowRotation, kIsFiringBow, kIsEquipping, kIsUnequipping, kbWeapReady, kbEquipOk, kbMLh_Ready, kbCastReady, kbCanHeadTrack, kbHeadTracking}, {kTurnDelta, kDirection, kSpeed, kSampledSpeed},
+            {kiSyncTurnState, kiRightHandType, kiLeftHandType, kiSyncIdleLocomotion, kcurrentDefaultState, kiState}));
 }

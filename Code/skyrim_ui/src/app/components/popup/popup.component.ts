@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { animation } from './popup.animation';
 
-
 @Component({
   selector: 'app-popup',
   templateUrl: './popup.component.html',
@@ -9,5 +8,4 @@ import { animation } from './popup.animation';
   animations: [animation],
   host: { '[@popup]': 'true' },
 })
-export class PopupComponent {
-}
+export class PopupComponent {}

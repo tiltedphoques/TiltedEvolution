@@ -169,11 +169,12 @@ struct TESObjectREFR : TESForm
 
     void SetRotation(float aX, float aY, float aZ) noexcept;
 
+    BSPointerHandle<TESObjectREFR> GetHandle() const noexcept;
     uint32_t GetCellId() const noexcept;
     struct TESWorldSpace* GetWorldSpace() const noexcept;
     ExtraDataList* GetExtraDataList() noexcept;
     ActorValueInfo* GetActorValueInfo(uint32_t aId) const noexcept;
-    Lock* GetLock() noexcept;
+    Lock* GetLock() const noexcept;
     const BGSEquipSlot* GetEquipSlot(uint32_t uiIndex) const noexcept;
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
@@ -199,17 +200,16 @@ struct TESObjectREFR : TESForm
     void AddOrRemoveItem(const Inventory::Entry& arEntry) noexcept;
 
 public:
-
     BSHandleRefObject handleRefObject;
     uint8_t unk20[0x48 - 0x30];
     IAnimationGraphManagerHolder animationGraphHolder;
     uint8_t unk50[0x58 - 0x50];
     ActorValueOwner actorValueOwner; // used when (flags >> 11) & 1 == 0 other wise uses the baseform's in TESActorBase
-    void* unk60; 
+    void* unk60;
     uint8_t unk68[0xB8 - 0x68];
     TESObjectCELL* parentCell;
     NiPoint3 rotation;
-    uint32_t padCC; 
+    uint32_t padCC;
     NiPoint3 position;
     uint8_t unkDC[0xE0 - 0xDC];
     TESForm* baseForm;

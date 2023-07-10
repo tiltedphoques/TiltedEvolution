@@ -4,16 +4,11 @@ struct GRefCountImplCore
 {
     virtual ~GRefCountImplCore() = default;
 
-    static void CheckInvalidDelete(GRefCountImplCore*)
-    {
-    }
+    static void CheckInvalidDelete(GRefCountImplCore*) {}
 
-    [[nodiscard]] constexpr uint32_t GetRefCount() const noexcept
-    {
-        return m_refCount;
-    }
+    [[nodiscard]] constexpr uint32_t GetRefCount() const noexcept { return m_refCount; }
 
-  protected:
+protected:
     uint32_t m_refCount{1};
     std::uint32_t _pad0C{0};
 };
@@ -24,14 +19,12 @@ struct GRefCountImpl : GRefCountImplCore
 };
 static_assert(sizeof(GRefCountImpl) == 0x10);
 
-template <class Base, std::uint32_t StatType>
-struct GRefCountBaseStatImpl : Base
+template <class Base, std::uint32_t StatType> struct GRefCountBaseStatImpl : Base
 {
     // GFC_MEMORY_REDEFINE_NEW_IMPL(Base, GFC_REFCOUNTALLOC_CHECK_DELETE, StatType);
 };
 
-template <class T, std::uint32_t STAT>
-struct GRefCountBase : GRefCountBaseStatImpl<GRefCountImpl, STAT>
+template <class T, std::uint32_t STAT> struct GRefCountBase : GRefCountBaseStatImpl<GRefCountImpl, STAT>
 {
     enum
     {
@@ -89,7 +82,7 @@ struct FxDelegateHandler : GRefCountBase<FxDelegateHandler, GStatGroups::kGStat_
 
     class CallbackProcessor
     {
-      public:
+    public:
         virtual ~CallbackProcessor() = default;
         virtual void Process(const void* apMethodName, CallbackFn* apMethod) = 0;
     };
@@ -162,20 +155,11 @@ struct IMenu : FxDelegateHandler
     void SetFlag(uint32_t auiFlag);
     void ClearFlag(uint32_t auiFlag);
 
-    bool PausesGame() const
-    {
-        return uiMenuFlags & kPausesGame;
-    }
+    bool PausesGame() const { return uiMenuFlags & kPausesGame; }
 
-    bool FreezesBackground() const
-    {
-        return uiMenuFlags & kFreezeFrameBackground;
-    }
+    bool FreezesBackground() const { return uiMenuFlags & kFreezeFrameBackground; }
 
-    bool FreezesFramePause() const
-    {
-        return uiMenuFlags & kFreezeFramePause;
-    }
+    bool FreezesFramePause() const { return uiMenuFlags & kFreezeFramePause; }
 
     void* uiMovie{nullptr};
     int8_t depthPriority{3};
@@ -187,6 +171,5 @@ struct IMenu : FxDelegateHandler
     void* fxDelegate{nullptr};
 };
 
-constexpr auto x = offsetof(IMenu, IMenu::uiMenuFlags);
-
+static_assert(offsetof(IMenu, IMenu::uiMovie) == 16);
 static_assert(offsetof(IMenu, IMenu::uiMenuFlags) == 0x1C);

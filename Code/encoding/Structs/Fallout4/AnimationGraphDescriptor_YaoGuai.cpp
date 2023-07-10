@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_YaoGuai.h>
 
-
-
-AnimationGraphDescriptor_YaoGuai::AnimationGraphDescriptor_YaoGuai(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_YaoGuai::AnimationGraphDescriptor_YaoGuai(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -102,7 +99,8 @@ AnimationGraphDescriptor_YaoGuai::AnimationGraphDescriptor_YaoGuai(
 
     uint64_t key = 837991345629064437;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbGraphWantsHeadTracking,
@@ -135,6 +133,5 @@ AnimationGraphDescriptor_YaoGuai::AnimationGraphDescriptor_YaoGuai(
                 kiSyncIdleLocomotion,
                 kcHitReactionBodyPart,
                 kiRecoilSelector,
-            }
-        ));
+            }));
 }

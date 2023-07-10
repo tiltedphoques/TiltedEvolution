@@ -19,8 +19,5 @@ struct LocalAnimationComponent
         return Actions[Actions.size() - 1];
     }
 
-    void Append(const ActionEvent& acEvent) noexcept
-    {
-        Actions.push_back(acEvent);
-    }
+    void Append(const ActionEvent& acEvent) noexcept { Actions.push_back(acEvent); }
 };

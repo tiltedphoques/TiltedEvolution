@@ -12,5 +12,4 @@ struct Admin : Widget
     void Update(AdminApp& aApp) override;
 
 private:
-
 };

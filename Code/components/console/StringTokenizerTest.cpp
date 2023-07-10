@@ -59,4 +59,4 @@ TEST(StringTokenizer, Tokinize)
     }
 }
 } // namespace
-}
+} // namespace Console

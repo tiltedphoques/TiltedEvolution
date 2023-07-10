@@ -4,5 +4,5 @@ BGSObjectInstance::BGSObjectInstance(TESForm* apObject, TBO_InstanceData* apInst
 {
     TP_THIS_FUNCTION(TBGSObjectInstance, void, BGSObjectInstance, TESForm* apObject, TBO_InstanceData* apInstanceData);
     POINTER_FALLOUT4(TBGSObjectInstance, bgsObjectInstance, 1095749);
-    ThisCall(bgsObjectInstance, this, apObject, apInstanceData);
+    TiltedPhoques::ThisCall(bgsObjectInstance, this, apObject, apInstanceData);
 }

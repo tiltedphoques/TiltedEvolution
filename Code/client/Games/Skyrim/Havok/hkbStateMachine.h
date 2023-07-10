@@ -9,5 +9,3 @@ struct hkbStateMachine
 };
 
 static_assert(offsetof(hkbStateMachine, name) == 0x38);
-
-

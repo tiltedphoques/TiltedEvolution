@@ -22,17 +22,13 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     auto& questComponent = pPlayer->GetQuestLogComponent();
     auto& entries = questComponent.QuestContent.Entries;
 
-    auto questIt = std::find_if(entries.begin(), entries.end(), [&message](const auto& e) 
-    { 
-        return e.Id == message.Id;
-    });
+    auto questIt = std::find_if(entries.begin(), entries.end(), [&message](const auto& e) { return e.Id == message.Id; });
 
     NotifyQuestUpdate notify{};
     notify.Id = message.Id;
     notify.Stage = message.Stage;
 
-    if (message.Status == RequestQuestUpdate::Started || 
-        message.Status == RequestQuestUpdate::StageUpdate)
+    if (message.Status == RequestQuestUpdate::Started || message.Status == RequestQuestUpdate::StageUpdate)
     {
         // in order to prevent bugs when a quest is in progress
         // and being updated we add it as a new quest record to
@@ -49,8 +45,8 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
 
                 notify.Status = NotifyQuestUpdate::Started;
             }
-        } 
-        else 
+        }
+        else
         {
             spdlog::debug("Updated quest: {:X}:{:X}, stage: {}", message.Id.ModId, message.Id.BaseId, message.Stage);
 

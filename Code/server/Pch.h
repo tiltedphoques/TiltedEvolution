@@ -43,19 +43,20 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
+#include <sol/sol.hpp>
 
 using namespace std::chrono_literals;
 
-using TiltedPhoques::Vector;
-using TiltedPhoques::UniquePtr;
-using TiltedPhoques::String;
 using TiltedPhoques::ConnectionId_t;
-using TiltedPhoques::MakeUnique;
 using TiltedPhoques::MakeShared;
-using TiltedPhoques::Server;
-using TiltedPhoques::ViewBuffer;
-using TiltedPhoques::ScopedAllocator;
+using TiltedPhoques::MakeUnique;
 using TiltedPhoques::Map;
+using TiltedPhoques::ScopedAllocator;
+using TiltedPhoques::Server;
+using TiltedPhoques::String;
+using TiltedPhoques::UniquePtr;
+using TiltedPhoques::Vector;
+using TiltedPhoques::ViewBuffer;
 
 #undef GetClassName
 

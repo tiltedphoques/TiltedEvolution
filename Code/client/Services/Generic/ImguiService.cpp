@@ -10,7 +10,8 @@
 // According to imgui documentation we have to do it this way in order to avoid link conflicts with windows.h
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-ImguiService::ImguiService() : OnDraw(m_drawSignal)
+ImguiService::ImguiService()
+    : OnDraw(m_drawSignal)
 {
 }
 

@@ -3,9 +3,14 @@ import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { Sound, SoundService } from './sound.service';
 
-
 export interface ErrorEvent {
-  error: 'wrong_version' | 'mods_mismatch' | 'client_mods_disallowed' | 'wrong_password'  | 'server_full'| 'no_reason';
+  error:
+    | 'wrong_version'
+    | 'mods_mismatch'
+    | 'client_mods_disallowed'
+    | 'wrong_password'
+    | 'server_full'
+    | 'no_reason';
   data?: Record<any, any>;
 }
 
@@ -24,30 +29,23 @@ export interface ClientModsDisallowedErrorEvent extends ErrorEvent {
   data: { mods: ('SKSE' | 'MO2')[] };
 }
 
-export interface ServerFullErrorEvent extends ErrorEvent {
-  error: 'server_full';
-}
-
 export type ErrorEvents =
   | WrongVersionErrorEvent
   | ModsMismatchErrorEvent
   | ClientModsDisallowedErrorEvent
-  | ServerFullErrorEvent
-  | ErrorEvent
+  | ErrorEvent;
 
 @Injectable({
   providedIn: 'root',
 })
 export class ErrorService {
-
   private error = new BehaviorSubject<string>('');
   public error$ = this.error.asObservable();
 
   constructor(
     private readonly sound: SoundService,
     private readonly translocoService: TranslocoService,
-  ) {
-  }
+  ) {}
 
   getError() {
     return this.error.getValue();
@@ -63,23 +61,27 @@ export class ErrorService {
       switch (error.error) {
         case 'mods_mismatch':
           let mods = '';
-          const install = error.data.mods.filter(mod => mod[1] === '0').map(mod => mod[0]);
+          const install = error.data.mods
+            .filter(mod => mod[1] === '0')
+            .map(mod => mod[0]);
           if (install.length > 0) {
             mods += '\n\n<hr>\n';
             mods += await firstValueFrom(
               this.translocoService.selectTranslate(
                 'SERVICE.ERROR.ERRORS.MODS_MISMATCH_INSTALL',
-                { mods: `<strong>${ install.join(', ') }</strong>` },
+                { mods: `<strong>${install.join(', ')}</strong>` },
               ),
             );
           }
-          const remove = error.data.mods.filter(mod => mod[1] !== '0').map(mod => mod[0]);
+          const remove = error.data.mods
+            .filter(mod => mod[1] !== '0')
+            .map(mod => mod[0]);
           if (remove.length > 0) {
             mods += '\n\n<hr>\n';
             mods += await firstValueFrom(
               this.translocoService.selectTranslate(
                 'SERVICE.ERROR.ERRORS.MODS_MISMATCH_REMOVE',
-                { mods: `<strong>${ remove.join(', ') }</strong>` },
+                { mods: `<strong>${remove.join(', ')}</strong>` },
               ),
             );
           }
@@ -90,7 +92,10 @@ export class ErrorService {
           break;
       }
       message = await firstValueFrom(
-        this.translocoService.selectTranslate('SERVICE.ERROR.ERRORS.' + error.error.toUpperCase(), data),
+        this.translocoService.selectTranslate(
+          'SERVICE.ERROR.ERRORS.' + error.error.toUpperCase(),
+          data,
+        ),
       );
     }
     this.error.next(message);
@@ -100,5 +105,4 @@ export class ErrorService {
     this.sound.play(Sound.Ok);
     this.error.next('');
   }
-
 }

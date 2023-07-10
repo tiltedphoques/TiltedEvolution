@@ -17,29 +17,33 @@
 
 #include <Messages/AuthenticationRequest.h>
 #include <Messages/ServerMessageFactory.h>
+#include <Messages/NotifySettingsChange.h>
 #include <Packet.hpp>
 
 #include <ScriptExtender.h>
 #include <Services/DiscordService.h>
 
-
-//#include <imgui_internal.h>
+// #include <imgui_internal.h>
 
 static constexpr wchar_t kMO2DllName[] = L"usvfs_x64.dll";
 
 using TiltedPhoques::Packet;
 
 TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
-    : m_world(aWorld), m_dispatcher(aDispatcher)
+    : m_world(aWorld)
+    , m_dispatcher(aDispatcher)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
+    m_settingsChangeConnection = m_dispatcher.sink<NotifySettingsChange>().connect<&TransportService::HandleNotifySettingsChange>(this);
 
     m_connected = false;
 
-    auto handlerGenerator = [this](auto& x) {
+    auto handlerGenerator = [this](auto& x)
+    {
         using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-        m_messageHandlers[T::Opcode] = [this](UniquePtr<ServerMessage>& apMessage) {
+        m_messageHandlers[T::Opcode] = [this](UniquePtr<ServerMessage>& apMessage)
+        {
             const auto pRealMessage = TiltedPhoques::CastUnique<T>(std::move(apMessage));
             m_dispatcher.trigger(*pRealMessage);
         };
@@ -50,7 +54,8 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher)
     ServerMessageFactory::Visit(handlerGenerator);
 
     // Override authentication response
-    m_messageHandlers[AuthenticationResponse::Opcode] = [this](UniquePtr<ServerMessage>& apMessage) {
+    m_messageHandlers[AuthenticationResponse::Opcode] = [this](UniquePtr<ServerMessage>& apMessage)
+    {
         const auto pRealMessage = TiltedPhoques::CastUnique<AuthenticationResponse>(std::move(apMessage));
         HandleAuthenticationResponse(*pRealMessage);
     };
@@ -62,10 +67,7 @@ bool TransportService::Send(const ClientMessage& acMessage) const noexcept
 
     struct ScopedReset
     {
-        ~ScopedReset()
-        {
-            s_allocator.Reset();
-        }
+        ~ScopedReset() { s_allocator.Reset(); }
     } allocatorGuard;
 
     if (IsConnected())
@@ -147,6 +149,9 @@ void TransportService::OnConnected()
 
     modSystem.GetServerModId(pPlayer->parentCell->formID, request.CellId);
 
+    TES* pTes = TES::Get();
+    request.CenterCoords = {pTes->centerGridX, pTes->centerGridY};
+
     request.Level = pPlayer->GetLevel();
 
     Send(request);
@@ -195,16 +200,16 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
     {
     case AR::kWrongVersion:
         ErrorInfo += "\"error\": \"wrong_version\", \"data\": {";
-        ErrorInfo +=
-            fmt::format("\"expectedVersion\": \"{}\", \"version\": \"{}\"", acMessage.Version, BUILD_COMMIT);
+        ErrorInfo += fmt::format("\"expectedVersion\": \"{}\", \"version\": \"{}\"", acMessage.Version, BUILD_COMMIT);
         ErrorInfo += "}";
         break;
-    case AR::kModsMismatch: {
+    case AR::kModsMismatch:
+    {
         ErrorInfo += "\"error\": \"mods_mismatch\", \"data\": {\"mods\": [";
         bool first = true;
         for (const auto& m : acMessage.UserMods.ModList)
         {
-            if(!first)
+            if (!first)
                 ErrorInfo += ",";
             ErrorInfo += fmt::format("[\"{}\",\"{}\"]", m.Filename.c_str(), m.Id);
             first = false;
@@ -212,28 +217,29 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
         ErrorInfo += "]}";
         break;
     }
-    case AR::kClientModsDisallowed: {
+    case AR::kClientModsDisallowed:
+    {
         ErrorInfo += "\"error\": \"client_mods_disallowed\", \"data\": { \"mods\": [";
         if (acMessage.SKSEActive)
             ErrorInfo += "\"SKSE\"";
         if (acMessage.MO2Active)
             if (acMessage.SKSEActive)
                 ErrorInfo += ",";
-            ErrorInfo += "\"MO2\"";
+        ErrorInfo += "\"MO2\"";
         ErrorInfo += "]}";
         break;
     }
-    case AR::kWrongPassword: {
+    case AR::kWrongPassword:
+    {
         ErrorInfo += "\"error\": \"wrong_password\"";
         break;
     }
-    case AR::kServerFull: {
+    case AR::kServerFull:
+    {
         ErrorInfo += "\"error\": \"server_full\"";
         break;
     }
-    default:
-        ErrorInfo += "\"error\": \"no_reason\"";
-        break;
+    default: ErrorInfo += "\"error\": \"no_reason\""; break;
     }
 
     ErrorInfo += "}";
@@ -246,4 +252,10 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
     }
 
     m_dispatcher.trigger(errorEvent);
+}
+
+void TransportService::HandleNotifySettingsChange(const NotifySettingsChange& acMessage) noexcept
+{
+    m_world.SetServerSettings(acMessage.Settings);
+    m_dispatcher.trigger(acMessage.Settings);
 }

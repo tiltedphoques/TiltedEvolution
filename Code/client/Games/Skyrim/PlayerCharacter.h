@@ -3,6 +3,7 @@
 #include <Actor.h>
 #include <Misc/TintMask.h>
 #include <Forms/ActorValueInfo.h>
+#include <BSCore/BSTArray.h>
 
 struct Skills
 {
@@ -33,44 +34,25 @@ struct Skills
     {
         switch (aActorValue)
         {
-        case ActorValueInfo::kOneHanded:
-            return kOneHanded;
-        case ActorValueInfo::kTwoHanded:
-            return kTwoHanded;
-        case ActorValueInfo::kMarksman:
-            return kArchery;
-        case ActorValueInfo::kBlock:
-            return kBlock;
-        case ActorValueInfo::kSmithing:
-            return kSmithing;
-        case ActorValueInfo::kHeavyArmor:
-            return kHeavyArmor;
-        case ActorValueInfo::kLightArmor:
-            return kLightArmor;
-        case ActorValueInfo::kPickpocket:
-            return kPickpocket;
-        case ActorValueInfo::kLockpicking:
-            return kLockpicking;
-        case ActorValueInfo::kSneak:
-            return kSneak;
-        case ActorValueInfo::kAlchemy:
-            return kAlchemy;
-        case ActorValueInfo::kSpeechcraft:
-            return kSpeech;
-        case ActorValueInfo::kAlteration:
-            return kAlteration;
-        case ActorValueInfo::kConjuration:
-            return kConjuration;
-        case ActorValueInfo::kDestruction:
-            return kDestruction;
-        case ActorValueInfo::kIllusion:
-            return kIllusion;
-        case ActorValueInfo::kRestoration:
-            return kRestoration;
-        case ActorValueInfo::kEnchanting:
-            return kEnchanting;
-        default:
-            return kTotal;
+        case ActorValueInfo::kOneHanded: return kOneHanded;
+        case ActorValueInfo::kTwoHanded: return kTwoHanded;
+        case ActorValueInfo::kMarksman: return kArchery;
+        case ActorValueInfo::kBlock: return kBlock;
+        case ActorValueInfo::kSmithing: return kSmithing;
+        case ActorValueInfo::kHeavyArmor: return kHeavyArmor;
+        case ActorValueInfo::kLightArmor: return kLightArmor;
+        case ActorValueInfo::kPickpocket: return kPickpocket;
+        case ActorValueInfo::kLockpicking: return kLockpicking;
+        case ActorValueInfo::kSneak: return kSneak;
+        case ActorValueInfo::kAlchemy: return kAlchemy;
+        case ActorValueInfo::kSpeechcraft: return kSpeech;
+        case ActorValueInfo::kAlteration: return kAlteration;
+        case ActorValueInfo::kConjuration: return kConjuration;
+        case ActorValueInfo::kDestruction: return kDestruction;
+        case ActorValueInfo::kIllusion: return kIllusion;
+        case ActorValueInfo::kRestoration: return kRestoration;
+        case ActorValueInfo::kEnchanting: return kEnchanting;
+        default: return kTotal;
         }
     }
 
@@ -78,44 +60,25 @@ struct Skills
     {
         switch (aSkill)
         {
-        case kOneHanded:
-            return "One-handed";
-        case kTwoHanded:
-            return "Two-handed";
-        case kArchery:
-            return "Archery";
-        case kBlock:
-            return "Block";
-        case kSmithing:
-            return "Smithing";
-        case kHeavyArmor:
-            return "Heavy armor";
-        case kLightArmor:
-            return "Light armor";
-        case kPickpocket:
-            return "Pickpocket";
-        case kLockpicking:
-            return "Lockpicking";
-        case kSneak:
-            return "Sneak";
-        case kAlchemy:
-            return "Alchemy";
-        case kSpeech:
-            return "Speech";
-        case kAlteration:
-            return "Alteration";
-        case kConjuration:
-            return "Conjuration";
-        case kDestruction:
-            return "Destruction";
-        case kIllusion:
-            return "Illusion";
-        case kRestoration:
-            return "Restoration";
-        case kEnchanting:
-            return "Enchanting";
-        default:
-            return "UNKNOWN";
+        case kOneHanded: return "One-handed";
+        case kTwoHanded: return "Two-handed";
+        case kArchery: return "Archery";
+        case kBlock: return "Block";
+        case kSmithing: return "Smithing";
+        case kHeavyArmor: return "Heavy armor";
+        case kLightArmor: return "Light armor";
+        case kPickpocket: return "Pickpocket";
+        case kLockpicking: return "Lockpicking";
+        case kSneak: return "Sneak";
+        case kAlchemy: return "Alchemy";
+        case kSpeech: return "Speech";
+        case kAlteration: return "Alteration";
+        case kConjuration: return "Conjuration";
+        case kDestruction: return "Destruction";
+        case kIllusion: return "Illusion";
+        case kRestoration: return "Restoration";
+        case kEnchanting: return "Enchanting";
+        default: return "UNKNOWN";
         }
     }
 
@@ -150,14 +113,14 @@ struct PlayerCharacter : Actor
     void SetDifficulty(const int32_t aDifficulty, bool aForceUpdate = true, bool aExpectGameDataLoaded = true) noexcept;
 
     void AddSkillExperience(int32_t aSkill, float aExperience) noexcept;
-    float GetSkillExperience(Skills::Skill aSkill) const noexcept
-    {
-        return (*pSkills)->skills[aSkill].xp;
-    }
+    float GetSkillExperience(Skills::Skill aSkill) const noexcept { return (*pSkills)->skills[aSkill].xp; }
 
     NiPoint3 RespawnPlayer() noexcept;
 
     void PayCrimeGoldToAllFactions() noexcept;
+
+    void AddMapmarkerRef(uint32_t aMapRef);
+    void RemoveMapmarkerRef(uint32_t aMapRef);
 
     struct Objective
     {
@@ -171,7 +134,9 @@ struct PlayerCharacter : Actor
         uint64_t instanceCount;
     };
 
-    uint8_t pad1[0x580 - sizeof(Actor)];
+    uint8_t pad1[0x500 - sizeof(Actor)];
+    creation::BSTArray<uint32_t> CurrentMapmarkerRefHandles;
+    uint8_t pad510[0x588 - 0x518];
     GameArray<ObjectiveInstance> objectives; 
     uint8_t pad588[0x9B0 - 0x598];
     Skills** pSkills;
@@ -186,10 +151,9 @@ struct PlayerCharacter : Actor
     uint8_t padPlayerEnd[0xBE0 - 0xB30];
 };
 
-static_assert(offsetof(PlayerCharacter, objectives) == 0x580);
-static_assert(offsetof(PlayerCharacter, pSkills) == 0x9B0);
-static_assert(offsetof(PlayerCharacter, locationForm) == 0xAC8);
-static_assert(offsetof(PlayerCharacter, baseTints) == 0xB10);
-static_assert(offsetof(PlayerCharacter, overlayTints) == 0xB28);
-static_assert(sizeof(PlayerCharacter) == 0xBE0);
-
+static_assert(offsetof(PlayerCharacter, objectives) == 0x588);
+static_assert(offsetof(PlayerCharacter, pSkills) == 0x9B8);
+static_assert(offsetof(PlayerCharacter, locationForm) == 0xAD0);
+static_assert(offsetof(PlayerCharacter, baseTints) == 0xB18);
+static_assert(offsetof(PlayerCharacter, overlayTints) == 0xB30);
+static_assert(sizeof(PlayerCharacter) == 0xBE8);

@@ -3,7 +3,9 @@
 
 static uint32_t GenerateId()
 {
-    static std::atomic<uint32_t> s_counter;
+    // NOTE(Vince): Start counting like a MAD man at 1, so we can pass this value to lua without
+    // having to add 1 to it
+    static constinit std::atomic<uint32_t> s_counter{1};
     return s_counter.fetch_add(1);
 }
 
@@ -11,7 +13,6 @@ Player::Player(ConnectionId_t aConnectionId)
     : m_id(GenerateId())
     , m_connectionId(aConnectionId)
 {
-    
 }
 
 Player::Player(Player&& aRhs) noexcept

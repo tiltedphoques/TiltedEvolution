@@ -1,12 +1,21 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  OnDestroy,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { firstValueFrom, Subscription } from 'rxjs';
+import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
 import { ErrorService } from '../../services/error.service';
 import { Sound, SoundService } from '../../services/sound.service';
 import { StoreService } from '../../services/store.service';
-import { RootView } from '../root/root.component';
-
+import { UiRepository } from '../../store/ui.repository';
 
 @Component({
   selector: 'app-connect',
@@ -14,7 +23,6 @@ import { RootView } from '../root/root.component';
   styleUrls: ['./connect.component.scss'],
 })
 export class ConnectComponent implements OnDestroy, AfterViewInit {
-
   public address = '';
   public password = '';
   public savePassword = false;
@@ -22,7 +30,6 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   public connecting = false;
 
   @Output() public done = new EventEmitter<void>();
-  @Output() public setView = new EventEmitter<RootView>();
 
   public constructor(
     private readonly client: ClientService,
@@ -30,32 +37,41 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     private readonly errorService: ErrorService,
     private readonly storeService: StoreService,
     private readonly translocoService: TranslocoService,
+    private readonly uiRepository: UiRepository,
   ) {
-    this.connectionSubscription = this.client.connectionStateChange.subscribe(async state => {
-      if (this.connecting) {
-        this.connecting = false;
+    this.connectionSubscription = this.client.connectionStateChange.subscribe(
+      async state => {
+        if (this.connecting) {
+          this.connecting = false;
 
+          if (state) {
+            this.sound.play(Sound.Success);
+            this.done.next();
+          } else if (this.errorService.getError() === '') {
+            // show connection error when there is no more specific error
+            const message = await firstValueFrom(
+              this.translocoService.selectTranslate<string>(
+                'COMPONENT.CONNECT.ERROR.CONNECTION',
+              ),
+            );
+            await this.errorService.setError(message);
+          }
+        }
+      },
+    );
+
+    this.protocolMismatchSubscription =
+      this.client.protocolMismatchChange.subscribe(async state => {
         if (state) {
-          this.sound.play(Sound.Success);
-          this.done.next();
-        } else if (this.errorService.getError() === '') { // show connection error when there is no more specific error
+          this.connecting = false;
           const message = await firstValueFrom(
-            this.translocoService.selectTranslate<string>('COMPONENT.CONNECT.ERROR.CONNECTION'),
+            this.translocoService.selectTranslate<string>(
+              'COMPONENT.CONNECT.ERROR.VERSION_MISMATCH',
+            ),
           );
           await this.errorService.setError(message);
         }
-      }
-    });
-
-    this.protocolMismatchSubscription = this.client.protocolMismatchChange.subscribe(async state => {
-      if (state) {
-        this.connecting = false;
-        const message = await firstValueFrom(
-          this.translocoService.selectTranslate<string>('COMPONENT.CONNECT.ERROR.VERSION_MISMATCH'),
-        );
-        await this.errorService.setError(message);
-      }
-    });
+      });
 
     this.address = this.storeService.get('last_connected_address', '');
     this.password = this.storeService.get('last_connected_password', '');
@@ -79,7 +95,9 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     if (!address) {
       this.sound.play(Sound.Fail);
       const message = await firstValueFrom(
-        this.translocoService.selectTranslate('COMPONENT.CONNECT.ERROR.INVALID_ADDRESS'),
+        this.translocoService.selectTranslate(
+          'COMPONENT.CONNECT.ERROR.INVALID_ADDRESS',
+        ),
       );
       await this.errorService.setError(message);
       return;
@@ -95,7 +113,11 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     }
 
     this.sound.play(Sound.Ok);
-    this.client.connect(address[1], address[2] ? Number.parseInt(address[2]) : 10578, this.password);
+    this.client.connect(
+      address[1],
+      address[2] ? Number.parseInt(address[2]) : 10578,
+      this.password,
+    );
   }
 
   public cancel(): void {
@@ -104,7 +126,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   }
 
   public openServerList(): void {
-    this.setView.next(RootView.SERVER_LIST);
+    this.uiRepository.openView(View.SERVER_LIST);
   }
 
   @ViewChild('input')
@@ -126,5 +148,4 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
     event.stopPropagation();
     event.preventDefault();
   }
-
 }

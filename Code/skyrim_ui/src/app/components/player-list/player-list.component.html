@@ -1,15 +1,20 @@
-<div class="no-players" *ngIf="(playerListLength$ | async) === 0 ; else notEmpty">
+<div
+  class="no-players"
+  *ngIf="(playerListLength$ | async) === 0; else notEmpty"
+>
   <span>{{ 'COMPONENT.PARTY_LIST.NO_OTHER_PLAYERS' | transloco }}</span>
 </div>
 
 <ng-template #notEmpty>
-  <div class="server-list">
+  <div class="player-list">
     <table cellspacing="5" cellpadding="5" class="player-list-table">
       <thead class="list-header">
         <tr>
           <th>{{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.LEVEL' | transloco }}</th>
           <th>{{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.NAME' | transloco }}</th>
-          <th>{{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.LOCATION' | transloco }}</th>
+          <th>
+            {{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.LOCATION' | transloco }}
+          </th>
           <th></th>
         </tr>
       </thead>
@@ -21,7 +26,11 @@
           <td class="actions-col">
             <button
               [class.hidden]="player.isMember || !(isPartyLeader$ | async)"
-              [disabled]="player.hasBeenInvited || player.isMember || !(isPartyLeader$ | async)"
+              [disabled]="
+                player.hasBeenInvited ||
+                player.isMember ||
+                !(isPartyLeader$ | async)
+              "
               class="user-action-button"
               (click)="sendPartyInvite(player.id)"
             >

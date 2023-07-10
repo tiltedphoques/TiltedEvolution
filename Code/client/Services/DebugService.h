@@ -14,8 +14,8 @@ struct TransportService;
 struct BSAnimationGraphManager;
 
 /**
-* @brief Manages the debuggers.
-*/
+ * @brief Manages the debuggers.
+ */
 struct DebugService
 {
     DebugService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport, ImguiService& aImguiService);
@@ -31,11 +31,9 @@ struct DebugService
     void SetDebugId(const uint32_t aFormId) noexcept;
 
 protected:
-
     void OnDraw() noexcept;
 
 private:
-
     void PlaceActorInWorld() noexcept;
     void DisplayEntities() noexcept;
     void DisplayObjects() noexcept;
@@ -57,13 +55,14 @@ private:
     void DrawActorValuesView();
     void DrawQuestDebugView();
     void DrawCellView();
+    void DrawUIView();
     void DrawProcessView();
+    void DrawWeatherView();
 
 public:
     bool m_showDebugStuff = false;
 
 private:
-
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
     World& m_world;

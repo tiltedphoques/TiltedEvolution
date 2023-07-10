@@ -6,8 +6,7 @@ using TiltedPhoques::Serialization;
 
 bool Factions::operator==(const Factions& acRhs) const noexcept
 {
-    return NpcFactions == acRhs.NpcFactions &&
-        ExtraFactions == acRhs.ExtraFactions;
+    return NpcFactions == acRhs.NpcFactions && ExtraFactions == acRhs.ExtraFactions;
 }
 
 bool Factions::operator!=(const Factions& acRhs) const noexcept

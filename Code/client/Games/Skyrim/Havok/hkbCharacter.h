@@ -4,7 +4,7 @@ struct CharacterContext;
 
 struct hkbCharacter
 {
-    virtual ~hkbCharacter() {};
+    virtual ~hkbCharacter(){};
 
     uint8_t pad8[0xA0 - 0x8];
     CharacterContext* characterContext;

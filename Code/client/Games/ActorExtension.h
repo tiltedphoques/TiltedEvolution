@@ -22,6 +22,5 @@ struct ActorExtension
     size_t GraphDescriptorHash = 0;
 
 private:
-
-    uint32_t onlineFlags{ 0 };
+    uint32_t onlineFlags{0};
 };

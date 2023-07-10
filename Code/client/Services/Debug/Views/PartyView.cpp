@@ -1,11 +1,11 @@
 #include <Services/DebugService.h>
 
-#include <Messages/PartyKickRequest.h>
-#include <Messages/PartyChangeLeaderRequest.h>
-#include <Messages/PartyInviteRequest.h>
 #include <Messages/PartyAcceptInviteRequest.h>
-#include <Messages/PartyLeaveRequest.h>
+#include <Messages/PartyChangeLeaderRequest.h>
 #include <Messages/PartyCreateRequest.h>
+#include <Messages/PartyInviteRequest.h>
+#include <Messages/PartyKickRequest.h>
+#include <Messages/PartyLeaveRequest.h>
 #include <Messages/TeleportCommandRequest.h>
 
 #include <World.h>
@@ -76,36 +76,33 @@ void DebugService::DrawPartyView()
                     }
                 }
             }
-            
+
             ImGui::PopID();
         }
 
-        if (partyService.IsLeader())
+        ImGui::NewLine();
+        ImGui::Text("Other Players");
+        auto playerCount = 0;
+        for (auto& player : partyService.GetPlayers())
         {
-            ImGui::NewLine();
-            ImGui::Text("Other Players");
-            auto playerCount = 0;
-            for (auto& player : partyService.GetPlayers())
+            if (std::find(std::begin(members), std::end(members), player.first) != std::end(members))
+                continue;
+
+            playerCount++;
+            ImGui::BulletText(player.second.c_str());
+            ImGui::SameLine(100);
+            if (ImGui::Button("Invite"))
             {
-                if (std::find(std::begin(members), std::end(members), player.first) !=
-                    std::end(members))
-                    continue;
-                
-                playerCount++;
-                ImGui::BulletText(player.second.c_str());
-                ImGui::SameLine(100);
-                if (ImGui::Button("Invite"))
-                {
-                    PartyInviteRequest request;
-                    request.PlayerId = player.first;
-                    m_transport.Send(request);
-                }
+                partyService.CreateParty();
+                PartyInviteRequest request;
+                request.PlayerId = player.first;
+                m_transport.Send(request);
             }
-            
-            if (playerCount == 0)
-            {
-                ImGui::BulletText("<No one online>");
-            }
+        }
+
+        if (playerCount == 0)
+        {
+            ImGui::BulletText("<No one online>");
         }
     }
 
@@ -114,8 +111,7 @@ void DebugService::DrawPartyView()
         auto itor = invitations.find(player.first);
         if (itor != std::end(invitations))
         {
-            if (std::find(std::begin(members), std::end(members), player.first) !=
-                std::end(members))
+            if (std::find(std::begin(members), std::end(members), player.first) != std::end(members))
                 continue;
 
             ImGui::Text(player.second.c_str());
@@ -151,4 +147,3 @@ void DebugService::DrawPartyView()
 
     ImGui::End();
 }
-

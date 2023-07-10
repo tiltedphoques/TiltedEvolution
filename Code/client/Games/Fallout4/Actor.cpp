@@ -31,7 +31,7 @@ Actor* TP_MAKE_THISCALL(HookActorContructor, Actor, uint8_t aUnk)
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    const auto pActor = ThisCall(RealActorConstructor, apThis, aUnk);
+    const auto pActor = TiltedPhoques::ThisCall(RealActorConstructor, apThis, aUnk);
 
     return pActor;
 }
@@ -40,7 +40,7 @@ Actor* TP_MAKE_THISCALL(HookActorContructor2, Actor, volatile int** aRefCount, u
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    const auto pActor = ThisCall(RealActorConstructor2, apThis, aRefCount, aUnk);
+    const auto pActor = TiltedPhoques::ThisCall(RealActorConstructor2, apThis, aRefCount, aUnk);
 
     return pActor;
 }
@@ -48,14 +48,14 @@ Actor* TP_MAKE_THISCALL(HookActorContructor2, Actor, volatile int** aRefCount, u
 void* TP_MAKE_THISCALL(HookActorDestructor, Actor)
 {
     // TODO: Actor dtor sometimes has garbage actor, causing a crash
-    return ThisCall(RealActorDestructor, apThis);
+    return TiltedPhoques::ThisCall(RealActorDestructor, apThis);
 }
 
 GamePtr<Actor> Actor::New() noexcept
 {
     const auto pActor = Memory::Allocate<Actor>();
 
-    ThisCall(HookActorContructor, pActor, uint8_t(1));
+    TiltedPhoques::ThisCall(HookActorContructor, pActor, uint8_t(1));
 
     return pActor;
 }
@@ -138,7 +138,7 @@ void* Actor::GetCurrentWeapon(void* apResult, uint32_t aEquipIndex) noexcept
 {
     TP_THIS_FUNCTION(TGetCurrentWeapon, void*, Actor, void* apResult, uint32_t aEquipIndex);
     POINTER_FALLOUT4(TGetCurrentWeapon, getCurrentWeapon, 1277202);
-    return ThisCall(getCurrentWeapon, this, apResult, aEquipIndex);
+    return TiltedPhoques::ThisCall(getCurrentWeapon, this, apResult, aEquipIndex);
 }
 
 float Actor::GetActorValue(uint32_t aId) const noexcept
@@ -243,7 +243,7 @@ void Actor::UnEquipAll() noexcept
 {
     TP_THIS_FUNCTION(TUnEquipAll, void, Actor);
     POINTER_FALLOUT4(TUnEquipAll, s_unequipAll, 1260318);
-    ThisCall(s_unequipAll, this);
+    TiltedPhoques::ThisCall(s_unequipAll, this);
 }
 
 void Actor::RemoveFromAllFactions() noexcept
@@ -252,7 +252,7 @@ void Actor::RemoveFromAllFactions() noexcept
     s_pRemoveFromAllFactions(this);
 }
 
-bool Actor::IsDead() noexcept
+bool Actor::IsDead() const noexcept
 {
     PAPYRUS_FUNCTION(bool, Actor, IsDead);
     return s_pIsDead(this);
@@ -284,7 +284,7 @@ void Actor::ProcessScriptedEquip(TESBoundObject* apObj, bool abEquipLockState, b
 
     TP_THIS_FUNCTION(TProcessScriptedEquip, void, Actor, TESBoundObject*, bool, bool);
     POINTER_FALLOUT4(TProcessScriptedEquip, processScriptedEquip, 868003);
-    ThisCall(processScriptedEquip, this, apObj, abEquipLockState, abSilent);
+    TiltedPhoques::ThisCall(processScriptedEquip, this, apObj, abEquipLockState, abSilent);
 }
 
 void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept
@@ -295,8 +295,7 @@ void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoin
     TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
     if (!pObject)
     {
-        spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId,
-                     arEntry.BaseId.BaseId);
+        spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
         return;
     }
 
@@ -309,12 +308,11 @@ void Actor::DropObject(TESBoundObject* apObject, int32_t aCount, NiPoint3* apPoi
 {
     BGSObjectInstance object(apObject, nullptr);
 
-    TP_THIS_FUNCTION(TDropObject, BSPointerHandle<TESObjectREFR>*, Actor, BSPointerHandle<TESObjectREFR>*,
-                     BGSObjectInstance*, void*, int32_t, NiPoint3*, NiPoint3*);
+    TP_THIS_FUNCTION(TDropObject, BSPointerHandle<TESObjectREFR>*, Actor, BSPointerHandle<TESObjectREFR>*, BGSObjectInstance*, void*, int32_t, NiPoint3*, NiPoint3*);
     POINTER_FALLOUT4(TDropObject, dropObject, 1482294);
 
     BSPointerHandle<TESObjectREFR> result{};
-    ThisCall(dropObject, this, &result, &object, nullptr, aCount, apPoint, apRotate);
+    TiltedPhoques::ThisCall(dropObject, this, &result, &object, nullptr, aCount, apPoint, apRotate);
 }
 
 void Actor::UnequipItem(TESBoundObject* apObject) noexcept
@@ -334,7 +332,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     if (pExHittee->IsLocalPlayer())
     {
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
-        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+        return TiltedPhoques::ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else if (pExHittee->IsRemotePlayer())
     {
@@ -347,7 +345,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
         if (pExHitter->IsLocalPlayer())
         {
             World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
-            return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+            return TiltedPhoques::ThisCall(RealDamageActor, apThis, aDamage, apHitter);
         }
         if (pExHitter->IsRemotePlayer())
         {
@@ -358,7 +356,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     if (pExHittee->IsLocal())
     {
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -aDamage));
-        return ThisCall(RealDamageActor, apThis, aDamage, apHitter);
+        return TiltedPhoques::ThisCall(RealDamageActor, apThis, aDamage, apHitter);
     }
     else
     {
@@ -366,12 +364,10 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter)
     }
 }
 
-TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue,
-                 ActorValueInfo* apActorValueInfo);
+TP_THIS_FUNCTION(TApplyActorEffect, void, ActiveEffect, Actor* apTarget, float aEffectValue, ActorValueInfo* apActorValueInfo);
 static TApplyActorEffect* RealApplyActorEffect = nullptr;
 
-void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue,
-                      ActorValueInfo* apActorValueInfo)
+void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float aEffectValue, ActorValueInfo* apActorValueInfo)
 {
     const auto* pValueModEffect = Cast<ValueModifierEffect>(apThis);
 
@@ -386,14 +382,14 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float
                 if (pExTarget->IsLocal())
                 {
                     World::Get().GetRunner().Trigger(HealthChangeEvent(apTarget->formID, aEffectValue));
-                    return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, apActorValueInfo);
+                    return TiltedPhoques::ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, apActorValueInfo);
                 }
                 return;
             }
         }
     }
 
-    return ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, apActorValueInfo);
+    return TiltedPhoques::ThisCall(RealApplyActorEffect, apThis, apTarget, aEffectValue, apActorValueInfo);
 }
 
 TP_THIS_FUNCTION(TRunDetection, void, void, ActorKnowledge*);
@@ -418,7 +414,7 @@ void TP_MAKE_THISCALL(HookRunDetection, void, ActorKnowledge* apTarget)
         }
     }
 
-    return ThisCall(RealRunDetection, apThis, apTarget);
+    return TiltedPhoques::ThisCall(RealRunDetection, apThis, apTarget);
 }
 
 TP_THIS_FUNCTION(TSpeakSoundFunction, float, Actor, const char* apName, uint32_t* aSoundHand, void* apArchTypeAnimation, int32_t aiStringLength, bool abSetEmotion, void* apOutputModel, bool abQueue, bool abLip, bool abPCapcall);
@@ -429,39 +425,41 @@ bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_
     if (apThis->GetExtension()->IsLocal())
         World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
 
-    return ThisCall(RealSpeakSoundFunction, apThis, apName, aSoundHand, apArchTypeAnimation, aiStringLength, abSetEmotion, apOutputModel, abQueue, abLip, abPCapcall);
+    return TiltedPhoques::ThisCall(RealSpeakSoundFunction, apThis, apName, aSoundHand, apArchTypeAnimation, aiStringLength, abSetEmotion, apOutputModel, abQueue, abLip, abPCapcall);
 }
 
 void Actor::SpeakSound(const char* pFile)
 {
     uint32_t handle[4]{};
     handle[0] = -1;
-    ThisCall(RealSpeakSoundFunction, this, pFile, handle, nullptr, 0, false, nullptr, false, true, false);
+    TiltedPhoques::ThisCall(RealSpeakSoundFunction, this, pFile, handle, nullptr, 0, false, nullptr, false, true, false);
 }
 
-static TiltedPhoques::Initializer s_specificReferencesHooks([]() {
-    POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 1027501);
-    POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 1331729);
-    POINTER_FALLOUT4(TActorDestructor, s_actorDtor, 1104083);
-    POINTER_FALLOUT4(TDamageActor, s_damageActor, 1539011);
-    // TODO: not sure about this ID, seems to interfere with jump when hooked?
-    POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 703727);
-    POINTER_FALLOUT4(TRunDetection, s_runDetection, 906785);
-    POINTER_FALLOUT4(TSpeakSoundFunction, s_speakSoundFunction, 1567997);
+static TiltedPhoques::Initializer s_specificReferencesHooks(
+    []()
+    {
+        POINTER_FALLOUT4(TActorConstructor, s_actorCtor, 1027501);
+        POINTER_FALLOUT4(TActorConstructor2, s_actorCtor2, 1331729);
+        POINTER_FALLOUT4(TActorDestructor, s_actorDtor, 1104083);
+        POINTER_FALLOUT4(TDamageActor, s_damageActor, 1539011);
+        // TODO: not sure about this ID, seems to interfere with jump when hooked?
+        POINTER_FALLOUT4(TApplyActorEffect, s_applyActorEffect, 703727);
+        POINTER_FALLOUT4(TRunDetection, s_runDetection, 906785);
+        POINTER_FALLOUT4(TSpeakSoundFunction, s_speakSoundFunction, 1567997);
 
-    RealActorConstructor = s_actorCtor.Get();
-    RealActorConstructor2 = s_actorCtor2.Get();
-    RealActorDestructor = s_actorDtor.Get();
-    RealDamageActor = s_damageActor.Get();
-    RealApplyActorEffect = s_applyActorEffect.Get();
-    RealRunDetection = s_runDetection.Get();
-    RealSpeakSoundFunction = s_speakSoundFunction.Get();
+        RealActorConstructor = s_actorCtor.Get();
+        RealActorConstructor2 = s_actorCtor2.Get();
+        RealActorDestructor = s_actorDtor.Get();
+        RealDamageActor = s_damageActor.Get();
+        RealApplyActorEffect = s_applyActorEffect.Get();
+        RealRunDetection = s_runDetection.Get();
+        RealSpeakSoundFunction = s_speakSoundFunction.Get();
 
-    TP_HOOK(&RealActorConstructor, HookActorContructor);
-    TP_HOOK(&RealActorConstructor2, HookActorContructor2);
-    TP_HOOK(&RealActorDestructor, HookActorDestructor);
-    TP_HOOK(&RealDamageActor, HookDamageActor);
-    TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
-    TP_HOOK(&RealRunDetection, HookRunDetection);
-    TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
-});
+        TP_HOOK(&RealActorConstructor, HookActorContructor);
+        TP_HOOK(&RealActorConstructor2, HookActorContructor2);
+        TP_HOOK(&RealActorDestructor, HookActorDestructor);
+        TP_HOOK(&RealDamageActor, HookDamageActor);
+        TP_HOOK(&RealApplyActorEffect, HookApplyActorEffect);
+        TP_HOOK(&RealRunDetection, HookRunDetection);
+        TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
+    });

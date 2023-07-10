@@ -10,13 +10,8 @@
 class VersionDb
 {
 public:
-    VersionDb()
-    {
-        Clear();
-    }
-    ~VersionDb()
-    {
-    }
+    VersionDb() { Clear(); }
+    ~VersionDb() {}
 
     static VersionDb& Get();
 
@@ -35,36 +30,17 @@ private:
         return v;
     }
 
-    static void* ToPointer(unsigned long long v)
-    {
-        return (void*)v;
-    }
+    static void* ToPointer(unsigned long long v) { return (void*)v; }
 
-    static unsigned long long FromPointer(void* ptr)
-    {
-        return (unsigned long long)ptr;
-    }
+    static unsigned long long FromPointer(void* ptr) { return (unsigned long long)ptr; }
 
-    static bool ParseVersionFromString(const char* ptr, int& major, int& minor, int& revision, int& build)
-    {
-        return sscanf_s(ptr, "%d.%d.%d.%d", &major, &minor, &revision, &build) == 4 &&
-               ((major != 1 && major != 0) || minor != 0 || revision != 0 || build != 0);
-    }
+    static bool ParseVersionFromString(const char* ptr, int& major, int& minor, int& revision, int& build) { return sscanf_s(ptr, "%d.%d.%d.%d", &major, &minor, &revision, &build) == 4 && ((major != 1 && major != 0) || minor != 0 || revision != 0 || build != 0); }
 
 public:
-    const std::string& GetModuleName() const
-    {
-        return _moduleName;
-    }
-    const std::string& GetLoadedVersionString() const
-    {
-        return _verStr;
-    }
+    const std::string& GetModuleName() const { return _moduleName; }
+    const std::string& GetLoadedVersionString() const { return _verStr; }
 
-    const std::map<unsigned long long, unsigned long long>& GetOffsetMap() const
-    {
-        return _data;
-    }
+    const std::map<unsigned long long, unsigned long long>& GetOffsetMap() const { return _data; }
 
     void* FindAddressById(unsigned long long id) const
     {
@@ -129,8 +105,7 @@ public:
                 {
                     char* vstr = NULL;
                     UINT vlen = 0;
-                    if (VerQueryValueA(verData, "\\StringFileInfo\\040904B0\\ProductVersion", (LPVOID*)&vstr, &vlen) &&
-                        vlen && vstr && *vstr)
+                    if (VerQueryValueA(verData, "\\StringFileInfo\\040904B0\\ProductVersion", (LPVOID*)&vstr, &vlen) && vlen && vstr && *vstr)
                     {
                         if (ParseVersionFromString(vstr, major, minor, revision, build))
                         {
@@ -143,8 +118,7 @@ public:
                 {
                     char* vstr = NULL;
                     UINT vlen = 0;
-                    if (VerQueryValueA(verData, "\\StringFileInfo\\040904B0\\FileVersion", (LPVOID*)&vstr, &vlen) &&
-                        vlen && vstr && *vstr)
+                    if (VerQueryValueA(verData, "\\StringFileInfo\\040904B0\\FileVersion", (LPVOID*)&vstr, &vlen) && vlen && vstr && *vstr)
                     {
                         if (ParseVersionFromString(vstr, major, minor, revision, build))
                         {
@@ -202,7 +176,7 @@ public:
         for (int i = 0; i < addressCount; i++)
         {
             auto address = read<unsigned long long>(file);
-			auto id = read<unsigned long long>(file);
+            auto id = read<unsigned long long>(file);
             _data[id] = address;
             _rdata[address] = id;
         }
@@ -286,12 +260,8 @@ public:
 
             switch (low)
             {
-            case 0:
-                q1 = read<unsigned long long>(file);
-                break;
-            case 1:
-                q1 = pvid + 1;
-                break;
+            case 0: q1 = read<unsigned long long>(file); break;
+            case 1: q1 = pvid + 1; break;
             case 2:
                 b1 = read<unsigned char>(file);
                 q1 = pvid + b1;
@@ -316,7 +286,8 @@ public:
                 d1 = read<unsigned int>(file);
                 q1 = d1;
                 break;
-            default: {
+            default:
+            {
                 Clear();
                 return false;
             }
@@ -326,12 +297,8 @@ public:
 
             switch (high & 7)
             {
-            case 0:
-                q2 = read<unsigned long long>(file);
-                break;
-            case 1:
-                q2 = tpoffset + 1;
-                break;
+            case 0: q2 = read<unsigned long long>(file); break;
+            case 1: q2 = tpoffset + 1; break;
             case 2:
                 b2 = read<unsigned char>(file);
                 q2 = tpoffset + b2;
@@ -356,8 +323,7 @@ public:
                 d2 = read<unsigned int>(file);
                 q2 = d2;
                 break;
-            default:
-                throw std::exception();
+            default: throw std::exception();
             }
 
             if ((high & 8) != 0)
@@ -373,7 +339,7 @@ public:
         return true;
     }
 
-    bool Dump(const std::string& path)
+    bool DumpToTextFile(const std::string& path)
     {
         std::ofstream f = std::ofstream(path.c_str());
         if (!f.good())
@@ -391,10 +357,12 @@ public:
 
         return true;
     }
+
+    bool DumpVersionIDC(const std::string& path);
+    //bool CreateMapping(const std::string& inf, const std::string& outf);
 };
 
-template <class T> 
-struct VersionDbPtr
+template <class T> struct VersionDbPtr
 {
     VersionDbPtr(const uint32_t aId) noexcept
         : m_pPtr{nullptr}
@@ -406,20 +374,11 @@ struct VersionDbPtr
     VersionDbPtr(VersionDbPtr&) = delete;
     VersionDbPtr& operator=(VersionDbPtr&) = delete;
 
-    operator T*() const noexcept
-    {
-        return Get();
-    }
+    operator T*() const noexcept { return Get(); }
 
-    T* operator->() const noexcept
-    {
-        return Get();
-    }
+    T* operator->() const noexcept { return Get(); }
 
-    T* Get() const noexcept
-    {
-        return static_cast<T*>(GetPtr());
-    }
+    T* Get() const noexcept { return static_cast<T*>(GetPtr()); }
 
     void* GetPtr() const noexcept
     {
@@ -430,7 +389,6 @@ struct VersionDbPtr
     }
 
 private:
-
     mutable void* m_pPtr;
     uint32_t m_id;
 };

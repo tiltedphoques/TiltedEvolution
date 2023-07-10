@@ -16,7 +16,8 @@ constexpr char kBuildTag[]{BUILD_BRANCH "@" BUILD_COMMIT};
 
 struct GameServerInstance final : IGameServerInstance
 {
-    GameServerInstance(Console::ConsoleRegistry& aConsole) : m_gameServer(aConsole)
+    GameServerInstance(Console::ConsoleRegistry& aConsole)
+        : m_gameServer(aConsole)
     {
     }
 
@@ -71,16 +72,15 @@ GS_EXPORT bool CheckBuildTag(const char* apBuildTag)
     return std::strcmp(apBuildTag, kBuildTag) == 0;
 }
 
-GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg, void* apUserPointer,
-                                                          void (*apCallback)(void*))
+GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg, const std::function<void()>& aCallback)
 {
-    BASE_ASSERT(apCallback, "CreateGameServer(): Callback was not provided");
+    BASE_ASSERT(aCallback, "CreateGameServer(): Callback was not provided");
 
     // register static variables before they become available to the server
     aConReg.BindStaticItems();
 
     // this is a special callback to notify the runner once all settings become available
-    apCallback(apUserPointer);
+    aCallback();
 
     return TiltedPhoques::CastUnique<IGameServerInstance>(TiltedPhoques::MakeUnique<GameServerInstance>(aConReg));
 }
@@ -93,17 +93,17 @@ GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegist
 
 GS_EXPORT void SetDefaultLogger(std::shared_ptr<spdlog::logger> aLogger)
 {
-    //#ifdef _WIN32
+    // #ifdef _WIN32
     spdlog::set_default_logger(std::move(aLogger));
-    //#endif
+    // #endif
 }
 
 GS_EXPORT void RegisterLogger(std::shared_ptr<spdlog::logger> aLogger)
 {
-    //#ifdef _WIN32
-    // yes this needs to be here, else the dedirunner dies
+    // #ifdef _WIN32
+    //  yes this needs to be here, else the dedirunner dies
     spdlog::register_logger(std::move(aLogger));
-    //#endif
+    // #endif
 }
 
 #ifdef _WIN32
@@ -116,10 +116,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
     switch (fdwReason)
     {
-    case DLL_PROCESS_ATTACH:
-        break;
-    case DLL_PROCESS_DETACH:
-        break;
+    case DLL_PROCESS_ATTACH: break;
+    case DLL_PROCESS_DETACH: break;
     }
     return TRUE;
 }

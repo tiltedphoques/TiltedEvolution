@@ -12,7 +12,6 @@
 
 #include <Messages/NotifySpellCast.h>
 #include <Messages/NotifyInterruptCast.h>
-#include <Messages/NotifyAddTarget.h>
 
 #include <Actor.h>
 #include <Magic/ActorMagicCaster.h>
@@ -33,8 +32,10 @@
 #endif
 
 // TODO: ft
-MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept 
-    : m_world(aWorld), m_dispatcher(aDispatcher), m_transport(aTransport)
+MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
+    : m_world(aWorld)
+    , m_dispatcher(aDispatcher)
+    , m_transport(aTransport)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&MagicService::OnUpdate>(this);
     m_spellCastEventConnection = m_dispatcher.sink<SpellCastEvent>().connect<&MagicService::OnSpellCastEvent>(this);
@@ -68,10 +69,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
     // only sync concentration spells through spell cast sync, the rest through projectile sync for accuracy
     if (SpellItem* pSpell = Cast<SpellItem>(TESForm::GetById(acEvent.SpellId)))
     {
-        if ((pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION ||
-             pSpell->IsHealingSpell()) &&
-            !pSpell->IsWardSpell() &&
-            !pSpell->IsInvisibilitySpell())
+        if ((pSpell->eCastingType != MagicSystem::CastingType::CONCENTRATION || pSpell->IsHealingSpell()) && !pSpell->IsWardSpell() && !pSpell->IsInvisibilitySpell())
         {
             spdlog::debug("Canceled magic spell");
             return;
@@ -81,10 +79,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
     uint32_t formId = acEvent.pCaster->pCasterActor->formID;
 
     auto view = m_world.view<FormIdComponent, LocalComponent>();
-    const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
-    {
-        return view.get<FormIdComponent>(entity).Id == formId;
-    });
+    const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity) { return view.get<FormIdComponent>(entity).Id == formId; });
 
     if (casterEntityIt == std::end(view))
         return;
@@ -106,10 +101,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
     if (acEvent.DesiredTargetID != 0)
     {
         auto targetView = m_world.view<FormIdComponent>();
-        const auto targetEntityIt = std::find_if(std::begin(targetView), std::end(targetView), [id = acEvent.DesiredTargetID, targetView](entt::entity entity)
-        {
-            return targetView.get<FormIdComponent>(entity).Id == id;
-        });
+        const auto targetEntityIt = std::find_if(std::begin(targetView), std::end(targetView), [id = acEvent.DesiredTargetID, targetView](entt::entity entity) { return targetView.get<FormIdComponent>(entity).Id == id; });
 
         if (targetEntityIt != std::end(targetView))
         {
@@ -121,8 +113,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
         }
     }
 
-    spdlog::debug("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}, desired target: {:X}", request.CasterId,
-                 request.CastingSource, request.IsDualCasting, request.DesiredTarget);
+    spdlog::debug("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}, desired target: {:X}", request.CasterId, request.CastingSource, request.IsDualCasting, request.DesiredTarget);
 
     m_transport.Send(request);
 #endif
@@ -134,10 +125,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
     using CS = MagicSystem::CastingSource;
 
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity) { return remoteView.get<RemoteComponent>(entity).Id == Id; });
 
     if (remoteIt == std::end(remoteView))
     {
@@ -169,8 +157,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
         const uint32_t cSpellFormId = World::Get().GetModSystem().GetGameId(acMessage.SpellFormId);
         if (cSpellFormId == 0)
         {
-            spdlog::error("Could not find spell form id for GameId base {:X}, mod {:X}", acMessage.SpellFormId.BaseId,
-                          acMessage.SpellFormId.ModId);
+            spdlog::error("Could not find spell form id for GameId base {:X}, mod {:X}", acMessage.SpellFormId.BaseId, acMessage.SpellFormId.ModId);
             return;
         }
 
@@ -205,7 +192,7 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
             }
 
             uint32_t serverId = serverIdRes.value();
-        
+
             if (serverId == acMessage.DesiredTarget)
             {
                 const auto& formIdComponent = view.get<FormIdComponent>(entity);
@@ -238,10 +225,7 @@ void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const
     uint32_t formId = acEvent.CasterFormID;
 
     auto view = m_world.view<FormIdComponent, LocalComponent>();
-    const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity)
-    {
-        return view.get<FormIdComponent>(entity).Id == formId;
-    });
+    const auto casterEntityIt = std::find_if(std::begin(view), std::end(view), [formId, view](entt::entity entity) { return view.get<FormIdComponent>(entity).Id == formId; });
 
     if (casterEntityIt == std::end(view))
     {
@@ -271,10 +255,7 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
     }
 
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
-    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity)
-    {
-        return remoteView.get<RemoteComponent>(entity).Id == Id;
-    });
+    const auto remoteIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.CasterId](auto entity) { return remoteView.get<RemoteComponent>(entity).Id == Id; });
 
     if (remoteIt == std::end(remoteView))
     {
@@ -312,10 +293,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     // These effects are applied through spell cast sync
     if (SpellItem* pSpellItem = Cast<SpellItem>(TESForm::GetById(acEvent.SpellID)))
     {
-        if ((pSpellItem->eCastingType == MagicSystem::CastingType::CONCENTRATION && 
-             !pSpellItem->IsHealingSpell()) || 
-            pSpellItem->IsWardSpell() ||
-            pSpellItem->IsInvisibilitySpell())
+        if ((pSpellItem->eCastingType == MagicSystem::CastingType::CONCENTRATION && !pSpellItem->IsHealingSpell()) || pSpellItem->IsWardSpell() || pSpellItem->IsInvisibilitySpell())
         {
             return;
         }
@@ -339,9 +317,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     request.Magnitude = acEvent.Magnitude;
 
     auto view = m_world.view<FormIdComponent>();
-    const auto it = std::find_if(std::begin(view), std::end(view), [id = acEvent.TargetID, view](auto entity) {
-        return view.get<FormIdComponent>(entity).Id == id;
-    });
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acEvent.TargetID, view](auto entity) { return view.get<FormIdComponent>(entity).Id == id; });
 
     if (it == std::end(view))
     {
@@ -365,20 +341,20 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 #endif
 }
 
-void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noexcept
+void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
     if (!pActor)
     {
-        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.TargetId);
+        spdlog::warn(__FUNCTION__ ": could not find actor server id {:X}", acMessage.TargetId);
+        m_queuedRemoteEffects[acMessage.TargetId] = acMessage;
         return;
     }
 
     const uint32_t cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
     if (cSpellId == 0)
     {
-        spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
-                      acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
+        spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__, acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
         return;
     }
 
@@ -392,8 +368,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) const noe
     const uint32_t cEffectId = World::Get().GetModSystem().GetGameId(acMessage.EffectId);
     if (cEffectId == 0)
     {
-        spdlog::error("{}: failed to retrieve effect id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
-                      acMessage.EffectId.BaseId, acMessage.EffectId.ModId);
+        spdlog::error("{}: failed to retrieve effect id, GameId base: {:X}, mod: {:X}", __FUNCTION__, acMessage.EffectId.BaseId, acMessage.EffectId.ModId);
         return;
     }
 
@@ -452,14 +427,12 @@ void MagicService::ApplyQueuedEffects() noexcept
 
     lastSendTimePoint = now;
 
-    Vector<uint32_t> markedForRemoval;
+    Vector<uint32_t> markedForRemoval{};
 
     for (auto [formId, request] : m_queuedEffects)
     {
         auto view = m_world.view<FormIdComponent>();
-        const auto it = std::find_if(std::begin(view), std::end(view), [id = formId, view](auto entity) {
-            return view.get<FormIdComponent>(entity).Id == id;
-        });
+        const auto it = std::find_if(std::begin(view), std::end(view), [id = formId, view](auto entity) { return view.get<FormIdComponent>(entity).Id == id; });
 
         if (it == std::end(view))
             continue;
@@ -479,4 +452,20 @@ void MagicService::ApplyQueuedEffects() noexcept
 
     for (uint32_t formId : markedForRemoval)
         m_queuedEffects.erase(formId);
+
+    markedForRemoval.clear();
+
+    for (const auto& [serverId, notify] : m_queuedRemoteEffects)
+    {
+        Actor* pActor = Utils::GetByServerId<Actor>(serverId);
+        if (!pActor)
+            continue;
+
+        OnNotifyAddTarget(notify);
+
+        markedForRemoval.push_back(serverId);
+    }
+
+    for (uint32_t serverId : markedForRemoval)
+        m_queuedRemoteEffects.erase(serverId);
 }

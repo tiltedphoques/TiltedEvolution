@@ -2,8 +2,7 @@
 
 bool Faction::operator==(const Faction& acRhs) const noexcept
 {
-    return Id == acRhs.Id &&
-        Rank == acRhs.Rank;
+    return Id == acRhs.Id && Rank == acRhs.Rank;
 }
 
 bool Faction::operator!=(const Faction& acRhs) const noexcept

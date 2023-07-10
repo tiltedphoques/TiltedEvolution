@@ -75,7 +75,7 @@ enum SpellType : int32_t
     SPELL_TYPE_COUNT = 0xE,
 };
 
-}
+} // namespace MagicSystem
 
 namespace EffectArchetypes
 {

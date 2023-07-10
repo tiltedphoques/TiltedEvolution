@@ -1,9 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Deer.h>
 
-
-AnimationGraphDescriptor_Deer::AnimationGraphDescriptor_Deer(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Deer::AnimationGraphDescriptor_Deer(AnimationGraphDescriptorManager& aManager)
 {
     enum Variables
     {
@@ -125,7 +123,8 @@ AnimationGraphDescriptor_Deer::AnimationGraphDescriptor_Deer(
 
     uint64_t key = 1426621359402524832;
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kIsSprinting,
@@ -146,6 +145,5 @@ AnimationGraphDescriptor_Deer::AnimationGraphDescriptor_Deer(
                 kiSyncTurnState,
                 kiSyncIdleLocomotion,
                 kiSyncSprintState,
-            }
-        ));
+            }));
 }

@@ -19,7 +19,6 @@
 
 #include <World.h>
 
-
 DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_dispatcher(aDispatcher)
@@ -87,13 +86,13 @@ void DiscoveryService::VisitExteriorCell(bool aForceTrigger) noexcept
         }
 
         // TODO: ft
-    #if TP_SKYRIM64
+#if TP_SKYRIM64
         TESObjectCELL* pCell = pPlayer->GetParentCellEx();
         if (!pCell)
             pCell = ModManager::Get()->GetCellFromCoordinates(gameCurrentGrid.X, gameCurrentGrid.Y, pWorldSpace, false);
-    #else
+#else
         TESObjectCELL* pCell = pPlayer->parentCell;
-    #endif
+#endif
 
         if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellChangeEvent.CellId))
         {
@@ -155,8 +154,7 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
 
             if (!pCell)
             {
-                spdlog::warn("Cell not found at coordinates ({}, {}) in worldspace {:X}", startGridX + i,
-                             startGridY + j, aWorldSpace->formID);
+                spdlog::warn("Cell not found at coordinates ({}, {}) in worldspace {:X}", startGridX + i, startGridY + j, aWorldSpace->formID);
                 continue;
             }
 
@@ -260,8 +258,6 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
     spdlog::info("Finished loading, triggering visit cell");
     VisitCell(true);
 
-    PlayerCharacter::Get()->SetPlayerRespawnMode();
-
     return BSTEventResult::kOk;
 }
 
@@ -271,4 +267,3 @@ void DiscoveryService::ResetCachedCellData() noexcept
     m_centerGrid.Reset();
     m_currentGrid.Reset();
 }
-

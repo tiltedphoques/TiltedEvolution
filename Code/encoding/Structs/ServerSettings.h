@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 using TiltedPhoques::Buffer;
 
 struct ServerSettings
@@ -16,4 +14,5 @@ struct ServerSettings
     bool GreetingsEnabled{};
     bool PvpEnabled{};
     bool SyncPlayerHomes{};
+    bool DeathSystemEnabled{};
 };

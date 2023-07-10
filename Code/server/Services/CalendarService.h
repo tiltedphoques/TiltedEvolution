@@ -9,12 +9,12 @@ struct UpdateEvent;
 struct PlayerJoinEvent;
 
 /**
-* @brief Manages time and date of the world.
-*/
+ * @brief Manages time and date of the world.
+ */
 class CalendarService
 {
 public:
-    CalendarService(World &aWorld, entt::dispatcher &aDispatcher);
+    CalendarService(World& aWorld, entt::dispatcher& aDispatcher);
 
     // we use these types for SOL
     // this is done this way because SOL
@@ -32,15 +32,16 @@ public:
     TDate GetDate() const noexcept;
 
     float GetTimeScale() const noexcept { return m_timeModel.TimeScale; }
+    bool SetTimeScale(float aScale) noexcept;
 
 private:
-    void OnUpdate(const UpdateEvent &) noexcept; 
+    void OnUpdate(const UpdateEvent&) noexcept;
     void OnPlayerJoin(const PlayerJoinEvent&) const noexcept;
 
     TimeModel m_timeModel;
     uint64_t m_lastTick = 0;
 
-    World &m_world;
+    World& m_world;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_joinConnection;

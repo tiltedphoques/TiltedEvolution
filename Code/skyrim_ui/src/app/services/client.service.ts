@@ -1,24 +1,13 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
-import { AsyncSubject, BehaviorSubject, firstValueFrom, ReplaySubject, Subject } from 'rxjs';
+import { AsyncSubject, BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { PartyInfo } from '../models/party-info';
 import { Player } from '../models/player';
+import { ChatService } from './chat.service';
 import { ErrorEvents, ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
-
-
-/** Message. */
-export interface Message {
-  /** Player name. Unset if it's a system message. */
-  name?: string;
-
-  /** Message content. */
-  content: string;
-
-  dialogue?: boolean;
-}
 
 /** Client game service. */
 @Injectable({
@@ -36,9 +25,6 @@ export class ClientService implements OnDestroy {
 
   /** Opening/close menu change. */
   public openingMenuChange = new BehaviorSubject(false);
-
-  /** Message reception. */
-  public messageReception = new ReplaySubject<Message>();
 
   /** Connection state change. */
   public connectionStateChange = new BehaviorSubject(false);
@@ -127,78 +113,77 @@ export class ClientService implements OnDestroy {
     private readonly errorService: ErrorService,
     private readonly loadingService: LoadingService,
     private readonly translocoService: TranslocoService,
+    private readonly chatService: ChatService,
   ) {
-    if (environment.game) {
-      skyrimtogether.on('init', this.onInit.bind(this));
-      skyrimtogether.on('activate', this.onActivate.bind(this));
-      skyrimtogether.on('deactivate', this.onDeactivate.bind(this));
-      skyrimtogether.on('enterGame', this.onEnterGame.bind(this));
-      skyrimtogether.on('exitGame', this.onExitGame.bind(this));
-      skyrimtogether.on('openingMenu', this.onOpeningMenu.bind(this));
-      skyrimtogether.on('message', this.onMessage.bind(this));
-      skyrimtogether.on('systemMessage', this.onSystemMessage.bind(this));
-      skyrimtogether.on('dialogueMessage', this.onDialogueMessage.bind(this));
-      skyrimtogether.on('connect', this.onConnect.bind(this));
-      skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
-      skyrimtogether.on('setName', this.onSetName.bind(this)); //not wanted, we dont sync name changes
-      skyrimtogether.on('setVersion', this.onSetVersion.bind(this));
-      skyrimtogether.on('debug', this.onDebug.bind(this)); //not needed anymore
-      skyrimtogether.on('debugData', this.onUpdateDebug.bind(this));
-      skyrimtogether.on('playerConnected', this.onPlayerConnected.bind(this));
-      skyrimtogether.on('playerDisconnected', this.onPlayerDisconnected.bind(this));
-      skyrimtogether.on('setHealth', this.onSetHealth.bind(this));
-      skyrimtogether.on('setLevel', this.onSetLevel.bind(this));
-      skyrimtogether.on('setCell', this.onSetCell.bind(this));
-      skyrimtogether.on('setPlayer3dLoaded', this.onSetPlayer3dLoaded.bind(this));
-      skyrimtogether.on('setPlayer3dUnloaded', this.onSetPlayer3dUnloaded.bind(this));
-      skyrimtogether.on('setLocalPlayerId', this.onSetLocalPlayerId.bind(this));
-      skyrimtogether.on('protocolMismatch', this.onProtocolMismatch.bind(this));
-      skyrimtogether.on('triggerError', this.onTriggerError.bind(this));
-      skyrimtogether.on('dummyData', this.onDummyData.bind(this));
-      skyrimtogether.on('partyInfo', this.onPartyInfo.bind(this));
-      skyrimtogether.on('partyCreated', this.onPartyCreated.bind(this));
-      skyrimtogether.on('partyLeft', this.onPartyLeft.bind(this));
-      skyrimtogether.on('partyInviteReceived', this.onPartyInviteReceived.bind(this));
-    }
+    skyrimtogether.on('init', this.onInit.bind(this));
+    skyrimtogether.on('activate', this.onActivate.bind(this));
+    skyrimtogether.on('deactivate', this.onDeactivate.bind(this));
+    skyrimtogether.on('enterGame', this.onEnterGame.bind(this));
+    skyrimtogether.on('exitGame', this.onExitGame.bind(this));
+    skyrimtogether.on('openingMenu', this.onOpeningMenu.bind(this));
+    skyrimtogether.on('connect', this.onConnect.bind(this));
+    skyrimtogether.on('disconnect', this.onDisconnect.bind(this));
+    skyrimtogether.on('setName', this.onSetName.bind(this)); //not wanted, we dont sync name changes
+    skyrimtogether.on('setVersion', this.onSetVersion.bind(this));
+    skyrimtogether.on('debug', this.onDebug.bind(this)); //not needed anymore
+    skyrimtogether.on('debugData', this.onUpdateDebug.bind(this));
+    skyrimtogether.on('playerConnected', this.onPlayerConnected.bind(this));
+    skyrimtogether.on(
+      'playerDisconnected',
+      this.onPlayerDisconnected.bind(this),
+    );
+    skyrimtogether.on('setHealth', this.onSetHealth.bind(this));
+    skyrimtogether.on('setLevel', this.onSetLevel.bind(this));
+    skyrimtogether.on('setCell', this.onSetCell.bind(this));
+    skyrimtogether.on('setPlayer3dLoaded', this.onSetPlayer3dLoaded.bind(this));
+    skyrimtogether.on(
+      'setPlayer3dUnloaded',
+      this.onSetPlayer3dUnloaded.bind(this),
+    );
+    skyrimtogether.on('setLocalPlayerId', this.onSetLocalPlayerId.bind(this));
+    skyrimtogether.on('protocolMismatch', this.onProtocolMismatch.bind(this));
+    skyrimtogether.on('triggerError', this.onTriggerError.bind(this));
+    skyrimtogether.on('dummyData', this.onDummyData.bind(this));
+    skyrimtogether.on('partyInfo', this.onPartyInfo.bind(this));
+    skyrimtogether.on('partyCreated', this.onPartyCreated.bind(this));
+    skyrimtogether.on('partyLeft', this.onPartyLeft.bind(this));
+    skyrimtogether.on(
+      'partyInviteReceived',
+      this.onPartyInviteReceived.bind(this),
+    );
   }
 
   /**
    * Dispose.
    */
   public ngOnDestroy(): void {
-    if (environment.game) {
-      skyrimtogether.off('init');
-      skyrimtogether.off('activate');
-      skyrimtogether.off('deactivate');
-      skyrimtogether.off('enterGame');
-      skyrimtogether.off('exitGame');
-      skyrimtogether.off('openingMenu');
-      skyrimtogether.off('message');
-      skyrimtogether.off('systemMessage');
-      skyrimtogether.off('dialogueMessage');
-      skyrimtogether.off('connect');
-      skyrimtogether.off('disconnect');
-      skyrimtogether.off('setName');
-      skyrimtogether.off('setVersion');
-      skyrimtogether.off('debug');
-      skyrimtogether.off('debugData');
-      skyrimtogether.off('userDataSet');
-      skyrimtogether.off('playerConnected');
-      skyrimtogether.off('playerDisconnected');
-      skyrimtogether.off('setHealth');
-      skyrimtogether.off('setLevel');
-      skyrimtogether.off('setCell');
-      skyrimtogether.off('setPlayer3dLoaded');
-      skyrimtogether.off('setPlayer3dUnloaded');
-      skyrimtogether.off('setLocalPlayerId');
-      skyrimtogether.off('protocolMismatch');
-      skyrimtogether.off('triggerError');
-      skyrimtogether.off('dummyData');
-      skyrimtogether.off('partyInfo');
-      skyrimtogether.off('partyCreated');
-      skyrimtogether.off('partyLeft');
-      skyrimtogether.off('partyInviteReceived');
-    }
+    skyrimtogether.off('init');
+    skyrimtogether.off('activate');
+    skyrimtogether.off('deactivate');
+    skyrimtogether.off('enterGame');
+    skyrimtogether.off('exitGame');
+    skyrimtogether.off('openingMenu');
+    skyrimtogether.off('connect');
+    skyrimtogether.off('disconnect');
+    skyrimtogether.off('setName');
+    skyrimtogether.off('setVersion');
+    skyrimtogether.off('debug');
+    skyrimtogether.off('debugData');
+    skyrimtogether.off('playerConnected');
+    skyrimtogether.off('playerDisconnected');
+    skyrimtogether.off('setHealth');
+    skyrimtogether.off('setLevel');
+    skyrimtogether.off('setCell');
+    skyrimtogether.off('setPlayer3dLoaded');
+    skyrimtogether.off('setPlayer3dUnloaded');
+    skyrimtogether.off('setLocalPlayerId');
+    skyrimtogether.off('protocolMismatch');
+    skyrimtogether.off('triggerError');
+    skyrimtogether.off('dummyData');
+    skyrimtogether.off('partyInfo');
+    skyrimtogether.off('partyCreated');
+    skyrimtogether.off('partyLeft');
+    skyrimtogether.off('partyInviteReceived');
   }
 
   /**
@@ -209,137 +194,80 @@ export class ClientService implements OnDestroy {
    * @param password Password or admin password
    */
   public connect(host: string, port: number, password = ''): void {
-    if (environment.game) {
-      skyrimtogether.connect(host, port, password);
-      this.isConnectionInProgressChange.next(true);
-      this._host = host;
-      this._port = port;
-      this._password = password;
-    } else {
-      this.connectionStateChange.next(true);
-      this.isConnectionInProgressChange.next(false);
-    }
+    skyrimtogether.connect(host, port, password);
+    this.isConnectionInProgressChange.next(true);
+    this._host = host;
+    this._port = port;
+    this._password = password;
   }
 
   /**
    * Disconnect from the server or cancel connection.
    */
   public disconnect(): void {
-    if (environment.game) {
-      skyrimtogether.disconnect();
-      this._remainingReconnectionAttempt = 0;
-    } else {
-      this.connectionStateChange.next(false);
-    }
-  }
-
-  /**
-   * Broadcast message to server.
-   *
-   * @param message Message to send.
-   */
-  public sendMessage(message: string): void {
-    if (environment.game) {
-      skyrimtogether.sendMessage(message);
-    } else {
-      this.messageReception.next({ name: this.nameChange.getValue(), content: message });
-    }
+    skyrimtogether.disconnect();
+    this._remainingReconnectionAttempt = 0;
   }
 
   /**
    * Launch a party.
    */
   public launchParty(): void {
-    if (environment.game) {
-      skyrimtogether.launchParty();
-    } else {
-      this.partyLaunchedChange.next();
-      this.onPartyCreated();
-    }
+    skyrimtogether.launchParty();
   }
 
   /**
    * Create a party invite.
    */
   public createPartyInvite(playerId: number): void {
-    if (environment.game) {
-      skyrimtogether.createPartyInvite(playerId);
-    } else {
-      this.partyInviteChange.next(playerId);
-    }
+    skyrimtogether.createPartyInvite(playerId);
   }
 
   /**
    * Accept a party invite.
    */
   public acceptPartyInvite(inviterId: number): void {
-    if (environment.game) {
-      skyrimtogether.acceptPartyInvite(inviterId);
-    } else {
-      this.partyJoinedChange.next(inviterId);
-    }
+    skyrimtogether.acceptPartyInvite(inviterId);
   }
 
   /**
    * As a party leader, kick a player from the party.
    */
   public kickPartyMember(playerId: number): void {
-    if (environment.game) {
-      skyrimtogether.kickPartyMember(playerId);
-    } else {
-      this.memberKickedChange.next(playerId);
-    }
+    skyrimtogether.kickPartyMember(playerId);
   }
 
   /**
    * Leave a party.
    */
   public leaveParty(): void {
-    if (environment.game) {
-      skyrimtogether.leaveParty();
-    } else {
-      this.onPartyLeft();
-    }
+    skyrimtogether.leaveParty();
   }
 
   /**
    * As a party leader, make someone else the leader.
    */
   public changePartyLeader(playerId: number): void {
-    if (environment.game) {
-      skyrimtogether.changePartyLeader(playerId);
-    } else {
-      this.partyLeaderChange.next(playerId);
-    }
+    skyrimtogether.changePartyLeader(playerId);
   }
 
   /**
    * Deactivate UI and release control.
    */
   public deactivate(): void {
-    if (environment.game) {
-      skyrimtogether.deactivate();
-    } else {
-      this.activationStateChange.next(this.activationStateChange.getValue());
-    }
+    skyrimtogether.deactivate();
   }
 
   /**
    * Reconnect
    */
   public reconnect(): void {
-    if (environment.game) {
-      skyrimtogether.reconnect();
-      this._remainingReconnectionAttempt = 0;
-    }
+    skyrimtogether.reconnect();
+    this._remainingReconnectionAttempt = 0;
   }
 
   public teleportToPlayer(playerId: number): void {
-    if (environment.game) {
-      skyrimtogether.teleportToPlayer(playerId);
-    } else {
-      this.messageReception.next({ content: 'Simulating teleport' });
-    }
+    skyrimtogether.teleportToPlayer(playerId);
   }
 
   /**
@@ -400,42 +328,6 @@ export class ClientService implements OnDestroy {
   }
 
   /**
-   * Called when a message is received.
-   *
-   * @param name Sender's name.
-   * @param message Message content.
-   */
-  private onMessage(name: string, message: string): void {
-    this.zone.run(() => {
-      this.messageReception.next({ name, content: message });
-    });
-  }
-
-  /**
-   * Called when a system message is received.
-   *
-   * @param message Message content.
-   */
-  private onSystemMessage(message: string): void {
-    this.zone.run(() => {
-      this.messageReception.next({ content: message });
-    });
-  }
-
-  /**
-   * Called when a dialogue message is received.
-   *
-   * @param name Sender's name.
-   * @param message Message content.
-   */
-  private onDialogueMessage(name: string, message: string): void {
-    let dialogue = true;
-    this.zone.run(() => {
-      this.messageReception.next({ name, content: message, dialogue: dialogue });
-    });
-  }
-
-  /**
    * Called when a connection is made.
    */
   private onConnect(): void {
@@ -444,12 +336,7 @@ export class ClientService implements OnDestroy {
       this.isConnectionInProgressChange.next(false);
       this.connectionStateChange.next(true);
 
-      const content = await firstValueFrom(
-        this.translocoService.selectTranslate<string>(
-          'SERVICE.CLIENT.CONNECTED'
-        )
-      );
-      this.messageReception.next({ content });
+      this.chatService.pushSystemMessage('SERVICE.CLIENT.CONNECTED');
     });
   }
 
@@ -464,21 +351,10 @@ export class ClientService implements OnDestroy {
 
       if (isError && this._remainingReconnectionAttempt > 0) {
         this._remainingReconnectionAttempt--;
-        const content = await firstValueFrom(
-          this.translocoService.selectTranslate<string>(
-            'SERVICE.CLIENT.CONNECTION_LOST',
-            { remainingReconnectionAttempt: this._remainingReconnectionAttempt },
-          ),
-        );
-        this.messageReception.next({ content });
+        this.chatService.pushSystemMessage('SERVICE.CLIENT.CONNECTION_LOST');
         this.connect(this._host, this._port, this._password);
       } else {
-        const content = await firstValueFrom(
-          this.translocoService.selectTranslate<string>(
-            'SERVICE.CLIENT.DISCONNECTED'
-          )
-        );
-        this.messageReception.next({ content });
+        this.chatService.pushSystemMessage('SERVICE.CLIENT.DISCONNECTED');
       }
     });
   }
@@ -500,9 +376,15 @@ export class ClientService implements OnDestroy {
    * @param version Game's version.
    */
   private onSetVersion(version: string): void {
+    version = environment.overwriteVersion || version;
+
     this.zone.run(() => {
       this.versionSet.next(version);
     });
+  }
+
+  getVersion(): string {
+    return this.versionSet.value;
   }
 
   /**
@@ -523,36 +405,61 @@ export class ClientService implements OnDestroy {
     receivedBandwidth: number,
   ): void {
     this.zone.run(() => {
-      this.debugDataChange.next(new Debug(
-        numPacketsSent, numPacketsReceived, RTT, packetLoss, sentBandwidth,
-        receivedBandwidth,
-      ));
+      this.debugDataChange.next(
+        new Debug(
+          numPacketsSent,
+          numPacketsReceived,
+          RTT,
+          packetLoss,
+          sentBandwidth,
+          receivedBandwidth,
+        ),
+      );
     });
   }
 
-  private onPlayerConnected(playerId: number, username: string, level: number, cellName: string) {
+  private onPlayerConnected(
+    playerId: number,
+    username: string,
+    level: number,
+    cellName: string,
+  ) {
+    if (environment.game) {
+      console.log(
+        `%conPlayerConnected`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
     this.zone.run(() => {
-      this.playerConnectedChange.next(new Player(
-        {
+      this.playerConnectedChange.next(
+        new Player({
           name: username,
           id: playerId,
           connected: true,
           level: level,
           cellName: cellName,
-        },
-      ));
+        }),
+      );
     });
   }
 
   private onPlayerDisconnected(playerId: number, username: string) {
+    if (environment.game) {
+      console.log(
+        `%conPlayerDisconnected`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
     this.zone.run(() => {
-      this.playerDisconnectedChange.next(new Player(
-        {
+      this.playerDisconnectedChange.next(
+        new Player({
           name: username,
           id: playerId,
           connected: false,
-        },
-      ));
+        }),
+      );
     });
   }
 
@@ -563,30 +470,67 @@ export class ClientService implements OnDestroy {
   }
 
   private onSetLevel(playerId: number, level: number) {
+    if (environment.game) {
+      console.log(
+        `%conSetLevel`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
     this.zone.run(() => {
       this.levelChange.next(new Player({ id: playerId, level: level }));
     });
   }
 
   private onSetCell(playerId: number, cellName: string) {
+    if (environment.game) {
+      console.log(
+        `%conSetCell`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
     this.zone.run(() => {
       this.cellChange.next(new Player({ id: playerId, cellName: cellName }));
     });
   }
 
   private onSetPlayer3dLoaded(playerId: number, health: number) {
+    if (environment.game) {
+      console.log(
+        `%conSetPlayer3dLoaded`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
     this.zone.run(() => {
-      this.isLoadedChange.next(new Player({ id: playerId, isLoaded: true, health: health }));
+      this.isLoadedChange.next(
+        new Player({ id: playerId, isLoaded: true, health: health }),
+      );
     });
   }
 
   private onSetPlayer3dUnloaded(playerId: number) {
+    if (environment.game) {
+      console.log(
+        `%conSetPlayer3dUnloaded`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
     this.zone.run(() => {
       this.isLoadedChange.next(new Player({ id: playerId, isLoaded: false }));
     });
   }
 
   private onSetLocalPlayerId(playerId: number) {
+    if (environment.game) {
+      console.log(
+        `%conSetLocalPlayerId`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
     this.zone.run(() => {
       this.localPlayerId = playerId;
     });
@@ -619,38 +563,65 @@ export class ClientService implements OnDestroy {
   }
 
   public onPartyInfo(playerIds: Array<number>, leaderId: number) {
+    if (environment.game) {
+      console.log(
+        `%conPartyInfo`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
     this.zone.run(() => {
-      this.partyInfoChange.next(new PartyInfo(
-        {
+      this.partyInfoChange.next(
+        new PartyInfo({
           playerIds: playerIds,
           leaderId: leaderId,
-        },
-      ));
+        }),
+      );
     });
   }
 
   private onPartyCreated() {
+    if (environment.game) {
+      console.log(
+        `%conPartyCreated`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
     this.zone.run(() => {
       this.loadingService.setLoading(false);
-      this.partyInfoChange.next(new PartyInfo(
-        {
+      this.partyInfoChange.next(
+        new PartyInfo({
           playerIds: [this.localPlayerId],
           leaderId: this.localPlayerId,
-        },
-      ));
+        }),
+      );
     });
   }
 
   private onPartyLeft() {
+    if (environment.game) {
+      console.log(
+        `%conPartyLeft`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
     this.zone.run(() => {
       this.partyLeftChange.next();
     });
   }
 
   private onPartyInviteReceived(inviterId: number) {
+    if (environment.game) {
+      console.log(
+        `%conPartyInviteReceived`,
+        'background: #009688; color: #fff; padding: 3px; font-size: 9px;',
+        ...Array.from(arguments).map(v => JSON.stringify(v)),
+      );
+    }
     this.zone.run(() => {
       this.partyInviteReceivedChange.next(inviterId);
     });
   }
-
 }

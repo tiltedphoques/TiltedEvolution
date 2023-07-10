@@ -24,7 +24,7 @@ VMAD::VMAD(Buffer::Reader& aReader, Map<uint8_t, uint32_t>& aParentToFormIdPrefi
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_version), 2);
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_objectFormat), 2);
     aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_scriptCount), 2);
-    
+
     m_scripts.reserve(m_scriptCount);
 
     for (uint16_t i = 0; i < m_scriptCount; i++)
@@ -70,20 +70,15 @@ void ScriptProperty::ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat, 
         }
         break;
 
-    case Type::INT:
-        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_dataSingleValue.m_integer), 4);
-        break;
-    case Type::FLOAT:
-        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_dataSingleValue.m_float), 4);
-        break;
-    case Type::BOOL:
-        aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_dataSingleValue.m_boolean), 1);
-        break;
+    case Type::INT: aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_dataSingleValue.m_integer), 4); break;
+    case Type::FLOAT: aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_dataSingleValue.m_float), 4); break;
+    case Type::BOOL: aReader.ReadBytes(reinterpret_cast<uint8_t*>(&m_dataSingleValue.m_boolean), 1); break;
 
-    case Type::WSTRING: {
+    case Type::WSTRING:
+    {
         uint32_t stringLength = 0;
         aReader.ReadBytes(reinterpret_cast<uint8_t*>(&stringLength), 2);
-        m_dataSingleValue.m_string = { reinterpret_cast<const char*>(aReader.GetDataAtPosition()), stringLength };
+        m_dataSingleValue.m_string = {reinterpret_cast<const char*>(aReader.GetDataAtPosition()), stringLength};
         aReader.Advance(stringLength);
         break;
     }
@@ -92,7 +87,8 @@ void ScriptProperty::ParseValue(Buffer::Reader& aReader, int16_t aObjectFormat, 
     case Type::INT_ARRAY:
     case Type::FLOAT_ARRAY:
     case Type::BOOL_ARRAY:
-    case Type::STRING_ARRAY: {
+    case Type::STRING_ARRAY:
+    {
         uint32_t sizeOfArray = 0;
         aReader.ReadBytes(reinterpret_cast<uint8_t*>(&sizeOfArray), 4);
         for (uint32_t i = 0; i < sizeOfArray; i++)

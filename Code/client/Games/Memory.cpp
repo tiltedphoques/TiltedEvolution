@@ -6,7 +6,7 @@
 #include <TiltedCore/MimallocAllocator.hpp>
 #include <mimalloc.h>
 
-#pragma optimize( "", off )
+#pragma optimize("", off)
 
 struct GameHeap
 {
@@ -22,7 +22,6 @@ struct GameHeap
 TP_THIS_FUNCTION(TFormAllocate, void*, GameHeap, size_t aSize, size_t aAlignment, bool aAligned);
 TP_THIS_FUNCTION(TFormFree, void, GameHeap, void* apPtr, bool aAligned);
 
-
 TFormAllocate* RealFormAllocate = nullptr;
 TFormFree* RealFormFree = nullptr;
 
@@ -32,12 +31,12 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
 {
     switch (aSize)
     {
-        case sizeof(Actor): aSize = sizeof(ExActor); break;
-        case sizeof(PlayerCharacter) : aSize = sizeof(ExPlayerCharacter); break;
-        default: break;
+    case sizeof(Actor): aSize = sizeof(ExActor); break;
+    case sizeof(PlayerCharacter): aSize = sizeof(ExPlayerCharacter); break;
+    default: break;
     }
 
-    auto* pPointer = ThisCall(RealFormAllocate, apThis, aSize, aAlignment, aAligned);
+    auto* pPointer = TiltedPhoques::ThisCall(RealFormAllocate, apThis, aSize, aAlignment, aAligned);
 
     if (!pPointer)
         return nullptr;
@@ -46,12 +45,12 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
 
     switch (aSize)
     {
-        case sizeof(ExActor) : pExtension = static_cast<ActorExtension*>(static_cast<ExActor*>(pPointer)); break;
-        case sizeof(ExPlayerCharacter) : pExtension = static_cast<ActorExtension*>(static_cast<ExPlayerCharacter*>(pPointer));  break;
-        default: break;
+    case sizeof(ExActor): pExtension = static_cast<ActorExtension*>(static_cast<ExActor*>(pPointer)); break;
+    case sizeof(ExPlayerCharacter): pExtension = static_cast<ActorExtension*>(static_cast<ExPlayerCharacter*>(pPointer)); break;
+    default: break;
     }
 
-    if(pExtension)
+    if (pExtension)
     {
         new (pExtension) ActorExtension;
     }
@@ -62,18 +61,18 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
 void* Memory::Allocate(const size_t aSize) noexcept
 {
 #if TP_FALLOUT4
-    return ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0x10, true);
+    return TiltedPhoques::ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0x10, true);
 #else
-    return ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0, false);
+    return TiltedPhoques::ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0, false);
 #endif
 }
 
 void Memory::Free(void* apData) noexcept
 {
 #if TP_FALLOUT4
-    ThisCall(RealFormFree, GameHeap::Get(), apData, true);
+    TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, true);
 #else
-    ThisCall(RealFormFree, GameHeap::Get(), apData, false);
+    TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, false);
 #endif
 }
 
@@ -107,7 +106,8 @@ void* Hook_aligned_malloc(size_t aSize, size_t aAlignment)
     return mi_malloc_aligned(aSize, aAlignment);
 }
 
-static TiltedPhoques::Initializer s_memoryHooks([]()
+static TiltedPhoques::Initializer s_memoryHooks(
+    []()
     {
         POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
         POINTER_FALLOUT4(TFormAllocate, s_formAllocate, 652768);
@@ -149,4 +149,4 @@ static TiltedPhoques::Initializer s_memoryHooks([]()
         TP_HOOK(&RealFormAllocate, HookFormAllocate);
     });
 
-#pragma optimize( "", on )
+#pragma optimize("", on)

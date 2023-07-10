@@ -1,10 +1,7 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/Fallout4/AnimationGraphDescriptor_Bloatfly.h>
 
-
-
-AnimationGraphDescriptor_Bloatfly::AnimationGraphDescriptor_Bloatfly(
-    AnimationGraphDescriptorManager& aManager)
+AnimationGraphDescriptor_Bloatfly::AnimationGraphDescriptor_Bloatfly(AnimationGraphDescriptorManager& aManager)
 {
     uint64_t key = 10733037448866675267;
 
@@ -80,7 +77,8 @@ AnimationGraphDescriptor_Bloatfly::AnimationGraphDescriptor_Bloatfly(
         kbIsInFlavor = 67,
     };
 
-    AnimationGraphDescriptorManager::Builder s_builder(aManager, key,
+    AnimationGraphDescriptorManager::Builder s_builder(
+        aManager, key,
         AnimationGraphDescriptor(
             {
                 kbAnimationDriven,
@@ -102,6 +100,5 @@ AnimationGraphDescriptor_Bloatfly::AnimationGraphDescriptor_Bloatfly(
                 kiCombatState,
                 kiSyncTurnState,
                 kiSyncIdleLocomotion,
-            }
-        ));
+            }));
 }

@@ -3,14 +3,15 @@
 using TiltedPhoques::ConnectionId_t;
 
 /**
-* @brief Wrapper for admin messages.
-*/
-template<class T>
-struct AdminPacketEvent
+ * @brief Wrapper for admin messages.
+ */
+template <class T> struct AdminPacketEvent
 {
     AdminPacketEvent(T* aPacket, ConnectionId_t aConnectionId)
-        : Packet(*aPacket), ConnectionId(aConnectionId)
-    {}
+        : Packet(*aPacket)
+        , ConnectionId(aConnectionId)
+    {
+    }
 
     constexpr AdminPacketEvent(const AdminPacketEvent& acRhs) = default;
 

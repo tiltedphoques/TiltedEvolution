@@ -6,9 +6,7 @@
 #include <Magnum/GL/Renderer.h>
 
 AdminApp::AdminApp(const Arguments& arguments)
-    : Platform::Application{
-          arguments,
-          Configuration{}.setTitle("TiltedOnline Server Admin").setWindowFlags(Configuration::WindowFlag::Resizable)}
+    : Platform::Application{arguments, Configuration{}.setTitle("TiltedOnline Server Admin").setWindowFlags(Configuration::WindowFlag::Resizable)}
 {
     m_password.resize(1024);
     m_imgui = ImGuiIntegration::Context(Vector2{windowSize()} / dpiScaling(), windowSize(), framebufferSize());
@@ -17,13 +15,14 @@ AdminApp::AdminApp(const Arguments& arguments)
        you'll need this exact behavior for the rest of your scene. If not, set
        this only for the drawFrame() call. */
     GL::Renderer::setBlendEquation(GL::Renderer::BlendEquation::Add, GL::Renderer::BlendEquation::Add);
-    GL::Renderer::setBlendFunction(GL::Renderer::BlendFunction::SourceAlpha,
-                                   GL::Renderer::BlendFunction::OneMinusSourceAlpha);
+    GL::Renderer::setBlendFunction(GL::Renderer::BlendFunction::SourceAlpha, GL::Renderer::BlendFunction::OneMinusSourceAlpha);
 
-    auto handlerGenerator = [this](auto& x) {
+    auto handlerGenerator = [this](auto& x)
+    {
         using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-        m_messageHandlers[T::Opcode] = [this](UniquePtr<ServerAdminMessage>& apMessage) {
+        m_messageHandlers[T::Opcode] = [this](UniquePtr<ServerAdminMessage>& apMessage)
+        {
             const auto pRealMessage = TiltedPhoques::CastUnique<T>(std::move(apMessage));
             HandleMessage(*pRealMessage);
         };
@@ -58,10 +57,7 @@ void AdminApp::drawEvent()
     {
         ImGui::SetNextWindowSize(ImVec2(600, 150));
         ImGui::SetNextWindowPos(ImVec2(windowSize().x() / 2, 200), 0, ImVec2(0.5f, 0.f));
-        ImGui::Begin("Online", nullptr,
-                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove |
-                         ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoTitleBar |
-                         ImGuiWindowFlags_MenuBar);
+        ImGui::Begin("Online", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_MenuBar);
 
         if (m_state == ConnectionState::kConnecting)
             ImGui::Text("Please wait...");
@@ -166,9 +162,7 @@ void AdminApp::textInputEvent(TextInputEvent& event)
         return;
 }
 
-
 void AdminApp::drawServerUi()
 {
     m_overlay.Update(*this);
 }
-

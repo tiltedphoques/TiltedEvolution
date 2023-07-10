@@ -2,14 +2,14 @@
 
 struct BSThread
 {
-  public:
+public:
     virtual ~BSThread() = 0;
     // runner
     virtual uint32_t ThreadProc() = 0;
     // probably release
     virtual bool Release() = 0;
 
-  //private:
+    // private:
     CRITICAL_SECTION lock; // in reality a BSCriticalSection
     void* m_ThreadHandle;
     void* m_ParentHandle;

@@ -3,13 +3,14 @@
 #include "Message.h"
 
 #include <Structs/GameId.h>
+#include <Structs/GridCellCoords.h>
 
 struct NotifyPlayerJoined final : ServerMessage
 {
     static constexpr ServerOpcode Opcode = kNotifyPlayerJoined;
 
-    NotifyPlayerJoined() : 
-        ServerMessage(Opcode)
+    NotifyPlayerJoined()
+        : ServerMessage(Opcode)
     {
     }
 
@@ -25,7 +26,8 @@ struct NotifyPlayerJoined final : ServerMessage
                Username == acRhs.Username &&
                WorldSpaceId == acRhs.WorldSpaceId &&
                CellId == acRhs.CellId &&
-               Level == acRhs.Level;
+               Level == acRhs.Level &&
+               CenterCoords == acRhs.CenterCoords;
     }
 
     uint32_t PlayerId{};
@@ -33,4 +35,5 @@ struct NotifyPlayerJoined final : ServerMessage
     GameId WorldSpaceId{};
     GameId CellId{};
     uint16_t Level{};
+    GridCellCoords CenterCoords{};
 };

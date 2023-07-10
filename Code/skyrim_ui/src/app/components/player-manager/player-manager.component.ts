@@ -1,12 +1,13 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostListener,
+  Output,
+} from '@angular/core';
+import { PlayerManagerTab } from '../../models/player-manager-tab.enum';
 import { Sound, SoundService } from '../../services/sound.service';
-
-
-export enum PlayerManagerTab {
-  PLAYER_LIST,
-  PARTY_MENU
-}
+import { UiRepository } from '../../store/ui.repository';
 
 @Component({
   selector: 'app-player-manager',
@@ -15,21 +16,20 @@ export enum PlayerManagerTab {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayerManagerComponent {
-
   /* ### ENUMS ### */
   readonly PlayerManagerTab = PlayerManagerTab;
 
-  activeTab = new BehaviorSubject(PlayerManagerTab.PLAYER_LIST);
+  activeTab$ = this.uiRepository.playerManagerTab$;
 
   @Output() public done = new EventEmitter<void>();
 
   constructor(
     private readonly sound: SoundService,
-  ) {
-  }
+    private readonly uiRepository: UiRepository,
+  ) {}
 
   switchTab(tab: PlayerManagerTab) {
-    this.activeTab.next(tab);
+    this.uiRepository.openPlayerManagerTab(tab);
     this.sound.play(Sound.Focus);
   }
 

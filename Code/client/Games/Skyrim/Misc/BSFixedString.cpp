@@ -5,7 +5,6 @@
 BSFixedString::BSFixedString()
     : data{nullptr}
 {
-    
 }
 
 BSFixedString::BSFixedString(const char* acpData)
@@ -14,7 +13,7 @@ BSFixedString::BSFixedString(const char* acpData)
 
     POINTER_SKYRIMSE(TConstructor, s_constructor, 69161);
 
-    ThisCall(s_constructor, this, acpData);
+    TiltedPhoques::ThisCall(s_constructor, this, acpData);
 }
 
 BSFixedString::~BSFixedString()
@@ -28,7 +27,7 @@ void BSFixedString::Set(const char* acpData)
 
     POINTER_SKYRIMSE(TSet, s_set, 69165);
 
-    ThisCall(s_set, this, acpData);
+    TiltedPhoques::ThisCall(s_set, this, acpData);
 }
 
 void BSFixedString::Release() noexcept
@@ -37,5 +36,5 @@ void BSFixedString::Release() noexcept
 
     POINTER_SKYRIMSE(TRelease, s_release, 69192);
 
-    ThisCall(s_release, this);
+    TiltedPhoques::ThisCall(s_release, this);
 }

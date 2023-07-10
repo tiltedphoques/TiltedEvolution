@@ -1,3 +1,4 @@
+local function istable(t) return type(t) == 'table' end
 
 local function build_launcher()
     set_kind("binary")
@@ -6,6 +7,9 @@ local function build_launcher()
 
     after_install(function(target)
         local linkdir = target:pkg("sentry-native"):get("linkdirs")
+        if istable(linkdir) then
+            linkdir = linkdir[1] -- Yes lua index starts at 1
+        end
         local bindir = path.join(linkdir, "..", "bin")
         os.cp(bindir, target:installdir())
     end)

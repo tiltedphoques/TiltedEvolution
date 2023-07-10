@@ -1,0 +1,132 @@
+@import 'env';
+
+.dropdown-wrapper {
+  --height: 2em;
+  --border-size: 1px;
+  --padding: 0.5em;
+  --color-disabled: rgba(255, 255, 255, 0.5);
+  --color-inactive: rgba(255, 255, 255, 0.7);
+  --color-hover: white;
+  --color: var(--color-inactive);
+  --opacity-disabled: 0.5;
+  --opacity-inactive: 0.7;
+  --opacity-hover: 1;
+  --opacity: var(--opacity-inactive);
+
+  display: flex;
+  width: inherit;
+  cursor: pointer;
+  position: relative;
+  color: var(--color-hover);
+
+  .box {
+    width: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: var(--border-size) solid var(--color);
+  }
+
+  .dropdown-selected {
+    position: relative;
+    height: var(--height);
+    width: 100%;
+    padding: var(--padding);
+    gap: var(--padding);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    overflow: hidden;
+    background: transparent;
+    opacity: var(--opacity-inactive);
+
+    span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &::after {
+      content: '';
+      height: 1em;
+      min-width: 1em;
+      width: 1em;
+      background: no-repeat center/contain
+        url(../../../assets/images/arrow/south.svg);
+    }
+
+    &:hover {
+      opacity: var(--opacity-hover);
+    }
+  }
+
+  .dropdown-options {
+    height: 0;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    max-height: 25vh;
+    overflow-y: auto;
+    z-index: 999;
+
+    li {
+      padding: var(--padding);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--padding);
+      opacity: var(--opacity-inactive);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        opacity: var(--opacity-hover);
+      }
+
+      &.active {
+        font-weight: 600;
+      }
+
+      &::after {
+        content: '';
+        height: 1em;
+        min-width: 1em;
+        width: 1em;
+
+        background: no-repeat center/contain
+          url(../../../assets/images/checkbox/unchecked.svg);
+      }
+
+      &.selected::after {
+        background-image: url(../../../assets/images/checkbox/checked.svg);
+      }
+    }
+  }
+
+  &.is-open {
+    .dropdown-options {
+      height: unset;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      top: var(--height);
+      margin-top: calc(2 * var(--border-size));
+      background-color: #0e0e0e;
+      border: var(--border-size) solid;
+    }
+  }
+
+  &:hover,
+  &.is-open {
+    --color: var(--color-hover);
+    --opacity: var(--opacity-hover);
+  }
+}
+
+.dropdown-wrapper.disabled {
+  pointer-events: none;
+  --color-inactive: var(--color-disabled);
+  --opacity-inactive: var(--opacity-disabled);
+}

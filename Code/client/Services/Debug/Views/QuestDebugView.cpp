@@ -16,7 +16,8 @@ void DebugService::DrawQuestDebugView()
 {
 #if TP_SKYRIM64
     auto* pPlayer = PlayerCharacter::Get();
-    if (!pPlayer) return;
+    if (!pPlayer)
+        return;
 
     ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Quests");
@@ -30,7 +31,7 @@ void DebugService::DrawQuestDebugView()
     {
         Set<uint32_t> foundQuests{};
 
-        for (auto &objective : pPlayer->objectives)
+        for (auto& objective : pPlayer->objectives)
         {
             TESQuest* pQuest = objective.instance->quest;
             if (!pQuest)

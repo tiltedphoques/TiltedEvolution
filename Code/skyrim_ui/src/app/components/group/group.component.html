@@ -1,5 +1,9 @@
-<div [@fadeInOut]="isShown | async" class="group-container-wrapper">
-  <div *ngIf="group$ | async" class="group-container" [ngStyle]="positionStyle | async">
+<div [@fadeInOutActive]="isShown | async" class="group-container-wrapper">
+  <div
+    *ngIf="group$ | async"
+    class="group-container"
+    [ngStyle]="positionStyle | async"
+  >
     <div
       *ngFor="let player of groupMembers$ | async"
       [title]="player.cellName"
@@ -9,13 +13,15 @@
       <b class="group-member-level">{{ player.level }} </b>
       <div *ngIf="player.health === 0" class="group-member-dead"></div>
       <div *ngIf="player.isOwner" class="group-member-leader"></div>
-      {{ player.name }}
+      <span class="member-name">{{ player.name }}</span>
       <div
-        *ngIf="(player.health !== undefined) && player.isLoaded"
+        *ngIf="player.health !== undefined && player.isLoaded"
         class="group-member-health"
       >
-        <div class="group-member-health-value" [app-health]="player.health">
-        </div>
+        <div
+          class="group-member-health-value"
+          [app-health]="player.health"
+        ></div>
       </div>
     </div>
   </div>

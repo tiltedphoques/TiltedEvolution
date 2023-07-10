@@ -16,6 +16,7 @@ enum class ExtraDataType : uint32_t
     Health = 0x25,
     Charge = 0x28,
     Teleport = 0x2B,
+    MapMarker = 0x2C,
     LeveledCreature = 0x2D,
     CannotWear = 0x3D,
     Poison = 0x3E,
@@ -46,4 +47,3 @@ struct BSExtraData
 static_assert(offsetof(BSExtraData, type) == 0x12);
 static_assert(sizeof(BSExtraData) == 0x18);
 #endif
-

@@ -12,8 +12,8 @@ struct NotifyPartyJoined;
 struct NotifyPartyLeft;
 
 /**
-* @brief Manages the party of the local player.
-*/
+ * @brief Manages the party of the local player.
+ */
 struct PartyService
 {
     PartyService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept;
@@ -21,31 +21,13 @@ struct PartyService
 
     TP_NOCOPYMOVE(PartyService);
 
-    [[nodiscard]] bool IsInParty() const noexcept
-    {
-        return m_inParty;
-    }
-    [[nodiscard]] bool IsLeader() const noexcept
-    {
-        return m_isLeader;
-    }
-    [[nodiscard]] uint32_t GetLeaderPlayerId() const noexcept
-    {
-        return m_leaderPlayerId;
-    }
+    [[nodiscard]] bool IsInParty() const noexcept { return m_inParty; }
+    [[nodiscard]] bool IsLeader() const noexcept { return m_isLeader; }
+    [[nodiscard]] uint32_t GetLeaderPlayerId() const noexcept { return m_leaderPlayerId; }
 
-    const Vector<uint32_t>& GetPartyMembers() const noexcept
-    {
-        return m_partyMembers;
-    }
-    const Map<uint32_t, String>& GetPlayers() const noexcept
-    {
-        return m_players;
-    }
-    Map<uint32_t, uint64_t>& GetInvitations() noexcept
-    {
-        return m_invitations;
-    }
+    const Vector<uint32_t>& GetPartyMembers() const noexcept { return m_partyMembers; }
+    const Map<uint32_t, String>& GetPlayers() const noexcept { return m_players; }
+    Map<uint32_t, uint64_t>& GetInvitations() noexcept { return m_invitations; }
 
     void CreateParty() const noexcept;
     void LeaveParty() const noexcept;
@@ -55,7 +37,6 @@ struct PartyService
     void ChangePartyLeader(const uint32_t aPlayerId) const noexcept;
 
 protected:
-
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
     void OnDisconnected(const DisconnectedEvent& acEvent) noexcept;
     void OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept;
@@ -65,7 +46,6 @@ protected:
     void OnPartyLeft(const NotifyPartyLeft& acPartyLeft) noexcept;
 
 private:
-
     void DestroyParty() noexcept;
 
     Map<uint32_t, String> m_players;

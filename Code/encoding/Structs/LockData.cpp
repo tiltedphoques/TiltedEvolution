@@ -5,8 +5,7 @@ using TiltedPhoques::Serialization;
 
 bool LockData::operator==(const LockData& acRhs) const noexcept
 {
-    return IsLocked == acRhs.IsLocked &&
-        LockLevel == acRhs.LockLevel;
+    return IsLocked == acRhs.IsLocked && LockLevel == acRhs.LockLevel;
 }
 
 bool LockData::operator!=(const LockData& acRhs) const noexcept

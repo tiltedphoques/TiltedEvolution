@@ -25,8 +25,7 @@ EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData
         effectItem.data.iArea = effect.Area;
         effectItem.data.iDuration = effect.Duration;
         effectItem.fRawCost = effect.RawCost;
-        effectItem.pEffectSetting =
-            Cast<EffectSetting>(TESForm::GetById(modSystem.GetGameId(effect.EffectId)));
+        effectItem.pEffectSetting = Cast<EffectSetting>(TESForm::GetById(modSystem.GetGameId(effect.EffectId)));
         if (!effectItem.pEffectSetting)
             spdlog::error("Effect setting not found: {:X}:{:X}", effect.EffectId.ModId, effect.EffectId.BaseId);
 
@@ -40,13 +39,12 @@ EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData
     EnchantmentItem* pItem = nullptr;
     if (aData.IsWeapon)
     {
-        pItem = ThisCall(addWeaponEnchantment, objManager, &effects);
+        pItem = TiltedPhoques::ThisCall(addWeaponEnchantment, objManager, &effects);
     }
     else
     {
-        pItem = ThisCall(addArmorEnchantment, objManager, &effects);
+        pItem = TiltedPhoques::ThisCall(addArmorEnchantment, objManager, &effects);
     }
 
     return pItem;
 }
-

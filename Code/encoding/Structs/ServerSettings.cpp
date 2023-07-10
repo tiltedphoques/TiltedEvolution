@@ -5,7 +5,7 @@ using TiltedPhoques::Serialization;
 
 bool ServerSettings::operator==(const ServerSettings& acRhs) const noexcept
 {
-    return Difficulty == acRhs.Difficulty;
+    return Difficulty == acRhs.Difficulty && GreetingsEnabled == acRhs.GreetingsEnabled && PvpEnabled == acRhs.PvpEnabled && SyncPlayerHomes == acRhs.SyncPlayerHomes && DeathSystemEnabled == acRhs.DeathSystemEnabled;
 }
 
 bool ServerSettings::operator!=(const ServerSettings& acRhs) const noexcept
@@ -19,6 +19,7 @@ void ServerSettings::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noe
     Serialization::WriteBool(aWriter, GreetingsEnabled);
     Serialization::WriteBool(aWriter, PvpEnabled);
     Serialization::WriteBool(aWriter, SyncPlayerHomes);
+    Serialization::WriteBool(aWriter, DeathSystemEnabled);
 }
 
 void ServerSettings::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -27,5 +28,5 @@ void ServerSettings::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcep
     GreetingsEnabled = Serialization::ReadBool(aReader);
     PvpEnabled = Serialization::ReadBool(aReader);
     SyncPlayerHomes = Serialization::ReadBool(aReader);
+    DeathSystemEnabled = Serialization::ReadBool(aReader);
 }
-

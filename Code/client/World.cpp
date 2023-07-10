@@ -11,6 +11,7 @@
 #include <Services/DiscordService.h>
 #include <Services/ObjectService.h>
 #include <Services/QuestService.h>
+#include <Services/MapService.h>
 #include <Services/ActorValueService.h>
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
@@ -18,6 +19,8 @@
 #include <Services/CalendarService.h>
 #include <Services/StringCacheService.h>
 #include <Services/PlayerService.h>
+#include <Services/CombatService.h>
+#include <Services/WeatherService.h>
 
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
@@ -26,26 +29,31 @@ World::World()
     : m_runner(m_dispatcher)
     , m_transport(*this, m_dispatcher)
     , m_modSystem(m_dispatcher)
-    , m_lastFrameTime{ std::chrono::high_resolution_clock::now() }
+    , m_lastFrameTime{std::chrono::high_resolution_clock::now()}
 {
-     ctx().emplace<ImguiService>();
-     ctx().emplace<DiscoveryService>(*this, m_dispatcher);
-     ctx().emplace<OverlayService>(*this, m_transport, m_dispatcher);
-     ctx().emplace<InputService>(ctx().at<OverlayService>());
-     ctx().emplace<CharacterService>(*this, m_dispatcher, m_transport);
-     ctx().emplace<DebugService>(m_dispatcher, *this, m_transport, ctx().at<ImguiService>());
-     ctx().emplace<PapyrusService>(m_dispatcher);
-     ctx().emplace<DiscordService>(m_dispatcher);
-     ctx().emplace<ObjectService>(*this, m_dispatcher, m_transport);
-     ctx().emplace<CalendarService>(*this, m_dispatcher, m_transport);
-     ctx().emplace<QuestService>(*this, m_dispatcher);
-     ctx().emplace<PartyService>(*this, m_dispatcher, m_transport);
-     ctx().emplace<ActorValueService>(*this, m_dispatcher, m_transport);
-     ctx().emplace<InventoryService>(*this, m_dispatcher, m_transport);
-     ctx().emplace<MagicService>(*this, m_dispatcher, m_transport);
-     ctx().emplace<CommandService>(*this, m_transport, m_dispatcher);
-     ctx().emplace<PlayerService>(*this, m_dispatcher, m_transport);
-     ctx().emplace<StringCacheService>(m_dispatcher);
+    ctx().emplace<ImguiService>();
+    ctx().emplace<DiscoveryService>(*this, m_dispatcher);
+    ctx().emplace<OverlayService>(*this, m_transport, m_dispatcher);
+    ctx().emplace<InputService>(ctx().at<OverlayService>());
+    ctx().emplace<CharacterService>(*this, m_dispatcher, m_transport);
+    ctx().emplace<DebugService>(m_dispatcher, *this, m_transport, ctx().at<ImguiService>());
+    ctx().emplace<PapyrusService>(m_dispatcher);
+    ctx().emplace<DiscordService>(m_dispatcher);
+    ctx().emplace<ObjectService>(*this, m_dispatcher, m_transport);
+    ctx().emplace<CalendarService>(*this, m_dispatcher, m_transport);
+    ctx().emplace<QuestService>(*this, m_dispatcher);
+    ctx().emplace<PartyService>(*this, m_dispatcher, m_transport);
+    ctx().emplace<ActorValueService>(*this, m_dispatcher, m_transport);
+    ctx().emplace<InventoryService>(*this, m_dispatcher, m_transport);
+    ctx().emplace<MagicService>(*this, m_dispatcher, m_transport);
+    ctx().emplace<CommandService>(*this, m_transport, m_dispatcher);
+    ctx().emplace<PlayerService>(*this, m_dispatcher, m_transport);
+    ctx().emplace<StringCacheService>(m_dispatcher);
+    ctx().emplace<CombatService>(*this, m_transport, m_dispatcher);
+    ctx().emplace<WeatherService>(*this, m_transport, m_dispatcher);
+#if TP_SKYRIM64
+    ctx().emplace<MapService>(*this, m_dispatcher, m_transport);
+#endif
 }
 
 World::~World() = default;

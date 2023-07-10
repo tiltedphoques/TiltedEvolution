@@ -19,15 +19,16 @@ extern "C"
     __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 
-auto kSystemPreloadDlls = {L"\\dinput8.dll", // < Skyrim early init hook
-                           L"\\dsound.dll",  // < breaks DSound init in game code
-                                             // < X360CE v3 is buggy with COM hooks
-                           L"\\xinput9_1_0.dll", L"\\xinput1_1.dll", L"\\xinput1_2.dll", L"\\xinput1_3.dll",
-                           L"\\xinput1_4.dll", L"\\version.dll"};
+auto kSystemPreloadDlls = {
+    L"\\dinput8.dll", // < Skyrim early init hook
+    L"\\dsound.dll",  // < breaks DSound init in game code
+                      // < X360CE v3 is buggy with COM hooks
+    L"\\xinput9_1_0.dll", L"\\xinput1_1.dll", L"\\xinput1_2.dll", L"\\xinput1_3.dll", L"\\xinput1_4.dll", L"\\version.dll"};
 
 static void PreloadSystemDlls()
 {
-    auto loadSystemDll = [](auto dll) {
+    auto loadSystemDll = [](auto dll)
+    {
         wchar_t systemPath[512];
         GetSystemDirectoryW(systemPath, _countof(systemPath));
 

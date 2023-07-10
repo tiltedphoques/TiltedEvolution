@@ -8,7 +8,10 @@
 
 struct LocalComponent
 {
-    LocalComponent(uint32_t aId) noexcept : Id(aId) {}
+    LocalComponent(uint32_t aId) noexcept
+        : Id(aId)
+    {
+    }
 
     uint32_t Id;
     ActionEvent CurrentAction;

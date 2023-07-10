@@ -10,12 +10,12 @@ struct AssignObjectsRequest;
 struct ScriptAnimationRequest;
 
 /**
-* @brief Manages (interactive) objects and relays interactions with said objects.
-*/
+ * @brief Manages (interactive) objects and relays interactions with said objects.
+ */
 class ObjectService
 {
 public:
-    ObjectService(World &aWorld, entt::dispatcher &aDispatcher);
+    ObjectService(World& aWorld, entt::dispatcher& aDispatcher);
 
 private:
     void OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept;
@@ -23,10 +23,8 @@ private:
     void OnActivate(const PacketEvent<ActivateRequest>&) const noexcept;
     void OnLockChange(const PacketEvent<LockChangeRequest>&) const noexcept;
     void OnScriptAnimationRequest(const PacketEvent<ScriptAnimationRequest>&) noexcept;
-
     World &m_world;
     entt::dispatcher& m_dispatcher;
-
     entt::scoped_connection m_leaveCellConnection;
     entt::scoped_connection m_assignObjectConnection;
     entt::scoped_connection m_activateConnection;

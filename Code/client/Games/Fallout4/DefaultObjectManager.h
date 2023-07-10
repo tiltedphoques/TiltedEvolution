@@ -4,4 +4,3 @@ struct DefaultObjectManager
 {
     static DefaultObjectManager& Get();
 };
-

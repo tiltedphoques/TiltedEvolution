@@ -17,4 +17,3 @@ void BSCRC32::GenerateCRC(uint32_t& aiCRC, uint32_t auiData, uint32_t auiDefault
     crc.TruncatedFinal(reinterpret_cast<CryptoPP::byte*>(&aiCRC), sizeof(uint32_t));
 }
 } // namespace creation
-

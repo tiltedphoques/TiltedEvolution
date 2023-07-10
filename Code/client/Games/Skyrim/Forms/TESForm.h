@@ -8,10 +8,12 @@ enum class FormType : uint8_t
     Book = 27,
     Container = 28,
     Door = 29,
+    Ingredient = 30,
     Weapon = 41,
     Ammo = 42,
     Npc = 43,
     LeveledCharacter = 44,
+    Alchemy = 46,
     Character = 62,
     QuestItem = 77,
     Count = 0x87
@@ -91,13 +93,15 @@ struct TESForm : BaseFormComponent
     virtual void ActivateReference();
     virtual void sub_38();
 
-    //void CopyFromEx(TESForm* rhs);
+    // void CopyFromEx(TESForm* rhs);
     void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);
     void SetSkipSaveFlag(bool aSet) noexcept;
     uint32_t GetChangeFlags() const noexcept;
 
+    void SetTemporary();
+
     bool GetIgnoreFriendlyHit() const noexcept { return (flags & IGNORE_FRIENDLY_HITS) != 0; }
-    void SetIgnoreFriendlyHit(bool aSet) noexcept 
+    void SetIgnoreFriendlyHit(bool aSet) noexcept
     {
         if (aSet)
             flags |= IGNORE_FRIENDLY_HITS;
@@ -107,6 +111,7 @@ struct TESForm : BaseFormComponent
 
     bool IsDisabled() const noexcept { return (flags & DISABLED) != 0; }
     bool IsTemporary() const noexcept { return formID >= 0xFF000000; }
+    bool IsConsumable() const noexcept { return formType == FormType::Ingredient || formType == FormType::Alchemy; }
 
     uintptr_t unk4;
     uint32_t flags;

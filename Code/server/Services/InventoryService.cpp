@@ -11,7 +11,12 @@
 #include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/DrawWeaponRequest.h>
 
-InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher) 
+namespace
+{
+Console::Setting bEnableItemDrops{"Gameplay:bEnableItemDrops", "(Experimental) Syncs dropped items by players", false};
+}
+
+InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
 {
     m_inventoryChangeConnection = aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&InventoryService::OnInventoryChanges>(this);
@@ -33,10 +38,14 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
         inventoryComponent.Content.AddOrRemoveEntry(message.Item);
     }
 
+    if (!message.UpdateClients)
+        return;
+
     NotifyInventoryChanges notify;
     notify.ServerId = message.ServerId;
     notify.Item = message.Item;
-    notify.Drop = message.Drop;
+
+    notify.Drop = bEnableItemDrops ? message.Drop : false;
 
     const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
     GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender());
@@ -76,12 +85,10 @@ void InventoryService::OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>
     auto characterView = m_world.view<CharacterComponent, OwnerComponent>();
     const auto it = characterView.find(static_cast<entt::entity>(message.Id));
 
-    if (it != std::end(characterView) 
-        && characterView.get<OwnerComponent>(*it).GetOwner() == acMessage.pPlayer)
+    if (it != std::end(characterView) && characterView.get<OwnerComponent>(*it).GetOwner() == acMessage.pPlayer)
     {
         auto& characterComponent = characterView.get<CharacterComponent>(*it);
         characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
         spdlog::debug("Updating weapon drawn state {:x}:{}", message.Id, message.IsWeaponDrawn);
     }
 }
-

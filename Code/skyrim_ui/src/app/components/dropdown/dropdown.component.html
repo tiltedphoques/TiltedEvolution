@@ -1,0 +1,34 @@
+<div
+  *ngIf="options | async as options"
+  class="dropdown-wrapper"
+  [class.focus]="isFocused"
+  [class.is-open]="isOpen"
+  [class.disabled]="isDisabled"
+>
+  <div class="box" (click)="toggle($event)">
+    <ng-container>
+      <div class="dropdown-selected">
+        <span>{{
+          noTranslate
+            ? selectedLabel
+            : (selectedLabel | transloco: { length: options[selected]?.value })
+        }}</span>
+      </div>
+    </ng-container>
+  </div>
+
+  <ul class="dropdown-options" *ngIf="options">
+    <li
+      *ngFor="let option of options; let i = index"
+      [id]="'li-' + dropdownCounter + '-' + i"
+      (click)="optionSelect(option.value, i, $event)"
+      [class.selected]="selected === i"
+    >
+      {{
+        noTranslate
+          ? option.text ?? option.value
+          : (option.text ?? option.value | transloco: { length: option.value })
+      }}
+    </li>
+  </ul>
+</div>

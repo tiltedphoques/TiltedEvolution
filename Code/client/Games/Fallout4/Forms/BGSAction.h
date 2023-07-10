@@ -6,4 +6,3 @@ struct BGSAction : BGSKeyword
 {
     uint32_t counter;
 };
-

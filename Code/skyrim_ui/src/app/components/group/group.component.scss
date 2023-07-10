@@ -13,46 +13,57 @@
     width: 16vw;
 
     .group-member {
-      font-size: 1.50em;
+      font-size: 1.5em;
       color: rgb(192, 192, 192);
 
       &.not-loaded {
         opacity: 0.6;
       }
 
+      .member-name {
+        text-shadow: 1px 1px 2px #000000;
+      }
+
       .group-member-level {
         text-align: center;
         font-size: 1.2em;
-        color: rgb(221, 221, 221)
+        color: rgb(221, 221, 221);
+        text-shadow: 1px 1px 2px #000000;
       }
 
       .group-member-leader {
         display: inline-block;
-        background: url(../../../assets/images/group/crown.svg) right / cover no-repeat;
+        background: url(../../../assets/images/group/crown.svg) right / cover
+          no-repeat;
         width: 1vw;
         height: 1vw;
+        margin-right: 0.25em;
       }
 
       .group-member-dead {
         display: inline-block;
-        background: url(../../../assets/images/group/skull.svg) right / cover no-repeat;
+        background: url(../../../assets/images/group/skull.svg) right / cover
+          no-repeat;
         width: 1vw;
         height: 1vw;
       }
 
       .group-member-health {
         width: 14vw;
-        background: url(../../../assets/images/group/healthbar.svg) center / contain no-repeat;
+        background: url(../../../assets/images/group/healthbar.svg) center /
+          contain no-repeat;
         padding-left: 1vw;
         padding-right: 1vw;
         margin-bottom: 5%;
         margin-top: 1%;
 
         .group-member-health-value {
+          transition: width 0.8s ease-in-out;
           height: 0.79vw;
           position: relative;
           overflow: hidden;
-          background: url(../../../assets/images/group/healthamount.svg) center / cover no-repeat;
+          background: url(../../../assets/images/group/healthamount.svg) center /
+            cover no-repeat;
         }
       }
     }

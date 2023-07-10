@@ -5,17 +5,19 @@
 #include <Havok/BShkbHkxDB.h>
 #include <Havok/hkbBehaviorGraph.h>
 
-#include <Services/ImguiService.h>
 #include <Services/DebugService.h>
-#include <Services/TransportService.h>
+#include <Services/ImguiService.h>
 #include <Services/PapyrusService.h>
 #include <Services/QuestService.h>
+#include <Services/TransportService.h>
 
-#include <Events/UpdateEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
+
+#include <Events/UpdateEvent.h>
 #include <Events/MoveActorEvent.h>
 #include <Events/ConnectionErrorEvent.h>
+
 
 #include <Games/References.h>
 
@@ -43,11 +45,12 @@
 
 #include <Messages/RequestRespawn.h>
 
+#include <Interface/IMenu.h>
+#include <Interface/UI.h>
+
 #include <Games/Misc/SubtitleManager.h>
 #include <Games/Overrides.h>
 #include <OverlayApp.hpp>
-
-#include <BranchInfo.h>
 
 #include <EquipManager.h>
 #include <Forms/TESAmmo.h>
@@ -56,6 +59,7 @@
 
 // TODO: ft
 #if TP_SKYRIM64
+#include <ExtraData/ExtraMapMarker.h>
 #include <Camera/PlayerCamera.h>
 #include <AI/Movement/PlayerControls.h>
 #include <Interface/IMenu.h>
@@ -63,10 +67,14 @@
 #include <DefaultObjectManager.h>
 #include <Misc/InventoryEntry.h>
 #include <Misc/MiddleProcess.h>
+#include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
+#include <Games/Skyrim/Forms/TESAmmo.h>
+#include <Games/Skyrim/Interface/UI.h>
 #endif
 
 #include <imgui.h>
 #include <inttypes.h>
+
 extern thread_local bool g_overrideFormId;
 
 constexpr char kBuildTag[] = "Build: " BUILD_COMMIT " " BUILD_BRANCH " EVO\nBuilt: " __TIMESTAMP__;
@@ -74,9 +82,7 @@ static void DrawBuildTag()
 {
     auto* pWindow = BSGraphics::GetMainWindow();
     const ImVec2 coord{50.f, static_cast<float>((pWindow->uiWindowHeight + 25) - 100)};
-    ImGui::GetBackgroundDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), coord,
-                                            ImColor::ImColor(255.f, 0.f, 0.f),
-                                            kBuildTag);
+    ImGui::GetBackgroundDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), coord, ImColor::ImColor(255.f, 0.f, 0.f), kBuildTag);
 }
 
 void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
@@ -93,9 +99,10 @@ void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
     m_actors.emplace_back(pActor);
 }
 
-DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport,
-                         ImguiService& aImguiService)
-    : m_dispatcher(aDispatcher), m_transport(aTransport), m_world(aWorld)
+DebugService::DebugService(entt::dispatcher& aDispatcher, World& aWorld, TransportService& aTransport, ImguiService& aImguiService)
+    : m_dispatcher(aDispatcher)
+    , m_transport(aTransport)
+    , m_world(aWorld)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&DebugService::OnUpdate>(this);
     m_drawImGuiConnection = aImguiService.OnDraw.connect<&DebugService::OnDraw>(this);
@@ -181,6 +188,13 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     else
         s_f6Pressed = false;
 
+#if 0
+    if (GetAsyncKeyState(VK_F10) & 0x8000)
+    {
+        UI::Get()->PrintActiveMenus();
+    }
+#endif
+
     if (GetAsyncKeyState(VK_F7))
     {
         if (!s_f7Pressed)
@@ -203,7 +217,47 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            m_world.GetOverlayService().Reload();
+            #if TP_SKYRIM64
+            PlayerCharacter* pPlayer = PlayerCharacter::Get();
+            for (uint32_t handle : pPlayer->CurrentMapmarkerRefHandles)
+            {
+                TESObjectREFR* pRefr = TESObjectREFR::GetByHandle(handle);
+                ExtraMapMarker* pData = Cast<ExtraMapMarker>(pRefr->extraData.GetByType(ExtraDataType::MapMarker));
+                if (!pData || !pData->pMarkerData)
+                    continue;
+
+                const char* pEditorId = pData->pMarkerData->name.value.AsAscii();
+                spdlog::critical("Form id: {:X}, name: {}", pRefr->formID, pEditorId ? pEditorId : "NONE");
+            }
+            #endif
+
+        #if 0
+            static bool s_enabled = true;
+
+            FadeOutGame(s_enabled, true, 1.f, true, 0.f);
+
+            s_enabled = !s_enabled;
+
+            static bool s_enabled = true;
+            static bool s_firstPerson = false;
+
+            auto* pCamera = PlayerCamera::Get();
+            auto* pPlayerControls = PlayerControls::GetInstance();
+
+            if (s_enabled)
+            {
+                s_firstPerson = pCamera->IsFirstPerson();
+                pCamera->ForceFirstPerson();
+            }
+            else
+            {
+                s_firstPerson ? pCamera->ForceFirstPerson() : pCamera->ForceThirdPerson();
+            }
+
+            pPlayerControls->SetCamSwitch(s_enabled);
+
+            s_enabled = !s_enabled;
+        #endif
         }
     }
     else
@@ -224,6 +278,7 @@ static bool g_enableActorValuesWindow{false};
 static bool g_enableQuestWindow{false};
 static bool g_enableCellWindow{false};
 static bool g_enableProcessesWindow{false};
+static bool g_enableWeatherWindow{false};
 
 void DebugService::DrawServerView() noexcept
 {
@@ -271,6 +326,7 @@ void DebugService::OnDraw() noexcept
         ImGui::EndMenu();
     }
 #if (!IS_MASTER)
+
     if (ImGui::BeginMenu("Components"))
     {
         ImGui::MenuItem("Show selected entity in world", nullptr, &m_drawComponentsInWorldSpace);
@@ -315,6 +371,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
         ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
         ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
+        ImGui::MenuItem("Weather", nullptr, &g_enableWeatherWindow);
 #endif
 
         ImGui::EndMenu();
@@ -324,13 +381,13 @@ void DebugService::OnDraw() noexcept
         if (ImGui::Button("Crash Client"))
         {
 #if (!IS_MASTER)
+            spdlog::error("Crash client");
             int* m = 0;
             *m = 1338;
 #else
             ConnectionErrorEvent errorEvent{};
-            errorEvent.ErrorDetail =
-                "Skyrim Together never crashes ;)  With love, Yamashi, Force, Dragonisser, Cosideci.";
-             
+            errorEvent.ErrorDetail = "Skyrim Together never crashes ;)  With love, Yamashi, Force, Dragonisser, Cosideci.";
+
             m_world.GetRunner().Trigger(errorEvent);
 #endif
         }
@@ -366,6 +423,8 @@ void DebugService::OnDraw() noexcept
         DrawCellView();
     if (g_enableProcessesWindow)
         DrawProcessView();
+    if (g_enableWeatherWindow)
+        DrawWeatherView();
 
     if (m_drawComponentsInWorldSpace)
         DrawComponentDebugView();

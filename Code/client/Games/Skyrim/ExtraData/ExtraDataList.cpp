@@ -1,6 +1,7 @@
 #include "ExtraDataList.h"
 
 #include <Games/Overrides.h>
+#include <Games/Skyrim/Interface/HUD/MapMarker_ExtraData.h>
 
 ExtraDataList* ExtraDataList::New() noexcept
 {
@@ -14,7 +15,7 @@ ExtraDataList* ExtraDataList::New() noexcept
 
 bool ExtraDataList::Contains(ExtraDataType aType) const
 {
-    if(bitfield)
+    if (bitfield)
     {
         const auto value = static_cast<uint32_t>(aType);
         const auto index = value >> 3;
@@ -99,14 +100,14 @@ void ExtraDataList::SetSoulData(SOUL_LEVEL aSoulLevel) noexcept
 {
     TP_THIS_FUNCTION(TSetSoulData, void, ExtraDataList, SOUL_LEVEL aSoulLevel);
     POINTER_SKYRIMSE(TSetSoulData, setSoulData, 11620);
-    ThisCall(setSoulData, this, aSoulLevel);
+    TiltedPhoques::ThisCall(setSoulData, this, aSoulLevel);
 }
 
 void ExtraDataList::SetChargeData(float aCharge) noexcept
 {
     TP_THIS_FUNCTION(TSetChargeData, void, ExtraDataList, float aCharge);
     POINTER_SKYRIMSE(TSetChargeData, setChargeData, 11619);
-    ThisCall(setChargeData, this, aCharge);
+    TiltedPhoques::ThisCall(setChargeData, this, aCharge);
 }
 
 void ExtraDataList::SetWorn(bool aWornLeft) noexcept
@@ -114,33 +115,40 @@ void ExtraDataList::SetWorn(bool aWornLeft) noexcept
     // TODO: what's this bool? seems to be true always except for one instance
     TP_THIS_FUNCTION(TSetWornData, void, ExtraDataList, bool aUnk1, bool aWornLeft);
     POINTER_SKYRIMSE(TSetWornData, setWornData, 11612);
-    ThisCall(setWornData, this, true, aWornLeft);
+    TiltedPhoques::ThisCall(setWornData, this, true, aWornLeft);
 }
 
 void ExtraDataList::SetPoison(AlchemyItem* apItem, uint32_t aCount) noexcept
 {
     TP_THIS_FUNCTION(TSetPoison, void, ExtraDataList, AlchemyItem* apItem, uint32_t aCount);
     POINTER_SKYRIMSE(TSetPoison, setPoison, 11822);
-    ThisCall(setPoison, this, apItem, aCount);
+    TiltedPhoques::ThisCall(setPoison, this, apItem, aCount);
 }
 
 void ExtraDataList::SetHealth(float aHealth) noexcept
 {
     TP_THIS_FUNCTION(TSetHealth, void, ExtraDataList, float aHealth);
     POINTER_SKYRIMSE(TSetHealth, setHealth, 11616);
-    ThisCall(setHealth, this, aHealth);
+    TiltedPhoques::ThisCall(setHealth, this, aHealth);
 }
 
 void ExtraDataList::SetEnchantmentData(EnchantmentItem* apItem, uint16_t aCharge, bool aRemoveOnUnequip) noexcept
 {
     TP_THIS_FUNCTION(TSetEnchantmentData, void, ExtraDataList, EnchantmentItem* apItem, uint16_t aCharge, bool aRemoveOnUnequip);
     POINTER_SKYRIMSE(TSetEnchantmentData, setEnchantmentData, 12060);
-    ThisCall(setEnchantmentData, this, apItem, aCharge, aRemoveOnUnequip);
+    TiltedPhoques::ThisCall(setEnchantmentData, this, apItem, aCharge, aRemoveOnUnequip);
 }
 
 bool ExtraDataList::HasQuestObjectAlias() noexcept
 {
     TP_THIS_FUNCTION(THasQuestObjectAlias, bool, ExtraDataList);
     POINTER_SKYRIMSE(THasQuestObjectAlias, s_hasQuestObjectAlias, 12052);
-    return ThisCall(s_hasQuestObjectAlias, this);
+    return TiltedPhoques::ThisCall(s_hasQuestObjectAlias, this);
+}
+
+void ExtraDataList::SetMarkerData(MapMarkerData* apMarkerData) noexcept
+{
+    TP_THIS_FUNCTION(TSetMarkerData, void, ExtraDataList, MapMarkerData* apMarkerData);
+    POINTER_SKYRIMSE(TSetMarkerData, setMarkerData, 11607);
+    TiltedPhoques::ThisCall(setMarkerData, this, apMarkerData);
 }

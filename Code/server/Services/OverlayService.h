@@ -12,24 +12,24 @@ struct TeleportRequest;
 struct RequestPlayerHealthUpdate;
 
 /**
-* @brief Dispatches UI events that modify the UI view of other cients.
-*/
+ * @brief Dispatches UI events that modify the UI view of other cients.
+ */
 class OverlayService
 {
-  public:
+public:
     OverlayService(World& aWorld, entt::dispatcher& aDispatcher);
 
-  protected:
+protected:
     /**
-    * @brief Applies regex on chat message and relays it to other clients.
-    */
+     * @brief Applies regex on chat message and relays it to other clients.
+     */
     void HandleChatMessage(const PacketEvent<SendChatMessageRequest>& acMessage) const noexcept;
     void HandlePlayerJoin(const PlayerEnterWorldEvent& acEvent) const noexcept;
     void OnPlayerDialogue(const PacketEvent<PlayerDialogueRequest>& acMessage) const noexcept;
     void OnTeleport(const PacketEvent<TeleportRequest>& acMessage) const noexcept;
     void OnPlayerHealthUpdate(const PacketEvent<RequestPlayerHealthUpdate>& acMessage) const noexcept;
 
-  private:
+private:
     World& m_world;
 
     entt::scoped_connection m_chatMessageConnection;

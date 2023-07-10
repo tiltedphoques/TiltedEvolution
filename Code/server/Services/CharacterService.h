@@ -17,7 +17,6 @@ struct CharacterRemoveEvent;
 struct CharacterExteriorCellChangeEvent;
 struct RequestOwnershipClaim;
 struct OwnershipTransferEvent;
-struct ProjectileLaunchRequest;
 struct MountRequest;
 struct NewPackageRequest;
 struct RequestRespawn;
@@ -26,8 +25,8 @@ struct DialogueRequest;
 struct SubtitleRequest;
 
 /**
-* @brief Manages player and actor state.
-*/
+ * @brief Manages player and actor state.
+ */
 struct CharacterService
 {
     CharacterService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -38,7 +37,6 @@ struct CharacterService
     static void Serialize(World& aRegistry, entt::entity aEntity, CharacterSpawnRequest* apSpawnRequest) noexcept;
 
 protected:
-
     void OnUpdate(const UpdateEvent& acEvent) const noexcept;
     void OnCharacterExteriorCellChange(const CharacterExteriorCellChangeEvent& acEvent) const noexcept;
     void OnCharacterInteriorCellChange(const CharacterInteriorCellChangeEvent& acEvent) const noexcept;
@@ -51,7 +49,6 @@ protected:
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
     void OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept;
     void OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept;
-    void OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunchRequest>& acMessage) const noexcept;
     void OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept;
     void OnNewPackageRequest(const PacketEvent<NewPackageRequest>& acMessage) const noexcept;
     void OnRequestRespawn(const PacketEvent<RequestRespawn>& acMessage) const noexcept;
@@ -66,7 +63,6 @@ protected:
     void ProcessMovementChanges() const noexcept;
 
 private:
-
     World& m_world;
 
     entt::scoped_connection m_updateConnection;
@@ -81,7 +77,6 @@ private:
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_factionsChangesConnection;
     entt::scoped_connection m_spawnDataConnection;
-    entt::scoped_connection m_projectileLaunchConnection;
     entt::scoped_connection m_mountConnection;
     entt::scoped_connection m_newPackageConnection;
     entt::scoped_connection m_requestRespawnConnection;

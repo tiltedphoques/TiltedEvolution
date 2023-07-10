@@ -12,7 +12,7 @@ ModManager* ModManager::Get() noexcept
 {
     POINTER_FALLOUT4(ModManager*, modManager, 711559);
     POINTER_SKYRIMSE(ModManager*, modManager, 400269);
-    
+
     return *modManager.Get();
 }
 
@@ -32,7 +32,6 @@ uint32_t Mod::GetFormId(uint32_t aBaseId) const noexcept
 
     return aBaseId;
 }
-
 
 #if TP_FALLOUT4
 
@@ -55,7 +54,7 @@ uint32_t& TP_MAKE_THISCALL(SpawnNewREFR, ModManager, uint32_t& aRefHandleOut, TE
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    return ThisCall(RealSpawnNewREFR, apThis, aRefHandleOut, apBaseForm, apPosition, apRotation, apParentCell, apWorldSpace, apActor, a9, a10, aForcePersist, a12);
+    return TiltedPhoques::ThisCall(RealSpawnNewREFR, apThis, aRefHandleOut, apBaseForm, apPosition, apRotation, apParentCell, apWorldSpace, apActor, a9, a10, aForcePersist, a12);
 }
 #endif
 
@@ -72,9 +71,9 @@ uint32_t ModManager::Spawn(NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCE
     refrData.parentCell = apParentCell;
     refrData.worldspace = apWorldSpace;
 
-    ThisCall(RealSpawnNewREFR, this, refrHandle, &refrData);
+    TiltedPhoques::ThisCall(RealSpawnNewREFR, this, refrHandle, &refrData);
 #else
-    ThisCall(RealSpawnNewREFR, this, refrHandle, apCharacter->baseForm, &aPosition, &aRotation, apParentCell, apWorldSpace, apCharacter, 0, 0, static_cast<char>(0), static_cast<char>(1));
+    TiltedPhoques::ThisCall(RealSpawnNewREFR, this, refrHandle, apCharacter->baseForm, &aPosition, &aRotation, apParentCell, apWorldSpace, apCharacter, 0, 0, static_cast<char>(0), static_cast<char>(1));
 #endif
 
     return refrHandle;
@@ -84,7 +83,7 @@ Mod* ModManager::GetByName(const char* acpName) const noexcept
 {
     auto pEntry = &mods.entry;
 
-    while(pEntry && pEntry->data)
+    while (pEntry && pEntry->data)
     {
         if (_stricmp(acpName, pEntry->data->filename) == 0)
             return pEntry->data;
@@ -92,7 +91,7 @@ Mod* ModManager::GetByName(const char* acpName) const noexcept
         pEntry = pEntry->next;
     }
 
-	return nullptr;
+    return nullptr;
 }
 
 TESObjectCELL* ModManager::GetCellFromCoordinates(int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept
@@ -101,16 +100,16 @@ TESObjectCELL* ModManager::GetCellFromCoordinates(int32_t aX, int32_t aY, TESWor
     POINTER_SKYRIMSE(TModManager, getCell, 13718);
     POINTER_FALLOUT4(TModManager, getCell, 385618);
 
-    return ThisCall(getCell, this, aX, aY, aWorldSpace, aSpawnCell);
+    return TiltedPhoques::ThisCall(getCell, this, aX, aY, aWorldSpace, aSpawnCell);
 }
 
-static TiltedPhoques::Initializer s_tesHooks([]()
-{
-    POINTER_FALLOUT4(TSpawnNewREFR, s_realSpawnNewREFR, 500305);
-    POINTER_SKYRIMSE(TSpawnNewREFR, s_realSpawnNewREFR, 13723);
+static TiltedPhoques::Initializer s_tesHooks(
+    []()
+    {
+        POINTER_FALLOUT4(TSpawnNewREFR, s_realSpawnNewREFR, 500305);
+        POINTER_SKYRIMSE(TSpawnNewREFR, s_realSpawnNewREFR, 13723);
 
-    RealSpawnNewREFR = s_realSpawnNewREFR.Get();
+        RealSpawnNewREFR = s_realSpawnNewREFR.Get();
 
-    //TP_HOOK(&RealSpawnNewREFR, SpawnNewREFR);
-});
-
+        // TP_HOOK(&RealSpawnNewREFR, SpawnNewREFR);
+    });

@@ -15,14 +15,15 @@ struct PartyChangeLeaderRequest;
 struct PartyKickRequest;
 
 /**
-* @brief Manages every party in the server.
-*/
+ * @brief Manages every party in the server.
+ */
 struct PartyService
 {
     struct Party
     {
         uint32_t LeaderPlayerId;
         Vector<Player*> Members;
+        GameId CachedWeather{};
     };
 
     PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -36,7 +37,6 @@ struct PartyService
     Party* GetPlayerParty(Player* const apPlayer) noexcept;
 
 protected:
-
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
     void OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept;
     void OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept;
@@ -52,7 +52,6 @@ protected:
     void BroadcastPartyInfo(uint32_t aPartyId) const noexcept;
 
 private:
-
     World& m_world;
 
     TiltedPhoques::Map<uint32_t, Party> m_parties;

@@ -29,11 +29,10 @@ BGSSaveFormBuffer::BGSSaveFormBuffer()
     POINTER_SKYRIMSE(CtorT, ctor, 36035);
     POINTER_FALLOUT4(CtorT, ctor, 824899);
 
-    ThisCall(ctor, this);
+    TiltedPhoques::ThisCall(ctor, this);
 
     position = 0;
 }
-
 
 void BGSSaveFormBuffer::WriteId(uint32_t aId) noexcept
 {
@@ -53,7 +52,6 @@ void BGSSaveFormBuffer::WriteId(uint32_t aId) noexcept
     position += writer.Size() & 0xFFFFFFFF;
 }
 
-
 BGSLoadFormBuffer::BGSLoadFormBuffer(const uint32_t aChangeFlags)
 {
     TP_THIS_FUNCTION(CtorT, BGSLoadFormBuffer*, BGSLoadFormBuffer);
@@ -61,7 +59,7 @@ BGSLoadFormBuffer::BGSLoadFormBuffer(const uint32_t aChangeFlags)
     POINTER_SKYRIMSE(CtorT, ctor, 35993);
     POINTER_FALLOUT4(CtorT, ctor, 994876);
 
-    ThisCall(ctor, this);
+    TiltedPhoques::ThisCall(ctor, this);
 
     changeFlags = aChangeFlags;
     loadFlag = 0x40;
@@ -69,11 +67,11 @@ BGSLoadFormBuffer::BGSLoadFormBuffer(const uint32_t aChangeFlags)
     maybeMoreFlags = 0;
 
 #if TP_PLATFORM_64
-#   if TP_FALLOUT4
+#if TP_FALLOUT4
     unk1C = 1;
-#   else
+#else
     unk1C = -1;
-#   endif
+#endif
 #endif
 }
 
@@ -89,7 +87,7 @@ void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteFormId, BGSSaveFormBuffer, TESForm*
 {
     if (!ScopedSaveLoadOverride::IsOverriden())
     {
-        ThisCall(RealBGSSaveFormBuffer_WriteFormId, apThis, apForm);
+        TiltedPhoques::ThisCall(RealBGSSaveFormBuffer_WriteFormId, apThis, apForm);
         return;
     }
 
@@ -100,19 +98,18 @@ void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteId, BGSSaveFormBuffer, uint64_t aId
 {
     if (!ScopedSaveLoadOverride::IsOverriden())
     {
-        ThisCall(RealBGSSaveFormBuffer_WriteId, apThis, aId);
+        TiltedPhoques::ThisCall(RealBGSSaveFormBuffer_WriteId, apThis, aId);
         return;
     }
 
     apThis->WriteId(aId & 0xFFFFFFFF);
 }
 
-
 bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t& aFormId)
 {
     if (!ScopedSaveLoadOverride::IsOverriden())
     {
-        return ThisCall(RealBGSLoadFormBuffer_ReadFormId, apThis, aFormId);
+        return TiltedPhoques::ThisCall(RealBGSLoadFormBuffer_ReadFormId, apThis, aFormId);
     }
 
     uint8_t* pReadLocation = (uint8_t*)(apThis->buffer + apThis->position);
@@ -125,7 +122,7 @@ bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t&
 
     aFormId = 0;
 
-    if(modId != 0 || baseId != 0)
+    if (modId != 0 || baseId != 0)
         aFormId = World::Get().GetModSystem().GetGameId(modId, baseId);
 
     apThis->position += reader.Size() & 0xFFFFFFFF;
@@ -133,7 +130,8 @@ bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t&
     return true;
 }
 
-static TiltedPhoques::Initializer s_saveLoadHooks([]()
+static TiltedPhoques::Initializer s_saveLoadHooks(
+    []()
     {
         POINTER_FALLOUT4(TBGSLoadFormBuffer_ReadFormId, s_readFormId, 601669);
         POINTER_SKYRIMSE(TBGSLoadFormBuffer_ReadFormId, s_readFormId, 36000);

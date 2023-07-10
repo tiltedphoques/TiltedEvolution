@@ -2,7 +2,7 @@
 
 DefaultObjectManager& DefaultObjectManager::Get()
 {
-    using TGetDefaultObjectManager = DefaultObjectManager & ();
+    using TGetDefaultObjectManager = DefaultObjectManager&();
     POINTER_FALLOUT4(TGetDefaultObjectManager, GetDefaultObjectManager, 484975);
     return GetDefaultObjectManager();
 }

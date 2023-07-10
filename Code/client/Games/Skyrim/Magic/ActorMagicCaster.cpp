@@ -39,7 +39,7 @@ void TP_MAKE_THISCALL(HookSpellCast, ActorMagicCaster, bool abSuccess, int32_t a
     if (apSpell)
         World::Get().GetRunner().Trigger(SpellCastEvent(apThis, apSpell->formID, targetFormId));
 
-    ThisCall(RealSpellCast, apThis, abSuccess, auiTargetCount, apSpell);
+    TiltedPhoques::ThisCall(RealSpellCast, apThis, abSuccess, auiTargetCount, apSpell);
 }
 
 void TP_MAKE_THISCALL(HookInterruptCast, ActorMagicCaster, bool abRefund)
@@ -49,16 +49,18 @@ void TP_MAKE_THISCALL(HookInterruptCast, ActorMagicCaster, bool abRefund)
     if (pExtended->IsLocal())
         World::Get().GetRunner().Trigger(InterruptCastEvent(apThis->pCasterActor->formID, apThis->eCastingSource));
 
-    ThisCall(RealInterruptCast, apThis, abRefund);
+    TiltedPhoques::ThisCall(RealInterruptCast, apThis, abRefund);
 }
 
-static TiltedPhoques::Initializer s_actorMagicCasterHooks([]() {
-    POINTER_SKYRIMSE(TSpellCast, s_spellCast, 34144);
-    POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 34140);
+static TiltedPhoques::Initializer s_actorMagicCasterHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TSpellCast, s_spellCast, 34144);
+        POINTER_SKYRIMSE(TInterruptCast, s_interruptCast, 34140);
 
-    RealSpellCast = s_spellCast.Get();
-    RealInterruptCast = s_interruptCast.Get();
+        RealSpellCast = s_spellCast.Get();
+        RealInterruptCast = s_interruptCast.Get();
 
-    TP_HOOK(&RealSpellCast, HookSpellCast);
-    TP_HOOK(&RealInterruptCast, HookInterruptCast);
-});
+        TP_HOOK(&RealSpellCast, HookSpellCast);
+        TP_HOOK(&RealInterruptCast, HookInterruptCast);
+    });

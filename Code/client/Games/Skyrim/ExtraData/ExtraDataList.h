@@ -6,6 +6,7 @@
 
 struct AlchemyItem;
 struct EnchantmentItem;
+struct MapMarkerData;
 
 struct ExtraDataList
 {
@@ -28,8 +29,13 @@ struct ExtraDataList
     void SetPoison(AlchemyItem* apItem, uint32_t aCount) noexcept;
     void SetHealth(float aHealth) noexcept;
     void SetEnchantmentData(EnchantmentItem* apItem, uint16_t aCharge, bool aRemoveOnUnequip) noexcept;
-    
+
     [[nodiscard]] bool HasQuestObjectAlias() noexcept;
+    void SetMarkerData(MapMarkerData* apMarkerData) noexcept;
+
+#if TP_SKYRIM64
+    virtual ~ExtraDataList();
+#endif
 
 #if TP_FALLOUT4
     void* unk0;

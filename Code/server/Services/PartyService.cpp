@@ -28,8 +28,8 @@ PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcep
     , m_partyAcceptInviteConnection(aDispatcher.sink<PacketEvent<PartyAcceptInviteRequest>>().connect<&PartyService::OnPartyAcceptInvite>(this))
     , m_partyLeaveConnection(aDispatcher.sink<PacketEvent<PartyLeaveRequest>>().connect<&PartyService::OnPartyLeave>(this))
     , m_partyCreateConnection(aDispatcher.sink<PacketEvent<PartyCreateRequest>>().connect<&PartyService::OnPartyCreate>(this))
-    , m_partyChangeLeaderConnection(aDispatcher.sink<PacketEvent<PartyChangeLeaderRequest>>().connect<&PartyService::OnPartyChangeLeader>(this)),
-      m_partyKickConnection(aDispatcher.sink<PacketEvent<PartyKickRequest>>().connect<&PartyService::OnPartyKick>(this))
+    , m_partyChangeLeaderConnection(aDispatcher.sink<PacketEvent<PartyChangeLeaderRequest>>().connect<&PartyService::OnPartyChangeLeader>(this))
+    , m_partyKickConnection(aDispatcher.sink<PacketEvent<PartyKickRequest>>().connect<&PartyService::OnPartyKick>(this))
 {
 }
 
@@ -100,7 +100,7 @@ void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void PartyService::OnPartyCreate(const PacketEvent<PartyCreateRequest>& acPacket) noexcept
 {
-    Player *const player = acPacket.pPlayer;
+    Player* const player = acPacket.pPlayer;
     auto& inviterPartyComponent = player->GetParty();
 
     spdlog::debug("[PartyService]: Received request to create party");
@@ -125,6 +125,12 @@ void PartyService::OnPartyChangeLeader(const PacketEvent<PartyChangeLeaderReques
     Player* const pNewLeader = m_world.GetPlayerManager().GetById(message.PartyMemberPlayerId);
 
     spdlog::debug("[PartyService]: Received request to change party leader to {}", message.PartyMemberPlayerId);
+
+    if (!pNewLeader)
+    {
+        spdlog::error("[PartyService]: Player {} does not exist¨. Cannot change paty leader", message.PartyMemberPlayerId);
+        return;
+    }
 
     auto& inviterPartyComponent = player->GetParty();
     if (inviterPartyComponent.JoinedPartyId) // Ensure not in party
@@ -152,6 +158,14 @@ void PartyService::OnPartyKick(const PacketEvent<PartyKickRequest>& acPacket) no
     Player* const player = acPacket.pPlayer;
     Player* const pKick = m_world.GetPlayerManager().GetById(message.PartyMemberPlayerId);
 
+    spdlog::debug("[PartyService]: Received request to change party leader to {}", message.PartyMemberPlayerId);
+
+    if (!pKick)
+    {
+        spdlog::error("[PartyService]: Player {} does not exist. Cannot kick", message.PartyMemberPlayerId);
+        return;
+    }
+
     auto& inviterPartyComponent = player->GetParty();
     if (inviterPartyComponent.JoinedPartyId) // Ensure not in party
     {
@@ -175,6 +189,7 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 
     notify.WorldSpaceId = acEvent.WorldSpaceId;
     notify.CellId = acEvent.CellId;
+    notify.CenterCoords = acEvent.CenterCoords;
 
     notify.Level = acEvent.pPlayer->GetLevel();
 
@@ -204,7 +219,7 @@ void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket
             spdlog::debug("[PartyService]: Inviter not in party, cancelling invite.");
             return;
         }
-        else if (inviteePartyComponent.JoinedPartyId)
+        else if (inviteePartyComponent.JoinedPartyId == inviterPartyComponent.JoinedPartyId)
         {
             spdlog::debug("[PartyService]: Invitee in party already, cancelling invite.");
             return;
@@ -268,8 +283,8 @@ void PartyService::OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteReques
         if (selfPartyComponent.JoinedPartyId) // Remove from party if in one already. TODO: Decide if player needs to be out of party first
         {
             spdlog::debug("[PartyService]: Invitee already in party, cancelling.");
-            // RemovePlayerFromParty(pSelf, false); // skip sending left event, will override with SendPartyJoinedEvent
-            return;
+            RemovePlayerFromParty(pSelf); // skip sending left event, will override with SendPartyJoinedEvent
+            //return;
         }
 
         party.Members.push_back(pSelf);

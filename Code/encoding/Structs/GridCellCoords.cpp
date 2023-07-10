@@ -16,8 +16,7 @@ GridCellCoords::GridCellCoords(int32_t aX, int32_t aY) noexcept
 
 bool GridCellCoords::operator==(const GridCellCoords& acRhs) const noexcept
 {
-    return X == acRhs.X &&
-        Y == acRhs.Y;
+    return X == acRhs.X && Y == acRhs.Y;
 }
 
 bool GridCellCoords::operator!=(const GridCellCoords& acRhs) const noexcept
