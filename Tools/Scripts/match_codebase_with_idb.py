@@ -5,7 +5,7 @@ import idc
 
 def get_codebase_mapping():
     codebase_mapping = {}
-    root_dir = "C:\\dev\\TiltedEvolution\\Code\\"
+    root_dir = "" # TiltedEvolution/Code/
     globbings = ["**/*.cpp", "**/*.h", "**/*.hpp"]
     for globbing in globbings:
         for filename in glob.iglob(root_dir + globbing, recursive=True):
@@ -35,7 +35,7 @@ def get_codebase_mapping():
 
 def get_id_address_mapping():
     id_address_mapping = {}
-    filename = "C:\\Users\\robbe\\RE\\Skyrim\\out-323.txt"
+    filename = ""
     with open(filename, 'r') as file:
         for line in file:
             id_to_address = line.split('\t')
