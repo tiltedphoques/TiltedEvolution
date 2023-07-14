@@ -2,6 +2,8 @@
 
 // TODO: ft
 
+struct CombatController;
+
 struct CombatTargetSelector
 {
     virtual ~CombatTargetSelector();
@@ -13,7 +15,12 @@ struct CombatTargetSelector
     virtual BSPointerHandle<Actor> SelectTarget(); // TODO: is RVO implemented here? Probably.
 
     void *vftable_NiRefObject_8;
-    uint8_t unk10[0x10];
+    CombatController* pCombatController;
+    BSPointerHandle<Actor> hTarget;
+    uint32_t ePriority;
     uint32_t flags;
-    uint8_t unk24[4];
+    uint8_t pad24[4];
 };
+
+static_assert(offsetof(CombatTargetSelector, ePriority) == 0x1C);
+static_assert(sizeof(CombatTargetSelector) == 0x28);

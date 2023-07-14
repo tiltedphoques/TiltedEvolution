@@ -211,8 +211,8 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
         #if 0
+            PlaceActorInWorld();
             Actor* pEnemy = Cast<Actor>(TESForm::GetById(0x29602));
             pEnemy->pCombatController->SetTarget(m_actors[0]);
         #endif
