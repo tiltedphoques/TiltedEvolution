@@ -18,6 +18,7 @@
 #include <Messages/NotifyPartyInvite.h>
 #include <Messages/NotifyPartyJoined.h>
 #include <Messages/NotifyPartyLeft.h>
+#include <Messages/NotifyDeleteWaypoint.h>
 #include <Messages/NotifyActorValueChanges.h>
 #include <Messages/NotifyActorMaxValueChanges.h>
 #include <Messages/NotifyHealthChangeBroadcast.h>
@@ -35,6 +36,7 @@
 #include <Messages/NotifyScriptAnimation.h>
 #include <Messages/NotifyDrawWeapon.h>
 #include <Messages/NotifyMount.h>
+#include <Messages/NotifySetWaypoint.h>
 #include <Messages/NotifyNewPackage.h>
 #include <Messages/NotifyRespawn.h>
 #include <Messages/NotifySyncExperience.h>
@@ -56,6 +58,7 @@
 #include <Messages/NotifyPlayerHealthUpdate.h>
 #include <Messages/NotifySettingsChange.h>
 #include <Messages/NotifyWeatherChange.h>
+#include <Messages/NotifyPlayerPosition.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -70,7 +73,7 @@ struct ServerMessageFactory
             NotifyActorValueChanges, NotifyPartyJoined, NotifyPartyLeft, NotifyActorMaxValueChanges, NotifyHealthChangeBroadcast, NotifySpawnData, NotifyActivate, NotifyLockChange, AssignObjectsResponse, NotifyDeathStateChange, NotifyOwnershipTransfer, NotifyObjectInventoryChanges, NotifySpellCast,
             NotifyProjectileLaunch, NotifyInterruptCast, NotifyAddTarget, NotifyScriptAnimation, NotifyDrawWeapon, NotifyMount, NotifyNewPackage, NotifyRespawn, NotifySyncExperience, NotifyEquipmentChanges, NotifyChatMessageBroadcast, TeleportCommandResponse, NotifyPlayerRespawn, NotifyDialogue,
             NotifySubtitle, NotifyPlayerDialogue, NotifyActorTeleport, NotifyRelinquishControl, NotifyPlayerLeft, NotifyPlayerJoined, NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue, NotifyPlayerLevel, NotifyPlayerCellChanged, NotifyTeleport, NotifyPlayerHealthUpdate, NotifySettingsChange,
-            NotifyWeatherChange>;
+            NotifyWeatherChange, NotifyPlayerPosition, NotifySetWaypoint, NotifyDeleteWaypoint>;
 
         return s_visitor(std::forward<T>(func));
     }

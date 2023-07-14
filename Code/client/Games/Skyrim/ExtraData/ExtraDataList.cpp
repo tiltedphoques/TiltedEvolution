@@ -1,6 +1,7 @@
 #include "ExtraDataList.h"
 
 #include <Games/Overrides.h>
+#include <Games/Skyrim/Interface/HUD/MapMarker_ExtraData.h>
 
 ExtraDataList* ExtraDataList::New() noexcept
 {
@@ -143,4 +144,11 @@ bool ExtraDataList::HasQuestObjectAlias() noexcept
     TP_THIS_FUNCTION(THasQuestObjectAlias, bool, ExtraDataList);
     POINTER_SKYRIMSE(THasQuestObjectAlias, s_hasQuestObjectAlias, 12052);
     return TiltedPhoques::ThisCall(s_hasQuestObjectAlias, this);
+}
+
+void ExtraDataList::SetMarkerData(MapMarkerData* apMarkerData) noexcept
+{
+    TP_THIS_FUNCTION(TSetMarkerData, void, ExtraDataList, MapMarkerData* apMarkerData);
+    POINTER_SKYRIMSE(TSetMarkerData, setMarkerData, 11607);
+    TiltedPhoques::ThisCall(setMarkerData, this, apMarkerData);
 }

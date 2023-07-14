@@ -119,12 +119,28 @@ void UIMessageQueue__AddMessage(void* a1, const BSFixedString* a2, UIMessage::UI
     UIMessageQueue__AddMessage_Real(a1, a2, a3, a4);
 }
 
-static TiltedPhoques::Initializer s_s(
-    []()
-    {
-        // pray that this doesnt fail!
-        VersionDbPtr<uint8_t> ProcessHook(82082);
-        TiltedPhoques::SwapCall(ProcessHook.Get() + 0x682, UI_AddToActiveQueue, &UI_AddToActiveQueue_Hook);
+#include <imgui.h>
+#include <BSGraphics/BSGraphicsRenderer.h>
+
+static void (*sub_140F05F1)(UI*);
+
+void Hook_sub_140F05F10(UI* a1)
+{
+
+    //ImGui::Begin("GET REKT");
+    //ImGui::End();
+
+
+    sub_140F05F1(a1);
+
+    // render nametags...
+    //auto* pWindow = BSGraphics::GetMainWindow();
+}
+
+static TiltedPhoques::Initializer s_s([]() {
+    // pray that this doesnt fail!
+    VersionDbPtr<uint8_t> ProcessHook(82082);
+    TiltedPhoques::SwapCall(ProcessHook.Get() + 0x682, UI_AddToActiveQueue, &UI_AddToActiveQueue_Hook);
 
         // Ignore startup movie
         // TODO: Move me later.
@@ -145,6 +161,8 @@ static TiltedPhoques::Initializer s_s(
         // TiltedPhoques::Put<uint8_t>(0x1405D51C1, 0xEB);
         // TiltedPhoques::Nop(0x1405D51A2, 5);
 
-        // use 8 threads by default!
-        // TiltedPhoques::Put<uint8_t>(0x141E45770, 8);
-    });
+    // use 8 threads by default!
+    // TiltedPhoques::Put<uint8_t>(0x141E45770, 8);
+
+    //TiltedPhoques::SwapCall(0x1405D7BED, sub_140F05F1, &Hook_sub_140F05F10);
+});

@@ -82,6 +82,23 @@ void TESObjectREFR::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& a
 
 #endif
 
+TESObjectREFR* TESObjectREFR::New() noexcept
+{
+    TESObjectREFR* pRefr = Memory::Allocate<TESObjectREFR>();
+
+    TP_THIS_FUNCTION(TTESObjectREFRCtor, void, TESObjectREFR);
+    POINTER_SKYRIMSE(TTESObjectREFRCtor, s_TESObjectREFRCtor, 19501);
+    TiltedPhoques::ThisCall(s_TESObjectREFRCtor, pRefr);
+    return pRefr;
+}
+
+void TESObjectREFR::GetHandle(uint32_t &aHandle) noexcept
+{
+    TP_THIS_FUNCTION(TGetHandle, void, TESObjectREFR, uint32_t*);
+    POINTER_SKYRIMSE(TGetHandle, s_GetHandle, 19846);
+    TiltedPhoques::ThisCall(s_GetHandle, this, &aHandle);
+}
+
 ExtraContainerChanges::Data* TESObjectREFR::GetContainerChanges() const noexcept
 {
     TP_THIS_FUNCTION(TGetContainterChanges, ExtraContainerChanges::Data*, const TESObjectREFR);
@@ -518,6 +535,13 @@ void TESObjectREFR::UpdateItemList(TESForm* pUnkForm) noexcept
     TP_THIS_FUNCTION(TUpdateItemList, void, TESObjectREFR, TESForm*);
     POINTER_SKYRIMSE(TUpdateItemList, updateItemList, 52849);
     TiltedPhoques::ThisCall(updateItemList, this, pUnkForm);
+}
+
+bool TESObjectREFR::IsInInteriorCell() noexcept
+{
+    TP_THIS_FUNCTION(TIsInInteriorCell, bool, TESObjectREFR);
+    POINTER_SKYRIMSE(TIsInInteriorCell, isInInteriorCell, 19815);
+    return TiltedPhoques::ThisCall(isInInteriorCell, this);
 }
 
 void TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* aObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept

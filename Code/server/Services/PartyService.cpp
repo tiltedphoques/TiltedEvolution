@@ -189,6 +189,7 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
 
     notify.WorldSpaceId = acEvent.WorldSpaceId;
     notify.CellId = acEvent.CellId;
+    notify.CenterCoords = acEvent.CenterCoords;
 
     notify.Level = acEvent.pPlayer->GetLevel();
 

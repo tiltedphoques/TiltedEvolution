@@ -357,6 +357,9 @@ public:
 
         return true;
     }
+
+    bool DumpVersionIDC(const std::string& path);
+    //bool CreateMapping(const std::string& inf, const std::string& outf);
 };
 
 template <class T> struct VersionDbPtr
