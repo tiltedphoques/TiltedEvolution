@@ -12,7 +12,7 @@ struct CombatTargetSelector
     virtual void Unk3();
     virtual void Unk4();
     virtual void Update();
-    virtual BSPointerHandle<Actor> SelectTarget(); // TODO: is RVO implemented here? Probably.
+    virtual BSPointerHandle<Actor> SelectTarget();
 
     void *vftable_NiRefObject_8;
     CombatController* pCombatController;

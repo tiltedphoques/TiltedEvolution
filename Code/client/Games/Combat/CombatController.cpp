@@ -56,7 +56,12 @@ static TUpdateTarget* RealUpdateTarget = nullptr;
 
 void TP_MAKE_THISCALL(HookUpdateTarget, CombatController)
 {
+    TiltedPhoques::ThisCall(RealUpdateTarget, apThis);
+
+#if 0
     apThis->UpdateTarget();
+#endif
+
 #if 0
 #if TP_SKYRIM64
     if (!apThis->startedCombat)
