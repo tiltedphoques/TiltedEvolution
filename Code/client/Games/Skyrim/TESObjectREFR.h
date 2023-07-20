@@ -149,7 +149,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_96();
     virtual struct TESObjectCELL* GetParentCell() const;
     virtual void SetParentCell(struct TESObjectCELL* apParentCell);
-    virtual bool CheckSomeFlags(bool aUnk);
+    virtual bool VirtIsDead(bool abNotEssential); // TODO: Use this or papyrus IsDead?
     virtual void sub_9A();
     virtual void sub_9B();
 

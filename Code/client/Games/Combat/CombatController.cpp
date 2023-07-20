@@ -78,7 +78,6 @@ static TSetTarget* RealSetTarget = nullptr;
 void TP_MAKE_THISCALL(HookSetTarget, CombatController, Actor* apTarget)
 {
 #if TP_SKYRIM64
-    spdlog::info("In game calls SetTarget, Form id: {:X}", apTarget->formID);
     TiltedPhoques::ThisCall(RealSetTarget, apThis, apTarget);
 #endif
 }
@@ -86,7 +85,6 @@ void TP_MAKE_THISCALL(HookSetTarget, CombatController, Actor* apTarget)
 void CombatController::SetTarget(Actor* apTarget)
 {
 #if TP_SKYRIM64
-    spdlog::info("We, the client, call SetTarget, Form id: {:X}", apTarget->formID);
     TiltedPhoques::ThisCall(RealSetTarget, this, apTarget);
 #endif
 }
