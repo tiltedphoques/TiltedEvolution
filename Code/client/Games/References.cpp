@@ -1011,7 +1011,9 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
         formId = pObject->formID;
 
     // TODO: ft
-    // World::Get().GetDebugService().SetDebugId(formId);
+#if TP_SKYRIM64
+    World::Get().GetDebugService().SetDebugId(formId);
+#endif
 
     return TiltedPhoques::ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }
