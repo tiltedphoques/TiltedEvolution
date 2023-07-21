@@ -505,13 +505,15 @@ uint16_t Actor::GetLevel() const noexcept
     return TiltedPhoques::ThisCall(s_getLevel, this);
 }
 
-void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
+void Actor::ForcePosition(const NiPoint3& acPosition, bool aUpdate3D) noexcept
 {
     ScopedReferencesOverride recursionGuard;
 
     // It just works TM
     SetPosition(acPosition, true);
-    Update3DPosition(true);
+
+    if (aUpdate3D && !IsDead())
+        Update3DPosition(true);
 }
 
 void Actor::QueueUpdate() noexcept
@@ -574,7 +576,7 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 
     ModManager::Get()->Spawn(position, rotation, pCell, pWorldSpace, pActor);
 
-    pActor->ForcePosition(position);
+    pActor->ForcePosition(position, true);
 
 #if TP_SKYRIM
     pActor->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
@@ -900,8 +902,7 @@ char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
     ScopedReferencesOverride recursionGuard;
 
     // It just works TM
-    apThis->SetPosition(aPosition, true);
-    //apThis->Update3DPosition(true);
+    apThis->SetPosition(aPosition, false);
 
     return 1;
 }
