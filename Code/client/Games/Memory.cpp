@@ -112,7 +112,7 @@ static TiltedPhoques::Initializer s_memoryHooks(
         POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
         POINTER_FALLOUT4(TFormAllocate, s_formAllocate, 652768);
 
-        POINTER_SKYRIMSE(TFormFree, s_formFree, 68116);
+        POINTER_SKYRIMSE(TFormFree, s_formFree, 68117);
         POINTER_FALLOUT4(TFormFree, s_formFree, 1582182);
 
         RealFormAllocate = s_formAllocate.Get();

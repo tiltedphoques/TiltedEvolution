@@ -99,11 +99,8 @@ bool TESQuest::SetStage(uint16_t newStage)
 
 void TESQuest::ScriptSetStage(uint16_t stageIndex)
 {
-    for (Stage* stage : stages)
-    {
-        if (stage->stageIndex == stageIndex && stage->IsDone())
-            return;
-    }
+    if (IsStageDone(stageIndex))
+        return;
 
     using Quest = TESQuest;
     PAPYRUS_FUNCTION(void, Quest, SetCurrentStageID, int);
