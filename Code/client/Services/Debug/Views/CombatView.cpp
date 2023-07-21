@@ -191,9 +191,16 @@ void DebugService::DrawCombatView()
 
     if (pActor && pActor->pCombatController && pActor->pCombatController->pCombatGroup && pActor->pCombatController->pActiveTargetSelector)
     {
+        Actor* pTarget = Cast<Actor>(TESObjectREFR::GetByHandle(pActor->pCombatController->targetHandle));
+        if (pTarget)
+        {
+            uint32_t targetFormID = pTarget->formID;
+            ImGui::InputScalar("Current target ID", ImGuiDataType_U32, (void*)&targetFormID, nullptr, nullptr, "%" PRIx32, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+        }
+
         BGSEncounterZone* pZone = GetLocationEncounterZone(pActor);
 
-        ImGui::BeginChild("Targets", ImVec2(0, 200), true);
+        ImGui::BeginChild("Potential targets", ImVec2(0, 200), true);
 
         auto& targets = pActor->pCombatController->pCombatGroup->targets;
         for (int i = 0; i < targets.length; i++)
