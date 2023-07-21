@@ -5,7 +5,6 @@
 #include <Services/QuestService.h>
 #include <Services/ImguiService.h>
 
-#include <Games/Misc/QuestCallbackManager.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESQuest.h>
 #include <Games/TES.h>
@@ -128,22 +127,27 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
 {
     ModSystem& modSystem = World::Get().GetModSystem();
     uint32_t formId = modSystem.GetGameId(aUpdate.Id);
+    TESQuest* pQuest = Cast<TESQuest>(TESForm::GetById(formId));
+    if (!pQuest)
+    {
+        spdlog::error("Failed to find quest, base id: {:X}, mod id: {:X}", aUpdate.Id.BaseId, aUpdate.Id.ModId);
+        return;
+    }
 
     bool bResult = false;
     switch (aUpdate.Status)
     {
     case NotifyQuestUpdate::Started:
     {
-        if (TESQuest* pQuest = SetQuestStage(formId, aUpdate.Stage))
-        {
-            pQuest->SetActive(true);
-            bResult = true;
-            spdlog::info("Remote quest started: {:X}, stage: {}", formId, aUpdate.Stage);
-        }
+        pQuest->ScriptSetStage(aUpdate.Stage);
+        pQuest->SetActive(true);
+        bResult = true;
+        spdlog::info("Remote quest started: {:X}, stage: {}", formId, aUpdate.Stage);
         break;
     }
     case NotifyQuestUpdate::StageUpdate:
-        bResult = SetQuestStage(formId, aUpdate.Stage);
+        pQuest->ScriptSetStage(aUpdate.Stage);
+        bResult = true;
         spdlog::info("Remote quest updated: {:X}, stage: {}", formId, aUpdate.Stage);
         break;
     case NotifyQuestUpdate::Stopped:
@@ -155,35 +159,6 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
 
     if (!bResult)
         spdlog::error("Failed to update the client quest state, quest: {:X}, stage: {}, status: {}", formId, aUpdate.Stage, aUpdate.Status);
-}
-
-TESQuest* QuestService::SetQuestStage(uint32_t aFormId, uint16_t aStage)
-{
-    TESQuest* pQuest = Cast<TESQuest>(TESForm::GetById(aFormId));
-    if (pQuest)
-    {
-        // force quest update
-        pQuest->flags |= TESQuest::Enabled | TESQuest::StageWait;
-        pQuest->scopedStatus = -1;
-
-        bool bNeedsRegistration = false;
-        if (pQuest->EnsureQuestStarted(bNeedsRegistration, false))
-        {
-            auto* pCallbackMgr = QuestCallbackManager::Get();
-
-            if (bNeedsRegistration)
-                pCallbackMgr->RegisterQuest(aFormId);
-            else
-            {
-                ScopedQuestOverride _;
-
-                pQuest->ScriptSetStage(aStage);
-                return pQuest;
-            }
-        }
-    }
-
-    return nullptr;
 }
 
 bool QuestService::StopQuest(uint32_t aformId)

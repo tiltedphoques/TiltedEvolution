@@ -21,7 +21,6 @@ public:
 
     static bool IsNonSyncableQuest(TESQuest* apQuest);
     static void DebugDumpQuests();
-    static TESQuest* SetQuestStage(uint32_t aformId, uint16_t aStage);
     static bool StopQuest(uint32_t aformId);
 
 private:
