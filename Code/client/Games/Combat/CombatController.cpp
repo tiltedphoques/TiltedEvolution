@@ -45,10 +45,10 @@ void CombatController::UpdateTarget()
     }
 
     // If CombatComponent is attached, don't try to fetch a new target.
-    if (Actor* pNewTarget = Cast<Actor>(TESObjectREFR::GetByHandle(newTarget.handle.iBits)))
+    if (Actor* pAttacker = Cast<Actor>(TESObjectREFR::GetByHandle(attackerHandle)))
     {
         const auto view = World::Get().view<FormIdComponent, CombatComponent>();
-        const auto it = std::find_if(view.begin(), view.end(), [view, pNewTarget](auto entity) { return view.get<FormIdComponent>(entity).Id == pNewTarget->formID; });
+        const auto it = std::find_if(view.begin(), view.end(), [view, pAttacker](auto entity) { return view.get<FormIdComponent>(entity).Id == pAttacker->formID; });
         if (it != view.end())
             return;
     }
