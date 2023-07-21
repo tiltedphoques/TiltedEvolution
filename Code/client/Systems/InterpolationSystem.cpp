@@ -51,10 +51,10 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     constexpr auto cDelayBetween3DUpdates = 1s;
     const auto now = std::chrono::steady_clock::now();
 
-    if (now - aInterpolationComponent.last3DTimePoint >= cDelayBetween3DUpdates)
+    if (now - aInterpolationComponent.Last3DTimePoint >= cDelayBetween3DUpdates)
     {
         shouldUpdate3D = true;
-        aInterpolationComponent.last3DTimePoint = now;
+        aInterpolationComponent.Last3DTimePoint = now;
     }
 
     apActor->ForcePosition(position, shouldUpdate3D);

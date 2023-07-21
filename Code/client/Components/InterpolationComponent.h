@@ -22,11 +22,10 @@ struct InterpolationComponent
     };
 
     InterpolationComponent(std::chrono::steady_clock::time_point aPoint)
-        : last3DTimePoint(aPoint)
+        : Last3DTimePoint(aPoint)
     {}
 
-
-    std::chrono::steady_clock::time_point last3DTimePoint;
+    std::chrono::steady_clock::time_point Last3DTimePoint;
     List<TimePoint> TimePoints;
     glm::vec3 Position;
 };
