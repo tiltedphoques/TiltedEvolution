@@ -511,6 +511,7 @@ void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
 
     // It just works TM
     SetPosition(acPosition, true);
+    Update3DPosition(true);
 }
 
 void Actor::QueueUpdate() noexcept
@@ -899,7 +900,8 @@ char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
     ScopedReferencesOverride recursionGuard;
 
     // It just works TM
-    apThis->SetPosition(aPosition, false);
+    apThis->SetPosition(aPosition, true);
+    //apThis->Update3DPosition(true);
 
     return 1;
 }
