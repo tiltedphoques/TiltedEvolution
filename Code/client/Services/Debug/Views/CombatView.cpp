@@ -3,9 +3,9 @@
 #include <inttypes.h>
 
 #if TP_SKYRIM64
-#include <Games/Combat/CombatController.h>
+#include <Combat/CombatController.h>
 #include <Combat/CombatGroup.h>
-#include <Games/Combat/CombatTargetSelector.h>
+#include <Combat/CombatTargetSelector.h>
 #include <Games/Misc/BGSWorldLocation.h>
 #include <Combat/CombatInventory.h>
 

@@ -51,10 +51,10 @@
 #include <Forms/TESAmmo.h>
 #include <BSGraphics/BSGraphicsRenderer.h>
 #include <Interface/UI.h>
-#include <Games/Combat/CombatController.h>
 
 // TODO: ft
 #if TP_SKYRIM64
+#include <Combat/CombatController.h>
 #include <Camera/PlayerCamera.h>
 #include <AI/Movement/PlayerControls.h>
 #include <Interface/IMenu.h>

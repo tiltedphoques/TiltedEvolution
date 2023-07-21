@@ -29,7 +29,6 @@
 #include <AI/AIProcess.h>
 #include <Magic/MagicCaster.h>
 #include <Sky/Sky.h>
-#include <Games/Combat/CombatController.h>
 
 #include <Events/LockChangeEvent.h>
 #include <Events/InitPackageEvent.h>
@@ -41,8 +40,9 @@
 #include <World.h>
 
 #if TP_SKYRIM64
+#include <Combat/CombatController.h>
 #include <AI/AITimer.h>
-#include <Games/Combat/CombatTargetSelector.h>
+#include <Combat/CombatTargetSelector.h>
 #endif
 
 #if TP_FALLOUT4
