@@ -44,6 +44,15 @@ void CombatController::UpdateTarget()
         }
     }
 
+    // If CombatComponent is attached, don't try to fetch a new target.
+    if (Actor* pNewTarget = Cast<Actor>(TESObjectREFR::GetByHandle(newTarget.handle.iBits)))
+    {
+        const auto view = World::Get().view<FormIdComponent, CombatComponent>();
+        const auto it = std::find_if(view.begin(), view.end(), [view, pNewTarget](auto entity) { return view.get<FormIdComponent>(entity).Id == pNewTarget->formID; });
+        if (it != view.end())
+            return;
+    }
+
     if (newTarget.handle.iBits == targetHandle)
         return;
 
@@ -56,36 +65,15 @@ static TUpdateTarget* RealUpdateTarget = nullptr;
 
 void TP_MAKE_THISCALL(HookUpdateTarget, CombatController)
 {
-    TiltedPhoques::ThisCall(RealUpdateTarget, apThis);
-
-#if 0
     apThis->UpdateTarget();
-#endif
-
-#if 0
-#if TP_SKYRIM64
-    if (!apThis->startedCombat)
-        return TiltedPhoques::ThisCall(RealUpdateTarget, apThis);
-#endif
-
-    return false;
-#endif
-}
-
-TP_THIS_FUNCTION(TSetTarget, void, CombatController, Actor*);
-static TSetTarget* RealSetTarget = nullptr;
-
-void TP_MAKE_THISCALL(HookSetTarget, CombatController, Actor* apTarget)
-{
-#if TP_SKYRIM64
-    TiltedPhoques::ThisCall(RealSetTarget, apThis, apTarget);
-#endif
 }
 
 void CombatController::SetTarget(Actor* apTarget)
 {
 #if TP_SKYRIM64
-    TiltedPhoques::ThisCall(RealSetTarget, this, apTarget);
+    TP_THIS_FUNCTION(TSetTarget, void, CombatController, Actor*);
+    POINTER_SKYRIMSE(TSetTarget, setTarget, 33235);
+    TiltedPhoques::ThisCall(setTarget, this, apTarget);
 #endif
 }
 
@@ -93,13 +81,10 @@ static TiltedPhoques::Initializer s_combatControllerHooks(
     []()
     {
     #if TP_SKYRIM64
-        POINTER_SKYRIMSE(TSetTarget, s_setTarget, 33235);
         POINTER_SKYRIMSE(TUpdateTarget, s_updateTarget, 33236);
 
-        RealSetTarget = s_setTarget.Get();
         RealUpdateTarget = s_updateTarget.Get();
 
-        TP_HOOK(&RealSetTarget, HookSetTarget);
         TP_HOOK(&RealUpdateTarget, HookUpdateTarget);
     #endif
     });

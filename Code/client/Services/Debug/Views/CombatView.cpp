@@ -53,12 +53,6 @@ DetectionState* GetDetectionState(Actor* apAttacker, Actor* apTarget)
     return TiltedPhoques::ThisCall(getDetectionState, apAttacker, apTarget);
 }
 
-float GetAITimer()
-{
-    POINTER_SKYRIMSE(float, s_value, 404125);
-    return *s_value;
-}
-
 float GetCombatTargetSelectorDetectionTimeLimit()
 {
     POINTER_SKYRIMSE(float, s_value, 382393);
@@ -131,13 +125,15 @@ float CalculateTargetScore(CombatTargetSelector* apThis, CombatTarget* apCombatT
     BGSWorldLocation pTargetWorldLocation{};
     RefrGetWorldLocation(apTarget, &pTargetWorldLocation);
 
+    float aiTime = AITimer::GetAITime();
+
     auto* pDetectionState = GetDetectionState(apAttacker, apTarget);
-    if (pDetectionState && (GetAITimer() - pDetectionState->unk38) <= GetCombatTargetSelectorDetectionTimeLimit())
+    if (pDetectionState && (aiTime - pDetectionState->unk38) <= GetCombatTargetSelectorDetectionTimeLimit())
     {
         if (pDetectionState->unk15)
             score = 1000.f;
         else if (pCachedAttacker == apTarget &&
-                 (GetAITimer() - pDetectionState->unk18) < GetCombatTargetSelectorRecentLOSTimeLimit())
+                 (aiTime - pDetectionState->unk18) < GetCombatTargetSelectorRecentLOSTimeLimit())
             score = 1000.f;
 
         if (pDetectionState->unk14)

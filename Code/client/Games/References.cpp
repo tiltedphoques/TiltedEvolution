@@ -40,6 +40,11 @@
 #include <Services/DebugService.h>
 #include <World.h>
 
+#if TP_SKYRIM64
+#include <AI/AITimer.h>
+#include <Games/Combat/CombatTargetSelector.h>
+#endif
+
 #if TP_FALLOUT4
 #include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
 #endif
