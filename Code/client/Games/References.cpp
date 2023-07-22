@@ -29,7 +29,6 @@
 #include <AI/AIProcess.h>
 #include <Magic/MagicCaster.h>
 #include <Sky/Sky.h>
-#include <Games/Combat/CombatController.h>
 
 #include <Events/LockChangeEvent.h>
 #include <Events/InitPackageEvent.h>
@@ -39,6 +38,12 @@
 #include <Services/PapyrusService.h>
 #include <Services/DebugService.h>
 #include <World.h>
+
+#if TP_SKYRIM64
+#include <Combat/CombatController.h>
+#include <AI/AITimer.h>
+#include <Combat/CombatTargetSelector.h>
+#endif
 
 #if TP_FALLOUT4
 #include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
@@ -505,12 +510,15 @@ uint16_t Actor::GetLevel() const noexcept
     return TiltedPhoques::ThisCall(s_getLevel, this);
 }
 
-void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
+void Actor::ForcePosition(const NiPoint3& acPosition, bool aUpdate3D) noexcept
 {
     ScopedReferencesOverride recursionGuard;
 
     // It just works TM
     SetPosition(acPosition, true);
+
+    if (aUpdate3D && !IsDead())
+        Update3DPosition(true);
 }
 
 void Actor::QueueUpdate() noexcept
@@ -573,7 +581,7 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 
     ModManager::Get()->Spawn(position, rotation, pCell, pWorldSpace, pActor);
 
-    pActor->ForcePosition(position);
+    pActor->ForcePosition(position, true);
 
 #if TP_SKYRIM
     pActor->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
@@ -1011,7 +1019,9 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
         formId = pObject->formID;
 
     // TODO: ft
-    // World::Get().GetDebugService().SetDebugId(formId);
+#if TP_SKYRIM64
+    World::Get().GetDebugService().SetDebugId(formId);
+#endif
 
     return TiltedPhoques::ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }

@@ -59,7 +59,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_3C();
     virtual void sub_3D();
     virtual void sub_3E();
-    virtual void sub_3F();
+    virtual void Update3DPosition(bool abWarp);
     virtual void sub_40();
     virtual void sub_41();
     virtual void sub_42();
@@ -149,7 +149,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_96();
     virtual struct TESObjectCELL* GetParentCell() const;
     virtual void SetParentCell(struct TESObjectCELL* apParentCell);
-    virtual bool CheckSomeFlags(bool aUnk);
+    virtual bool VirtIsDead(bool abNotEssential); // TODO: Use this or papyrus IsDead?
     virtual void sub_9A();
     virtual void sub_9B();
 

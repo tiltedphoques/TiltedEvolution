@@ -50,7 +50,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_4D();
     virtual void sub_4E();
     virtual void sub_4F();
-    virtual void sub_50();
+    virtual void Update3DPosition(bool abWarp);
     virtual void sub_51();
     virtual void sub_52();
     virtual void sub_53();

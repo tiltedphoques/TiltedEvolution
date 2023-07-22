@@ -46,7 +46,18 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     if (!apActor)
         return;
 
-    apActor->ForcePosition(position);
+    bool shouldUpdate3D = false;
+
+    constexpr auto cDelayBetween3DUpdates = 1s;
+    const auto now = std::chrono::steady_clock::now();
+
+    if (now - aInterpolationComponent.Last3DTimePoint >= cDelayBetween3DUpdates)
+    {
+        shouldUpdate3D = true;
+        aInterpolationComponent.Last3DTimePoint = now;
+    }
+
+    apActor->ForcePosition(position, shouldUpdate3D);
     apActor->LoadAnimationVariables(second.Variables);
 
     if (apActor->currentProcess && apActor->currentProcess->middleProcess)
@@ -97,7 +108,7 @@ void InterpolationSystem::AddPoint(InterpolationComponent& aInterpolationCompone
 
 InterpolationComponent& InterpolationSystem::Setup(World& aWorld, const entt::entity aEntity) noexcept
 {
-    return aWorld.emplace_or_replace<InterpolationComponent>(aEntity);
+    return aWorld.emplace_or_replace<InterpolationComponent>(aEntity, std::chrono::steady_clock::now());
 }
 
 void InterpolationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept

@@ -223,7 +223,7 @@ void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
 void CombatService::RunTargetUpdates(const float acDelta) const noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenUpdates = 20ms;
+    constexpr auto cDelayBetweenUpdates = 200ms;
 
     const auto now = std::chrono::steady_clock::now();
     if (now - lastSendTimePoint < cDelayBetweenUpdates)
@@ -262,8 +262,6 @@ void CombatService::RunTargetUpdates(const float acDelta) const noexcept
             toRemove.push_back(entity);
             continue;
         }
-
-        pActor->SetCombatTargetEx(pTarget);
     }
 
     for (const auto entity : toRemove)

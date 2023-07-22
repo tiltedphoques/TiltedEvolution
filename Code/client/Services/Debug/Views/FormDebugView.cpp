@@ -14,7 +14,7 @@
 void DebugService::DrawFormDebugView()
 {
     static TESForm* pFetchForm = nullptr;
-    static TESObjectREFR* pRefr = nullptr;
+    static Actor* pRefr = nullptr;
 
     ImGui::Begin("Form");
 
@@ -26,7 +26,7 @@ void DebugService::DrawFormDebugView()
         {
             pFetchForm = TESForm::GetById(m_formId);
             if (pFetchForm)
-                pRefr = Cast<TESObjectREFR>(pFetchForm);
+                pRefr = Cast<Actor>(pFetchForm);
         }
     }
 
