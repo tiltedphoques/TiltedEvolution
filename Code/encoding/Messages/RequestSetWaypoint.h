@@ -18,8 +18,9 @@ struct RequestSetWaypoint final : ClientMessage
 
     bool operator==(const RequestSetWaypoint& acRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() && Position == acRhs.Position;
+        return GetOpcode() == acRhs.GetOpcode() && Position == acRhs.Position && WorldSpaceFormID == acRhs.WorldSpaceFormID;
     }
 
     Vector3_NetQuantize Position;
+    GameId WorldSpaceFormID;
 };

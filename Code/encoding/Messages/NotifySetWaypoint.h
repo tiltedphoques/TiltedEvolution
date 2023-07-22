@@ -16,8 +16,9 @@ struct NotifySetWaypoint final : ServerMessage
 
     bool operator==(const NotifySetWaypoint& acRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() && Position == acRhs.Position;
+        return GetOpcode() == acRhs.GetOpcode() && Position == acRhs.Position && WorldSpaceFormID == acRhs.WorldSpaceFormID;
     }
 
     Vector3_NetQuantize Position;
+    GameId WorldSpaceFormID;
 };

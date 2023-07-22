@@ -5,9 +5,10 @@
  */
 struct SetWaypointEvent
 {
-    SetWaypointEvent(Vector3_NetQuantize aPosition) 
-        : Position(aPosition)
+    SetWaypointEvent(Vector3_NetQuantize aPosition, uint32_t aWorldSpaceFormID) 
+        : Position(aPosition), WorldSpaceFormID(aWorldSpaceFormID)
     {}
 
     Vector3_NetQuantize Position;
+    uint32_t WorldSpaceFormID;
 };

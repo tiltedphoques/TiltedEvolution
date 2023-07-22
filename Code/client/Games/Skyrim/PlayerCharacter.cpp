@@ -17,6 +17,7 @@
 #include <Games/ActorExtension.h>
 #include <Games/TES.h>
 #include <Games/References.h>
+#include <Forms/TESWorldSpace.h>
 
 #include <Forms/TESObjectCELL.h>
 
@@ -211,8 +212,7 @@ void TP_MAKE_THISCALL(HookSetWaypoint, PlayerCharacter, NiPoint3* apPosition, TE
     position.y = apPosition->y;
     position.z = apPosition->z;
 
-    // TODO: worldspace should be sent.
-    World::Get().GetRunner().Trigger(SetWaypointEvent(position));
+    World::Get().GetRunner().Trigger(SetWaypointEvent(position, apWorldSpace ? apWorldSpace->formID : 0));
 
     return TiltedPhoques::ThisCall(RealSetWaypoint, apThis, apPosition, apWorldSpace);
 }

@@ -21,6 +21,7 @@ void MapService::OnSetWaypointRequest(const PacketEvent<RequestSetWaypoint>& acM
 
     NotifySetWaypoint notify{};
     notify.Position = message.Position;
+    notify.WorldSpaceFormID = message.WorldSpaceFormID;
 
     const auto& partyComponent = acMessage.pPlayer->GetParty();
     if (!partyComponent.JoinedPartyId.has_value())

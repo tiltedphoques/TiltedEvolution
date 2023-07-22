@@ -31,6 +31,10 @@ void MapService::OnSetWaypoint(const SetWaypointEvent& acMessage) noexcept
 
     RequestSetWaypoint request{};
     request.Position = acMessage.Position;
+
+    ModSystem& modSystem = m_world.Get().GetModSystem();
+    modSystem.GetServerModId(acMessage.WorldSpaceFormID, request.WorldSpaceFormID);
+
     m_transport.Send(request);
 }
 
@@ -45,16 +49,24 @@ void MapService::OnRemoveWaypoint(const RemoveWaypointEvent& acMessage) noexcept
 
 void MapService::OnNotifySetWaypoint(const NotifySetWaypoint& acMessage) noexcept
 {
+#if TP_SKYRIM64
     NiPoint3 pos{};
     pos.x = acMessage.Position.x;
     pos.y = acMessage.Position.y;
     pos.z = acMessage.Position.z;
 
-    PlayerCharacter::Get()->SetWaypoint(&pos, PlayerCharacter::Get()->GetWorldSpace());
+    ModSystem& modSystem = m_world.Get().GetModSystem();
+    const uint32_t cWorldSpaceID = modSystem.GetGameId(acMessage.WorldSpaceFormID);
+    TESWorldSpace* pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(cWorldSpaceID));
+
+    PlayerCharacter::Get()->SetWaypoint(&pos, pWorldSpace);
+#endif
 }
 
 void MapService::OnNotifyRemoveWaypoint(const NotifyRemoveWaypoint& acMessage) noexcept
 {
+#if TP_SKYRIM64
     PlayerCharacter::Get()->RemoveWaypoint();
+#endif
 }
 
