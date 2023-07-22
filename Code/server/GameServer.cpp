@@ -49,6 +49,9 @@ Console::Setting bEnableDeathSystem{"Gameplay:bEnableDeathSystem", "Enables the 
 Console::Setting uTimeScale{
     "Gameplay:uTimeScale",
     "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
+Console::Setting bSyncPlayerCalendar{
+    "Gameplay:bSyncPlayerCalendar",
+    "Syncs up all player calendars to be the same day, month, and year. This uses the date of the player with the furthest ahead date at connection.", false};
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
                                  Console::SettingsFlags::kLocked};
@@ -132,6 +135,7 @@ ServerSettings GetSettings()
     settings.PvpEnabled = bEnablePvp;
     settings.SyncPlayerHomes = bSyncPlayerHomes;
     settings.DeathSystemEnabled = bEnableDeathSystem;
+    settings.SyncPlayerCalendar = bSyncPlayerCalendar;
     return settings;
 }
 
@@ -344,6 +348,26 @@ void GameServer::BindServerCommands()
             else
             {
                 out->error("Hour must be between 0-23 and minute must be between 0-59");
+            }
+        });
+
+    m_commands.RegisterCommand<int64_t, int64_t, int64_t>(
+        "SetDate", "Set ingame day, month, and year", [&](Console::ArgStack& aStack) {
+            auto out = spdlog::get("ConOut");
+
+            auto day = aStack.Pop<int64_t>();
+            auto month = aStack.Pop<int64_t>();
+            auto year = aStack.Pop<int64_t>();
+
+            bool time_set_successfully = m_pWorld->GetCalendarService().SetDate(day, month, year);
+
+            if (time_set_successfully)
+            {
+                out->info("Time set to {:02}/{:02}:{:02}", month, day, year);
+            }
+            else
+            {
+                out->error("Day must be between 0 and 31, month must be between 0 and 11, and year must be between 0 and 999.");
             }
         });
 }
@@ -841,7 +865,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             Send(pPlayer->GetConnectionId(), notify);
         }
 
-        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId));
+        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId, acRequest->PlayerTime));
     }
     /*
         else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())

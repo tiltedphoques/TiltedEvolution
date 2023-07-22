@@ -35,10 +35,10 @@ private:
     TimeModel m_onlineTime;
     TimeModel m_offlineTime;
     float m_fadeTimer = 0.f;
-    bool m_switchToOffline = false;
     static bool s_gameClockLocked;
 
     uint64_t m_lastTick = 0;
+    uint64_t m_lastLogTick = 0;
     World& m_world;
     TransportService& m_transport;
 };
