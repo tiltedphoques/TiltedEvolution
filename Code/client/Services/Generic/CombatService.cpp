@@ -117,6 +117,17 @@ void CombatService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMes
     ProjectileLaunchData launchData{};
 #endif
 
+    // Projectile::Launch relies on pParentCell being valid.
+    // TODO: it's possible that more of these values must have a value, should probably check for that in the game code.
+    const uint32_t cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
+    launchData.pParentCell = Cast<TESObjectCELL>(TESForm::GetById(cParentCellId));
+
+    if (!launchData.pParentCell)
+    {
+        spdlog::warn("Cannot launch projectile, invalid parent cell: {:X}", cParentCellId);
+        return;
+    }
+
     launchData.pShooter = Cast<TESObjectREFR>(TESForm::GetById(formIdComponent.Id));
 
     launchData.Origin.x = acMessage.OriginX;
@@ -142,9 +153,6 @@ void CombatService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMes
     launchData.fZAngle = acMessage.ZAngle;
     launchData.fXAngle = acMessage.XAngle;
     launchData.fYAngle = acMessage.YAngle;
-
-    const uint32_t cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
-    launchData.pParentCell = Cast<TESObjectCELL>(TESForm::GetById(cParentCellId));
 
     const uint32_t cSpellId = modSystem.GetGameId(acMessage.SpellID);
     launchData.pSpell = Cast<MagicItem>(TESForm::GetById(cSpellId));
