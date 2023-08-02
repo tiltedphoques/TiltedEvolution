@@ -3,15 +3,16 @@
 
 // TODO: ft
 
-void ArrayQuickSortRecursiveCombatTargets(GameArray<CombatTargetSelector*>* apArray, uint32_t aUnk3, uint32_t aUnk4)
+void ArrayQuickSortRecursiveCombatTargets(GameArray<CombatTargetSelector*>* apArray, uint32_t aiLowIndex,
+                                          uint32_t aiHighIndex)
 {
-    using TArrayQuickSort = void(GameArray<CombatTargetSelector*>* apArray, void* apFunction, uint32_t aUnk3, uint32_t aUnk4);
+    using TArrayQuickSort = void(GameArray<CombatTargetSelector*>* apArray, void* apFunction, uint32_t aiLowIndex, uint32_t aiHighIndex);
     POINTER_SKYRIMSE(TArrayQuickSort, arrayQuickSort, 33285);
 
     using TSortTargetSelectors = int64_t(int64_t, int64_t);
     POINTER_SKYRIMSE(TSortTargetSelectors, sortTargetSelectors, 33282);
 
-    arrayQuickSort(apArray, sortTargetSelectors, aUnk3, aUnk4);
+    arrayQuickSort(apArray, sortTargetSelectors, aiLowIndex, aiHighIndex);
 }
 
 void CombatController::UpdateTarget()
@@ -23,7 +24,7 @@ void CombatController::UpdateTarget()
     }
 
     if (targetSelectors.length > 1)
-        ArrayQuickSortRecursiveCombatTargets(&targetSelectors, 0, targetSelectors.length);
+        ArrayQuickSortRecursiveCombatTargets(&targetSelectors, 0, targetSelectors.length - 1);
 
     pActiveTargetSelector = nullptr;
     BSPointerHandle<Actor> newTarget{};
