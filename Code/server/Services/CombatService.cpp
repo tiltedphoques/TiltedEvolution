@@ -58,5 +58,6 @@ void CombatService::OnProjectileLaunchRequest(const PacketEvent<ProjectileLaunch
     notify.IgnoreNearCollisions = packet.IgnoreNearCollisions;
 
     const auto cShooterEntity = static_cast<entt::entity>(packet.ShooterID);
-    GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity, acMessage.GetSender());
+    if (!GameServer::Get()->SendToPlayersInRange(notify, cShooterEntity, acMessage.GetSender()))
+        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
 }

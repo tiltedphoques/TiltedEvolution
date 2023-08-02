@@ -377,7 +377,8 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
     Serialize(m_world, acEvent.Entity, &message);
 
     const auto& ownerComp = m_world.get<OwnerComponent>(acEvent.Entity);
-    GameServer::Get()->SendToPlayersInRange(message, acEvent.Entity, ownerComp.GetOwner());
+    if (!GameServer::Get()->SendToPlayersInRange(message, acEvent.Entity, ownerComp.GetOwner()))
+        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
 
     GameServer::Get()->GetWorld().GetScriptService().HandleCharacterSpawn(acEvent.Entity);
 }
@@ -498,7 +499,8 @@ void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage
     notify.MountId = message.MountId;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.MountId);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender());
+    if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender()))
+        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
 }
 
 void CharacterService::OnNewPackageRequest(const PacketEvent<NewPackageRequest>& acMessage) const noexcept
@@ -510,7 +512,8 @@ void CharacterService::OnNewPackageRequest(const PacketEvent<NewPackageRequest>&
     notify.PackageId = message.PackageId;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.ActorId);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender());
+    if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender()))
+        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
 }
 
 void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMessage) const noexcept
@@ -529,7 +532,8 @@ void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMes
         NotifyRespawn notify;
         notify.ActorId = acMessage.Packet.ActorId;
 
-        GameServer::Get()->SendToPlayersInRange(notify, *it, acMessage.GetSender());
+        if (!GameServer::Get()->SendToPlayersInRange(notify, *it, acMessage.GetSender()))
+            spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
     }
     else
     {
@@ -561,7 +565,8 @@ void CharacterService::OnDialogueRequest(const PacketEvent<DialogueRequest>& acM
     notify.SoundFilename = message.SoundFilename;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
+    if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender()))
+        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
 }
 
 void CharacterService::OnSubtitleRequest(const PacketEvent<SubtitleRequest>& acMessage) const noexcept
@@ -573,7 +578,8 @@ void CharacterService::OnSubtitleRequest(const PacketEvent<SubtitleRequest>& acM
     notify.Text = message.Text;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
+    if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender()))
+        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
 }
 
 void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept
