@@ -31,7 +31,8 @@ void MagicService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMes
     notify.DesiredTarget = message.DesiredTarget;
 
     const auto entity = static_cast<entt::entity>(message.CasterId);
-    GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender());
+    if (!GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender()))
+        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
 }
 
 void MagicService::OnInterruptCastRequest(const PacketEvent<InterruptCastRequest>& acMessage) const noexcept
@@ -43,7 +44,8 @@ void MagicService::OnInterruptCastRequest(const PacketEvent<InterruptCastRequest
     notify.CastingSource = message.CastingSource;
 
     const auto entity = static_cast<entt::entity>(message.CasterId);
-    GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender());
+    if (!GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender()))
+        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
 }
 
 void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMessage) const noexcept
@@ -57,5 +59,6 @@ void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMes
     notify.Magnitude = message.Magnitude;
 
     const auto entity = static_cast<entt::entity>(message.TargetId);
-    GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender());
+    if (!GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender()))
+        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
 }

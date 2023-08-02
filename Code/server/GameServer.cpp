@@ -579,13 +579,13 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Playe
 }
 
 // NOTE: this doesn't check objects in range, only characters in range.
-void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
+bool GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
                                       const Player* apExcludedPlayer) const
 {
     if (!m_pWorld->valid(acOrigin))
     {
         spdlog::error("Entity is invalid: {:X}", World::ToInteger(acOrigin));
-        return;
+        return false;
     }
 
     const auto view = m_pWorld->view<CellIdComponent>();
@@ -594,7 +594,7 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     if (it == view.end())
     {
         spdlog::warn("Cell component not found for entity {:X}", World::ToInteger(acOrigin));
-        return;
+        return false;
     }
 
     const auto& cellComponent = view.get<CellIdComponent>(*it);
@@ -608,6 +608,8 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
         if (cellComponent.IsInRange(pPlayer->GetCellComponent(), isDragon) && pPlayer != apExcludedPlayer)
             pPlayer->Send(acServerMessage);
     }
+
+    return true;
 }
 
 void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
@@ -615,7 +617,7 @@ void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyCo
 {
     if (!acPartyComponent.JoinedPartyId.has_value())
     {
-        spdlog::warn("Part does not exist, canceling broadcast.");
+        spdlog::warn("Party does not exist, canceling broadcast.");
         return;
     }
 
@@ -637,7 +639,7 @@ void GameServer::SendToPartyInRange(const ServerMessage& acServerMessage, const 
 {
     if (!acPartyComponent.JoinedPartyId.has_value())
     {
-        spdlog::warn("Part does not exist, canceling broadcast.");
+        spdlog::warn("Party does not exist, canceling broadcast.");
         return;
     }
 
