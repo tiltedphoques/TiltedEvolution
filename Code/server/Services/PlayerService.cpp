@@ -181,7 +181,7 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
 
             // Exclude respawned player from inventory changes notification...
             if (!GameServer::Get()->SendToPlayersInRange(notifyInventoryChanges, *character, acMessage.GetSender()))
-                spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
+                spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 
             // ...and instead, send NotifyPlayerRespawn so that the client can print a message.
             NotifyPlayerRespawn notifyPlayerRespawn{};
@@ -195,7 +195,7 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
         notifyRespawn.ActorId = World::ToInteger(*character);
 
         if (!GameServer::Get()->SendToPlayersInRange(notifyRespawn, *character, acMessage.GetSender()))
-            spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
+            spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
     }
 }
 

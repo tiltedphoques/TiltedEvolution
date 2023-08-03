@@ -52,7 +52,7 @@ void sendPlayerMessage(const ChatMessageType acType, const String acContent, Pla
         if (character)
         {
             if (!GameServer::Get()->SendToPlayersInRange(notifyMessage, *character))
-                spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
+                spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
         }
         break;
 

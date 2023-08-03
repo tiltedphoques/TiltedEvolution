@@ -43,7 +43,7 @@ void ActorValueService::OnActorValueChanges(const PacketEvent<RequestActorValueC
 
     const entt::entity cEntity = static_cast<entt::entity>(message.Id);
     if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer))
-        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }
 
 void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValueChanges>& acMessage) const noexcept
@@ -69,7 +69,7 @@ void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMax
 
     const entt::entity cEntity = static_cast<entt::entity>(message.Id);
     if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer))
-        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }
 
 void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
@@ -94,7 +94,7 @@ void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthC
 
     const entt::entity cEntity = static_cast<entt::entity>(message.Id);
     if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer))
-        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }
 
 void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept
@@ -118,5 +118,5 @@ void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateCh
 
     const entt::entity cEntity = static_cast<entt::entity>(message.Id);
     if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer))
-        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }

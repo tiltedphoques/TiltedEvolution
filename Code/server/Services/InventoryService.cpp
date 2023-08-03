@@ -49,7 +49,7 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
 
     const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
     if (!GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender()))
-        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }
 
 void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChanges>& acMessage) noexcept
@@ -77,7 +77,7 @@ void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChan
 
     const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
     if (!GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender()))
-        spdlog::error(__FUNCTION__ ": SendToPlayersInRange failed");
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }
 
 void InventoryService::OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>& acMessage) noexcept
