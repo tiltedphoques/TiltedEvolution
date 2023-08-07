@@ -30,20 +30,20 @@ void CalendarService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
 {
     // disable the game clock
     ToggleGameClock(false);
-    m_onlineTime.TimeScale = acMessage.timeModel.TimeScale;
-    m_onlineTime.Time = acMessage.timeModel.Time;
+    m_onlineTime.m_timeModel.TimeScale = acMessage.timeModel.TimeScale;
+    m_onlineTime.m_timeModel.Time = acMessage.timeModel.Time;
 
     if (m_world.GetServerSettings().SyncPlayerCalendar)
     {
-        m_onlineTime.Day = acMessage.timeModel.Day;
-        m_onlineTime.Month = acMessage.timeModel.Month;
-        m_onlineTime.Year = acMessage.timeModel.Year;
+        m_onlineTime.m_timeModel.Day = acMessage.timeModel.Day;
+        m_onlineTime.m_timeModel.Month = acMessage.timeModel.Month;
+        m_onlineTime.m_timeModel.Year = acMessage.timeModel.Year;
     }
     else
     {
-        m_onlineTime.Day = m_offlineTime.Day;
-        m_onlineTime.Month = m_offlineTime.Month;
-        m_onlineTime.Year = m_offlineTime.Year;
+        m_onlineTime.m_timeModel.Day = m_offlineTime.m_timeModel.Day;
+        m_onlineTime.m_timeModel.Month = m_offlineTime.m_timeModel.Month;
+        m_onlineTime.m_timeModel.Year = m_offlineTime.m_timeModel.Year;
     }
 }
 
@@ -72,11 +72,11 @@ float CalendarService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) c
 void CalendarService::ToggleGameClock(bool aEnable)
 {
     auto* pGameTime = TimeData::Get();
-    m_offlineTime.Day = pGameTime->GameDay->f;
-    m_offlineTime.Month = pGameTime->GameMonth->f;
-    m_offlineTime.Year = pGameTime->GameYear->f;
-    m_offlineTime.Time = pGameTime->GameHour->f;
-    m_offlineTime.TimeScale = pGameTime->TimeScale->f;
+    m_offlineTime.m_timeModel.Day = pGameTime->GameDay->f;
+    m_offlineTime.m_timeModel.Month = pGameTime->GameMonth->f;
+    m_offlineTime.m_timeModel.Year = pGameTime->GameYear->f;
+    m_offlineTime.m_timeModel.Time = pGameTime->GameHour->f;
+    m_offlineTime.m_timeModel.TimeScale = pGameTime->TimeScale->f;
 
     s_gameClockLocked = !aEnable;
 }
@@ -101,19 +101,19 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
         m_lastTick = now;
 
         m_onlineTime.Update(delta);
-        pGameTime->TimeScale->f = m_onlineTime.TimeScale;
-        pGameTime->GameDay->f = m_onlineTime.Day;
-        pGameTime->GameMonth->f = m_onlineTime.Month;
-        pGameTime->GameYear->f = m_onlineTime.Year;
+        pGameTime->TimeScale->f = m_onlineTime.m_timeModel.TimeScale;
+        pGameTime->GameDay->f = m_onlineTime.m_timeModel.Day;
+        pGameTime->GameMonth->f = m_onlineTime.m_timeModel.Month;
+        pGameTime->GameYear->f = m_onlineTime.m_timeModel.Year;
         pGameTime->GameDaysPassed->f += m_onlineTime.GetDeltaTime(delta);
 
         // time transition in
         if (m_fadeTimer < kTransitionSpeed)
         {
-            pGameTime->GameHour->f = TimeInterpolate(m_offlineTime, m_onlineTime);
+            pGameTime->GameHour->f = TimeInterpolate(m_offlineTime.m_timeModel, m_onlineTime.m_timeModel);
             m_fadeTimer += updateDelta;
         }
         else
-            pGameTime->GameHour->f = m_onlineTime.Time;
+            pGameTime->GameHour->f = m_onlineTime.m_timeModel.Time;
     }
 }

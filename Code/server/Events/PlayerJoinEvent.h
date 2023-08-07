@@ -1,7 +1,8 @@
 #pragma once
 
 #include <Structs/GameId.h>
-#include <Structs/TimeModel.h>
+#include <DateTime.h>
+
 struct Player;
 
 /**
@@ -21,16 +22,16 @@ struct PlayerJoinEvent
     {
     }
 
-    PlayerJoinEvent(Player* apPlayer, GameId aWorldSpaceId, GameId aCellId, TimeModel aTimeModel)
+    PlayerJoinEvent(Player* apPlayer, GameId aWorldSpaceId, GameId aCellId, DateTime aDateTime)
         : pPlayer(apPlayer)
         , WorldSpaceId(aWorldSpaceId)
         , CellId(aCellId)
-        , PlayerTime(aTimeModel)
+        , PlayerTime(aDateTime)
     {
     }
 
     Player* pPlayer;
     GameId WorldSpaceId{};
     GameId CellId{};
-    TimeModel PlayerTime;
+    DateTime PlayerTime;
 };
