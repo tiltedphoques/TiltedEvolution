@@ -1,13 +1,13 @@
 #include <Services/CalendarService.h>
 
-#include <World.h>
-#include <Events/UpdateEvent.h>
 #include <Events/DisconnectedEvent.h>
+#include <Events/UpdateEvent.h>
 #include <Messages/ServerTimeSettings.h>
+#include <World.h>
 
-#include <TimeManager.h>
-#include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
+#include <PlayerCharacter.h>
+#include <TimeManager.h>
 
 constexpr float kTransitionSpeed = 5.f;
 
@@ -19,8 +19,7 @@ bool CalendarService::AllowGameTick() noexcept
 }
 
 CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport)
-    : m_world(aWorld)
-    , m_transport(aTransport)
+    : m_world(aWorld), m_transport(aTransport)
 {
     m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&CalendarService::OnTimeUpdate>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CalendarService::HandleUpdate>(this);
@@ -30,16 +29,29 @@ CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, T
 void CalendarService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
 {
     // disable the game clock
-    m_onlineTime.TimeScale = acMessage.TimeScale;
-    m_onlineTime.Time = acMessage.Time;
     ToggleGameClock(false);
+    m_onlineTime.m_timeModel.TimeScale = acMessage.timeModel.TimeScale;
+    m_onlineTime.m_timeModel.Time = acMessage.timeModel.Time;
+
+    if (m_world.GetServerSettings().SyncPlayerCalendar)
+    {
+        m_onlineTime.m_timeModel.Day = acMessage.timeModel.Day;
+        m_onlineTime.m_timeModel.Month = acMessage.timeModel.Month;
+        m_onlineTime.m_timeModel.Year = acMessage.timeModel.Year;
+    }
+    else
+    {
+        m_onlineTime.m_timeModel.Day = m_offlineTime.m_timeModel.Day;
+        m_onlineTime.m_timeModel.Month = m_offlineTime.m_timeModel.Month;
+        m_onlineTime.m_timeModel.Year = m_offlineTime.m_timeModel.Year;
+    }
 }
 
 void CalendarService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
     // signal a time transition
     m_fadeTimer = 0.f;
-    m_switchToOffline = true;
+    ToggleGameClock(true);
 }
 
 float CalendarService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) const
@@ -60,24 +72,11 @@ float CalendarService::TimeInterpolate(const TimeModel& aFrom, TimeModel& aTo) c
 void CalendarService::ToggleGameClock(bool aEnable)
 {
     auto* pGameTime = TimeData::Get();
-    if (aEnable)
-    {
-        pGameTime->GameDay->i = m_offlineTime.Day;
-        pGameTime->GameMonth->i = m_offlineTime.Month;
-        pGameTime->GameYear->i = m_offlineTime.Year;
-        pGameTime->TimeScale->f = m_offlineTime.TimeScale;
-        pGameTime->GameDaysPassed->f = (m_offlineTime.Time * (1.f / 24.f)) + m_offlineTime.Day;
-        pGameTime->GameHour->f = m_offlineTime.Time;
-        m_switchToOffline = false;
-    }
-    else
-    {
-        m_offlineTime.Day = pGameTime->GameDay->i;
-        m_offlineTime.Month = pGameTime->GameMonth->i;
-        m_offlineTime.Year = pGameTime->GameYear->i;
-        m_offlineTime.Time = pGameTime->GameHour->f;
-        m_offlineTime.TimeScale = pGameTime->TimeScale->f;
-    }
+    m_offlineTime.m_timeModel.Day = pGameTime->GameDay->f;
+    m_offlineTime.m_timeModel.Month = pGameTime->GameMonth->f;
+    m_offlineTime.m_timeModel.Year = pGameTime->GameYear->f;
+    m_offlineTime.m_timeModel.Time = pGameTime->GameHour->f;
+    m_offlineTime.m_timeModel.TimeScale = pGameTime->TimeScale->f;
 
     s_gameClockLocked = !aEnable;
 }
@@ -94,23 +93,6 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
 
         const auto now = m_world.GetTick();
 
-        if (m_switchToOffline)
-        {
-            // time transition out
-            if (m_fadeTimer < kTransitionSpeed)
-            {
-                pGameTime->GameHour->f = TimeInterpolate(m_onlineTime, m_offlineTime);
-                // before we quit here we fire this event
-                if ((m_fadeTimer + updateDelta) > kTransitionSpeed)
-                {
-                    m_fadeTimer += updateDelta;
-                    ToggleGameClock(true);
-                }
-                else
-                    m_fadeTimer += updateDelta;
-            }
-        }
-
         // we got disconnected or the client got ahead of us
         if (now < m_lastTick)
             return;
@@ -119,19 +101,19 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
         m_lastTick = now;
 
         m_onlineTime.Update(delta);
-        pGameTime->GameDay->i = m_onlineTime.Day;
-        pGameTime->GameMonth->i = m_onlineTime.Month;
-        pGameTime->GameYear->i = m_onlineTime.Year;
-        pGameTime->TimeScale->f = m_onlineTime.TimeScale;
-        pGameTime->GameDaysPassed->f = (m_onlineTime.Time * (1.f / 24.f)) + m_onlineTime.Day;
+        pGameTime->TimeScale->f = m_onlineTime.m_timeModel.TimeScale;
+        pGameTime->GameDay->f = m_onlineTime.m_timeModel.Day;
+        pGameTime->GameMonth->f = m_onlineTime.m_timeModel.Month;
+        pGameTime->GameYear->f = m_onlineTime.m_timeModel.Year;
+        pGameTime->GameDaysPassed->f += m_onlineTime.GetDeltaTime(delta);
 
         // time transition in
         if (m_fadeTimer < kTransitionSpeed)
         {
-            pGameTime->GameHour->f = TimeInterpolate(m_offlineTime, m_onlineTime);
+            pGameTime->GameHour->f = TimeInterpolate(m_offlineTime.m_timeModel, m_onlineTime.m_timeModel);
             m_fadeTimer += updateDelta;
         }
         else
-            pGameTime->GameHour->f = m_onlineTime.Time;
+            pGameTime->GameHour->f = m_onlineTime.m_timeModel.Time;
     }
 }

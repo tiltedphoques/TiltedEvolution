@@ -51,7 +51,8 @@ void sendPlayerMessage(const ChatMessageType acType, const String acContent, Pla
     case kLocalChat:
         if (character)
         {
-            GameServer::Get()->SendToPlayersInRange(notifyMessage, *character);
+            if (!GameServer::Get()->SendToPlayersInRange(notifyMessage, *character))
+                spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
         }
         break;
 

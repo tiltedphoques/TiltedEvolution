@@ -54,6 +54,7 @@
 
 // TODO: ft
 #if TP_SKYRIM64
+#include <Combat/CombatController.h>
 #include <Camera/PlayerCamera.h>
 #include <AI/Movement/PlayerControls.h>
 #include <Interface/IMenu.h>
@@ -77,6 +78,9 @@ static void DrawBuildTag()
 
 void __declspec(noinline) DebugService::PlaceActorInWorld() noexcept
 {
+    if (m_actors.size())
+        return;
+
     const auto pPlayerBaseForm = static_cast<TESNPC*>(PlayerCharacter::Get()->baseForm);
 
     auto pActor = Actor::Create(pPlayerBaseForm);
@@ -207,10 +211,11 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            // m_world.GetOverlayService().Reload();
-            auto* pPlayer = PlayerCharacter::Get();
-            spdlog::info("{}", pPlayer->formID);
-            pPlayer->UnEquipAll();
+        #if 0
+            PlaceActorInWorld();
+            Actor* pEnemy = Cast<Actor>(TESForm::GetById(0x29602));
+            pEnemy->pCombatController->SetTarget(m_actors[0]);
+        #endif
         }
     }
     else
@@ -232,6 +237,7 @@ static bool g_enableQuestWindow{false};
 static bool g_enableCellWindow{false};
 static bool g_enableProcessesWindow{false};
 static bool g_enableWeatherWindow{false};
+static bool g_enableCombatWindow{false};
 
 void DebugService::DrawServerView() noexcept
 {
@@ -325,6 +331,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
         ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
         ImGui::MenuItem("Weather", nullptr, &g_enableWeatherWindow);
+        ImGui::MenuItem("Combat", nullptr, &g_enableCombatWindow);
 #endif
 
         ImGui::EndMenu();
@@ -378,6 +385,8 @@ void DebugService::OnDraw() noexcept
         DrawProcessView();
     if (g_enableWeatherWindow)
         DrawWeatherView();
+    if (g_enableCombatWindow)
+        DrawCombatView();
 
     if (m_drawComponentsInWorldSpace)
         DrawComponentDebugView();

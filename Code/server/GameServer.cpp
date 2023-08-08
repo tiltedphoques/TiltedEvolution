@@ -49,6 +49,9 @@ Console::Setting bEnableDeathSystem{"Gameplay:bEnableDeathSystem", "Enables the 
 Console::Setting uTimeScale{
     "Gameplay:uTimeScale",
     "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
+Console::Setting bSyncPlayerCalendar{
+    "Gameplay:bSyncPlayerCalendar",
+    "Syncs up all player calendars to be the same day, month, and year. This uses the date of the player with the furthest ahead date at connection.", false};
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
                                  Console::SettingsFlags::kLocked};
@@ -114,6 +117,12 @@ constexpr char kMopoRecordsMissing[]{
     "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
     "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
+constexpr char kCalendarSyncWarning[]{
+    "Calendar sync is enabled. We generally do not recommend that you use this feature."
+    "Calendar sync can cause the calendar to jump ahead or behind, which might mess up the timing of quests."
+    "If you disable this feature again (which is the default setting), the days will still progress, but the"
+    "exact date will differ slightly between clients (which has no impact on gameplay)."};
+
 static uint16_t GetUserTickRate()
 {
     return bPremiumTickrate ? 60 : 30;
@@ -132,6 +141,7 @@ ServerSettings GetSettings()
     settings.PvpEnabled = bEnablePvp;
     settings.SyncPlayerHomes = bSyncPlayerHomes;
     settings.DeathSystemEnabled = bEnableDeathSystem;
+    settings.SyncPlayerCalendar = bSyncPlayerCalendar;
     return settings;
 }
 
@@ -194,6 +204,9 @@ void GameServer::Initialize()
 {
     if (!CheckMoPo())
         return;
+
+    if (bSyncPlayerCalendar)
+        spdlog::warn(kCalendarSyncWarning);
 
     BindServerCommands();
     m_pWorld->GetScriptService().Initialize(*m_pResources);
@@ -327,12 +340,12 @@ void GameServer::BindServerCommands()
 
     m_commands.RegisterCommand<>("quit", "Stop the server", [&](Console::ArgStack&) { Kill(); });
 
-    m_commands.RegisterCommand<int, int>(
+    m_commands.RegisterCommand<int64_t, int64_t>(
         "SetTime", "Set ingame hour and minute", [&](Console::ArgStack& aStack) {
             auto out = spdlog::get("ConOut");
 
-            auto hour = aStack.Pop<int>();
-            auto minute = aStack.Pop<int>();
+            auto hour = aStack.Pop<int64_t>();
+            auto minute = aStack.Pop<int64_t>();
             auto timescale = m_pWorld->GetCalendarService().GetTimeScale();
 
             bool time_set_successfully = m_pWorld->GetCalendarService().SetTime(hour, minute, timescale);
@@ -344,6 +357,26 @@ void GameServer::BindServerCommands()
             else
             {
                 out->error("Hour must be between 0-23 and minute must be between 0-59");
+            }
+        });
+
+    m_commands.RegisterCommand<int64_t, int64_t, int64_t>(
+        "SetDate", "Set ingame day, month, and year", [&](Console::ArgStack& aStack) {
+            auto out = spdlog::get("ConOut");
+
+            auto day = aStack.Pop<int64_t>();
+            auto month = aStack.Pop<int64_t>();
+            auto year = aStack.Pop<int64_t>();
+
+            bool time_set_successfully = m_pWorld->GetCalendarService().SetDate(day, month, year);
+
+            if (time_set_successfully)
+            {
+                out->info("Time set to {:02}/{:02}:{:02}", month, day, year);
+            }
+            else
+            {
+                out->error("Day must be between 0 and 31, month must be between 0 and 11, and year must be between 0 and 999.");
             }
         });
 }
@@ -546,13 +579,13 @@ void GameServer::SendToPlayers(const ServerMessage& acServerMessage, const Playe
 }
 
 // NOTE: this doesn't check objects in range, only characters in range.
-void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
+bool GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
                                       const Player* apExcludedPlayer) const
 {
     if (!m_pWorld->valid(acOrigin))
     {
         spdlog::error("Entity is invalid: {:X}", World::ToInteger(acOrigin));
-        return;
+        return false;
     }
 
     const auto view = m_pWorld->view<CellIdComponent>();
@@ -561,7 +594,7 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     if (it == view.end())
     {
         spdlog::warn("Cell component not found for entity {:X}", World::ToInteger(acOrigin));
-        return;
+        return false;
     }
 
     const auto& cellComponent = view.get<CellIdComponent>(*it);
@@ -575,6 +608,8 @@ void GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
         if (cellComponent.IsInRange(pPlayer->GetCellComponent(), isDragon) && pPlayer != apExcludedPlayer)
             pPlayer->Send(acServerMessage);
     }
+
+    return true;
 }
 
 void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
@@ -582,7 +617,7 @@ void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyCo
 {
     if (!acPartyComponent.JoinedPartyId.has_value())
     {
-        spdlog::warn("Part does not exist, canceling broadcast.");
+        spdlog::warn("Party does not exist, canceling broadcast.");
         return;
     }
 
@@ -604,7 +639,7 @@ void GameServer::SendToPartyInRange(const ServerMessage& acServerMessage, const 
 {
     if (!acPartyComponent.JoinedPartyId.has_value())
     {
-        spdlog::warn("Part does not exist, canceling broadcast.");
+        spdlog::warn("Party does not exist, canceling broadcast.");
         return;
     }
 
@@ -841,7 +876,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             Send(pPlayer->GetConnectionId(), notify);
         }
 
-        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId));
+        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId, acRequest->PlayerTime));
     }
     /*
         else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())

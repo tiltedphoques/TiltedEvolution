@@ -8,6 +8,8 @@
 #include <Events/InventoryChangeEvent.h>
 #include <Events/LeaveBeastFormEvent.h>
 #include <Events/AddExperienceEvent.h>
+#include <Events/SetWaypointEvent.h>
+#include <Events/RemoveWaypointEvent.h>
 
 #include <World.h>
 
@@ -15,6 +17,7 @@
 #include <Games/ActorExtension.h>
 #include <Games/TES.h>
 #include <Games/References.h>
+#include <Forms/TESWorldSpace.h>
 
 #include <Forms/TESObjectCELL.h>
 
@@ -24,11 +27,15 @@ TP_THIS_FUNCTION(TPickUpObject, char, PlayerCharacter, TESObjectREFR* apObject, 
 TP_THIS_FUNCTION(TSetBeastForm, void, void, void* apUnk1, void* apUnk2, bool aEntering);
 TP_THIS_FUNCTION(TAddSkillExperience, void, PlayerCharacter, int32_t aSkill, float aExperience);
 TP_THIS_FUNCTION(TCalculateExperience, bool, int32_t, float* aFactor, float* aBonus, float* aUnk1, float* aUnk2);
+TP_THIS_FUNCTION(TSetWaypoint, void, PlayerCharacter, NiPoint3* apPosition, TESWorldSpace* apWorldSpace);
+TP_THIS_FUNCTION(TRemoveWaypoint, void, PlayerCharacter);
 
 static TPickUpObject* RealPickUpObject = nullptr;
 static TSetBeastForm* RealSetBeastForm = nullptr;
 static TAddSkillExperience* RealAddSkillExperience = nullptr;
 static TCalculateExperience* RealCalculateExperience = nullptr;
+static TSetWaypoint* RealSetWaypoint = nullptr;
+static TRemoveWaypoint* RealRemoveWaypoint = nullptr;
 
 void PlayerCharacter::SetGodMode(bool aSet) noexcept
 {
@@ -115,6 +122,16 @@ void PlayerCharacter::PayCrimeGoldToAllFactions() noexcept
     }
 }
 
+void PlayerCharacter::SetWaypoint(NiPoint3* apPosition, TESWorldSpace* apWorldSpace) noexcept
+{
+    return TiltedPhoques::ThisCall(RealSetWaypoint, this, apPosition, apWorldSpace);
+}
+
+void PlayerCharacter::RemoveWaypoint() noexcept
+{
+    return TiltedPhoques::ThisCall(RealRemoveWaypoint, this);
+}
+
 char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
 {
     auto& modSystem = World::Get().GetModSystem();
@@ -188,6 +205,25 @@ bool TP_MAKE_THISCALL(HookCalculateExperience, int32_t, float* aFactor, float* a
     return result;
 }
 
+void TP_MAKE_THISCALL(HookSetWaypoint, PlayerCharacter, NiPoint3* apPosition, TESWorldSpace* apWorldSpace)
+{
+    Vector3_NetQuantize position{};
+    position.x = apPosition->x;
+    position.y = apPosition->y;
+    position.z = apPosition->z;
+
+    World::Get().GetRunner().Trigger(SetWaypointEvent(position, apWorldSpace ? apWorldSpace->formID : 0));
+
+    return TiltedPhoques::ThisCall(RealSetWaypoint, apThis, apPosition, apWorldSpace);
+}
+
+void TP_MAKE_THISCALL(HookRemoveWaypoint, PlayerCharacter)
+{
+    World::Get().GetRunner().Trigger(RemoveWaypointEvent());
+
+    return TiltedPhoques::ThisCall(RealRemoveWaypoint, apThis);
+}
+
 static TiltedPhoques::Initializer s_playerCharacterHooks(
     []()
     {
@@ -195,14 +231,20 @@ static TiltedPhoques::Initializer s_playerCharacterHooks(
         POINTER_SKYRIMSE(TSetBeastForm, s_setBeastForm, 55497);
         POINTER_SKYRIMSE(TAddSkillExperience, s_addSkillExperience, 40488);
         POINTER_SKYRIMSE(TCalculateExperience, s_calculateExperience, 27244);
+        POINTER_SKYRIMSE(TSetWaypoint, s_setWaypoint, 40535);
+        POINTER_SKYRIMSE(TRemoveWaypoint, s_removeWaypoint, 40536);
 
         RealPickUpObject = s_pickUpObject.Get();
         RealSetBeastForm = s_setBeastForm.Get();
         RealAddSkillExperience = s_addSkillExperience.Get();
         RealCalculateExperience = s_calculateExperience.Get();
+        RealSetWaypoint = s_setWaypoint.Get();
+        RealRemoveWaypoint = s_removeWaypoint.Get();
 
         TP_HOOK(&RealPickUpObject, HookPickUpObject);
         TP_HOOK(&RealSetBeastForm, HookSetBeastForm);
         TP_HOOK(&RealAddSkillExperience, HookAddSkillExperience);
         TP_HOOK(&RealCalculateExperience, HookCalculateExperience);
+        TP_HOOK(&RealSetWaypoint, HookSetWaypoint);
+        TP_HOOK(&RealRemoveWaypoint, HookRemoveWaypoint);
     });

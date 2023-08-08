@@ -12,9 +12,6 @@
     },
     {
       "path": "./tsconfig.browser.json"
-    },
-    {
-      "path": "./tsconfig.spec.json"
     }
   ]
 }

@@ -119,7 +119,7 @@ struct Actor : TESObjectREFR
     void SetActorValues(const ActorValues& acActorValues) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* acpFaction, int8_t aRank) noexcept;
-    void ForcePosition(const NiPoint3& acPosition) noexcept;
+    void ForcePosition(const NiPoint3& acPosition, bool aUpdate3D) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
     void SetNoBleedoutRecovery(bool aSet) noexcept;
@@ -140,6 +140,7 @@ struct Actor : TESObjectREFR
     void DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apPoint, NiPoint3* apRotate) noexcept;
     void UnequipItem(TESBoundObject* apObject) noexcept;
     void StartCombatEx(Actor* apTarget) noexcept;
+    void SetCombatTargetEx(Actor* apTarget) noexcept;
     void StartCombat(Actor* apTarget) noexcept;
     void StopCombat() noexcept;
 

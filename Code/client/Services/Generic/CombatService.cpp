@@ -117,6 +117,17 @@ void CombatService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMes
     ProjectileLaunchData launchData{};
 #endif
 
+    // Projectile::Launch relies on pParentCell being valid.
+    // TODO: it's possible that more of these values must have a value, should probably check for that in the game code.
+    const uint32_t cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
+    launchData.pParentCell = Cast<TESObjectCELL>(TESForm::GetById(cParentCellId));
+
+    if (!launchData.pParentCell)
+    {
+        spdlog::warn("Cannot launch projectile, invalid parent cell: {:X}", cParentCellId);
+        return;
+    }
+
     launchData.pShooter = Cast<TESObjectREFR>(TESForm::GetById(formIdComponent.Id));
 
     launchData.Origin.x = acMessage.OriginX;
@@ -142,9 +153,6 @@ void CombatService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMes
     launchData.fZAngle = acMessage.ZAngle;
     launchData.fXAngle = acMessage.XAngle;
     launchData.fYAngle = acMessage.YAngle;
-
-    const uint32_t cParentCellId = modSystem.GetGameId(acMessage.ParentCellID);
-    launchData.pParentCell = Cast<TESObjectCELL>(TESForm::GetById(cParentCellId));
 
     const uint32_t cSpellId = modSystem.GetGameId(acMessage.SpellID);
     launchData.pSpell = Cast<MagicItem>(TESForm::GetById(cSpellId));
@@ -217,13 +225,13 @@ void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
 
     m_world.emplace_or_replace<CombatComponent>(*hitteeIt, acEvent.HitterId);
 
-    pHittee->StartCombatEx(pHitter);
+    pHittee->SetCombatTargetEx(pHitter);
 }
 
 void CombatService::RunTargetUpdates(const float acDelta) const noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenUpdates = 20ms;
+    constexpr auto cDelayBetweenUpdates = 200ms;
 
     const auto now = std::chrono::steady_clock::now();
     if (now - lastSendTimePoint < cDelayBetweenUpdates)
@@ -262,8 +270,6 @@ void CombatService::RunTargetUpdates(const float acDelta) const noexcept
             toRemove.push_back(entity);
             continue;
         }
-
-        pActor->StartCombatEx(pTarget);
     }
 
     for (const auto entity : toRemove)

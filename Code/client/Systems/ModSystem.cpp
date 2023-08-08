@@ -29,7 +29,7 @@ bool ModSystem::GetServerModId(const uint32_t aGameId, uint32_t& aModId, uint32_
         if (itor != std::end(m_liteToServer))
         {
             aModId = itor->second;
-            aBaseId = liteId;
+            aBaseId = aGameId & 0x00000FFF;
             return true;
         }
 

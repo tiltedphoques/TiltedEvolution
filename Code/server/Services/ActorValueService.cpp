@@ -42,7 +42,8 @@ void ActorValueService::OnActorValueChanges(const PacketEvent<RequestActorValueC
     notify.Values = acMessage.Packet.Values;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.Id);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
+    if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer))
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }
 
 void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMaxValueChanges>& acMessage) const noexcept
@@ -67,7 +68,8 @@ void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMax
     notify.Values = message.Values;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.Id);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
+    if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer))
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }
 
 void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthChangeBroadcast>& acMessage) const noexcept
@@ -91,7 +93,8 @@ void ActorValueService::OnHealthChangeBroadcast(const PacketEvent<RequestHealthC
     notify.DeltaHealth = message.DeltaHealth;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.Id);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
+    if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer))
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }
 
 void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateChange>& acMessage) const noexcept
@@ -114,5 +117,6 @@ void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateCh
     notify.IsDead = message.IsDead;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.Id);
-    GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer);
+    if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.pPlayer))
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }

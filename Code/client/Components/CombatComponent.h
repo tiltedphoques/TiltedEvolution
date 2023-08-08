@@ -9,5 +9,5 @@ struct CombatComponent
     }
 
     uint32_t TargetFormId;
-    float Timer = 5.0f;
+    float Timer = 3.0f;
 };
