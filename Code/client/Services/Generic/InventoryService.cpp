@@ -179,8 +179,11 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     // There's a bug where double equipping something magically unequips something secretly.
     // TODO: should this be done for armor as well?
     // Also, find out why the client is sending two equip messages in the first place.
+    // TODO: this fix makes it so that weapons and spells are sometimes invisible :/
+    #if 0
     if (!acMessage.Unequip && pActor->GetEquippedWeapon(slotId) == pItem)
         return;
+    #endif
 #endif
 
     auto* pEquipManager = EquipManager::Get();
