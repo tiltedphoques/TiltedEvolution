@@ -22,7 +22,6 @@ enum ClientOpcode : unsigned char
     kActivateRequest,
     kLockChangeRequest,
     kAssignObjectsRequest,
-    kRequestSpawnData,
     kRequestDeathStateChange,
     kShiftGridCellRequest,
     kRequestOwnershipTransfer,

@@ -7,8 +7,6 @@
 #include <Games/ActorExtension.h>
 #include <Forms/TESObjectCELL.h>
 
-#include <Messages/RequestSpawnData.h>
-
 #include <Events/MoveActorEvent.h>
 
 #include <World.h>
@@ -216,20 +214,6 @@ void DebugService::DisplayRemoteComponent(RemoteComponent& aRemoteComponent, con
             {
                 if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
                     World::Get().GetCharacterService().TakeOwnership(acFormId, pRemoteCompoment->Id, acEntity);
-            });
-    }
-
-    if (ImGui::Button("Get spawn data"))
-    {
-        m_world.GetRunner().Queue(
-            [this, acEntity, acFormId]()
-            {
-                if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
-                {
-                    RequestSpawnData request{};
-                    request.Id = pRemoteCompoment->Id;
-                    m_transport.Send(request);
-                }
             });
     }
 }
