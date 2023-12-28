@@ -79,6 +79,7 @@
     "ROOT": {
       "CONNECT": "Connect",
       "DISCONNECT": "Disconnect",
+      "PING_PLAYERS": "Ping players",
       "RECONNECT": "Reconnect",
       "PLAYER_MANAGER": "Player Manager",
       "SETTINGS": "Settings",

@@ -122,4 +122,8 @@ export class RootComponent implements OnInit {
   public reconnect(): void {
     this.client.reconnect();
   }
+
+  public pingPlayers(): void {
+    this.client.pingPlayers();
+  }
 }

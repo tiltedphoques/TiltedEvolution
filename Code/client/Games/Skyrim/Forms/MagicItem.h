@@ -9,9 +9,11 @@
 
 struct MagicItem : TESBoundObject
 {
-    bool IsWardSpell() noexcept;
-    bool IsInvisibilitySpell() noexcept;
-    bool IsHealingSpell() noexcept;
+    bool IsWardSpell() const noexcept;
+    bool IsInvisibilitySpell() const noexcept;
+    bool IsHealingSpell() const noexcept;
+
+    EffectItem* GetEffect(const uint32_t aEffectId) noexcept;
 
     TESFullName fullName;
     BGSKeywordForm keyword;

@@ -210,6 +210,13 @@ export class ClientService implements OnDestroy {
   }
 
   /**
+   * Ping players in the immediate area (lighting them up with a visual effect).
+   */
+  public pingPlayers(): void {
+    skyrimtogether.pingPlayers();
+  }
+
+  /**
    * Launch a party.
    */
   public launchParty(): void {

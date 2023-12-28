@@ -372,16 +372,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
         return;
     }
 
-    EffectItem* pEffect = nullptr;
-
-    for (EffectItem* effect : pSpell->listOfEffects)
-    {
-        if (effect->pEffectSetting->formID == cEffectId)
-        {
-            pEffect = effect;
-            break;
-        }
-    }
+    EffectItem* pEffect = pSpell->GetEffect(cEffectId);
 
     if (!pEffect)
     {
