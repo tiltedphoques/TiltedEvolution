@@ -467,6 +467,7 @@ void MagicService::ApplyQueuedEffects() noexcept
 
 void MagicService::UpdateRevealOtherPlayersEffect() noexcept
 {
+#if TP_SKYRIM64
     if (GetAsyncKeyState(VK_F4) & 0x01)
         m_revealOtherPlayers = !m_revealOtherPlayers;
 
@@ -511,4 +512,5 @@ void MagicService::UpdateRevealOtherPlayersEffect() noexcept
 
         pRemotePlayer->magicTarget.AddTarget(data);
     }
+#endif
 }
