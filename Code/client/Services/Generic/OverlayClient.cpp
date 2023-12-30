@@ -10,9 +10,6 @@
 
 #include <World.h>
 
-#include <Magic/EffectItem.h>
-#include <Games/TES.h>
-
 OverlayClient::OverlayClient(TransportService& aTransport, TiltedPhoques::OverlayRenderHandler* apHandler)
     : TiltedPhoques::OverlayClient(apHandler)
     , m_transport(aTransport)
@@ -45,8 +42,6 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessConnectMessage(eventArgs);
         else if (eventName == "disconnect")
             ProcessDisconnectMessage();
-        else if (eventName == "pingPlayers")
-            ProcessPingPlayersMessage();
         else if (eventName == "sendMessage")
             ProcessChatMessage(eventArgs);
         else if (eventName == "launchParty")
@@ -104,41 +99,6 @@ void OverlayClient::ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs)
 void OverlayClient::ProcessDisconnectMessage()
 {
     World::Get().GetRunner().Queue([]() { World::Get().GetTransport().Close(); });
-}
-
-void OverlayClient::ProcessPingPlayersMessage()
-{
-    World::Get().GetRunner().Queue([]() { 
-        Mod* pSkyrimTogether = ModManager::Get()->GetByName("SkyrimTogether.esp");
-        if (!pSkyrimTogether)
-            return;
-
-        MagicItem* pSpell = Cast<MagicItem>(TESForm::GetById((pSkyrimTogether->standardId << 24) | 0x1825));
-
-        if (!pSpell)
-            return;
-
-        MagicTarget::AddTargetData data{};
-        data.pSpell = pSpell;
-        data.pEffectItem = pSpell->GetEffect((pSkyrimTogether->standardId << 24) | 0x1824);
-        data.fMagnitude = 1.f;
-        data.fUnkFloat1 = 1.f;
-        data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
-
-        auto view = World::Get().view<FormIdComponent, PlayerComponent>();
-        for (const auto entity : view)
-        {
-            auto& formIdComponent = view.get<FormIdComponent>(entity);
-            if (formIdComponent.Id == 0x14)
-                continue;
-
-            auto* pRemotePlayer = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
-            if (!pRemotePlayer)
-                continue;
-
-            pRemotePlayer->magicTarget.AddTarget(data);
-        }
-    });
 }
 
 void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)

@@ -364,11 +364,6 @@ interface SkyrimTogether {
   disconnect(): void;
 
   /**
-   * Ping players in the immediate area.
-   */
-  pingPlayers(): void;
-
-  /**
    * Send message to server.
    */
   sendMessage(type: number, message: string): void;
