@@ -6,7 +6,7 @@ struct BGSKeyword;
 
 struct BGSKeywordForm : BaseFormComponent
 {
-    virtual bool Contains(BGSKeyword* apKeyword);
+    virtual bool Contains(BGSKeyword* apKeyword) const;
     virtual void sub_5();
 
     BGSKeyword** keywords;

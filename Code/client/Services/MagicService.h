@@ -72,6 +72,11 @@ private:
      */
     void ApplyQueuedEffects() noexcept;
 
+    /**
+     * Apply the "reveal players" effect on remote players.
+     */
+    void UpdateRevealOtherPlayersEffect() noexcept;
+
     World& m_world;
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
@@ -82,6 +87,8 @@ private:
      */
     Map<uint32_t, AddTargetRequest> m_queuedEffects;
     Map<uint32_t, NotifyAddTarget> m_queuedRemoteEffects;
+
+    bool m_revealOtherPlayers = false;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;

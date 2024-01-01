@@ -25,6 +25,8 @@
 #include <Forms/SpellItem.h>
 #include <PlayerCharacter.h>
 
+#include <Games/TES.h>
+
 // TODO: these paths are inconsistent
 #if TP_FALLOUT4
 #include <Magic/EffectItem.h>
@@ -52,6 +54,8 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
         return;
 
     ApplyQueuedEffects();
+
+    UpdateRevealOtherPlayersEffect();
 }
 
 void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcept
@@ -372,16 +376,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
         return;
     }
 
-    EffectItem* pEffect = nullptr;
-
-    for (EffectItem* effect : pSpell->listOfEffects)
-    {
-        if (effect->pEffectSetting->formID == cEffectId)
-        {
-            pEffect = effect;
-            break;
-        }
-    }
+    EffectItem* pEffect = pSpell->GetEffect(cEffectId);
 
     if (!pEffect)
     {
@@ -468,4 +463,54 @@ void MagicService::ApplyQueuedEffects() noexcept
 
     for (uint32_t serverId : markedForRemoval)
         m_queuedRemoteEffects.erase(serverId);
+}
+
+void MagicService::UpdateRevealOtherPlayersEffect() noexcept
+{
+#if TP_SKYRIM64
+    if (GetAsyncKeyState(VK_F4) & 0x01)
+        m_revealOtherPlayers = !m_revealOtherPlayers;
+
+    if (!m_revealOtherPlayers)
+        return;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 2s;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    Mod* pSkyrimTogether = ModManager::Get()->GetByName("SkyrimTogether.esp");
+    if (!pSkyrimTogether)
+        return;
+
+    MagicItem* pSpell = Cast<MagicItem>(TESForm::GetById((pSkyrimTogether->standardId << 24) | 0x1825));
+
+    if (!pSpell)
+        return;
+
+    MagicTarget::AddTargetData data{};
+    data.pSpell = pSpell;
+    data.pEffectItem = pSpell->GetEffect((pSkyrimTogether->standardId << 24) | 0x1824);
+    data.fMagnitude = 1.f;
+    data.fUnkFloat1 = 1.f;
+    data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
+
+    auto view = World::Get().view<FormIdComponent, PlayerComponent>();
+    for (const auto entity : view)
+    {
+        auto& formIdComponent = view.get<FormIdComponent>(entity);
+        if (formIdComponent.Id == 0x14)
+            continue;
+
+        auto* pRemotePlayer = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+        if (!pRemotePlayer)
+            continue;
+
+        pRemotePlayer->magicTarget.AddTarget(data);
+    }
+#endif
 }
