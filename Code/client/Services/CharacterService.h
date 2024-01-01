@@ -1,5 +1,6 @@
 #pragma once
 #include "Structs/Inventory.h"
+#include "Structs/ActorData.h"
 
 struct ActorAddedEvent;
 struct ActorRemovedEvent;
@@ -98,6 +99,7 @@ private:
     void DeleteRemoteEntityComponents(entt::entity aEntity) const noexcept;
 
     Actor* CreateCharacterForEntity(entt::entity aEntity) const noexcept;
+    ActorData BuildActorData(Actor* apActor) const noexcept;
 
     void RunLocalUpdates() const noexcept;
     void RunRemoteUpdates() noexcept;

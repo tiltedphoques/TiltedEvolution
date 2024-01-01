@@ -21,11 +21,6 @@ struct InterpolationComponent
         TimePoint& operator=(const TimePoint&) = default;
     };
 
-    InterpolationComponent(std::chrono::steady_clock::time_point aPoint)
-        : Last3DTimePoint(aPoint)
-    {}
-
-    std::chrono::steady_clock::time_point Last3DTimePoint;
     List<TimePoint> TimePoints;
     glm::vec3 Position;
 };

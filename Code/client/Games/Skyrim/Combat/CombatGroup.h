@@ -1,3 +1,5 @@
+#pragma once
+
 #include <AI/AITimer.h>
 #include <Games/Misc/BGSWorldLocation.h>
 

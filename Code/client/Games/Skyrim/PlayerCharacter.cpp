@@ -107,7 +107,7 @@ NiPoint3 PlayerCharacter::RespawnPlayer() noexcept
 void PlayerCharacter::PayCrimeGoldToAllFactions() noexcept
 {
     // Yes, yes, this isn't great, but there's no "pay fines everywhere" function
-    TiltedPhoques::Vector<uint32_t> crimeFactionIds{0x28170, 0x267E3, 0x29DB0, 0x2816D, 0x2816e, 0x2816C, 0x2816B, 0x267EA, 0x2816F, 0x4018279};
+    const uint32_t crimeFactionIds[]{0x28170, 0x267E3, 0x29DB0, 0x2816D, 0x2816e, 0x2816C, 0x2816B, 0x267EA, 0x2816F, 0x4018279};
 
     for (uint32_t crimeFactionId : crimeFactionIds)
     {

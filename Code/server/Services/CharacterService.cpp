@@ -21,7 +21,6 @@
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
 #include <Messages/NotifyRemoveCharacter.h>
-#include <Messages/RequestSpawnData.h>
 #include <Messages/NotifySpawnData.h>
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
@@ -59,7 +58,6 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
     , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<ClientReferencesMoveRequest>>().connect<&CharacterService::OnReferencesMoveRequest>(this))
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
-    , m_spawnDataConnection(aDispatcher.sink<PacketEvent<RequestSpawnData>>().connect<&CharacterService::OnRequestSpawnData>(this))
     , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<&CharacterService::OnMountRequest>(this))
     , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
     , m_requestRespawnConnection(aDispatcher.sink<PacketEvent<RequestRespawn>>().connect<&CharacterService::OnRequestRespawn>(this))
@@ -222,7 +220,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
                 // Transfer ownership if owning player is in the same party as the owner
                 if (std::find(pParty->Members.begin(), pParty->Members.end(), pOwningPlayer) != pParty->Members.end())
                 {
-                    TransferOwnership(acMessage.pPlayer, World::ToInteger(*itor));
+                    TransferOwnership(acMessage.pPlayer, World::ToInteger(*itor), acMessage.Packet.CurrentActorData);
                     isOwner = true;
                 }
             }
@@ -368,7 +366,7 @@ void CharacterService::OnCharacterRemoveEvent(const CharacterRemoveEvent& acEven
 
 void CharacterService::OnOwnershipClaimRequest(const PacketEvent<RequestOwnershipClaim>& acMessage) const noexcept
 {
-    TransferOwnership(acMessage.pPlayer, acMessage.Packet.ServerId);
+    TransferOwnership(acMessage.pPlayer, acMessage.Packet.ServerId, acMessage.Packet.NewActorData);
 }
 
 void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept
@@ -381,42 +379,6 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
         spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 
     GameServer::Get()->GetWorld().GetScriptService().HandleCharacterSpawn(acEvent.Entity);
-}
-
-void CharacterService::OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept
-{
-    auto& message = acMessage.Packet;
-
-    auto view = m_world.view<ActorValuesComponent, InventoryComponent>();
-    auto it = view.find(static_cast<entt::entity>(message.Id));
-
-    if (it != std::end(view))
-    {
-        NotifySpawnData notifySpawnData;
-        notifySpawnData.Id = message.Id;
-
-        const auto* pActorValuesComponent = m_world.try_get<ActorValuesComponent>(*it);
-        if (pActorValuesComponent)
-        {
-            notifySpawnData.InitialActorValues = pActorValuesComponent->CurrentActorValues;
-        }
-
-        const auto* pInventoryComponent = m_world.try_get<InventoryComponent>(*it);
-        if (pInventoryComponent)
-        {
-            notifySpawnData.InitialInventory = pInventoryComponent->Content;
-        }
-
-        notifySpawnData.IsDead = false;
-        const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(*it);
-        if (pCharacterComponent)
-        {
-            notifySpawnData.IsDead = pCharacterComponent->IsDead();
-            notifySpawnData.IsWeaponDrawn = pCharacterComponent->IsWeaponDrawn();
-        }
-
-        acMessage.pPlayer->Send(notifySpawnData);
-    }
 }
 
 void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept
@@ -623,18 +585,18 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.BaseId = FormIdComponent(message.FormId);
     characterComponent.FaceTints = message.FaceTints;
     characterComponent.FactionsContent = message.FactionsContent;
-    characterComponent.SetDead(message.IsDead);
+    characterComponent.SetDead(message.CurrentActorData.IsDead);
     characterComponent.SetPlayer(isPlayer);
-    characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
+    characterComponent.SetWeaponDrawn(message.CurrentActorData.IsWeaponDrawn);
     characterComponent.SetDragon(message.IsDragon);
     characterComponent.SetMount(message.IsMount);
     characterComponent.SetPlayerSummon(message.IsPlayerSummon);
 
     auto& inventoryComponent = m_world.emplace<InventoryComponent>(cEntity);
-    inventoryComponent.Content = message.InventoryContent;
+    inventoryComponent.Content = message.CurrentActorData.InitialInventory;
 
     auto& actorValuesComponent = m_world.emplace<ActorValuesComponent>(cEntity);
-    actorValuesComponent.CurrentActorValues = message.AllActorValues;
+    actorValuesComponent.CurrentActorValues = message.CurrentActorData.InitialActorValues;
 
     spdlog::debug("FormId: {:x}:{:x} - NpcId: {:x}:{:x} assigned to {:x}", gameId.ModId, gameId.BaseId, baseId.ModId, baseId.BaseId, acMessage.pPlayer->GetConnectionId());
 
@@ -672,7 +634,8 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     dispatcher.trigger(CharacterSpawnedEvent(cEntity));
 }
 
-void CharacterService::TransferOwnership(Player* apPlayer, const uint32_t acServerId) const noexcept
+void CharacterService::TransferOwnership(Player* apPlayer, const uint32_t acServerId,
+                                         const ActorData& acActorData) const noexcept
 {
     // const OwnerView<CharacterComponent, CellIdComponent> view(m_world, acMessage.GetSender());
     auto view = m_world.view<OwnerComponent>();
@@ -695,7 +658,70 @@ void CharacterService::TransferOwnership(Player* apPlayer, const uint32_t acServ
     characterOwnerComponent.SetOwner(apPlayer);
     characterOwnerComponent.InvalidOwners.clear();
 
+    BroadcastActorData(apPlayer, *it, acActorData);
+
     spdlog::debug("\tOwnership claimed {:X}", acServerId);
+}
+
+ActorData CharacterService::BuildActorData(const entt::entity acEntity) const noexcept
+{
+    ActorData actorData{};
+
+    const auto* pActorValuesComponent = m_world.try_get<ActorValuesComponent>(acEntity);
+    if (pActorValuesComponent)
+    {
+        actorData.InitialActorValues = pActorValuesComponent->CurrentActorValues;
+    }
+
+    const auto* pInventoryComponent = m_world.try_get<InventoryComponent>(acEntity);
+    if (pInventoryComponent)
+    {
+        actorData.InitialInventory = pInventoryComponent->Content;
+    }
+
+    actorData.IsDead = false;
+    const auto* pCharacterComponent = m_world.try_get<CharacterComponent>(acEntity);
+    if (pCharacterComponent)
+    {
+        actorData.IsDead = pCharacterComponent->IsDead();
+        actorData.IsWeaponDrawn = pCharacterComponent->IsWeaponDrawn();
+    }
+
+    return actorData;
+}
+
+void CharacterService::ApplyActorData(const entt::entity acEntity, const ActorData& acActorData) const noexcept
+{
+    auto* pActorValuesComponent = m_world.try_get<ActorValuesComponent>(acEntity);
+    if (pActorValuesComponent)
+    {
+        pActorValuesComponent->CurrentActorValues = acActorData.InitialActorValues;
+    }
+
+    auto* pInventoryComponent = m_world.try_get<InventoryComponent>(acEntity);
+    if (pInventoryComponent)
+    {
+        pInventoryComponent->Content = acActorData.InitialInventory;
+    }
+
+    auto* pCharacterComponent = m_world.try_get<CharacterComponent>(acEntity);
+    if (pCharacterComponent)
+    {
+        pCharacterComponent->SetDead(acActorData.IsDead);
+        pCharacterComponent->SetWeaponDrawn(acActorData.IsWeaponDrawn);
+    }
+}
+
+void CharacterService::BroadcastActorData(Player* apPlayer, const entt::entity acEntity,
+                                          const ActorData& acActorData) const noexcept
+{
+    ApplyActorData(acEntity, acActorData);
+
+    NotifySpawnData notifySpawnData;
+    notifySpawnData.Id = World::ToInteger(acEntity);
+    notifySpawnData.NewActorData = acActorData;
+
+    GameServer::Get()->SendToPlayersInRange(notifySpawnData, acEntity, apPlayer);
 }
 
 void CharacterService::ProcessFactionsChanges() const noexcept

@@ -510,15 +510,12 @@ uint16_t Actor::GetLevel() const noexcept
     return TiltedPhoques::ThisCall(s_getLevel, this);
 }
 
-void Actor::ForcePosition(const NiPoint3& acPosition, bool aUpdate3D) noexcept
+void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
 {
     ScopedReferencesOverride recursionGuard;
 
     // It just works TM
     SetPosition(acPosition, true);
-
-    if (aUpdate3D && !IsDead())
-        Update3DPosition(true);
 }
 
 void Actor::QueueUpdate() noexcept
@@ -581,7 +578,7 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 
     ModManager::Get()->Spawn(position, rotation, pCell, pWorldSpace, pActor);
 
-    pActor->ForcePosition(position, true);
+    pActor->ForcePosition(position);
 
 #if TP_SKYRIM
     pActor->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
@@ -1074,6 +1071,19 @@ void TP_MAKE_THISCALL(HookAddDeathItems, Actor)
     TiltedPhoques::ThisCall(RealAddDeathItems, apThis);
 }
 
+TP_THIS_FUNCTION(TIsFleeing, bool, Actor);
+static TIsFleeing* RealIsFleeing = nullptr;
+
+bool TP_MAKE_THISCALL(HookIsFleeing, Actor)
+{
+    // TODO: Player or RemotePlayer? Can players be in fleeing mode in skyrim?
+    // TODO: investigate why the flee flag is set at all on remote players sometimes.
+    if (apThis->GetExtension()->IsPlayer())
+        return false;
+    
+    return TiltedPhoques::ThisCall(RealIsFleeing, apThis);
+}
+
 TiltedPhoques::Initializer s_referencesHooks(
     []()
     {
@@ -1119,6 +1129,8 @@ TiltedPhoques::Initializer s_referencesHooks(
         // TODO(ft): verify
         POINTER_FALLOUT4(TAddDeathItems, addDeathItems, 708754);
 
+        POINTER_SKYRIMSE(TIsFleeing, isFleeing, 37577);
+
         RealSetPosition = s_setPosition.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
@@ -1135,6 +1147,10 @@ TiltedPhoques::Initializer s_referencesHooks(
         RealForceWeather = forceWeather.Get();
         RealUpdateWeather = updateWeather.Get();
         RealAddDeathItems = addDeathItems.Get();
+    // TODO: ft
+#if TP_SKYRIM64
+        RealIsFleeing = isFleeing.Get();
+#endif
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);
@@ -1149,4 +1165,5 @@ TiltedPhoques::Initializer s_referencesHooks(
         TP_HOOK(&RealForceWeather, HookForceWeather);
         TP_HOOK(&RealUpdateWeather, HookUpdateWeather);
         TP_HOOK(&RealAddDeathItems, HookAddDeathItems);
+        TP_HOOK(&RealIsFleeing, HookIsFleeing);
     });

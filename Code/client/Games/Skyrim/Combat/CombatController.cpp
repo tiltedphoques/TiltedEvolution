@@ -81,6 +81,7 @@ void CombatController::SetTarget(Actor* apTarget)
 static TiltedPhoques::Initializer s_combatControllerHooks(
     []()
     {
+#if 0
     #if TP_SKYRIM64
         POINTER_SKYRIMSE(TUpdateTarget, s_updateTarget, 33236);
 
@@ -88,5 +89,6 @@ static TiltedPhoques::Initializer s_combatControllerHooks(
 
         TP_HOOK(&RealUpdateTarget, HookUpdateTarget);
     #endif
+#endif
     });
 
