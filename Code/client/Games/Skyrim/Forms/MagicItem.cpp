@@ -18,6 +18,19 @@ bool MagicItem::IsHealingSpell() const noexcept
     return keyword.Contains(pMagicRestoreHealth);
 }
 
+bool MagicItem::IsBuffSpell() const noexcept
+{
+    switch (formID)
+    {
+    case 0x4dee8: // Courage
+    case 0x4deec: // Rally
+    case 0x7e8dd: // Call to Arms
+        return true;
+    default:
+        return false;
+    }
+}
+
 EffectItem* MagicItem::GetEffect(const uint32_t aEffectId) noexcept
 {
     for (EffectItem* pEffect : listOfEffects)

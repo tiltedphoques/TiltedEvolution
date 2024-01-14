@@ -18,7 +18,7 @@ struct AddTargetRequest final : ClientMessage
     bool operator==(const AddTargetRequest& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() && TargetId == acRhs.TargetId && SpellId == acRhs.SpellId &&
-               EffectId == acRhs.EffectId && Magnitude == acRhs.Magnitude &&
+               EffectId == acRhs.EffectId && Magnitude == acRhs.Magnitude && IsDualCasting == acRhs.IsDualCasting &&
                ApplyHealPerkBonus == acRhs.ApplyHealPerkBonus && ApplyStaminaPerkBonus == acRhs.ApplyStaminaPerkBonus;
     }
 
@@ -26,6 +26,7 @@ struct AddTargetRequest final : ClientMessage
     GameId SpellId{};
     GameId EffectId{};
     float Magnitude{};
+    bool IsDualCasting{};
     bool ApplyHealPerkBonus{};
     bool ApplyStaminaPerkBonus{};
 };

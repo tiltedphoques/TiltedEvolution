@@ -94,21 +94,25 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     addTargetEvent.SpellID = arData.pSpell->formID;
     addTargetEvent.EffectID = arData.pEffectItem->pEffectSetting->formID;
     addTargetEvent.Magnitude = arData.fMagnitude;
+    addTargetEvent.IsDualCasting = arData.bDualCast;
 
     if (pTargetActorEx->IsRemotePlayer())
     {
         if (!arData.pCaster)
             return false;
 
-        if (!arData.pSpell->IsHealingSpell())
+        if (!arData.pSpell->IsHealingSpell() && !arData.pSpell->IsBuffSpell())
             return false;
 
         ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
         if (!pCasterExtension->IsLocalPlayer())
             return false;
 
-        addTargetEvent.ApplyHealPerkBonus = arData.pCaster->HasPerk(0x581f8);
-        addTargetEvent.ApplyStaminaPerkBonus = arData.pCaster->HasPerk(0x581f9);
+        if (arData.pSpell->IsHealingSpell())
+        {
+            addTargetEvent.ApplyHealPerkBonus = arData.pCaster->HasPerk(0x581f8);
+            addTargetEvent.ApplyStaminaPerkBonus = arData.pCaster->HasPerk(0x581f9);
+        }
 
         bool result = TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
         if (result)
@@ -121,8 +125,15 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
         if (arData.pCaster)
         {
             ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
-            if (pCasterExtension->IsRemotePlayer() && (!World::Get().GetServerSettings().PvpEnabled || arData.pSpell->IsHealingSpell()))
-                return false;
+            if (pCasterExtension->IsRemotePlayer())
+            {
+                if (!World::Get().GetServerSettings().PvpEnabled)
+                    return false;
+
+                // Heal and buff spells are already synced by the caster.
+                if (arData.pSpell->IsHealingSpell() || arData.pSpell->IsBuffSpell())
+                    return false;
+            }
         }
 
         bool result = TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);

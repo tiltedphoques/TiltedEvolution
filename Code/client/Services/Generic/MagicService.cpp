@@ -339,6 +339,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     }
 
     request.TargetId = serverIdRes.value();
+    request.IsDualCasting = acEvent.IsDualCasting;
     request.ApplyHealPerkBonus = acEvent.ApplyHealPerkBonus;
     request.ApplyStaminaPerkBonus = acEvent.ApplyStaminaPerkBonus;
 
@@ -395,7 +396,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     data.fUnkFloat1 = 1.0f;
 #endif
     data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
-
+    
 #if TP_SKYRIM64
     if (pEffect->IsWerewolfEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
