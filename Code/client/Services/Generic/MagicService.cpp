@@ -339,6 +339,8 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     }
 
     request.TargetId = serverIdRes.value();
+    request.ApplyHealPerkBonus = acEvent.ApplyHealPerkBonus;
+
     m_transport.Send(request);
 
     spdlog::debug("Sending effect sync request");
@@ -406,7 +408,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
         pActor = PlayerCharacter::Get();
 #endif
 
-    pActor->magicTarget.AddTarget(data);
+    pActor->magicTarget.AddTarget(data, acMessage.ApplyHealPerkBonus);
 
     spdlog::debug("Applied remote magic effect");
 }
@@ -510,7 +512,7 @@ void MagicService::UpdateRevealOtherPlayersEffect() noexcept
         if (!pRemotePlayer)
             continue;
 
-        pRemotePlayer->magicTarget.AddTarget(data);
+        pRemotePlayer->magicTarget.AddTarget(data, false);
     }
 #endif
 }

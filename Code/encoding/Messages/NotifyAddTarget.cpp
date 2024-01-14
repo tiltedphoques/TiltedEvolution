@@ -6,6 +6,7 @@ void NotifyAddTarget::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const
     SpellId.Serialize(aWriter);
     EffectId.Serialize(aWriter);
     Serialization::WriteFloat(aWriter, Magnitude);
+    Serialization::WriteBool(aWriter, ApplyHealPerkBonus);
 }
 
 void NotifyAddTarget::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -16,4 +17,5 @@ void NotifyAddTarget::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noe
     SpellId.Deserialize(aReader);
     EffectId.Deserialize(aReader);
     Magnitude = Serialization::ReadFloat(aReader);
+    ApplyHealPerkBonus = Serialization::ReadBool(aReader);
 }

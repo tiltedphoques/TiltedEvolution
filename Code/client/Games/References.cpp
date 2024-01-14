@@ -840,6 +840,28 @@ void Actor::StopCombat() noexcept
     s_pStopCombat(this);
 }
 
+bool Actor::HasPerk(uint32_t aPerkFormId) const noexcept
+{
+    return GetPerkRank(aPerkFormId) != 0;
+}
+
+uint8_t Actor::GetPerkRank(uint32_t aPerkFormId) const noexcept
+{
+#if TP_SKYRIM64
+    BGSPerk* pPerk = Cast<BGSPerk>(TESForm::GetById(aPerkFormId));
+    if (!pPerk)
+        return 0;
+
+    TP_THIS_FUNCTION(TGetPerkRank, uint8_t, const Actor, BGSPerk*);
+    POINTER_SKYRIMSE(TGetPerkRank, getPerkRank, 37698);
+    // TODO(ft)
+
+    return TiltedPhoques::ThisCall(getPerkRank, this, pPerk);
+#else
+    return 0;
+#endif
+}
+
 Sky* Sky::Get() noexcept
 {
     using SkyGet = Sky*(__fastcall)();

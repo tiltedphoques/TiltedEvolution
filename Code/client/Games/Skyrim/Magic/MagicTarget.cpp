@@ -15,21 +15,32 @@
 #include <Games/Overrides.h>
 #include <PlayerCharacter.h>
 
+#include <Effects/ActiveEffect.h>
+
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
 TP_THIS_FUNCTION(TCheckAddEffectTargetData, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
-TP_THIS_FUNCTION(TFindTargets, bool, MagicCaster, float afEffectivenessMult, int32_t* aruiTargetCount, TESBoundObject* apSource, char abLoadCast, char abAdjust);
+TP_THIS_FUNCTION(TFindTargets, bool, MagicCaster, float afEffectivenessMult, int32_t* aruiTargetCount,
+                 TESBoundObject* apSource, char abLoadCast, char abAdjust);
+TP_THIS_FUNCTION(TAdjustForPerks, void, ActiveEffect, Actor* apCaster, MagicTarget* apTarget);
 
 static TAddTarget* RealAddTarget = nullptr;
 static TCheckAddEffectTargetData* RealCheckAddEffectTargetData = nullptr;
 static TFindTargets* RealFindTargets = nullptr;
+static TAdjustForPerks* RealAdjustForPerks = nullptr;
 
 static thread_local bool s_autoSucceedEffectCheck = false;
+static thread_local bool s_applyHealPerkBonus = false;
 
-bool MagicTarget::AddTarget(AddTargetData& arData) noexcept
+bool MagicTarget::AddTarget(AddTargetData& arData, bool aApplyHealPerkBonus) noexcept
 {
     s_autoSucceedEffectCheck = true;
+    s_applyHealPerkBonus = aApplyHealPerkBonus;
+
     bool result = TiltedPhoques::ThisCall(RealAddTarget, this, arData);
+
     s_autoSucceedEffectCheck = false;
+    s_applyHealPerkBonus = false;
+
     return result;
 }
 
@@ -54,7 +65,6 @@ Actor* MagicTarget::GetTargetAsActor()
     return TiltedPhoques::ThisCall(getTargetAsActor, this);
 }
 
-// If you want a detailed flowchart of what's happening here, ask cosi
 bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& arData)
 {
     Actor* pTargetActor = apThis->GetTargetAsActor();
@@ -87,9 +97,10 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
             return false;
 
         ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
-        // TODO(cosideci): should be IsLocal() maybe to account for local npcs healing remote players?
         if (!pCasterExtension->IsLocalPlayer())
             return false;
+
+        addTargetEvent.ApplyHealPerkBonus = arData.pCaster->HasPerk(0x581f8);
 
         bool result = TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
         if (result)
@@ -101,9 +112,8 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     {
         if (arData.pCaster)
         {
-            // TODO: cancel if ishealing, or it gets applied twice?
             ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
-            if (pCasterExtension->IsRemotePlayer() && !World::Get().GetServerSettings().PvpEnabled)
+            if (pCasterExtension->IsRemotePlayer() && (!World::Get().GetServerSettings().PvpEnabled || arData.pSpell->IsHealingSpell()))
                 return false;
         }
 
@@ -157,18 +167,29 @@ bool TP_MAKE_THISCALL(HookFindTargets, MagicCaster, float afEffectivenessMult, i
     return TiltedPhoques::ThisCall(RealFindTargets, apThis, afEffectivenessMult, aruiTargetCount, apSource, abLoadCast, abAdjust);
 }
 
+void TP_MAKE_THISCALL(HookAdjustForPerks, ActiveEffect, Actor* apCaster, MagicTarget* apTarget)
+{
+    TiltedPhoques::ThisCall(RealAdjustForPerks, apThis, apCaster, apTarget);
+
+    if (s_applyHealPerkBonus)
+        apThis->fMagnitude *= 1.5f;
+}
+
 static TiltedPhoques::Initializer s_magicTargetHooks(
     []()
     {
         POINTER_SKYRIMSE(TAddTarget, addTarget, 34526);
         POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 34525);
         POINTER_SKYRIMSE(TFindTargets, findTargets, 34410);
+        POINTER_SKYRIMSE(TAdjustForPerks, adjustForPerks, 34053);
 
         RealAddTarget = addTarget.Get();
         RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
         RealFindTargets = findTargets.Get();
+        RealAdjustForPerks = adjustForPerks.Get();
 
         TP_HOOK(&RealAddTarget, HookAddTarget);
         TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
         TP_HOOK(&RealFindTargets, HookFindTargets);
+        TP_HOOK(&RealAdjustForPerks, HookAdjustForPerks);
     });

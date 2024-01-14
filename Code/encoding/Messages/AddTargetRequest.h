@@ -15,10 +15,11 @@ struct AddTargetRequest final : ClientMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const AddTargetRequest& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && TargetId == acRhs.TargetId && SpellId == acRhs.SpellId && EffectId == acRhs.EffectId && Magnitude == acRhs.Magnitude; }
+    bool operator==(const AddTargetRequest& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && TargetId == acRhs.TargetId && SpellId == acRhs.SpellId && EffectId == acRhs.EffectId && Magnitude == acRhs.Magnitude && ApplyHealPerkBonus == acRhs.ApplyHealPerkBonus; }
 
     uint32_t TargetId{};
     GameId SpellId{};
     GameId EffectId{};
     float Magnitude{};
+    bool ApplyHealPerkBonus{};
 };

@@ -11,4 +11,5 @@ struct AddTargetEvent
     uint32_t SpellID{};
     uint32_t EffectID{};
     float Magnitude{};
+    bool ApplyHealPerkBonus{false};
 };
