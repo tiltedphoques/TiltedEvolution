@@ -18,7 +18,8 @@ struct NotifyAddTarget final : ServerMessage
     bool operator==(const NotifyAddTarget& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() && TargetId == acRhs.TargetId && SpellId == acRhs.SpellId &&
-               EffectId == acRhs.EffectId && Magnitude == acRhs.Magnitude && ApplyHealPerkBonus == acRhs.ApplyHealPerkBonus;
+               EffectId == acRhs.EffectId && Magnitude == acRhs.Magnitude &&
+               ApplyHealPerkBonus == acRhs.ApplyHealPerkBonus && ApplyStaminaPerkBonus == acRhs.ApplyStaminaPerkBonus;
     }
 
     uint32_t TargetId{};
@@ -26,4 +27,5 @@ struct NotifyAddTarget final : ServerMessage
     GameId EffectId{};
     float Magnitude{};
     bool ApplyHealPerkBonus{};
+    bool ApplyStaminaPerkBonus{};
 };

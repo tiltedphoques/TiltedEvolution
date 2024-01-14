@@ -642,7 +642,6 @@ void TP_MAKE_THISCALL(HookApplyActorEffect, ActiveEffect, Actor* apTarget, float
         {
             if (apTarget && apTarget->GetExtension())
             {
-                spdlog::critical("healing {}", aEffectValue);
                 const auto pExTarget = apTarget->GetExtension();
                 if (pExTarget->IsLocal())
                 {

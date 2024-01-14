@@ -22,24 +22,31 @@ TP_THIS_FUNCTION(TCheckAddEffectTargetData, bool, MagicTarget::AddTargetData, vo
 TP_THIS_FUNCTION(TFindTargets, bool, MagicCaster, float afEffectivenessMult, int32_t* aruiTargetCount,
                  TESBoundObject* apSource, char abLoadCast, char abAdjust);
 TP_THIS_FUNCTION(TAdjustForPerks, void, ActiveEffect, Actor* apCaster, MagicTarget* apTarget);
+TP_THIS_FUNCTION(THasPerk, bool, Actor, TESForm* apPerk, void* apUnk1, double* afReturnValue);
+TP_THIS_FUNCTION(TGetPerkRank, uint8_t, Actor, TESForm* apPerk);
 
 static TAddTarget* RealAddTarget = nullptr;
 static TCheckAddEffectTargetData* RealCheckAddEffectTargetData = nullptr;
 static TFindTargets* RealFindTargets = nullptr;
 static TAdjustForPerks* RealAdjustForPerks = nullptr;
+static THasPerk* RealHasPerk = nullptr;
+static TGetPerkRank* RealGetPerkRank = nullptr;
 
 static thread_local bool s_autoSucceedEffectCheck = false;
 static thread_local bool s_applyHealPerkBonus = false;
+static thread_local bool s_applyStaminaPerkBonus = false;
 
-bool MagicTarget::AddTarget(AddTargetData& arData, bool aApplyHealPerkBonus) noexcept
+bool MagicTarget::AddTarget(AddTargetData& arData, bool aApplyHealPerkBonus, bool aApplyStaminaPerkBonus) noexcept
 {
     s_autoSucceedEffectCheck = true;
     s_applyHealPerkBonus = aApplyHealPerkBonus;
+    s_applyStaminaPerkBonus = aApplyStaminaPerkBonus;
 
     bool result = TiltedPhoques::ThisCall(RealAddTarget, this, arData);
 
     s_autoSucceedEffectCheck = false;
     s_applyHealPerkBonus = false;
+    s_applyStaminaPerkBonus = false;
 
     return result;
 }
@@ -101,6 +108,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
             return false;
 
         addTargetEvent.ApplyHealPerkBonus = arData.pCaster->HasPerk(0x581f8);
+        addTargetEvent.ApplyStaminaPerkBonus = arData.pCaster->HasPerk(0x581f9);
 
         bool result = TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
         if (result)
@@ -175,21 +183,48 @@ void TP_MAKE_THISCALL(HookAdjustForPerks, ActiveEffect, Actor* apCaster, MagicTa
         apThis->fMagnitude *= 1.5f;
 }
 
-static TiltedPhoques::Initializer s_magicTargetHooks(
-    []()
+bool TP_MAKE_THISCALL(HookHasPerk, Actor, TESForm* apPerk, void* apUnk1, double* afReturnValue)
+{
+    if (apThis && apThis->GetExtension()->IsRemotePlayer())
     {
-        POINTER_SKYRIMSE(TAddTarget, addTarget, 34526);
-        POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 34525);
-        POINTER_SKYRIMSE(TFindTargets, findTargets, 34410);
-        POINTER_SKYRIMSE(TAdjustForPerks, adjustForPerks, 34053);
+        if (apPerk && apPerk->formID == 0x581f9)
+        {
+            if (s_applyStaminaPerkBonus)
+            {
+                if (afReturnValue)
+                    *afReturnValue = 1.f;
+                return true;
+            }
+        }
+    }
 
-        RealAddTarget = addTarget.Get();
-        RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
-        RealFindTargets = findTargets.Get();
-        RealAdjustForPerks = adjustForPerks.Get();
+    return TiltedPhoques::ThisCall(RealHasPerk, apThis, apPerk, apUnk1, afReturnValue);
+}
 
-        TP_HOOK(&RealAddTarget, HookAddTarget);
-        TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
-        TP_HOOK(&RealFindTargets, HookFindTargets);
-        TP_HOOK(&RealAdjustForPerks, HookAdjustForPerks);
-    });
+uint8_t TP_MAKE_THISCALL(HookGetPerkRank, Actor, TESForm* apPerk)
+{
+    return TiltedPhoques::ThisCall(RealGetPerkRank, apThis, apPerk);
+}
+
+static TiltedPhoques::Initializer s_magicTargetHooks([]() {
+    POINTER_SKYRIMSE(TAddTarget, addTarget, 34526);
+    POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 34525);
+    POINTER_SKYRIMSE(TFindTargets, findTargets, 34410);
+    POINTER_SKYRIMSE(TAdjustForPerks, adjustForPerks, 34053);
+    POINTER_SKYRIMSE(THasPerk, hasPerk, 21622);
+    POINTER_SKYRIMSE(TGetPerkRank, getPerkRank, 37698);
+
+    RealAddTarget = addTarget.Get();
+    RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
+    RealFindTargets = findTargets.Get();
+    RealAdjustForPerks = adjustForPerks.Get();
+    RealHasPerk = hasPerk.Get();
+    RealGetPerkRank = getPerkRank.Get();
+
+    TP_HOOK(&RealAddTarget, HookAddTarget);
+    TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
+    TP_HOOK(&RealFindTargets, HookFindTargets);
+    TP_HOOK(&RealAdjustForPerks, HookAdjustForPerks);
+    TP_HOOK(&RealHasPerk, HookHasPerk);
+    //TP_HOOK(&RealGetPerkRank, HookGetPerkRank);
+});
