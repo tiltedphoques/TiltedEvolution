@@ -349,6 +349,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 #endif
 }
 
+// todo: ft
 void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
@@ -409,11 +410,11 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     // This hack is here because slow time seems to be twice as slow when cast by an npc
     if (pEffect->IsSlowEffect())
         pActor = PlayerCharacter::Get();
-#endif
 
     pActor->magicTarget.AddTarget(data, acMessage.ApplyHealPerkBonus, acMessage.ApplyStaminaPerkBonus);
 
     spdlog::debug("Applied remote magic effect");
+#endif
 }
 
 void MagicService::ApplyQueuedEffects() noexcept
