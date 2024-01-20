@@ -109,6 +109,8 @@ struct Actor : TESObjectREFR
     [[nodiscard]] bool IsDead() const noexcept;
     [[nodiscard]] bool IsInCombat() const noexcept;
     [[nodiscard]] Actor* GetCombatTarget() const noexcept;
+    [[nodiscard]] bool HasPerk(uint32_t aPerkFormId) const noexcept;
+    [[nodiscard]] uint8_t GetPerkRank(uint32_t aPerkFormId) const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
