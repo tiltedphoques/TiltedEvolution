@@ -11,17 +11,14 @@ void AssignCharacterRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     Rotation.Serialize(aWriter);
     aWriter.WriteBits(ChangeFlags, 32);
     Serialization::WriteString(aWriter, AppearanceBuffer);
-    InventoryContent.Serialize(aWriter);
     FactionsContent.Serialize(aWriter);
     LatestAction.GenerateDifferential(ActionEvent{}, aWriter);
     QuestContent.Serialize(aWriter);
     FaceTints.Serialize(aWriter);
-    AllActorValues.Serialize(aWriter);
-    Serialization::WriteBool(aWriter, IsDead);
-    Serialization::WriteBool(aWriter, IsWeaponDrawn);
     Serialization::WriteBool(aWriter, IsDragon);
     Serialization::WriteBool(aWriter, IsMount);
     Serialization::WriteBool(aWriter, IsPlayerSummon);
+    CurrentActorData.Serialize(aWriter);
 }
 
 void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -41,8 +38,6 @@ void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     ChangeFlags = dest & 0xFFFFFFFF;
 
     AppearanceBuffer = Serialization::ReadString(aReader);
-    InventoryContent = {};
-    InventoryContent.Deserialize(aReader);
 
     FactionsContent = {};
     FactionsContent.Deserialize(aReader);
@@ -52,11 +47,10 @@ void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
 
     QuestContent.Deserialize(aReader);
     FaceTints.Deserialize(aReader);
-    AllActorValues.Deserialize(aReader);
 
-    IsDead = Serialization::ReadBool(aReader);
-    IsWeaponDrawn = Serialization::ReadBool(aReader);
     IsDragon = Serialization::ReadBool(aReader);
     IsMount = Serialization::ReadBool(aReader);
     IsPlayerSummon = Serialization::ReadBool(aReader);
+
+    CurrentActorData.Deserialize(aReader);
 }

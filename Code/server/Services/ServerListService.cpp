@@ -58,18 +58,21 @@ void ServerListService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 
 void ServerListService::Announce() noexcept
 {
-    auto* pServer = GameServer::Get();
-    const auto& cInfo = pServer->GetInfo();
-    auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
+    std::thread([&]() {
+        auto* pServer = GameServer::Get();
+        auto pc = static_cast<uint16_t>(m_world.GetPlayerManager().Count());
 
-    if (bAnnounceServer)
-        m_flags |= kIsPublic;
-    if (GameServer::Get()->IsPasswordProtected())
-        m_flags |= kHasPassword;
+        if (bAnnounceServer)
+            m_flags |= kIsPublic;
+        if (pServer->IsPasswordProtected())
+            m_flags |= kHasPassword;
 
-    auto f = std::async(std::launch::async, PostAnnouncement, cInfo.name, cInfo.desc, cInfo.icon_url,
-                        pServer->GetPort(), cInfo.tick_rate, pc, uMaxPlayerCount.value_as<uint16_t>(), cInfo.tagList,
-                        bAnnounceServer, GameServer::Get()->IsPasswordProtected(), m_flags);
+        const auto& cInfo = pServer->GetInfo();
+
+        PostAnnouncement(cInfo.name, cInfo.desc, cInfo.icon_url, pServer->GetPort(), cInfo.tick_rate, pc,
+                         uMaxPlayerCount.value_as<uint16_t>(), cInfo.tagList, bAnnounceServer,
+                         pServer->IsPasswordProtected(), m_flags);
+    }).detach();
 }
 
 void ServerListService::PostAnnouncement(String acName, String acDesc, String acIconUrl, uint16_t aPort, uint16_t aTick,

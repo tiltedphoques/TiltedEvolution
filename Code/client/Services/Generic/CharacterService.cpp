@@ -44,7 +44,6 @@
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
 #include <Messages/NotifyRemoveCharacter.h>
-#include <Messages/RequestSpawnData.h>
 #include <Messages/NotifySpawnData.h>
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
@@ -152,9 +151,9 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
     m_world.emplace_or_replace<LocalAnimationComponent>(acEntity);
     DeleteRemoteEntityComponents(acEntity);
 
-    // TODO(cosideci): send current local data of actor with it(?)
     RequestOwnershipClaim request;
     request.ServerId = acServerId;
+    request.NewActorData = BuildActorData(pActor);
 
     m_transport.Send(request);
 
@@ -308,29 +307,6 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         return;
     }
 
-    // This code path triggers when the character has been spawned through CharacterSpawnRequest
-    // TODO(cosideci): since I check for WaitingForAssignmentComponent now, this path shouldn't ever trigger
-    if (m_world.any_of<LocalComponent, RemoteComponent>(cEntity))
-    {
-        Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent->Id));
-
-        if (!pActor)
-        {
-            spdlog::error(__FUNCTION__ ": could not find actor for already owned entity, form id: {:X}", formIdComponent->Id);
-            return;
-        }
-
-        if (pActor->IsDead() != acMessage.IsDead)
-            acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
-
-        if (pActor->actorState.IsWeaponDrawn() != acMessage.IsWeaponDrawn)
-            m_weaponDrawUpdates[formIdComponent->Id] = {acMessage.IsWeaponDrawn};
-
-        spdlog::critical("Applied updates on assignment response, form id: {:X}", formIdComponent->Id);
-
-        return;
-    }
-
     Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent->Id));
     if (!pActor)
     {
@@ -352,9 +328,6 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         m_world.emplace_or_replace<LocalAnimationComponent>(cEntity);
 
         pActor->GetExtension()->SetRemote(false);
-
-        // TODO: apply those actor values and inventory stuff here too
-        // or, alternatively, update the values remotely, broadcast them
     }
     else
     {
@@ -527,10 +500,10 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
 
     if (auto* pWaitingFor3D = m_world.try_get<WaitingFor3D>(*itor))
     {
-        pWaitingFor3D->SpawnRequest.InitialActorValues = acMessage.InitialActorValues;
-        pWaitingFor3D->SpawnRequest.InventoryContent = acMessage.InitialInventory;
-        pWaitingFor3D->SpawnRequest.IsDead = acMessage.IsDead;
-        pWaitingFor3D->SpawnRequest.IsWeaponDrawn = acMessage.IsWeaponDrawn;
+        pWaitingFor3D->SpawnRequest.InitialActorValues = acMessage.NewActorData.InitialActorValues;
+        pWaitingFor3D->SpawnRequest.InventoryContent = acMessage.NewActorData.InitialInventory;
+        pWaitingFor3D->SpawnRequest.IsDead = acMessage.NewActorData.IsDead;
+        pWaitingFor3D->SpawnRequest.IsWeaponDrawn = acMessage.NewActorData.IsWeaponDrawn;
     }
 
     auto& formIdComponent = view.get<FormIdComponent>(*itor);
@@ -539,12 +512,12 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
     if (!pActor)
         return;
 
-    pActor->SetActorValues(acMessage.InitialActorValues);
-    pActor->SetActorInventory(acMessage.InitialInventory);
-    m_weaponDrawUpdates[pActor->formID] = {acMessage.IsWeaponDrawn};
+    pActor->SetActorValues(acMessage.NewActorData.InitialActorValues);
+    pActor->SetActorInventory(acMessage.NewActorData.InitialInventory);
+    m_weaponDrawUpdates[pActor->formID] = {acMessage.NewActorData.IsWeaponDrawn};
 
-    if (pActor->IsDead() != acMessage.IsDead)
-        acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+    if (pActor->IsDead() != acMessage.NewActorData.IsDead)
+        acMessage.NewActorData.IsDead ? pActor->Kill() : pActor->Respawn();
 
     spdlog::info("Applied remote spawn data, actor form id: {:X}", pActor->formID);
 }
@@ -1022,10 +995,6 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
 
             spdlog::info("Relinquished control of actor {:X} with server id {:X}", pActor->formID, acMessage.ServerId);
 
-            RequestSpawnData request{};
-            request.Id = serverId;
-            m_transport.Send(request);
-
             return;
         }
     }
@@ -1241,15 +1210,13 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
         questLog.resize(std::distance(questLog.begin(), ip));
     }
 
-    message.InventoryContent = pActor->GetActorInventory();
+    message.CurrentActorData = BuildActorData(pActor);
+
     message.FactionsContent = pActor->GetFactions();
-    message.AllActorValues = pActor->GetEssentialActorValues();
-    message.IsDead = pActor->IsDead();
     // TODO: ft, fallout probably uses skycells for those choppers
 #if TP_SKYRIM64
     message.IsDragon = pActor->IsDragon();
 #endif
-    message.IsWeaponDrawn = pActor->actorState.IsWeaponFullyDrawn();
     message.IsMount = pActor->IsMount();
 
 #if TP_SKYRIM64
@@ -1431,6 +1398,17 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
     spdlog::info("Spawned character for entity, server id: {:X}", remoteComponent.Id);
 
     return pActor;
+}
+
+ActorData CharacterService::BuildActorData(Actor* apActor) const noexcept
+{
+    ActorData actorData{};
+    actorData.InitialActorValues = apActor->GetEssentialActorValues();
+    actorData.InitialInventory = apActor->GetActorInventory();
+    actorData.IsDead = apActor->IsDead();
+    actorData.IsWeaponDrawn = apActor->actorState.IsWeaponFullyDrawn();
+
+    return actorData;
 }
 
 void CharacterService::RunLocalUpdates() const noexcept

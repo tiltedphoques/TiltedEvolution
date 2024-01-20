@@ -203,6 +203,8 @@ struct Actor : TESObjectREFR
     [[nodiscard]] bool IsPlayerSummon() const noexcept;
     [[nodiscard]] bool IsInCombat() const noexcept;
     [[nodiscard]] Actor* GetCombatTarget() const noexcept;
+    [[nodiscard]] bool HasPerk(uint32_t aPerkFormId) const noexcept;
+    [[nodiscard]] uint8_t GetPerkRank(uint32_t aPerkFormId) const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
@@ -213,7 +215,7 @@ struct Actor : TESObjectREFR
     void SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept;
     void SetFactions(const Factions& acFactions) noexcept;
     void SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept;
-    void ForcePosition(const NiPoint3& acPosition, bool aUpdate3D) noexcept;
+    void ForcePosition(const NiPoint3& acPosition) noexcept;
     void SetWeaponDrawnEx(bool aDraw) noexcept;
     void SetPackage(TESPackage* apPackage) noexcept;
     void SetActorInventory(const Inventory& aInventory) noexcept;

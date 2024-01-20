@@ -211,11 +211,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-        #if 0
             PlaceActorInWorld();
-            Actor* pEnemy = Cast<Actor>(TESForm::GetById(0x29602));
-            pEnemy->pCombatController->SetTarget(m_actors[0]);
-        #endif
         }
     }
     else
@@ -280,6 +276,23 @@ void DebugService::OnDraw() noexcept
         {
             auto* pPlayer = PlayerCharacter::Get();
             pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
+        }
+
+        if (ImGui::Button("Stop all combat"))
+        {
+            auto* pPlayer = PlayerCharacter::Get();
+            pPlayer->PayCrimeGoldToAllFactions();
+
+            ProcessLists* const pProcessLists = ProcessLists::Get();
+            if (pProcessLists)
+            {
+                for (uint32_t i = 0; i < pProcessLists->highActorHandleArray.length; ++i)
+                {
+                    Actor* const pRefr = Cast<Actor>(TESObjectREFR::GetByHandle(pProcessLists->highActorHandleArray[i]));
+                    if (pRefr && pRefr->GetNiNode())
+                        pRefr->StopCombat();
+                }
+            }
         }
 #endif
         ImGui::EndMenu();

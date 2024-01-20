@@ -15,10 +15,18 @@ struct NotifyAddTarget final : ServerMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifyAddTarget& acRhs) const noexcept { return TargetId == acRhs.TargetId && SpellId == acRhs.SpellId && EffectId == acRhs.EffectId && Magnitude == acRhs.Magnitude && GetOpcode() == acRhs.GetOpcode(); }
+    bool operator==(const NotifyAddTarget& acRhs) const noexcept
+    {
+        return GetOpcode() == acRhs.GetOpcode() && TargetId == acRhs.TargetId && SpellId == acRhs.SpellId &&
+               EffectId == acRhs.EffectId && Magnitude == acRhs.Magnitude && IsDualCasting == acRhs.IsDualCasting &&
+               ApplyHealPerkBonus == acRhs.ApplyHealPerkBonus && ApplyStaminaPerkBonus == acRhs.ApplyStaminaPerkBonus;
+    }
 
     uint32_t TargetId{};
     GameId SpellId{};
     GameId EffectId{};
     float Magnitude{};
+    bool IsDualCasting{};
+    bool ApplyHealPerkBonus{};
+    bool ApplyStaminaPerkBonus{};
 };

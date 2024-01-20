@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Events/PacketEvent.h>
+#include <Structs/ActorData.h>
 
 struct UpdateEvent;
 struct CharacterInteriorCellChangeEvent;
@@ -10,7 +11,6 @@ struct AssignCharacterRequest;
 struct CharacterSpawnRequest;
 struct ClientReferencesMoveRequest;
 struct RequestFactionsChanges;
-struct RequestSpawnData;
 struct GridCellCoords;
 struct RequestOwnershipTransfer;
 struct CharacterRemoveEvent;
@@ -48,7 +48,6 @@ protected:
     void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept;
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
     void OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept;
-    void OnRequestSpawnData(const PacketEvent<RequestSpawnData>& acMessage) const noexcept;
     void OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept;
     void OnNewPackageRequest(const PacketEvent<NewPackageRequest>& acMessage) const noexcept;
     void OnRequestRespawn(const PacketEvent<RequestRespawn>& acMessage) const noexcept;
@@ -57,7 +56,10 @@ protected:
     void OnSubtitleRequest(const PacketEvent<SubtitleRequest>& acMessage) const noexcept;
 
     void CreateCharacter(const PacketEvent<AssignCharacterRequest>& acMessage) const noexcept;
-    void TransferOwnership(Player* apPlayer, const uint32_t acServerId) const noexcept;
+    void TransferOwnership(Player* apPlayer, const uint32_t acServerId, const ActorData& acActorData) const noexcept;
+    ActorData BuildActorData(const entt::entity acEntity) const noexcept;
+    void ApplyActorData(const entt::entity acEntity, const ActorData& acActorData) const noexcept;
+    void BroadcastActorData(Player* apPlayer, const entt::entity acEntity, const ActorData& acActorData) const noexcept;
 
     void ProcessFactionsChanges() const noexcept;
     void ProcessMovementChanges() const noexcept;
@@ -76,7 +78,6 @@ private:
     entt::scoped_connection m_characterSpawnedConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_factionsChangesConnection;
-    entt::scoped_connection m_spawnDataConnection;
     entt::scoped_connection m_mountConnection;
     entt::scoped_connection m_newPackageConnection;
     entt::scoped_connection m_requestRespawnConnection;

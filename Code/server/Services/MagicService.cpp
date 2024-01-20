@@ -57,6 +57,9 @@ void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMes
     notify.SpellId = message.SpellId;
     notify.EffectId = message.EffectId;
     notify.Magnitude = message.Magnitude;
+    notify.IsDualCasting = message.IsDualCasting;
+    notify.ApplyHealPerkBonus = message.ApplyHealPerkBonus;
+    notify.ApplyStaminaPerkBonus = message.ApplyStaminaPerkBonus;
 
     const auto entity = static_cast<entt::entity>(message.TargetId);
     if (!GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender()))

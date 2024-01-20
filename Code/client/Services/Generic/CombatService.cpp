@@ -193,6 +193,7 @@ void CombatService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMes
 
 void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
 {
+#if 0
     if (!m_transport.IsConnected())
         return;
 
@@ -226,10 +227,12 @@ void CombatService::OnHitEvent(const HitEvent& acEvent) const noexcept
     m_world.emplace_or_replace<CombatComponent>(*hitteeIt, acEvent.HitterId);
 
     pHittee->SetCombatTargetEx(pHitter);
+#endif
 }
 
 void CombatService::RunTargetUpdates(const float acDelta) const noexcept
 {
+#if 0
     static std::chrono::steady_clock::time_point lastSendTimePoint;
     constexpr auto cDelayBetweenUpdates = 200ms;
 
@@ -274,4 +277,5 @@ void CombatService::RunTargetUpdates(const float acDelta) const noexcept
 
     for (const auto entity : toRemove)
         m_world.remove<CombatComponent>(entity);
+#endif
 }
