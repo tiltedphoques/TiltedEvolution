@@ -39,6 +39,8 @@
 #include <Services/DebugService.h>
 #include <World.h>
 
+std::mutex mutex_lock;
+
 #if TP_SKYRIM64
 #include <Combat/CombatController.h>
 #include <AI/AITimer.h>
@@ -219,6 +221,14 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
             auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
+            // Modded behavior check if descriptor wasn't found
+            extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager * pManager, Actor * pActor);
+            if (!pDescriptor)
+            {
+                std::lock_guard guard(mutex_lock);
+                pDescriptor = BehaviorVarPatch(pManager, pActor);
+            }
+
             if (!pDescriptor)
                 return;
 
@@ -337,6 +347,14 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey();
 
             auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
+
+            // Modded behavior check if descriptor wasn't found
+            extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager * pManager, Actor * pActor);
+            if (!pDescriptor)
+            {
+                std::lock_guard guard(mutex_lock);
+                pDescriptor = BehaviorVarPatch(pManager, pActor);
+            }
 
             if (!pDescriptor)
                 return;

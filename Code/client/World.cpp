@@ -25,6 +25,7 @@
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
 
+// MOD BEHAVIORS: add modded behaviors
 #include <ModCompat/BehaviorVar.h>   
 
 World::World()
@@ -56,6 +57,7 @@ World::World()
     ctx().emplace<MapService>(*this, m_dispatcher, m_transport);
 
     BehaviorVar::Get()->Init();
+    // MOD BEHAVIORS: add modded behaviors
 }
 
 World::~World() = default;
