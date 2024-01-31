@@ -5,7 +5,23 @@ Subsequent commits are the efforts of rfortier (Ujave on Discord) and MostExcell
 
 Sometimes animations still don't sync, restarting game+server or rerunning Nemesis and syncing the output with your friends can fix it in most cases.
 
-Works only with Skyrim Version 1.6.640.0 and you can only join servers running this build of STR!
+Works only with Skyrim Version 1.6.640.0 and you can only join servers running this build of STR. It might work with the latest Skyrim and the correct address library, but it has barely been tested.
+And the STR team has not released 1.6 yet.
+
+This is a continuation of Edho08's original work, later updated by Spvvd and Ragley. This version by RFortier and MostExcellent addeds these goals:
+* Pure feature branch to make it easily rebaseable. 
+* Minimal intrusion in the base code.
+* Feature is conditionally compiled. Enabled by a single commit in this history which will show the one line to change to turn it off.
+* Tries to remove as much of the complexity for modders as possible. To mod a behavior you don't need to know any your new hash of your modded behavior, the game calculates them.
+* It's to your advantage to know the _original game behavior hash_ you are moddifying, though; if you do, you only need to list the behavior variables your mod needs, 
+the rest that the game devs selected will be picked up automatically for you. This helps give your mod STR version-independence, and more importantly means combining
+your mod with others will work.
+
+# TODO
+* Currently, BehaviorVar.cpp works, but it's blobby; when I get some time I'll simplify it.
+* Build up the fomod for a proper mod installer again, and document the simplified behaviorvar support.
+
+
 
 # Tilted Online
 ![Build status](https://github.com/tiltedphoques/TiltedEvolution/workflows/Build%20windows/badge.svg?branch=master) [![Build linux](https://github.com/tiltedphoques/TiltedEvolution/actions/workflows/linux.yml/badge.svg)](https://github.com/tiltedphoques/TiltedEvolution/actions/workflows/linux.yml)  [![Discord](https://img.shields.io/discord/247835175860305931.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/skyrimtogether)

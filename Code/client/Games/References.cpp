@@ -39,7 +39,6 @@
 #include <Services/DebugService.h>
 #include <World.h>
 
-std::mutex mutex_lock;
 
 #if TP_SKYRIM64
 #include <Combat/CombatController.h>
@@ -50,6 +49,10 @@ std::mutex mutex_lock;
 #if TP_FALLOUT4
 #include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
 #endif
+
+#ifdef MODDED_BEHAVIOR_COMPATIBILITY
+extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* pManager, Actor* pActor);
+#endif MODDED_BEHAVIOR_COMPATIBILITY
 
 using ScopedReferencesOverride = ScopedOverride<TESObjectREFR>;
 thread_local uint32_t ScopedReferencesOverride::s_refCount = 0;
@@ -221,13 +224,12 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
             auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
+#ifdef MODDED_BEHAVIOR_COMPATIBILITY
             // Modded behavior check if descriptor wasn't found
             extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager * pManager, Actor * pActor);
             if (!pDescriptor)
-            {
-                std::lock_guard guard(mutex_lock);
                 pDescriptor = BehaviorVarPatch(pManager, pActor);
-            }
+#endif MODDED_BEHAVIOR_COMPATIBILITY
 
             if (!pDescriptor)
                 return;
@@ -348,13 +350,11 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
 
             auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
+#ifdef MODDED_BEHAVIOR_COMPATIBILITY
             // Modded behavior check if descriptor wasn't found
-            extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager * pManager, Actor * pActor);
             if (!pDescriptor)
-            {
-                std::lock_guard guard(mutex_lock);
                 pDescriptor = BehaviorVarPatch(pManager, pActor);
-            }
+#endif MODDED_BEHAVIOR_COMPATIBILITY
 
             if (!pDescriptor)
                 return;

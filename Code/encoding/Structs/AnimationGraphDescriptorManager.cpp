@@ -21,6 +21,7 @@ const TiltedPhoques::Map<uint64_t, AnimationGraphDescriptor> AnimationGraphDescr
     return m_descriptors;
 }
 
+#ifdef MODDED_BEHAVIOR_KEEP_UNUSED
 void AnimationGraphDescriptorManager::UpdateKey(uint64_t aKey, uint64_t newKey) noexcept
 {
     auto it = m_descriptors.find(aKey);
@@ -40,6 +41,7 @@ void AnimationGraphDescriptorManager::Update(uint64_t aKey, uint64_t newKey, Ani
         m_descriptors.erase(it);
     }
 }
+#endif
 
 AnimationGraphDescriptorManager::Builder::Builder(AnimationGraphDescriptorManager& aManager, uint64_t aKey, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
 {
@@ -53,3 +55,11 @@ void AnimationGraphDescriptorManager::Register(uint64_t aKey, AnimationGraphDesc
 
     m_descriptors[aKey] = std::move(aAnimationGraphDescriptor);
 }
+
+#ifdef MODDED_BEHAVIOR_KEEP_UNUSED
+void AnimationGraphDescriptorManager::ReRegister(uint64_t aKey,
+                                                 AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
+{
+    m_descriptors[aKey] = std::move(aAnimationGraphDescriptor);
+}
+#endif

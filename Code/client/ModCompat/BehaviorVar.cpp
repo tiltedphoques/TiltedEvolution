@@ -1,12 +1,23 @@
 
+#ifdef MODDED_BEHAVIOR_COMPATIBILITY
+
 #include <BSAnimationGraphManager.h>
 #include <Games/ActorExtension.h>
+#include <ModCompat/BehaviorVar.h>
 
-#if 0
-#include<Havok / BShkbHkxDB.h>
+#if TP_SKYRIM64
+#include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
+#include <Camera/TESCamera.h>       // Camera 1st person is only in Skyrim?
+#include <Camera/PlayerCamera.h>
 #endif
 
-#include <ModCompat/BehaviorVar.h>
+#include <mutex>
+std::mutex mutex_lock;
+
+// How long we failList a behavior hash that can't be translated.
+// See explanation in BehaviorVar::Patch
+using namespace std::literals;
+const std::chrono::steady_clock::duration FAILLIST_DURATION(5min);
 
 BehaviorVar* BehaviorVar::single = nullptr;
 BehaviorVar* BehaviorVar::Get()
@@ -16,6 +27,8 @@ BehaviorVar* BehaviorVar::Get()
     return BehaviorVar::single;
 }
 
+// A simple function can be declared, caller file doesn't have to include our 
+// class/struct header.
 const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* apManager, Actor* apActor)
 {
     return BehaviorVar::Get()->Patch(apManager, apActor);
@@ -23,27 +36,62 @@ const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* apMana
 
 const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apManager, Actor* apActor)
 {
-    // Make sure this isn't called so many times we need to filter out "never works" cases.
-    invocations++;
-    
+    // Serialize, Actors are multi-threaded. Might not be strictly necessary, I think we're on
+    // the main game loop, but if so it won't hurt anything.
+    std::lock_guard guard(mutex_lock);
+
     // Check if the animation descriptor has already been built.
     uint32_t hexFormID = apActor->formID;
     auto pExtendedActor = apActor->GetExtension();
     auto hash = pExtendedActor->GraphDescriptorHash;
     const AnimationGraphDescriptor* pGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
 
+#if TP_SKYRIM64
+    // If it is the player-character AND they are in 1st person, we don't have the data to mod them;
+    // Used the base game animation graphs until a Master Behavior actor enters the room. Could be an NPC,
+    // but will always happen no later than when the 2nd person joins the server and room.
+    // Remote players are ALWAYS in 3rd person by definition
+    if (hexFormID == 0x14 && PlayerCamera::Get()->IsFirstPerson())
+    {
+        hash   = AnimationGraphDescriptor_Master_Behavior::m_key;
+        pGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
+    }
+#endif
+
     // If we found the descriptor we're done.
     if (pGraph)
         return pGraph;
-    spdlog::info("Patch: actor with formID {:x} with hash of {} has modded behavior", hexFormID, hash);
+    
+    // If BehaviorVar replacement fails, the hash is failListed for a period of time.
+    // This handles a number of special cases for us. Many behaviors are not synced; the
+    // game just ignores them and let's the multiple clients each handle it.
+    // Examples are the "Root" behavior (not synced as a behavior, but handled),
+    // or any number of lower-priority actors such as Wisps (location is always synced,
+    // but otherwise behavior sync not needed).
+    //
+    // FailListed for minutes to avoid performance hit of constantly checking for
+    // modded behavior. Only failListed for minutes to occasionally get log messages
+    // so we can think about fixing it. Or the case of dynamic behavior and behavior
+    // signature changes that might work later (yes, mods like that exist)
+    if (failListed(hash))
+        return nullptr;
+
+    // Up to here the routine is pretty cheap, and WILL be called a bunch of times
+    // if the only humanoid Actor is the Dragonborn/player in 1st person.
+    // With that case filtered out, keep a counter to see if we need to defend against other 
+    // cases (like a modded behavior where we CAN't find the signature var).
+    if (invocations++ == 100)
+        spdlog::warn("BehaviorVar::Patch: warning, more than 100 invocations, investigate why");
+ 
+    spdlog::info("BehaviorVar::Patch: actor with formID {:x} with hash of {} has modded behavior", hexFormID, hash);
 
     // Get all animation variables for this actor, then create a reversemap to go from strings to aniamation enum.
     auto pDumpVar = apManager->DumpAnimationVariables(false);
     std::map<const std::string, const uint32_t> reversemap;
-    spdlog::info("Known behavior variables for formID {:x}:", hexFormID);
+    spdlog::debug("Known behavior variables for formID {:x}:", hexFormID);
     for (auto& item : pDumpVar)
     {
-        spdlog::info("{}:{}", item.first, item.second);
+        spdlog::debug("    {}:{}", item.first, item.second);
         reversemap.insert({static_cast<const std::string>(item.second), item.first});
     }
 
@@ -54,100 +102,133 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
             break;
     if (iter >= behaviorPool.end())
     {
-        spdlog::info("No replacer found");
+        spdlog::warn("No replacer found for behavior hash {:x} (found on formID {:x}), adding to fail list", hash, hexFormID);
+        failList(hash);
         return nullptr;
     }
-
     spdlog::info("Found match, behavior replacer signature {}", iter->signatureVar);
 
     // Build the set of BehaviorVar strings as sets (not vectors) to eliminate dups
-    TiltedPhoques::Set<uint32_t> boolVar;
-    TiltedPhoques::Set<uint32_t> floatVar;
-    TiltedPhoques::Set<uint32_t> intVar;
+    // Also, we want the set sorted, to make sure we get the same hash if mods
+    // end up rearranging order, so these have to be std::set s. TiltedPhoques::Set
+    // uses a hash map instead of a sorted tree, and I don't want to have to figure
+    // out how to override that.
+    std::set<uint32_t> boolVar;
+    std::set<uint32_t> floatVar;
+    std::set<uint32_t> intVar;
 
     // If we can find the original behavior that is being modded, 
     // get the descriptor and seed the behavior vars with it. 
     // That way mod developers only need to know what vars their
     // mod adds, they don't have to know what the STR devs picked
-
-    if (iter->orgHash)
+    const AnimationGraphDescriptor* pTmpGraph = nullptr;
+    if (iter->orgHash && (pTmpGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(iter->orgHash)))
     {
-        const AnimationGraphDescriptor* pTmpGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(iter->orgHash);
-        if (pTmpGraph)
-        {
-            boolVar.insert(pTmpGraph->BooleanLookUpTable.begin(), pTmpGraph->BooleanLookUpTable.end());
-            floatVar.insert(pTmpGraph->FloatLookupTable.begin(), pTmpGraph->FloatLookupTable.end());
-            intVar.insert(pTmpGraph->IntegerLookupTable.begin(), pTmpGraph->IntegerLookupTable.end());
-            spdlog::info("Original descriptor with hash {} has {} boolean, {} float, {} integer behavior vars",
-                         iter->orgHash, boolVar.size(), floatVar.size(), intVar.size());
-        }
+        boolVar.insert(pTmpGraph->BooleanLookUpTable.begin(), pTmpGraph->BooleanLookUpTable.end());
+        floatVar.insert(pTmpGraph->FloatLookupTable.begin(), pTmpGraph->FloatLookupTable.end());
+        intVar.insert(pTmpGraph->IntegerLookupTable.begin(), pTmpGraph->IntegerLookupTable.end());
+        spdlog::info("Original game descriptor with hash {} has {} boolean, {} float, {} integer behavior vars",
+                     iter->orgHash, boolVar.size(), floatVar.size(), intVar.size());
     }
 
-    bool found;
+    // Check requested behavior vars for those that ARE legit
+    // behavior vars for this Actor AND are not yet synced
+    int foundCount = 0;
     for (auto& item : iter->syncBooleanVar)
     {
-        found = reversemap.find(item) != reversemap.end();
-        if (!found)
-            spdlog::info("boolVar {} not found in reversemap", item);
-        else
+        bool found = reversemap.find(item) != reversemap.end();
+        if (found && boolVar.find(reversemap[item]) == boolVar.end())
         {
-            spdlog::info("boolVar {}:{} found in reversemap", item, reversemap[item]);
-            if (boolVar.find(reversemap[item]) == boolVar.end())
-                boolVar.insert(reversemap[item]);
-            else
-               spdlog::info("boolVar {} already in descriptor", item);
+            if (foundCount++ == 0)
+                spdlog::info("Boolean variables added to sync:");
+            boolVar.insert(reversemap[item]);
+            spdlog::info("    {}", item);
+        }
+ 
+    }
+    if (foundCount)
+        spdlog::info("Now have {} boolVar descriptors after searching {} BehavivorVar strings", boolVar.size(), iter->syncBooleanVar.size());
+
+    foundCount = 0;
+    for (auto& item : iter->syncFloatVar)
+    {
+        bool found = reversemap.find(item) != reversemap.end();
+        if (found && floatVar.find(reversemap[item]) == floatVar.end())
+        {
+            if (foundCount++ == 0)
+                spdlog::info("Float variables added to sync:");
+            floatVar.insert(reversemap[item]);
+            spdlog::info("    {}", item);
         }
     }
-    spdlog::info("Now have {} boolVar descriptors after searching {} BehavivorVar strings", boolVar.size(), iter->syncBooleanVar.size());
+    if (foundCount)
+        spdlog::info("Now have {} floatVar descriptors after searching {} BehavivorVar strings", floatVar.size(), iter->syncFloatVar.size());
 
-     for (auto& item : iter->syncFloatVar)
+    foundCount = 0;
+    for (auto& item : iter->syncIntegerVar)
     {
-        found = reversemap.find(item) != reversemap.end();
-        if (!found)
-            spdlog::info("floatVar {} not found in reversemap", item);
-        else
+        bool found = reversemap.find(item) != reversemap.end();
+        if (found && intVar.find(reversemap[item]) == intVar.end())
         {
-            spdlog::info("floatVar {}:{} found in reversemap", item, reversemap[item]);
-            if (floatVar.find(reversemap[item]) == floatVar.end())
-                floatVar.insert(reversemap[item]);
-            else
-                spdlog::info("floatVar {} already in descriptor", item);
+            if (foundCount++ == 0)
+                spdlog::info("Int variables added to sync:");
+            intVar.insert(reversemap[item]);
+            spdlog::info("    {}", item);
         }
-    } 
-     spdlog::info("Now have {} floatVar descriptors after searching {} BehavivorVar strings", floatVar.size(),
-                 iter->syncFloatVar.size());
- 
-     for (auto& item : iter->syncIntegerVar)
-     {
-        found = reversemap.find(item) != reversemap.end();
-        if (!found)
-            spdlog::info("intVar {} not found in reversemap", item);
-        else
-        {
-            spdlog::info("intVar {}:{} found in reversemap", item, reversemap[item]);
-            if (intVar.find(reversemap[item]) == intVar.end())
-                intVar.insert(reversemap[item]);
-            else
-                spdlog::info("intVar {} already in descriptor", item);
-        }
-     }
-     spdlog::info("Now have {} intVar descriptors after searching {} BehaviorVar strings", intVar.size(),
-                  iter->syncIntegerVar.size());
- 
-    // Reshape the sets to vectors
+    }
+    if (foundCount)
+        spdlog::info("Now have {} intVar descriptors after searching {} BehavivorVar strings", intVar.size(), iter->syncIntegerVar.size());
+
+    // Ensure we aren't over the limits. If we are, we won't update
+    // the animation. Performance will be terrible unless we kill some of the logging
+    // or keep track of failed signatures.
+    std::string msgString;
+    if (boolVar.size() > 64)
+        msgString = "boolean";
+
+    else if ((floatVar.size() + intVar.size()) > 64)
+        msgString = "float+integer";
+
+    if (msgString.size() > 0)
+    {
+        spdlog::error("Too many {} behavior vars to sync for actor, max is 64.", msgString);
+        spdlog::error("Actor with formID {:x}, signature {}, original hash {} cannot be synced", 
+                      hexFormID, iter->orgHash, iter->signatureVar);
+        spdlog::error("Fail listing behavior hash {:x} found on formID {:x}", hash, hexFormID);
+        failList(hash);
+        return nullptr;
+    }
+      
+    // Reshape the (sorted, unique) sets to vectors
     TiltedPhoques::Vector<uint32_t> boolVector(boolVar.begin(), boolVar.end());
     TiltedPhoques::Vector<uint32_t> floatVector(floatVar.begin(), floatVar.end());
     TiltedPhoques::Vector<uint32_t> intVector(intVar.begin(), intVar.end());
 
     // Construct a new descriptor
     auto panimGraphDescriptor = new AnimationGraphDescriptor();
+
+    // This is a bit grubby, but it IS a struct with public members.
+    // Maybe the devs will help us out by agreeing to an additional constructor.
     panimGraphDescriptor->BooleanLookUpTable = boolVector;
     panimGraphDescriptor->FloatLookupTable = floatVector;
     panimGraphDescriptor->IntegerLookupTable = intVector;
 
-    // Add the new graph to the var graph
+    // Add the new graph to the known behavior graphs
     new AnimationGraphDescriptorManager::Builder(AnimationGraphDescriptorManager::Get(), hash, *panimGraphDescriptor);
     return AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
+}
+
+// Check if the behavior hash is on the failed liist
+boolean BehaviorVar::failListed(uint64_t hash)
+{
+    auto iter = failedBehaviors.find(hash);
+    return iter != failedBehaviors.end() && std::chrono::steady_clock::now() < iter->second;
+}
+
+//Place the behavior hash on the failed list
+void BehaviorVar::failList(uint64_t hash)
+{
+    failedBehaviors.insert_or_assign(hash, std::chrono::steady_clock::now() + FAILLIST_DURATION);
 }
 
 bool dirExists(std::string aPath)
@@ -169,6 +250,16 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::string aDir)
     // Enumerate all files in the directory and push bools, ints and floats 
     // to their respective vectors
 
+    // The hashFile *__hash.txt file should contain the hashed signature of the ORIGINAL GAME
+    // actor. That enables us to look up the synced animation variables selected by 
+    // the STR devs and include them in the updated behavior/animation sync. Mod
+    // devs don't have to know anything but what they've added, and this support for
+    // Nemesis will work with more versions of the game.
+    //
+    // The signatureFile *__sig.txt should contain the name of a uniquely named variable for the
+    // modded actor, that we can use to connect the actor to their modded behavior variables.
+    // It's not actually sync'ed, just there so we can find the match. For example, currently
+    // bSTRMaster is used for humanoid/Player actors, and bSTRDragon for dragon behavior.
     std::string hashFile;
     std::string signatureFile;
     std::vector<std::string> floatVarsFile;
@@ -180,56 +271,52 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::string aDir)
         std::string path = p.path().string();
         std::string base_filename = path.substr(path.find_last_of("/\\") + 1);
 
-        spdlog::info("base_path: {}", base_filename);
+        spdlog::debug("base_path: {}", base_filename);
 
         if (base_filename.find("__sig.txt") != std::string::npos)
         {
             signatureFile = path;
 
-            spdlog::info("signature variable file: {}", signatureFile);
+            spdlog::debug("signature variable file: {}", signatureFile);
         }
         else if (base_filename.find("__hash.txt") != std::string::npos)
         {
             hashFile = path;
 
-            spdlog::info("hash file: {}", hashFile);
+            spdlog::debug("hash file: {}", hashFile);
         }
         else if (base_filename.find("__float.txt") != std::string::npos)
         {
             floatVarsFile.push_back(path);
 
-            spdlog::info("float file: {}", path);
+            spdlog::debug("float file: {}", path);
         }
         else if (base_filename.find("__int.txt") != std::string::npos)
         {
             intVarsFile.push_back(path);
 
-            spdlog::info("int file: {}", path);
+            spdlog::debug("int file: {}", path);
         }
         else if (base_filename.find("__bool.txt") != std::string::npos)
         {
             boolVarsFile.push_back(path);
 
-            spdlog::info("bool file: {}", path);
+            spdlog::debug("bool file: {}", path);
         }
     }
 
     // Check that there is a signature file (an identifying variable)
-    // When an Actor's animation descriptor isn't found, we search
-    // its animation/behavior varibles for this to match it to modded behavior
+    // When an Actor's behavior is modified, it's animation signature doesn't match
+    // any of the base STR built-in descriptors. We try to match up on a distinguishing
+    // animation variable added by the animation. But without such a distinquishing
     if (signatureFile == "")
         return nullptr;
 
-#if 0
-    uint64_t orgHash;
-    uint64_t newHash;
-#endif
     // Prepare reading files
     std::string sigVar;
     std::vector<std::string> floatVar;
     std::vector<std::string> intVar;
     std::vector<std::string> boolVar;
-
     std::string tempString;  // Temp string
 
     std::ifstream fileSig(signatureFile);
@@ -238,7 +325,7 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::string aDir)
     erase_if(sigVar, isspace); // removes any inadvertant whitespace
     if (sigVar.size() == 0)
         return nullptr;
-    spdlog::info("Replacer found signature variable {}", sigVar);
+    spdlog::info("BehaviorVar::loadReplacerFromDir found signature variable {}", sigVar);
 
     // Check to see if there is a hash file. 
     // This is recommended, and shouild contain the ORIGINAL hash, 
@@ -252,7 +339,7 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::string aDir)
     // but that seems to be another thing a mod dev has no easy way to get their hands
     // on. So stripped off the need to provide the new hash, we'll just calculate it.
     // 
-    unsigned long long orgHash = 0;
+    uint64_t orgHash = 0;
     if (hashFile.size())
     {
         std::ifstream file(hashFile);
@@ -265,7 +352,7 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::string aDir)
 
     // Build lists of variables to sync
     // Read float behavior variables
-    spdlog::info("reading float var");
+    spdlog::debug("reading float var");
     for (auto item : floatVarsFile)
     {
         std::ifstream file(item);
@@ -273,13 +360,13 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::string aDir)
         {
             floatVar.push_back(tempString);
 
-            spdlog::info(" " + tempString);
+            spdlog::debug("    " + tempString);
         }
         file.close();
     }
 
     // Read integer behavior variables
-    spdlog::info("reading int var");
+    spdlog::debug("reading int vars");
     for (auto item : intVarsFile)
     {
         std::ifstream file(item);
@@ -287,13 +374,13 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::string aDir)
         {
             intVar.push_back(tempString);
 
-            spdlog::info(" " + tempString);
+            spdlog::debug("    " + tempString);
         }
         file.close();
     }
 
     // Read boolean behavior variables
-    spdlog::info("reading bool var");
+    spdlog::debug("reading bool vars");
     for (auto item : boolVarsFile)
     {
         std::ifstream file(item);
@@ -301,19 +388,13 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::string aDir)
         {
             boolVar.push_back(tempString);
 
-            spdlog::info(" " + tempString);
+            spdlog::debug("     " + tempString);
         }
         file.close();
     }
 
-
-    // create the sig
+    // Create the replacer
     Replacer* result = new Replacer();
-
- #if 0
-    // This should become dead
-    //result->newHash = newHash;
-#endif
 
     result->orgHash = orgHash;
     result->signatureVar   = sigVar;
@@ -341,64 +422,6 @@ void BehaviorVar::Init()
         {
             behaviorPool.push_back(*sig);
         }
-    }
-
-    // Replace loaded descriptors
-    // BehaviorVar::ReplaceDescriptors();
-}
-
-void BehaviorVar::ReplaceDescriptors()
-{
-    // Replace all in pool
-    for (const auto& sig : behaviorPool)
-    {
-        spdlog::info("Replacing behavior hash {} with {}", sig.orgHash, sig.newHash);
-
-        auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(sig.orgHash);
-
-        if (pDescriptor == nullptr)
-            continue;
-
-        // Remake the anim graph descriptor and insert new bools, floats, ints
-        TiltedPhoques::Vector<uint32_t> boolVar;
-        TiltedPhoques::Vector<uint32_t> floatVar;
-        TiltedPhoques::Vector<uint32_t> intVar;
-
-        for (auto var : pDescriptor->BooleanLookUpTable)
-        {
-            boolVar.push_back(var);
-        }
-
-        for (auto var : pDescriptor->FloatLookupTable)
-        {
-            floatVar.push_back(var);
-        }
-
-        for (auto var : pDescriptor->IntegerLookupTable)
-        {
-            intVar.push_back(var);
-        }
-
-        // TODO: Insert new bools, floats, ints
-#if 0
-        const AnimationGraphDescriptor* pGraph =
-            AnimationGraphDescriptorManager::Get().GetDescriptor(sig.orgHash);
-
-        BSAnimationGraphManager* apManager;
-        IAnimationGraphManagerHolder::GetBSAnimationGraph(&apManager);
-        auto dumpVar = apManager->DumpAnimationVariables(true);
-        //std::unordered_map<std::string, uint32_t> reverseMap;
-#endif
-
-        auto mDescriptor = new AnimationGraphDescriptor({0}, {0}, {0});
-        mDescriptor->BooleanLookUpTable = boolVar;
-        mDescriptor->FloatLookupTable = floatVar;
-        mDescriptor->IntegerLookupTable= intVar;
-
-        // Update the existing descriptor
-        AnimationGraphDescriptorManager::Get().Update(sig.orgHash, sig.newHash, *mDescriptor);
-
-        //AnimationGraphDescriptorManager::Get().UpdateKey(sig.orgHash, sig.newHash);
     }
 }
 
@@ -439,3 +462,5 @@ void BehaviorVar::Debug()
         }
     }
 }
+
+#endif MODDED_BEHAVIOR_COMPATIBILITY

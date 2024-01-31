@@ -4,6 +4,7 @@ target(name)
     set_kind("static")
     set_group("Client")
     add_defines(def)
+
     add_includedirs(".")
     set_pcxxheader("TiltedOnlinePCH.h")
 
