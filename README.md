@@ -6,21 +6,21 @@ Subsequent commits are the efforts of rfortier (Ujave on Discord) and MostExcell
 Sometimes animations still don't sync, restarting game+server or rerunning Nemesis and syncing the output with your friends can fix it in most cases.
 
 Works only with Skyrim Version 1.6.640.0 and you can only join servers running this build of STR. It might work with the latest Skyrim and the correct address library, but it has barely been tested.
-And the STR team has not released 1.6 yet.
+And the STR team has not released 1.6.x yet.
 
-This is a continuation of Edho08's original work, later updated by Spvvd and Ragley. This version by RFortier and MostExcellent addeds these goals:
+This version by RFortier and MostExcellent adds these goals:
 * Pure feature branch to make it easily rebaseable. 
 * Minimal intrusion in the base code.
-* Feature is conditionally compiled. Enabled by a single commit in this history which will show the one line to change to turn it off.
-* Tries to remove as much of the complexity for modders as possible. To mod a behavior you don't need to know any your new hash of your modded behavior, the game calculates them.
-* It's to your advantage to know the _original game behavior hash_ you are moddifying, though; if you do, you only need to list the behavior variables your mod needs, 
-the rest that the game devs selected will be picked up automatically for you. This helps give your mod STR version-independence, and more importantly means combining
-your mod with others will work.
+* Feature is conditionally compiled. Enabled by a single commit in the history which will show the one(-ish) line to change to turn it off. Or, don't include that commit.
+* Tries to remove as much of the complexity for modders as possible. To mod a behavior you don't need to know the new hashes of your modded behaviors, the game calculates them.
+That's pretty important because _every_ mod that changes behavior changes the hash, and the order of mods may also change the hash. So a mod author can't know the new hash for the mods a user selects,
+it is only known for a specific modlist in a specific order.
+* It's to your advantage to know the _original STR game behavior hash_ you are moddifying, though; if you do, you only need to list the behavior variables your mod needs, 
+the rest that the STR dev team selects will be picked up automatically for you. This helps give your mod STR version-independence.
 
 # TODO
 * Currently, BehaviorVar.cpp works, but it's blobby; when I get some time I'll simplify it.
-* Build up the fomod for a proper mod installer again, and document the simplified behaviorvar support.
-
+* Build up a fomod for a proper mod installer again, put a proper precompiled release up, and document the simplified behaviorvar support.
 
 
 # Tilted Online
