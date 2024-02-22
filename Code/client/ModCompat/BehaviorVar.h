@@ -10,6 +10,7 @@ struct BehaviorVar
         uint64_t orgHash;
         uint64_t newHash;
         std::string signatureVar;
+        std::string creatureName;
         std::vector<std::string> syncBooleanVar;
         std::vector<std::string> syncFloatVar;
         std::vector<std::string> syncIntegerVar;
@@ -27,7 +28,16 @@ struct BehaviorVar
     static BehaviorVar* single;
     uint64_t invocations = 0;
 
-    Replacer* loadReplacerFromDir(std::string aDir);
+    void seedAnimationVariables(
+    uint64_t hash, 
+    const AnimationGraphDescriptor* pDescriptor,
+    std::map<const std::string, const uint32_t>& reversemap,
+    std::set<uint32_t>& boolVars, 
+    std::set<uint32_t>& floatVars,
+    std::set<uint32_t>& intVars);
+
+    std::vector<std::filesystem::path> loadDirs(const std::filesystem::path& acPATH);
+    Replacer* loadReplacerFromDir(std::filesystem::path aDir);
 
     std::vector<Replacer> behaviorPool; // Pool for loaded behaviours
     std::map<uint64_t, std::chrono::steady_clock::time_point> failedBehaviors;

@@ -1,0 +1,14 @@
+iRightHandEquipped
+iLeftHandEquipped
+i1HMState
+iState
+iLeftHandType
+iRightHandType
+iSyncIdleLocomotion
+iSyncForwardState
+iSyncTurnState
+iIsInSneak
+iWantBlock
+iRegularAttack
+testint
+currentDefaultState

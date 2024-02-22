@@ -1,0 +1,13 @@
+TurnDelta
+Direction
+SpeedSampled
+weapAdj
+Speed
+CastBlend
+PitchOffset
+SpeedDamped
+Pitch
+VelocityZ
+1stPRot
+1stPRotDamped
+CastBlendDamped
