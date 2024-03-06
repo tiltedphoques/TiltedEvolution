@@ -83,9 +83,9 @@ void BehaviorVar::seedAnimationVariables(
     {
         auto strValue = origVars.find(hash, item);
         if (strValue.empty())
-            spdlog::warn("BehaviorVar::seedAnimationVariables unable to find string for original BooleanVar {}", item);
+            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original BooleanVar {}", item);
         else if (reversemap.find(strValue) == reversemap.end())
-            spdlog::warn("BehaviorVar::seedAnimationVariables unable to find BooleanVar {}", strValue);
+            spdlog::error("BehaviorVar::seedAnimationVariables unable to find BooleanVar {}", strValue);
         else
             boolVars.insert(reversemap[strValue]);
     }
@@ -93,9 +93,13 @@ void BehaviorVar::seedAnimationVariables(
     {
         auto strValue = origVars.find(hash, item);
         if (strValue.empty())
-            spdlog::warn("BehaviorVar::seedAnimationVariables unable to find string for original FloatVar {}", item);
+            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original FloatVar {}", item);
         else if (reversemap.find(strValue) == reversemap.end())
-            spdlog::warn("BehaviorVar::seedAnimationVariables unable to find FloatVar {}", strValue);
+            if (strValue == "Speed" && reversemap.find("speed") != reversemap.end())    // Fix typo in base game.
+                strValue = "speed", spdlog::error("BehaviorVar::seedAnimationVariables successfully compensated for incorrect capitalization of Floatvar 'speed'");
+
+        if (reversemap.find(strValue) == reversemap.end())
+            spdlog::error("BehaviorVar::seedAnimationVariables unable to find FloatVar {}", strValue); 
         else
             floatVars.insert(reversemap[strValue]);
     }
@@ -103,9 +107,9 @@ void BehaviorVar::seedAnimationVariables(
     {
         auto strValue = origVars.find(hash, item);
         if (strValue.empty())
-            spdlog::warn("BehaviorVar::seedAnimationVariables unable to find string for original IntegerVar {}", item);
+            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original IntegerVar {}", item);
         else if (reversemap.find(strValue) == reversemap.end())
-            spdlog::warn("BehaviorVar::seedAnimationVariables unable to find IntegerVar {}", strValue);
+            spdlog::error("BehaviorVar::seedAnimationVariables unable to find IntegerVar {}", strValue);
         else
             intVars.insert(reversemap[strValue]);
     }
