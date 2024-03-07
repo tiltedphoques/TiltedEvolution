@@ -10,9 +10,11 @@
 // One of the greatest features ensuring the longevity of Bethesda games is their support
 // for community modification, and many of the most popular mods also change the behavior 
 // of creatures. STR and FTR don't support mods as a matter of policy. And supporting
-// behavior mods is particularly difficult.
+// behavior mods is particularly difficult. This mod provides the option to use modified
+// behaviors in Skyrim|Fallout Together Reborn, but has yet to be endorsed by the TiltedPhoques 
+// team. Use at own risk.
 // 
-// The game determines a set of behavior variables that must be synced and locks thatdown.
+// The game determines a set of behavior variables that must be synced and locks that down.
 // Changing the list is difficult, because behavior mods won't just add to the list, they
 // will change the order of the list also changing the shorthand numeric codes for behavior
 // vars to sync.
@@ -61,6 +63,76 @@ const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* apMana
     return BehaviorVar::Get()->Patch(apManager, apActor);
 }
 
+// Utility function to convert a string to lowercase
+// This is useful as at least one vanilla variable, "Speed", is sometimes lowercase
+// We'd like to be able to handle other vars for which this may be the case.
+namespace
+{
+std::string toLowerCase(const std::string& aStr)
+{
+    std::string lowerCaseStr;
+    lowerCaseStr.reserve(aStr.size());
+    std::transform(aStr.begin(), aStr.end(), lowerCaseStr.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    return lowerCaseStr;
+}
+
+// Converts the keys of a map (which are const std::string) to lowercase.
+// This is our "Plan C" if a vanilla var isn't found to make sure it isn't just a case-sensitivity issue.
+void lowerCaseKeys(const std::map<const std::string, const uint32_t>& map,
+                   std::map<const std::string, const uint32_t>& lowerCaseMap)
+{
+    for (const auto& item : map)
+        lowerCaseMap.insert({toLowerCase(item.first), item.second});
+}
+
+// Process a set of variables, adding them to the aVariableSet
+void processVariableSet(const std::map<const std::string, const uint32_t>& acReverseMap,
+                        std::set<uint32_t>& aVariableSet, const std::vector<std::string>& acVariables,
+                        spdlog::level::level_enum aLogLevel)
+{
+    // Not filled until needed, which should be never.
+    std::map<const std::string, const uint32_t> lowerCaseMap;
+
+    for (const auto& item : acVariables)
+    {
+        std::string foundForm = item;
+        auto found = acReverseMap.find(item);
+        if (found == acReverseMap.end())
+        {
+            // Check if first letter incorrectly lowercase.
+            foundForm[0] = std::toupper(item[0]);
+            found = acReverseMap.find(foundForm);
+        }
+
+        if (found == acReverseMap.end())
+        {
+            // Check lower case.
+            foundForm = toLowerCase(item);
+            found = acReverseMap.find(foundForm);
+        }
+
+        if (found == acReverseMap.end())
+        {
+            // Check case-independent
+            if (lowerCaseMap.empty())
+                lowerCaseKeys(acReverseMap, lowerCaseMap);
+            found = lowerCaseMap.find(foundForm);
+        }
+
+        if (found == acReverseMap.end())
+            spdlog::warn("BehaviorVar::processVariableSet: unable to find variable {} in any of the common misspellings", item);
+        else
+        {
+            aVariableSet.insert(found->second);
+            if (item != found->first)
+                spdlog::warn("BehaviorVar::processVariableSet: misspelled variable {} found as {}", item, foundForm);
+        }
+    }
+}
+           
+} // End anonymous namespace
+
 //
 // Translate modded behavior numeric values.
 // When a behavior is modified (at least by Nemesis) it can rearrange the order of BehaviorVars.
@@ -69,8 +141,8 @@ const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* apMana
 // We do this with a hack to translate old numeric value back to a string, then we
 // can forward-translate the string to its new numeric value.
 // 
-// The machine-generated table hack to do this can be removed with STR-devs
-// permission to also embed the string invformation in the Code\encoding\structs files.
+// The machine-generated table hack to do this can be removed with STR-devs'
+// permission to also embed the string information in the Code\encoding\structs files.
 //
 void BehaviorVar::seedAnimationVariables(
     uint64_t hash, 
@@ -82,42 +154,35 @@ void BehaviorVar::seedAnimationVariables(
 {
     auto& origVars = BehaviorVarsMap::getInstance();
 
-    // Defensive code to detect if for some reason we have a number 
-    // without a string, or a string without a number.
-    for (auto& item : pDescriptor->BooleanLookUpTable)
-    {
-        const auto strValue = origVars.find(hash, item);
-        if (strValue.empty())
-            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original BooleanVar {}", item);
-        else if (reversemap.find(strValue) == reversemap.end())
-            spdlog::error("BehaviorVar::seedAnimationVariables unable to find BooleanVar {}", strValue);
-        else
-            boolVars.insert(reversemap[strValue]);
-    }
-    for (auto& item : pDescriptor->FloatLookupTable)
-    {
-        auto strValue = origVars.find(hash, item);
-        if (strValue.empty())
-            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original FloatVar {}", item);
-        else if (reversemap.find(strValue) == reversemap.end())
-            if (strValue == "Speed" && reversemap.find("speed") != reversemap.end())    // Fix typo in base game.
-                strValue = "speed", spdlog::error("BehaviorVar::seedAnimationVariables successfully compensated for incorrect capitalization of Floatvar 'speed'");
+    // Prepare lists of variables to process
+    std::vector<std::string> boolVarNames;
+    std::vector<std::string> floatVarNames;
+    std::vector<std::string> intVarNames;
 
-        if (reversemap.find(strValue) == reversemap.end())
-            spdlog::error("BehaviorVar::seedAnimationVariables unable to find FloatVar {}", strValue); 
+    // Populate lists from the original descriptor
+    std::string strValue;
+    for (auto& item : pDescriptor->BooleanLookUpTable)
+        if ((strValue = origVars.find(hash, item)).empty())
+            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original BooleanVar {}", item);
         else
-            floatVars.insert(reversemap[strValue]);
-    }
-    for (auto& item : pDescriptor->IntegerLookupTable)
-    {
-        const auto strValue = origVars.find(hash, item);
-        if (strValue.empty())
-            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original IntegerVar {}", item);
-        else if (reversemap.find(strValue) == reversemap.end())
-            spdlog::error("BehaviorVar::seedAnimationVariables unable to find IntegerVar {}", strValue);
+            boolVarNames.push_back(strValue);
+
+   for (auto& item : pDescriptor->FloatLookupTable)
+        if ((strValue = origVars.find(hash, item)).empty())
+            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original FloatVar {}", item);
         else
-            intVars.insert(reversemap[strValue]);
-    }
+            floatVarNames.push_back(strValue);
+
+   for (auto& item : pDescriptor->IntegerLookupTable)
+        if ((strValue = origVars.find(hash, item)).empty())
+            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original IntVar {}", item);
+        else
+            intVarNames.push_back(strValue);
+
+    // Process each set of variables
+   processVariableSet(reversemap, boolVars, boolVarNames, spdlog::level::level_enum::err);
+   processVariableSet(reversemap, floatVars, floatVarNames, spdlog::level::level_enum::err);
+   processVariableSet(reversemap, intVars, intVarNames, spdlog::level::level_enum::err);
 }
 
 // Syntax for a signature is [!]sig1[,[!]sig2]... Must be at least one. Each signature var possibly negated
@@ -127,7 +192,6 @@ void BehaviorVar::seedAnimationVariables(
 //
 const std::vector<std::string> BehaviorVar::tokenizeBehaviorSig(const std::string signature) const
 {
-
     const static std::string notVal{"!"};
     std::vector<std::string> retVal;
     size_t commaPos;
@@ -298,7 +362,7 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
  
     spdlog::info("BehaviorVar::Patch: actor with formID {:x} with hash of {} has modded (or not synced) behavior", hexFormID, hash);
 
-    // Get all animation variables for this actor, then create a reversemap to go from strings to animation enum.
+    // Get all animation variables for this actor, then create a acReverseMap to go from strings to animation enum.
     auto pDumpVar = apManager->DumpAnimationVariables(false);
     std::map<const std::string, const uint32_t> reversemap;
     spdlog::info("Known behavior variables for formID {:x}:", hexFormID);
