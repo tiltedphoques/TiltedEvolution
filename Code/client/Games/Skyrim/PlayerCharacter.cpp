@@ -163,6 +163,10 @@ void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool a
     if (!aEntering)
     {
         PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_Master_Behavior::m_key;
+#ifdef MODDED_BEHAVIOR_COMPATIBILITY
+        PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = PlayerCharacter::Get()->GetExtension()->OrigGraphDescriptorHash;
+#endif MODDED_BEHAVIOR_COMPATIBILITY
+
         World::Get().GetRunner().Trigger(BeastFormChangeEvent());
     }
 

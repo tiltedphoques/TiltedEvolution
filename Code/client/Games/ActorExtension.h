@@ -20,7 +20,10 @@ struct ActorExtension
 
     ActionEvent LatestAnimation{};
     size_t GraphDescriptorHash = 0;
+#ifdef MODDED_BEHAVIOR_COMPATIBILITY
+    size_t OrigGraphDescriptorHash = 0;     // To aid popping back from beast forms.
+#endif MODDED_BEHAVIOR_COMPATIBILITY
 
-private:
+  private:
     uint32_t onlineFlags{0};
 };
