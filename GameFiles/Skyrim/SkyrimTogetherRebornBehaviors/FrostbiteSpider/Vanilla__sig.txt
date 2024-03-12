@@ -1,1 +1,1 @@
-iState_DefaultSpider_MT = 25
+iState_DefaultSpider_MT,!FootIKEnable

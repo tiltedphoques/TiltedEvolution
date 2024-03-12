@@ -1,1 +1,1 @@
-iState_DeerDefault = 46
+iState_DeerDefault

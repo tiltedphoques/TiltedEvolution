@@ -1,1 +1,1 @@
-iState_HorseDefault = 47
+iState_HorseDefault,!FemaleOffset

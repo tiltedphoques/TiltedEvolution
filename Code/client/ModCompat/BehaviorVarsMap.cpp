@@ -13,7 +13,7 @@ uint32_t BehaviorVarsMap::find(const uint64_t key, const std::string name)
             return map2->second;
     }
 
-    return -1;
+    return UINT32_MAX;
 }
 
 std::string BehaviorVarsMap::find(const uint64_t key, const uint32_t value)

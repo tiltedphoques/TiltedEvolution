@@ -1,1 +1,1 @@
-iState_MammothDefault = 46
+iState_MammothDefault,km_hitSomething_0,!km_hitSomething_3

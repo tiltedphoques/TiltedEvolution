@@ -120,19 +120,27 @@ void BehaviorVar::seedAnimationVariables(
     }
 }
 
+// Syntax for a signature is [!]sig1[,[!]sig2]... Must be at least one. Each signature var possibly negated
+// signature var possibly negated (meaning it MUST NOT be in the BehaviorVars of the actor). Separated by commas.
+// Requires that whitespace has already been deleted (which it was, when directories were loaded).
+// Tokenize on ','
+//
 const std::vector<std::string> BehaviorVar::tokenizeBehaviorSig(const std::string signature) const
 {
-    // Syntax is [!]sig1[,!sig2]... Must be at least one. Each signature var possibly negated
-    // (meaning it MUST NOT be in the BehaviorVars of the actor). Separated by commas.
-    // Requires that whitespace has already been deleted (was, when file was read).
-    // Tokenize on ','
-    //
+
+    const static std::string notVal{"!"};
     std::vector<std::string> retVal;
     size_t commaPos;
     size_t offset = 0;
 
     do
     {
+        if (signature[offset] == '!')
+        {
+            offset++;
+            retVal.push_back(notVal);
+        }
+
         commaPos = signature.find(',', offset);
         retVal.push_back(signature.substr(offset, commaPos));
         offset = commaPos + 1;
@@ -142,7 +150,7 @@ const std::vector<std::string> BehaviorVar::tokenizeBehaviorSig(const std::strin
     return retVal;
 }
 
-const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uint64_t acNewHash, const Replacer& acOldBehavior, std::map<const std::string, const uint32_t>& acReverseMap)
+const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uint64_t acNewHash, const Replacer& acReplacer, std::map<const std::string, const uint32_t>& acReverseMap)
 {
     // Build the set of BehaviorVar strings as sets (not vectors) to eliminate dups
     // Also, we want the set sorted, so these have to be std::sets. TiltedPhoques::Set
@@ -157,17 +165,17 @@ const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uin
     // That way mod developers only need to know what vars their
     // mod adds, they don't have to know what the STR devs picked
     const AnimationGraphDescriptor* pTmpGraph = nullptr;
-    if (acOldBehavior.origHash && (pTmpGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(acOldBehavior.origHash)))
+    if (acReplacer.origHash && (pTmpGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(acReplacer.origHash)))
     {
-        seedAnimationVariables(acOldBehavior.origHash, pTmpGraph, acReverseMap, boolVar, floatVar, intVar);
+        seedAnimationVariables(acReplacer.origHash, pTmpGraph, acReverseMap, boolVar, floatVar, intVar);
         spdlog::info("Original game descriptor with hash {} has {} boolean, {} float, {} integer behavior vars",
-                     acOldBehavior.origHash, boolVar.size(), floatVar.size(), intVar.size());
+                     acReplacer.origHash, boolVar.size(), floatVar.size(), intVar.size());
     }
 
     // Check requested behavior vars for those that ARE legit
     // behavior vars for this Actor AND are not yet synced
     int foundCount = 0;
-    for (auto& item : acOldBehavior.syncBooleanVar)
+    for (auto& item : acReplacer.syncBooleanVar)
     {
         bool found = acReverseMap.find(item) != acReverseMap.end();
         if (found && boolVar.find(acReverseMap[item]) == boolVar.end())
@@ -180,10 +188,10 @@ const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uin
     }
     if (foundCount)
         spdlog::info("Now have {} boolVar descriptors after searching {} BehavivorVar strings", boolVar.size(),
-                     acOldBehavior.syncBooleanVar.size());
+                     acReplacer.syncBooleanVar.size());
 
     foundCount = 0;
-    for (auto& item : acOldBehavior.syncFloatVar)
+    for (auto& item : acReplacer.syncFloatVar)
     {
         bool found = acReverseMap.find(item) != acReverseMap.end();
         if (found && floatVar.find(acReverseMap[item]) == floatVar.end())
@@ -196,10 +204,10 @@ const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uin
     }
     if (foundCount)
         spdlog::info("Now have {} floatVar descriptors after searching {} BehavivorVar strings", floatVar.size(),
-                     acOldBehavior.syncFloatVar.size());
+                     acReplacer.syncFloatVar.size());
 
     foundCount = 0;
-    for (auto& item : acOldBehavior.syncIntegerVar)
+    for (auto& item : acReplacer.syncIntegerVar)
     {
         bool found = acReverseMap.find(item) != acReverseMap.end();
         if (found && intVar.find(acReverseMap[item]) == intVar.end())
@@ -212,7 +220,7 @@ const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uin
     }
     if (foundCount)
         spdlog::info("Now have {} intVar descriptors after searching {} BehavivorVar strings", intVar.size(),
-                     acOldBehavior.syncIntegerVar.size());
+                     acReplacer.syncIntegerVar.size());
 
     // Reshape the (sorted, unique) sets to vectors
     TiltedPhoques::Vector<uint32_t> boolVector(boolVar.begin(), boolVar.end());
@@ -229,6 +237,10 @@ const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uin
     panimGraphDescriptor->IntegerLookupTable = intVector;
 
     // Add the new graph to the known behavior graphs
+    // TODO: doesn't handle case of the acNewHash already existing.
+    // That has to be addressed before we can support just adding 
+    // more pre-existing vars to sync. For now, only get here 
+    // when mods have changed the hash.
     new AnimationGraphDescriptorManager::Builder(AnimationGraphDescriptorManager::Get(), acNewHash, *panimGraphDescriptor);
     return AnimationGraphDescriptorManager::Get().GetDescriptor(acNewHash);
 }
@@ -296,26 +308,65 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
         reversemap.insert({static_cast<const std::string>(item.second), item.first});
     }
 
-    // See if these animation variables include a signature variable for one of the replacers.
-    auto iter = behaviorPool.begin();
-    for (; iter < behaviorPool.end(); iter++)
-        if (reversemap.find(iter->signatureVar) != reversemap.end())
-            break;
-    if (iter >= behaviorPool.end())
-    {
-        spdlog::warn("No original behavior found for behavior hash {:x} (found on formID {:x}), adding to fail list", hash, hexFormID);
-        failList(hash);
-        return nullptr;
-    }
-    spdlog::info("Found match, behavior hash {:x} (found on formID {:x}) has original behavior {} signature {}", hash, hexFormID, iter->creatureName, iter->signatureVar);
+    // See if these animation variables include a signature for one of the replacers.
+    // Since some of the original behaviors don't have a single variable name that is completely
+    // unique, we allow a syntax of "!?signaturevar\(,!?signaturevar\)*". That is, an initial
+    // (possibly negated) signaturevar, followed by zero or more comma separated additional
+    // signaturevars (possibly negated).
+    //
+    // That's enough info to create a unique signature in the base game descriptors. At least,
+    // it was at the time of writing.
+    // 
+    // O(N) loop, but this typically only gets executed a few times (once for each modded
+    // creature TYPE, not each modded creature).
+    //
+    std::vector<size_t> matchedReplacers;
 
+    for (size_t i = 0; i < behaviorPool.size(); i++)
+    {
+        auto tokens = tokenizeBehaviorSig(behaviorPool[i].signatureVar);
+        auto found  = tokens.size() > 0;
+
+        for (auto titer = tokens.begin(); found && titer < tokens.end(); titer++)
+        {
+            if (*titer == "!")
+                found = reversemap.find(*++titer) == reversemap.end();
+            else 
+                found = reversemap.find(*titer) != reversemap.end();
+        }
+        if (found)
+            matchedReplacers.push_back(i);
+    }
+
+    switch (matchedReplacers.size())
+    {
+        case 0:
+            spdlog::warn("No original behavior found for behavior hash {:x} (found on formID {:x}), adding to fail list", hash, hexFormID);
+            failList(hash);
+            return nullptr;
+
+        case 1:
+            break;
+
+        default:
+            spdlog::critical("BehaviorVar::Patch: multiple behavior replacers have the same signature, this must be corrected:");
+            for (auto& item : matchedReplacers)
+                spdlog::critical("   {}", behaviorPool[item].creatureName);
+            failList(hash);
+            return nullptr;
+
+    }
+
+    auto& foundRep = behaviorPool[matchedReplacers[0]];
+    spdlog::info("Found match, behavior hash {:x} (found on formID {:x}) has original behavior {} signature {}", hash,
+                 hexFormID, foundRep.creatureName, foundRep.signatureVar); 
+    
     // Save the new hash for the actor, and save it as the original actor hash.
     // The latter is to assist with humanoid actors popping back from a beast form.
     pExtendedActor->GraphDescriptorHash = hash;
     pExtendedActor->OrigGraphDescriptorHash = hash;
 
-    return constructModdedDescriptor(hash, *biter, reversemap);
-
+    return constructModdedDescriptor(hash, foundRep, reversemap);
 }
 
 // Check if the behavior hash is on the failed liist
@@ -503,6 +554,36 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::filesystem::path aD
     return result;
 }
 
+// Find any behaviors which match the signature.
+// There should be exactly one.
+//
+std::vector<uint64_t> BehaviorVar::signatureMatches(const uint64_t acHash, const std::string acSignature) const
+{
+    auto& bvMap = BehaviorVarsMap::getInstance();
+    std::vector<uint64_t> hashes;
+
+    bvMap.hashes(hashes);
+    auto tokens = tokenizeBehaviorSig(acSignature);
+    for (size_t i = 0; i < hashes.size(); i++)
+    {
+        if (hashes[i] == acHash)
+            continue;
+
+        auto found = true;
+        for (auto titer = tokens.begin(); found && titer < tokens.end(); titer++)
+        {
+            if (*titer == "!")
+                found = bvMap.find(hashes[i], *++titer) == UINT32_MAX;
+            else
+                found = bvMap.find(hashes[i], *titer) != UINT32_MAX;
+        }
+        if (!found)
+            hashes.erase(hashes.begin() + i--);
+    }
+
+    return hashes;
+}
+
 void BehaviorVar::Init()
 {
     // Initialize original (base STR) behaviors so we can search them.
@@ -525,6 +606,40 @@ void BehaviorVar::Init()
             behaviorPool.push_back(*sig);
         }
     }
+
+    // Ambiguousness check.
+    for (auto& signature : behaviorPool)
+    {
+        static size_t firsttime = 0;
+
+        auto matches = signatureMatches(signature.origHash, signature.signatureVar);
+        switch (matches.size())
+        {
+        case 0:
+            spdlog::critical("BehaviorVar::Init: failure to find self in behaviorPool, {}", signature.creatureName);
+        case 1:
+            break;
+
+        default:
+            if (firsttime++ == 0)
+                spdlog::warn("BehaviorVar::Init: some creatures have ambiguous signatures. This is expected for now, "
+                             "but a modder must create a unique signature in their mod.");
+
+            spdlog::warn("BehaviorVar::Init: {} signature {} matches:", signature.creatureName, signature.signatureVar);
+            for (auto hash : matches)
+            {
+                auto iter = std::find(behaviorPool.begin(), behaviorPool.end(), hash);
+                if (iter < behaviorPool.end())
+                    spdlog::warn("    {}", std::find(behaviorPool.begin(), behaviorPool.end(), hash)->creatureName);
+                else
+                    spdlog::warn(
+                        "    {}: unable to find creature name for this hash, likely typo in SkyrimTogetherReborn tree",
+                        hash);
+            }
+            break;
+        }
+    }
+
 }
 
 void BehaviorVar::Debug()

@@ -1,1 +1,1 @@
-iState_CowDefault = 46
+iState_CowDefault,!iState_DogRun

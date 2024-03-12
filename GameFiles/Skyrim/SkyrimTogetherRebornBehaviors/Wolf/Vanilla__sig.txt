@@ -1,1 +1,1 @@
-iState_WolfDefault = 46
+iState_WolfDefault

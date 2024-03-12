@@ -13,7 +13,7 @@ struct BehaviorVars
 class BehaviorVarsMap
 {
   private:
-    std::map< uint64_t, BehaviorVars> m_map;
+    std::map<uint64_t, BehaviorVars> m_map;
 
     // Singleton
     BehaviorVarsMap(){};
@@ -24,6 +24,12 @@ class BehaviorVarsMap
     uint32_t find(const uint64_t key, const std::string name);
 
     std::string find(const uint64_t key, const uint32_t value);
+    void hashes(std::vector<uint64_t>& aHashes) const
+    {
+        aHashes.clear();
+        for (auto& item : m_map)
+            aHashes.push_back(item.first);
+    };
 
     void Register(const BehaviorVars map);
 

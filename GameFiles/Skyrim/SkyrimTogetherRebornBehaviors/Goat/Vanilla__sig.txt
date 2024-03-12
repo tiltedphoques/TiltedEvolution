@@ -1,1 +1,1 @@
-iState_GoatDefault = 46
+iState_GoatDefault

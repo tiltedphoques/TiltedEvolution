@@ -47,6 +47,7 @@ struct BehaviorVar
 
     std::vector<std::filesystem::path> loadDirs(const std::filesystem::path& acPATH);
     Replacer* loadReplacerFromDir(std::filesystem::path aDir);
+    std::vector<uint64_t> signatureMatches(const uint64_t acHash, const std::string acSignature) const;
 
     std::vector<Replacer> behaviorPool; // Pool for loaded behaviours
     std::map<uint64_t, std::chrono::steady_clock::time_point> failedBehaviors;
