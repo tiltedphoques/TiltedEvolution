@@ -1,7 +1,15 @@
-# Tilted Online Nemesis
+# Skyrim Together Reborn for Modded Animations
 
-The first couple of commits on the fork are to retain the work of Edho08 and Spvvd and give appropriate credit to them for their initial efforts to support animation mods with Skyrim Together Reborn.
-Subsequent commits are the efforts of rfortier (Ujave on Discord) and MostExcellent / MagicWizardMan.
+No permission to post any variation of this fork on Nexus. For now. It's coming, there are just more things to fix first so we don't get flooded with support requests.  
+
+# Credits
+This fork is inspired by Edho08's original effort to figure out how to patch Nemesis (and now Pandora) support into TiltedPhoques Skyrim Together Reborn. Since then, Spvvd and Ragley have put in a lot of maintainance effort. @rfortier and @MostExcellent have been working on this verison.
+
+# Status
+
+This version is a substantial rewrite, fixing a lot of bugs, adding flexibility that enables the STR development team and modders to work independently without breaking each other (as much). It has been ported to v1.6.3-preview of Skyrim Together Reborn.
+
+Includes TDM, TUDM and dragon behavior patches.
 
 Sometimes animations still don't sync, restarting game+server or rerunning Nemesis and syncing the output with your friends can fix it in most cases.
 
@@ -21,6 +29,7 @@ the rest that the STR dev team selects will be picked up automatically for you. 
 # TODO
 * Currently, BehaviorVar.cpp works, but it's blobby; when I get some time I'll simplify it.
 * Build up a fomod for a proper mod installer again, put a proper precompiled release up, and document the simplified behaviorvar support.
+* Well, that last one is actually staring to exist.
 
 
 # Tilted Online
