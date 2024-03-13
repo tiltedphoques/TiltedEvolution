@@ -218,7 +218,15 @@ DWORD WINAPI TP_GetModuleFileNameA(HMODULE aModule, char* alpFileName, DWORD aBu
     ScopedOSHeapItem wideBuffer((aBufferSize * sizeof(wchar_t)) + 1);
 
     wchar_t* pBuffer = static_cast<wchar_t*>(wideBuffer.m_pBlock);
-    DWORD result = RealGetModuleFileNameW(aModule, pBuffer, aBufferSize * sizeof(wchar_t));
+
+    // Under MO2, there's a bug caused when calling RealGetModuleFileNameW on XAudio2_7.dll,
+    // it crashes in usvfs. This only happens during the thread shutdown paths 
+    // of quitting, so just avoid the bug. 
+    // TODO: Further analysis of what is under MO2 USVFS and what is needed.
+    DWORD result = 0;
+    if (aModule != GetModuleHandleW(L"XAudio2_7.dll"))
+        result = RealGetModuleFileNameW(aModule, pBuffer, aBufferSize * sizeof(wchar_t));
+
     if (result == 0)
     {
         return result;
