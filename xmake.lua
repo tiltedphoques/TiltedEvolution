@@ -30,6 +30,7 @@ if has_config("unitybuild") then
     add_rules("c++.unity_build", {batchsize = 12})
 end
 
+add_defines("GLM_ENABLE_EXPERIMENTAL")
 add_requires(
     "entt v3.10.0", 
     "recastnavigation v1.6.0", 
