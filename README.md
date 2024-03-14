@@ -9,11 +9,11 @@ This fork is inspired by Edho08's original effort to figure out how to patch Nem
 
 This version is a substantial rewrite, fixing a lot of bugs, adding flexibility that enables the STR development team and modders to work independently without breaking each other (as much). It has been ported to v1.6.3-preview of Skyrim Together Reborn.
 
-Includes TDM, TUDM and dragon behavior patches.
+Includes TDM, TUDM, Modern Combat Overhaul, Elden Counter and dragon behavior patches. Oh, and humans don't skate around.
 
 Sometimes animations still don't sync, restarting game+server or rerunning Nemesis and syncing the output with your friends can fix it in most cases.
 
-Works only with Skyrim Version 1.6.640.0 and you can only join servers running this build of STR. It might work with the latest Skyrim and the correct address library, but it has barely been tested.
+Tested only with Skyrim Version 1.6.640.0 and you can only join servers running this build of STR. It might work with the latest Skyrim and the correct address library, but it has barely been tested.
 And the STR team has not released 1.6.x yet.
 
 This version by RFortier and MostExcellent adds these goals:
