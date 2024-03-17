@@ -6,6 +6,9 @@
 #include <Events/SpellCastEvent.h>
 #include <Events/InterruptCastEvent.h>
 #include <Events/AddTargetEvent.h>
+#include <Events/RemoveSpellEvent.h>
+
+#include <Messages/RemoveSpellRequest.h>
 
 #include <Messages/SpellCastRequest.h>
 #include <Messages/InterruptCastRequest.h>
@@ -40,6 +43,8 @@ MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
     m_notifyInterruptCastConnection = m_dispatcher.sink<NotifyInterruptCast>().connect<&MagicService::OnNotifyInterruptCast>(this);
     m_addTargetEventConnection = m_dispatcher.sink<AddTargetEvent>().connect<&MagicService::OnAddTargetEvent>(this);
     m_notifyAddTargetConnection = m_dispatcher.sink<NotifyAddTarget>().connect<&MagicService::OnNotifyAddTarget>(this);
+    m_removeSpellEventConnection = m_dispatcher.sink<RemoveSpellEvent>().connect<&MagicService::OnRemoveSpellEvent>(this);
+    m_notifyRemoveSpell = m_dispatcher.sink<NotifyRemoveSpell>().connect<&MagicService::OnNotifyRemoveSpell>(this);
 }
 
 void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -407,6 +412,75 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     pActor->magicTarget.AddTarget(data, acMessage.ApplyHealPerkBonus, acMessage.ApplyStaminaPerkBonus);
 
     spdlog::debug("Applied remote magic effect");
+}
+
+void MagicService::OnRemoveSpellEvent(const RemoveSpellEvent& acEvent) noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    RemoveSpellRequest request{};
+
+    if (!m_world.GetModSystem().GetServerModId(acEvent.SpellId, request.SpellId.ModId, request.SpellId.BaseId))
+    {
+        spdlog::error("{}: Could not find spell with form {:X}", __FUNCTION__, acEvent.SpellId);
+        return;
+    }
+
+    auto view = m_world.view<FormIdComponent>();
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acEvent.TargetId, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (it == std::end(view))
+    {
+        spdlog::warn("Form id not found for magic remove target, form id: {:X}", acEvent.TargetId);
+        return;
+    }
+
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
+    if (!serverIdRes.has_value())
+    {
+        spdlog::warn("Server id not found for magic remove target, form id: {:X}", acEvent.TargetId);
+        return;
+    }
+
+    request.TargetId = serverIdRes.value();
+
+    //spdlog::info("Requesting remove spell with base id {:X} from actor with server id {:X}", request.SpellId.BaseId, request.TargetId);
+
+    m_transport.Send(request);
+}
+
+void MagicService::OnNotifyRemoveSpell(const NotifyRemoveSpell& acMessage) noexcept
+{
+    uint32_t targetFormId = acMessage.TargetId;
+
+    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
+    if (!pActor)
+    {
+        spdlog::warn(__FUNCTION__ ": could not find actor server id {:X}", acMessage.TargetId);
+        return;
+    }
+
+    const uint32_t cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
+    if (cSpellId == 0)
+    {
+        spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
+                      acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
+        return;
+    }
+
+    MagicItem* pSpell = Cast<MagicItem>(TESForm::GetById(cSpellId));
+    if (!pSpell)
+    {
+        spdlog::error("{}: Failed to retrieve spell by id {:X}", __FUNCTION__, cSpellId);
+        return;
+    }
+
+    // Remove the spell from the actor
+    //spdlog::info("Removing spell with form id {:X} from actor with form id {:X}", cSpellId, targetFormId);
+    pActor->RemoveSpell(pSpell);
 }
 
 void MagicService::ApplyQueuedEffects() noexcept

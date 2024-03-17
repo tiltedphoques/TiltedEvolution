@@ -17,7 +17,10 @@
 
 #include <Effects/ActiveEffect.h>
 
+#include <Events/RemoveSpellEvent.h>
+
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
+TP_THIS_FUNCTION(TRemoveSpell, bool, Actor, MagicItem* apSpell);
 TP_THIS_FUNCTION(TCheckAddEffectTargetData, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
 TP_THIS_FUNCTION(TFindTargets, bool, MagicCaster, float afEffectivenessMult, int32_t* aruiTargetCount,
                  TESBoundObject* apSource, char abLoadCast, char abAdjust);
@@ -26,6 +29,7 @@ TP_THIS_FUNCTION(THasPerk, bool, Actor, TESForm* apPerk, void* apUnk1, double* a
 TP_THIS_FUNCTION(TGetPerkRank, uint8_t, Actor, TESForm* apPerk);
 
 static TAddTarget* RealAddTarget = nullptr;
+static TRemoveSpell* RealRemoveSpell = nullptr;
 static TCheckAddEffectTargetData* RealCheckAddEffectTargetData = nullptr;
 static TFindTargets* RealFindTargets = nullptr;
 static TAdjustForPerks* RealAdjustForPerks = nullptr;
@@ -181,6 +185,26 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     }
 }
 
+// Designed to run when we hook removespell (AddressLib ID is 38717)
+// Sends a message to the server to remove the spell from this player on other clients
+bool TP_MAKE_THISCALL(HookRemoveSpell, Actor, MagicItem* apSpell)
+{   
+    bool result = TiltedPhoques::ThisCall(RealRemoveSpell, apThis, apSpell);
+    if (apThis->GetExtension()->IsLocalPlayer() && result)
+    {
+        // Log spell info
+        //spdlog::info("Removing spell {}, ID: {} from local player", apSpell->GetName() , apSpell->formID);
+        RemoveSpellEvent removalEvent;
+
+        removalEvent.TargetId = apThis->formID;
+        removalEvent.SpellId = apSpell->formID;
+        World::Get().GetRunner().Trigger(removalEvent);
+    }
+
+    return result;
+}
+
+
 bool TP_MAKE_THISCALL(HookCheckAddEffectTargetData, MagicTarget::AddTargetData, void* arArgs, float afResistance)
 {
     if (s_autoSucceedEffectCheck)
@@ -227,6 +251,7 @@ uint8_t TP_MAKE_THISCALL(HookGetPerkRank, Actor, TESForm* apPerk)
 
 static TiltedPhoques::Initializer s_magicTargetHooks([]() {
     POINTER_SKYRIMSE(TAddTarget, addTarget, 34526);
+    POINTER_SKYRIMSE(TRemoveSpell, removeSpell, 38717);
     POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 34525);
     POINTER_SKYRIMSE(TFindTargets, findTargets, 34410);
     POINTER_SKYRIMSE(TAdjustForPerks, adjustForPerks, 34053);
@@ -234,6 +259,7 @@ static TiltedPhoques::Initializer s_magicTargetHooks([]() {
     POINTER_SKYRIMSE(TGetPerkRank, getPerkRank, 37698);
 
     RealAddTarget = addTarget.Get();
+    RealRemoveSpell = removeSpell.Get();
     RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
     RealFindTargets = findTargets.Get();
     RealAdjustForPerks = adjustForPerks.Get();
@@ -241,6 +267,7 @@ static TiltedPhoques::Initializer s_magicTargetHooks([]() {
     RealGetPerkRank = getPerkRank.Get();
 
     TP_HOOK(&RealAddTarget, HookAddTarget);
+    TP_HOOK(&RealRemoveSpell, HookRemoveSpell);
     TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
     TP_HOOK(&RealFindTargets, HookFindTargets);
     TP_HOOK(&RealAdjustForPerks, HookAdjustForPerks);

@@ -352,6 +352,19 @@ void Actor::StopCombat() noexcept
     s_pStopCombat(this);
 }
 
+void Actor::RemoveSpell(MagicItem* apSpell) noexcept
+{
+    TP_THIS_FUNCTION(TRemoveSpell, void, Actor, MagicItem*);
+    POINTER_SKYRIMSE(TRemoveSpell, removeSpell, 38717);
+    if (!apSpell)
+    {
+        spdlog::error("Actor::RemoveSpell: apSpell is null");
+        return;
+    }
+    // spdlog::info("Removing spell: {} from actor: {}", apSpell->formID, formID);
+    TiltedPhoques::ThisCall(removeSpell, this, apSpell);
+}
+
 bool Actor::HasPerk(uint32_t aPerkFormId) const noexcept
 {
     return GetPerkRank(aPerkFormId) != 0;

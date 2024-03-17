@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Events/PacketEvent.h>
+#include <Messages/RemoveSpellRequest.h>
 
 struct World;
 struct SpellCastRequest;
@@ -30,6 +31,11 @@ protected:
      * @brief Relays magic effect messages to other clients.
      */
     void OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMessage) const noexcept;
+    /**
+    * @brief Relays spell removal messages to other clients.
+    */
+    void OnRemoveSpellRequest(const PacketEvent<RemoveSpellRequest>& acMessage) const noexcept;
+
 
 private:
     World& m_world;
@@ -37,4 +43,5 @@ private:
     entt::scoped_connection m_spellCastConnection;
     entt::scoped_connection m_interruptCastConnection;
     entt::scoped_connection m_addTargetConnection;
+    entt::scoped_connection m_removeSpellConnection;
 };

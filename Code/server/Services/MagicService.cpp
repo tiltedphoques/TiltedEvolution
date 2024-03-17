@@ -10,6 +10,7 @@
 #include <Messages/NotifySpellCast.h>
 #include <Messages/NotifyInterruptCast.h>
 #include <Messages/NotifyAddTarget.h>
+#include <Messages/NotifyRemoveSpell.h>
 
 MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -17,6 +18,7 @@ MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher) noexcep
     m_spellCastConnection = aDispatcher.sink<PacketEvent<SpellCastRequest>>().connect<&MagicService::OnSpellCastRequest>(this);
     m_interruptCastConnection = aDispatcher.sink<PacketEvent<InterruptCastRequest>>().connect<&MagicService::OnInterruptCastRequest>(this);
     m_addTargetConnection = aDispatcher.sink<PacketEvent<AddTargetRequest>>().connect<&MagicService::OnAddTargetRequest>(this);
+    m_removeSpellConnection = aDispatcher.sink<PacketEvent<RemoveSpellRequest>>().connect<&MagicService::OnRemoveSpellRequest>(this);
 }
 
 void MagicService::OnSpellCastRequest(const PacketEvent<SpellCastRequest>& acMessage) const noexcept
@@ -61,6 +63,21 @@ void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMes
     notify.IsDualCasting = message.IsDualCasting;
     notify.ApplyHealPerkBonus = message.ApplyHealPerkBonus;
     notify.ApplyStaminaPerkBonus = message.ApplyStaminaPerkBonus;
+
+    const auto entity = static_cast<entt::entity>(message.TargetId);
+    if (!GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender()))
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
+}
+
+void MagicService::OnRemoveSpellRequest(const PacketEvent<RemoveSpellRequest>& acMessage) const noexcept
+{
+    const auto& message = acMessage.Packet;
+    
+    NotifyRemoveSpell notify;
+    notify.TargetId = message.TargetId;
+    notify.SpellId = message.SpellId;
+
+    //spdlog::info("RemoveSpellRequest: TargetId: {}, Spell baseId: {}", notify.TargetId, notify.SpellId.BaseId);
 
     const auto entity = static_cast<entt::entity>(message.TargetId);
     if (!GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.GetSender()))
