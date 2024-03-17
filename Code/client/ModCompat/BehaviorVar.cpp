@@ -121,12 +121,12 @@ void processVariableSet(const std::map<const std::string, const uint32_t>& acRev
         }
 
         if (found == acReverseMap.end())
-            spdlog::warn("BehaviorVar::processVariableSet: unable to find variable {} in any of the common misspellings", item);
+            spdlog::warn(__FUNCTION__ ": unable to find variable {} in any of the common misspellings", item);
         else
         {
             aVariableSet.insert(found->second);
             if (item != found->first)
-                spdlog::warn("BehaviorVar::processVariableSet: misspelled variable {} found as {}", item, foundForm);
+                spdlog::warn(__FUNCTION__ ": misspelled variable {} found as {}", item, found->first);
         }
     }
 }
@@ -163,19 +163,19 @@ void BehaviorVar::seedAnimationVariables(
     std::string strValue;
     for (auto& item : pDescriptor->BooleanLookUpTable)
         if ((strValue = origVars.find(hash, item)).empty())
-            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original BooleanVar {}", item);
+            spdlog::error(__FUNCTION__ ": unable to find string for original BooleanVar {}", item);
         else
             boolVarNames.push_back(strValue);
 
    for (auto& item : pDescriptor->FloatLookupTable)
         if ((strValue = origVars.find(hash, item)).empty())
-            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original FloatVar {}", item);
+            spdlog::error(__FUNCTION__ ": unable to find string for original FloatVar {}", item);
         else
             floatVarNames.push_back(strValue);
 
    for (auto& item : pDescriptor->IntegerLookupTable)
         if ((strValue = origVars.find(hash, item)).empty())
-            spdlog::error("BehaviorVar::seedAnimationVariables unable to find string for original IntVar {}", item);
+            spdlog::error(__FUNCTION__ ": unable to find string for original IntVar {}", item);
         else
             intVarNames.push_back(strValue);
 
@@ -232,7 +232,7 @@ const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uin
     if (acReplacer.origHash && (pTmpGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(acReplacer.origHash)))
     {
         seedAnimationVariables(acReplacer.origHash, pTmpGraph, acReverseMap, boolVar, floatVar, intVar);
-        spdlog::info("Original game descriptor with hash {} has {} boolean, {} float, {} integer behavior vars",
+        spdlog::info(__FUNCTION__ ": Original game descriptor with hash {} has {} boolean, {} float, {} integer behavior vars",
                      acReplacer.origHash, boolVar.size(), floatVar.size(), intVar.size());
     }
 
@@ -283,7 +283,8 @@ const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uin
         }
     }
     if (foundCount)
-        spdlog::info("Now have {} intVar descriptors after searching {} BehavivorVar strings", intVar.size(),
+        spdlog::info(__FUNCTION__ ": now have {} intVar descriptors after searching {} BehavivorVar strings",
+                     intVar.size(),
                      acReplacer.syncIntegerVar.size());
 
     // Reshape the (sorted, unique) sets to vectors
@@ -358,9 +359,10 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
     // With that case filtered out, keep a counter to see if we need to defend against other 
     // cases (like a modded behavior where we CAN't find the signature var).
     if (invocations++ == 100)
-        spdlog::warn("BehaviorVar::Patch: warning, more than 100 invocations, investigate why");
+        spdlog::warn(__FUNCTION__ ": warning, more than 100 invocations, investigate why");
  
-    spdlog::info("BehaviorVar::Patch: actor with formID {:x} with hash of {} has modded (or not synced) behavior", hexFormID, hash);
+    spdlog::info(__FUNCTION__ ": actor with formID {:x} with hash of {} has modded (or not synced) behavior", hexFormID,
+                 hash);
 
     // Get all animation variables for this actor, then create a acReverseMap to go from strings to animation enum.
     auto pDumpVar = apManager->DumpAnimationVariables(false);
@@ -405,7 +407,9 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
     switch (matchedReplacers.size())
     {
         case 0:
-            spdlog::warn("No original behavior found for behavior hash {:x} (found on formID {:x}), adding to fail list", hash, hexFormID);
+        spdlog::warn(__FUNCTION__ ": no original behavior found for behavior hash {:x} (found on formID {:x}), adding to "
+                                  "fail list",
+                     hash, hexFormID);
             failList(hash);
             return nullptr;
 
@@ -413,7 +417,7 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
             break;
 
         default:
-            spdlog::critical("BehaviorVar::Patch: multiple behavior replacers have the same signature, this must be corrected:");
+            spdlog::critical(__FUNCTION__ ": multiple behavior replacers have the same signature, this must be corrected:");
             for (auto& item : matchedReplacers)
                 spdlog::critical("   {}", behaviorPool[item].creatureName);
             failList(hash);
@@ -422,7 +426,8 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
     }
 
     auto& foundRep = behaviorPool[matchedReplacers[0]];
-    spdlog::info("Found match, behavior hash {:x} (found on formID {:x}) has original behavior {} signature {}", hash,
+    spdlog::info(__FUNCTION__ ": found match, behavior hash {:x} (found on formID {:x}) has original behavior {} signature {}",
+        hash,
                  hexFormID, foundRep.creatureName, foundRep.signatureVar); 
     
     // Save the new hash for the actor, and save it as the original actor hash.
@@ -537,7 +542,7 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::filesystem::path aD
     erase_if(sigVar, isspace); // removes any inadvertant whitespace
     if (sigVar.size() == 0)
         return nullptr;
-    spdlog::info("BehaviorVar::loadReplacerFromDir found {} with signature variable {}", creatureName, sigVar);
+    spdlog::info(__FUNCTION__ ": found {} with signature variable {}", creatureName, sigVar);
 
     // Check to see if there is a hash file. 
     // This is recommended, and shouild contain the ORIGINAL hash, 
@@ -680,16 +685,16 @@ void BehaviorVar::Init()
         switch (matches.size())
         {
         case 0:
-            spdlog::critical("BehaviorVar::Init: failure to find self in behaviorPool, {}", signature.creatureName);
+            spdlog::critical(__FUNCTION__ ": failure to find self in behaviorPool, {}", signature.creatureName);
         case 1:
             break;
 
         default:
             if (firsttime++ == 0)
-                spdlog::warn("BehaviorVar::Init: some creatures have ambiguous signatures. This is expected for now, "
-                             "but a modder must create a unique signature in their mod.");
+                spdlog::warn(__FUNCTION__ ": some creatures have ambiguous signatures. This is expected for now,\n"
+                             "    but a modder must create a unique signature in their mod.");
 
-            spdlog::warn("BehaviorVar::Init: {} signature {} matches:", signature.creatureName, signature.signatureVar);
+            spdlog::warn(__FUNCTION__ ": {} signature {} matches:", signature.creatureName, signature.signatureVar);
             for (auto hash : matches)
             {
                 auto iter = std::find(behaviorPool.begin(), behaviorPool.end(), hash);
