@@ -23,6 +23,7 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <EquipManager.h>
+#include <Games/ActorExtension.h>
 
 #if TP_FALLOUT4
 #include <Forms/BGSObjectInstance.h>
@@ -317,6 +318,9 @@ void InventoryService::RunNakedNPCBugChecks() noexcept
         if (!pActor)
             continue;
 
+        if (pActor->GetExtension()->IsPlayer())
+            continue;
+
         if (pActor->IsDead())
             continue;
 
@@ -326,7 +330,15 @@ void InventoryService::RunNakedNPCBugChecks() noexcept
         if (pActor->IsWearingBodyPiece())
             continue;
 
-        pActor->ResetInventory(false);
+        // Don't broadcast changes if a remote actor needs fixing
+        if (pActor->GetExtension()->IsRemote())
+        {
+            ScopedEquipOverride seo;
+            ScopedInventoryOverride sio;
+            pActor->ResetInventory(false);
+        }
+        else
+            pActor->ResetInventory(false);
     }
 #endif
 }
