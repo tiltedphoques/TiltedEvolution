@@ -4,8 +4,6 @@
 #define NOMINMAX
 #endif
 
-#include <BranchInfo.h>
-
 #include <TiltedCore/Platform.hpp>
 
 #if defined(TP_SKYRIM) && TP_PLATFORM_64
