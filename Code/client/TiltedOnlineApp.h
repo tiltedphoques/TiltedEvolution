@@ -1,5 +1,7 @@
 #pragma once
 
+#include <BranchInfo.h>
+
 #if (!IS_MASTER)
 #include "CrashHandler.h"
 #else
