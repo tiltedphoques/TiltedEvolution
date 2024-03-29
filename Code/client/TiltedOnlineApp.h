@@ -36,6 +36,6 @@ private:
 #if (!IS_MASTER)
     CrashHandler m_crashHandler;
 #else
-    ScopedCrashHandler m_crashHandler;
+    //ScopedCrashHandler m_crashHandler;
 #endif
 };
