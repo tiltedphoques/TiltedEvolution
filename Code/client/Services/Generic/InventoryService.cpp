@@ -317,6 +317,9 @@ void InventoryService::RunNakedNPCBugChecks() noexcept
         if (!pActor)
             continue;
 
+        if (pActor->IsDead())
+            continue;
+
         if (!pActor->IsHumanoidNPC())
             continue;
 
