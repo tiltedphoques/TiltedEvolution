@@ -1,3 +1,5 @@
+#include <BranchInfo.h>
+
 #include <Havok/hkbStateMachine.h>
 #include <Structs/AnimationGraphDescriptorManager.h>
 

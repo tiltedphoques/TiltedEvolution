@@ -15,6 +15,8 @@
 
 #include "base/dialogues/win/TaskDialog.h"
 
+#include <BranchInfo.h>
+
 // These symbols are defined within the client code skyrimtogetherclient
 extern void InstallStartHook();
 extern void RunTiltedApp();

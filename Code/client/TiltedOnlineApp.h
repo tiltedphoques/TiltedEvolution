@@ -1,5 +1,7 @@
 #pragma once
 
+#include <BranchInfo.h>
+
 #if (!IS_MASTER)
 #include "CrashHandler.h"
 #else
@@ -36,6 +38,6 @@ private:
 #if (!IS_MASTER)
     CrashHandler m_crashHandler;
 #else
-    ScopedCrashHandler m_crashHandler;
+    //ScopedCrashHandler m_crashHandler;
 #endif
 };
