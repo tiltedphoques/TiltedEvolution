@@ -45,6 +45,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     RunWeaponStateUpdates();
+    RunNakedNPCBugChecks();
 }
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
@@ -290,4 +291,39 @@ void InventoryService::RunWeaponStateUpdates() noexcept
             m_transport.Send(request);
         }
     }
+}
+
+void InventoryService::RunNakedNPCBugChecks() noexcept
+{
+#if TP_SKYRIM64
+    if (!m_transport.IsConnected())
+        return;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 1000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto view = m_world.view<FormIdComponent>();
+
+    for (auto entity : view)
+    {
+        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+        if (!pActor)
+            continue;
+
+        if (!pActor->IsHumanoidNPC())
+            continue;
+
+        if (pActor->IsWearingBodyPiece())
+            continue;
+
+        pActor->ResetInventory(false);
+    }
+#endif
 }

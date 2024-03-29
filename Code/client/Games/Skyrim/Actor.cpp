@@ -191,6 +191,16 @@ TESForm* Actor::GetEquippedAmmo() const noexcept
     return nullptr;
 }
 
+bool Actor::IsWearingBodyPiece() const noexcept
+{
+    return GetContainerChanges()->GetArmor(32) != nullptr;
+}
+
+bool Actor::IsHumanoidNPC() const noexcept
+{
+    return Cast<TESNPC>(baseForm)->outfits[0] != nullptr;
+}
+
 // Get owner of a summon or raised corpse
 Actor* Actor::GetCommandingActor() const noexcept
 {

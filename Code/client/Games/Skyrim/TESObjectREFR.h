@@ -134,7 +134,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_87();
     virtual void sub_88();
     virtual void DisableImpl();
-    virtual void sub_8A();
+    virtual void ResetInventory(bool abLeveledOnly);
     virtual void sub_8B();
     virtual void sub_8C();
     virtual void sub_8D();
