@@ -183,10 +183,8 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     // TODO: should this be done for armor as well?
     // Also, find out why the client is sending two equip messages in the first place.
     // TODO: this fix makes it so that weapons and spells are sometimes invisible :/
-    #if 0
     if (!acMessage.Unequip && pActor->GetEquippedWeapon(slotId) == pItem)
         return;
-    #endif
 #endif
 
     auto* pEquipManager = EquipManager::Get();
@@ -331,15 +329,12 @@ void InventoryService::RunNakedNPCBugChecks() noexcept
         if (!pActor->ShouldWearBodyPiece())
             continue;
 
-        // Don't broadcast changes if a remote actor needs fixing
-        if (pActor->GetExtension()->IsRemote())
-        {
-            ScopedEquipOverride seo;
-            ScopedInventoryOverride sio;
-            pActor->ResetInventory(false);
-        }
-        else
-            pActor->ResetInventory(false);
+        // Don't broadcast changes, it'll just make things messier.
+        // If all clients have this problem, they'll all fix it individually.
+        ScopedEquipOverride seo;
+        ScopedInventoryOverride sio;
+
+        pActor->ResetInventory(false);
     }
 #endif
 }
