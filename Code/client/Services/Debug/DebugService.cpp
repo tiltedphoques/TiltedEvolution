@@ -213,15 +213,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            //PlaceActorInWorld();
-            Actor* pActor = Cast<Actor>(TESForm::GetById(m_formId));
-            if (pActor)
-            {
-                if (pActor->ShouldWearBodyPiece())
-                    spdlog::warn("Actor has body piece");
-                else
-                    spdlog::error("Actor does not have body piece");
-            }
+            PlaceActorInWorld();
         }
     }
     else
