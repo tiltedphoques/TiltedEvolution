@@ -44,6 +44,8 @@
 #include <Games/Skyrim/BSAnimationGraphManager.h>
 #include <Havok/hkbStateMachine.h>
 #include <Havok/hkbBehaviorGraph.h>
+#include <Forms/BGSOutfit.h>
+#include <Forms/TESObjectARMO.h>
 
 #ifdef SAVE_STUFF
 
@@ -196,9 +198,44 @@ bool Actor::IsWearingBodyPiece() const noexcept
     return GetContainerChanges()->GetArmor(32) != nullptr;
 }
 
-bool Actor::IsHumanoidNPC() const noexcept
+bool Actor::ShouldWearBodyPiece() const noexcept
 {
-    return Cast<TESNPC>(baseForm)->outfits[0] != nullptr;
+    TESNPC* pBase = Cast<TESNPC>(baseForm);
+    if (!pBase)
+        return false;
+
+    BGSOutfit* pDefaultOutfit = pBase->outfits[0];
+    if (!pDefaultOutfit)
+        return false;
+
+    for (auto* pItem : pDefaultOutfit->outfitItems)
+    {
+        TESObjectARMO* pArmor = nullptr;
+
+        if (pItem->formType == FormType::Armor)
+            pArmor = Cast<TESObjectARMO>(pItem);
+        else if (pItem->formType == FormType::LeveledItem)
+        {
+            // TODO: leveled items can probably also be handled but afaik,
+            // the naked npc bug mostly occurs to town NPCs.
+            // Since this is a bit more complex and possibly error prone, leave out for now.
+#if 0
+            TESLevItem* pLevItem = Cast<TESLevItem>(pItem);
+            if (!pLevItem)
+                continue;
+#endif
+        }
+        else
+            continue;
+
+        if (!pArmor)
+            continue;
+
+        if (pArmor->slotType & 0x4) // 0x4 is flag for body piece
+            return true;
+    }
+
+    return false;
 }
 
 // Get owner of a summon or raised corpse

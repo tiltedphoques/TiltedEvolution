@@ -24,6 +24,7 @@
 #include <Games/Overrides.h>
 #include <EquipManager.h>
 #include <Games/ActorExtension.h>
+#include <Forms/TESNPC.h>
 
 #if TP_FALLOUT4
 #include <Forms/BGSObjectInstance.h>
@@ -324,10 +325,10 @@ void InventoryService::RunNakedNPCBugChecks() noexcept
         if (pActor->IsDead())
             continue;
 
-        if (!pActor->IsHumanoidNPC())
+        if (pActor->IsWearingBodyPiece())
             continue;
 
-        if (pActor->IsWearingBodyPiece())
+        if (!pActor->ShouldWearBodyPiece())
             continue;
 
         // Don't broadcast changes if a remote actor needs fixing

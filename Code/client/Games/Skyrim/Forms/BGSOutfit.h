@@ -4,4 +4,5 @@
 
 struct BGSOutfit : TESForm
 {
+    GameArray<TESForm*> outfitItems;
 };
