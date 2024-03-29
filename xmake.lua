@@ -1,4 +1,4 @@
-set_xmakever("2.6.5")
+set_xmakever("2.8.5")
 
 -- If newer version of xmake, remove ccache until it actually works
 if set_policy ~= nil then
@@ -32,16 +32,16 @@ end
 
 add_requires(
     "entt v3.10.0", 
-    "recastnavigation", 
-    "tiltedcore", 
-    "cryptopp", 
-    "spdlog", 
-    "cpp-httplib",
-    "gtest", 
-    "mem", 
-    "glm", 
-    "sentry-native", 
-    "zlib")
+    "recastnavigation v1.6.0", 
+    "tiltedcore v0.2.7", 
+    "cryptopp 8.9.0", 
+    "spdlog v1.13.0", 
+    "cpp-httplib 0.14.0",
+    "gtest v1.14.0", 
+    "mem 1.0.0", 
+    "glm 0.9.9+8", 
+    "sentry-native 0.7.1", 
+    "zlib v1.3.1")
 
 add_requireconfs("cpp-httplib", {configs = {ssl = true}})
 add_requireconfs("sentry-native", { configs = { backend = "crashpad" } })
@@ -54,17 +54,9 @@ add_requireconfs("magnum-integration.imgui", { override = true })
 
 if is_plat("windows") then
     add_requires(
-        "discord", 
-        "imgui"
+        "discord 3.2.1", 
+        "imgui v1.89.7"
     )
-    --[[
-    add_requires(
-        "discord", 
-        "imgui",
-        "magnum", 
-        "magnum-integration"
-    )
-    --]]
 end
 
 before_build(function (target)
