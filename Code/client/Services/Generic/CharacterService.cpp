@@ -626,7 +626,22 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
     if (itor != std::end(view))
     {
         if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
-            CharacterService::DeleteTempActor(pFormIdComponent->Id);
+        {
+            Actor* pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
+
+            if (pActor)
+            {
+                if (pActor->IsTemporary())
+                {
+                    spdlog::info("Temporary Remote Deleted {:X}", pFormIdComponent->Id);
+                    pActor->Delete();
+                }
+                else
+                {
+                    pActor->GetExtension()->SetRemote(false);
+                }
+            }
+        }
 
         DeleteRemoteEntityComponents(*itor);
     }
@@ -982,10 +997,10 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
             auto& formIdComponent = m_world.get<FormIdComponent>(entity);
 
             if (m_world.all_of<LocalComponent>(entity))
-            {
                 m_world.remove<LocalAnimationComponent, LocalComponent>(entity);
+
+            if (!m_world.all_of<RemoteComponent>(entity))
                 m_world.emplace_or_replace<RemoteComponent>(entity, acMessage.ServerId, formIdComponent.Id);
-            }
 
             Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
             pActor->GetExtension()->SetRemote(true);
