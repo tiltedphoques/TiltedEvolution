@@ -9,6 +9,7 @@
 #include <Components/TESActorBaseData.h>
 #include <ExtraData/ExtraFactionChanges.h>
 #include <Games/Memory.h>
+#include <Forms/TESLevItem.h>
 
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
@@ -216,14 +217,11 @@ bool Actor::ShouldWearBodyPiece() const noexcept
             pArmor = Cast<TESObjectARMO>(pItem);
         else if (pItem->formType == FormType::LeveledItem)
         {
-            // TODO: leveled items can probably also be handled but afaik,
-            // the naked npc bug mostly occurs to town NPCs.
-            // Since this is a bit more complex and possibly error prone, leave out for now.
-#if 0
             TESLevItem* pLevItem = Cast<TESLevItem>(pItem);
-            if (!pLevItem)
+            if (!pLevItem || !pLevItem->pLeveledListA || !pLevItem->pLeveledListA->pForm)
                 continue;
-#endif
+
+            pArmor = Cast<TESObjectARMO>(pLevItem->pLeveledListA->pForm);
         }
         else
             continue;
@@ -231,7 +229,7 @@ bool Actor::ShouldWearBodyPiece() const noexcept
         if (!pArmor)
             continue;
 
-        if (pArmor->slotType & 0x4) // 0x4 is flag for body piece
+        if (pArmor->IsBodyPiece()) 
             return true;
     }
 
