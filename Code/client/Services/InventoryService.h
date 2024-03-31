@@ -56,6 +56,11 @@ private:
      * and if so, send the new states to the server.
      */
     void RunWeaponStateUpdates() noexcept;
+    /**
+    * Checks whether an NPC's (local or remote) equipment is bugged (i.e. naked NPCS)
+    * and resets their inventory.
+    */
+    void RunNakedNPCBugChecks() noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;

@@ -6,6 +6,7 @@ struct BGSLoadFormBuffer;
 struct BGSSaveFormBuffer;
 struct TESObjectREFR;
 struct TESForm;
+struct TESObjectARMO;
 
 struct ExtraContainerChanges : BSExtraData
 {
@@ -25,6 +26,7 @@ struct ExtraContainerChanges : BSExtraData
     {
         void Save(BGSSaveFormBuffer* apBuffer);
         void Load(BGSLoadFormBuffer* apBuffer);
+        TESObjectARMO* GetArmor(uint32_t aSlotId) noexcept;
 
         GameList<Entry>* entries;
         TESObjectREFR* parent;

@@ -9,6 +9,7 @@
 #include <Components/TESActorBaseData.h>
 #include <ExtraData/ExtraFactionChanges.h>
 #include <Games/Memory.h>
+#include <Forms/TESLevItem.h>
 
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
@@ -44,6 +45,8 @@
 #include <Games/Skyrim/BSAnimationGraphManager.h>
 #include <Havok/hkbStateMachine.h>
 #include <Havok/hkbBehaviorGraph.h>
+#include <Forms/BGSOutfit.h>
+#include <Forms/TESObjectARMO.h>
 
 #ifdef SAVE_STUFF
 
@@ -191,6 +194,48 @@ TESForm* Actor::GetEquippedAmmo() const noexcept
     return nullptr;
 }
 
+bool Actor::IsWearingBodyPiece() const noexcept
+{
+    return GetContainerChanges()->GetArmor(32) != nullptr;
+}
+
+bool Actor::ShouldWearBodyPiece() const noexcept
+{
+    TESNPC* pBase = Cast<TESNPC>(baseForm);
+    if (!pBase)
+        return false;
+
+    BGSOutfit* pDefaultOutfit = pBase->outfits[0];
+    if (!pDefaultOutfit)
+        return false;
+
+    for (auto* pItem : pDefaultOutfit->outfitItems)
+    {
+        TESObjectARMO* pArmor = nullptr;
+
+        if (pItem->formType == FormType::Armor)
+            pArmor = Cast<TESObjectARMO>(pItem);
+        else if (pItem->formType == FormType::LeveledItem)
+        {
+            TESLevItem* pLevItem = Cast<TESLevItem>(pItem);
+            if (!pLevItem || !pLevItem->pLeveledListA || !pLevItem->pLeveledListA->pForm)
+                continue;
+
+            pArmor = Cast<TESObjectARMO>(pLevItem->pLeveledListA->pForm);
+        }
+        else
+            continue;
+
+        if (!pArmor)
+            continue;
+
+        if (pArmor->IsBodyPiece()) 
+            return true;
+    }
+
+    return false;
+}
+
 // Get owner of a summon or raised corpse
 Actor* Actor::GetCommandingActor() const noexcept
 {
@@ -207,7 +252,7 @@ Actor* Actor::GetCommandingActor() const noexcept
 // Get owner of a summon or raised corpse
 void Actor::SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept
 {
-    if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess)
+    if (currentProcess && currentProcess->middleProcess)
     {
         currentProcess->middleProcess->commandingActor = aCommandingActor;
         flags2 |= ActorFlags::IS_COMMANDED_ACTOR;

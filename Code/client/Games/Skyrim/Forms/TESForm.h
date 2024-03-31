@@ -14,6 +14,7 @@ enum class FormType : uint8_t
     Npc = 43,
     LeveledCharacter = 44,
     Alchemy = 46,
+    LeveledItem = 53,
     Character = 62,
     QuestItem = 77,
     Count = 0x87
