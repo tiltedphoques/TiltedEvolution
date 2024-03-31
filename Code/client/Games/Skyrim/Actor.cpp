@@ -252,7 +252,7 @@ Actor* Actor::GetCommandingActor() const noexcept
 // Get owner of a summon or raised corpse
 void Actor::SetCommandingActor(BSPointerHandle<TESObjectREFR> aCommandingActor) noexcept
 {
-    if (currentProcess && currentProcess->middleProcess && currentProcess->middleProcess)
+    if (currentProcess && currentProcess->middleProcess)
     {
         currentProcess->middleProcess->commandingActor = aCommandingActor;
         flags2 |= ActorFlags::IS_COMMANDED_ACTOR;
