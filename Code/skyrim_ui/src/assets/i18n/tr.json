@@ -19,7 +19,7 @@
       "PUBLIC_SERVERS": "Herkese Açık Sunucular",
       "ERROR": {
         "CONNECTION": "Belirtilen sunucuya bağlanılamadı. Lütfen doğru adresi girdiğinize ve bağlantı sorununuzun olmadığına emin olun.",
-        "VERSION_MISMATCH": "You cannot connect to the server because it does not have the same version of Skyrim Together as you.",
+        "VERSION_MISMATCH": "Sunucuya bağlanamazsınız çünkü aynı Skyrim Together versiyonlarına sahip değilsiniz.",
         "INVALID_ADDRESS": "Adres geçersiz formatta."
       }
     },
