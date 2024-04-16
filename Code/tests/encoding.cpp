@@ -481,8 +481,8 @@ TEST_CASE("StringCache", "[encoding.string_cache]")
     SECTION("Messages")
     {
         StringCacheUpdate update;
-        update.Values[0] = "Hello";
-        update.Values[1] = "Bye";
+        update.Values.push_back("Hello");
+        update.Values.push_back("Bye");
 
         Buffer buff(1000);
         Buffer::Writer writer(&buff);
