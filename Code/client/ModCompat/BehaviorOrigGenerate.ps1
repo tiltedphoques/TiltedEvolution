@@ -1,8 +1,17 @@
 param (
-    [string]$path = "..\..\encoding\Structs\Skyrim"
+    [string]$name = "Skyrim",
 )
+
+Set-PSDebug -Trace 1
+
+$output = "BehaviorOrig$name.obs"
+$path = "..\..\encoding\Structs\$name"
 $files = Get-ChildItem $path -Filter *_*.cpp 
-Set-PSDebug -Trace 0
+
+# Output everything to the target file.
+$(
+
+
 "// DO NOT EDIT, MACHINE-GENERATED CODE
 //
 // This is an admittedly dirty approach, but done with the best of intentions.
@@ -92,3 +101,7 @@ foreach ($f in $files)
 
 $creatures = $creatures + "};`r`n"
 $creatures
+
+
+) *>&1 > $output
+# Close redirection
