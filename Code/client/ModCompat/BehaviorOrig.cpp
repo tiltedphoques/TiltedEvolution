@@ -1,3 +1,4 @@
+#ifdef MODDED_BEHAVIOR_COMPATIBILITY
 
 #include "BehaviorVarsMap.h"
 #define MAGIC_ENUM_RANGE_MAX 400
@@ -37,3 +38,5 @@ template <typename V> void GenerateFromEnum(uint64_t key)
 #endif
 
 } // using namespace BehaviorOrig
+
+#endif MODDED_BEHAVIOR_COMPATIBILITY

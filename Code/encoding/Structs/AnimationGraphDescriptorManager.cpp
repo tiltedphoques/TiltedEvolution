@@ -16,7 +16,22 @@ const AnimationGraphDescriptor* AnimationGraphDescriptorManager::GetDescriptor(u
     return nullptr;
 }
 
-const TiltedPhoques::Map<uint64_t, AnimationGraphDescriptor> AnimationGraphDescriptorManager::GetDescriptors() const noexcept
+AnimationGraphDescriptorManager::Builder::Builder(AnimationGraphDescriptorManager& aManager, uint64_t aKey, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
+{
+    aManager.Register(aKey, std::move(aAnimationGraphDescriptor));
+}
+
+void AnimationGraphDescriptorManager::Register(uint64_t aKey, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
+{
+    if (m_descriptors.count(aKey))
+        return;
+
+    m_descriptors[aKey] = std::move(aAnimationGraphDescriptor);
+}
+
+#ifdef MODDED_BEHAVIOR_COMPATIBILITY
+const TiltedPhoques::Map<uint64_t, AnimationGraphDescriptor>& AnimationGraphDescriptorManager::GetDescriptors()
+    const noexcept
 {
     return m_descriptors;
 }
@@ -41,25 +56,11 @@ void AnimationGraphDescriptorManager::Update(uint64_t aKey, uint64_t newKey, Ani
         m_descriptors.erase(it);
     }
 }
-#endif
 
-AnimationGraphDescriptorManager::Builder::Builder(AnimationGraphDescriptorManager& aManager, uint64_t aKey, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
-{
-    aManager.Register(aKey, std::move(aAnimationGraphDescriptor));
-}
-
-void AnimationGraphDescriptorManager::Register(uint64_t aKey, AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
-{
-    if (m_descriptors.count(aKey))
-        return;
-
-    m_descriptors[aKey] = std::move(aAnimationGraphDescriptor);
-}
-
-#ifdef MODDED_BEHAVIOR_KEEP_UNUSED
 void AnimationGraphDescriptorManager::ReRegister(uint64_t aKey,
                                                  AnimationGraphDescriptor aAnimationGraphDescriptor) noexcept
 {
     m_descriptors[aKey] = std::move(aAnimationGraphDescriptor);
 }
-#endif
+#endif MODDED_BEHAVIOR_KEEP_UNUSED
+#endif MODDED_BEHAVIOR_COMPATIBILITY

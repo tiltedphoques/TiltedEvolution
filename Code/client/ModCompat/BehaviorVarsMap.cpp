@@ -1,3 +1,4 @@
+#ifdef MODDED_BEHAVIOR_COMPATIBILITY
 #include "BehaviorVarsMap.h"
 
 
@@ -47,3 +48,4 @@ BehaviorVarsMap& BehaviorVarsMap::getInstance()
     return instance;
 }
 
+#endif MODDED_BEHAVIOR_COMPATIBILITY
