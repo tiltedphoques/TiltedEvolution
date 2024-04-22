@@ -21,9 +21,9 @@ class BehaviorVarsMap
     void operator=(BehaviorVarsMap const&)  = delete;
 
   public:
-    uint32_t find(const uint64_t key, const std::string name);
+    uint32_t find(const uint64_t acKey, const std::string acName);
 
-    std::string find(const uint64_t key, const uint32_t value);
+    std::string find(const uint64_t acKey, const uint32_t acValue);
     void hashes(std::vector<uint64_t>& aHashes) const
     {
         aHashes.clear();
@@ -31,7 +31,7 @@ class BehaviorVarsMap
             aHashes.push_back(item.first);
     };
 
-    void Register(const BehaviorVars map);
+    void Register(const BehaviorVars aMap);
 
     static BehaviorVarsMap& getInstance();
 };

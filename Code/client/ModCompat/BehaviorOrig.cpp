@@ -7,7 +7,7 @@
 
 namespace BehaviorOrig
 {
-template <typename V> void GenerateFromEnum(uint64_t key)
+template <typename V> void GenerateFromEnum(uint64_t aKey)
 {
     using namespace magic_enum;
     constexpr size_t count = enum_count<V>();
@@ -15,7 +15,7 @@ template <typename V> void GenerateFromEnum(uint64_t key)
     constexpr auto variables_names = enum_names<V>();
     BehaviorVars sig;
 
-    sig.m_key = key;
+    sig.m_key = aKey;
     for (size_t index = 0; index < count; index++)
     {
         std::string name = static_cast<std::string>(variables_names[index]);

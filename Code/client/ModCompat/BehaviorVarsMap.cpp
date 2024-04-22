@@ -2,13 +2,13 @@
 #include "BehaviorVarsMap.h"
 
 
-uint32_t BehaviorVarsMap::find(const uint64_t key, const std::string name)
+uint32_t BehaviorVarsMap::find(const uint64_t acKey, const std::string acName)
 {
-    auto map = m_map.find(key);
+    auto map = m_map.find(acKey);
 
     if (map != m_map.end())
     {
-        auto map2 = map->second.m_namemap.find(name);
+        auto map2 = map->second.m_namemap.find(acName);
 
         if (map2 != map->second.m_namemap.end())
             return map2->second;
@@ -17,14 +17,14 @@ uint32_t BehaviorVarsMap::find(const uint64_t key, const std::string name)
     return UINT32_MAX;
 }
 
-std::string BehaviorVarsMap::find(const uint64_t key, const uint32_t value)
+std::string BehaviorVarsMap::find(const uint64_t acKey, const uint32_t acValue)
 {
     constexpr std::string empty;
     
-    auto map = m_map.find(key);
+    auto map = m_map.find(acKey);
     if (map != m_map.end())
     {
-        auto map2 = map->second.m_valuemap.find(value);
+        auto map2 = map->second.m_valuemap.find(acValue);
 
         if (map2 != map->second.m_valuemap.end())
             return map2->second;
@@ -33,9 +33,9 @@ std::string BehaviorVarsMap::find(const uint64_t key, const uint32_t value)
     return empty;
 }
 
-void BehaviorVarsMap::Register(const BehaviorVars map)
+void BehaviorVarsMap::Register(const BehaviorVars aMap)
 {
-    m_map.insert_or_assign(map.m_key, map);
+    m_map.insert_or_assign(aMap.m_key, aMap);
 }
 
 

@@ -68,22 +68,22 @@ const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* apMana
 // We'd like to be able to handle other vars for which this may be the case.
 namespace
 {
-std::string toLowerCase(const std::string& aStr)
+std::string toLowerCase(const std::string& acStr)
 {
     std::string lowerCaseStr;
-    lowerCaseStr.reserve(aStr.size());
-    std::transform(aStr.begin(), aStr.end(), lowerCaseStr.begin(),
+    lowerCaseStr.reserve(acStr.size());
+    std::transform(acStr.begin(), acStr.end(), lowerCaseStr.begin(),
                    [](unsigned char c) { return std::tolower(c); });
     return lowerCaseStr;
 }
 
 // Converts the keys of a map (which are const std::string) to lowercase.
 // This is our "Plan C" if a vanilla var isn't found to make sure it isn't just a case-sensitivity issue.
-void lowerCaseKeys(const std::map<const std::string, const uint32_t>& map,
-                   std::map<const std::string, const uint32_t>& lowerCaseMap)
+void lowerCaseKeys(const std::map<const std::string, const uint32_t>& acMap,
+                   std::map<const std::string, const uint32_t>& aLowerCaseMap)
 {
-    for (const auto& item : map)
-        lowerCaseMap.insert({toLowerCase(item.first), item.second});
+    for (const auto& item : acMap)
+        aLowerCaseMap.insert({toLowerCase(item.first), item.second});
 }
 
 // Process a set of variables, adding them to the aVariableSet
@@ -145,12 +145,12 @@ void processVariableSet(const std::map<const std::string, const uint32_t>& acRev
 // permission to also embed the string information in the Code\encoding\structs files.
 //
 void BehaviorVar::seedAnimationVariables(
-    uint64_t hash, 
-    const AnimationGraphDescriptor* pDescriptor,
-    std::map<const std::string, const uint32_t>& reversemap,
-    std::set<uint32_t>& boolVars, 
-    std::set<uint32_t>& floatVars,
-    std::set<uint32_t>& intVars)
+    const uint64_t acHash, 
+    const AnimationGraphDescriptor* acpDescriptor,
+    const std::map<const std::string, const uint32_t>& acReversemap,
+    std::set<uint32_t>& aBoolVars, 
+    std::set<uint32_t>& aFloatVars,
+    std::set<uint32_t>& aIntVars)
 {
     auto& origVars = BehaviorVarsMap::getInstance();
 
@@ -161,28 +161,28 @@ void BehaviorVar::seedAnimationVariables(
 
     // Populate lists from the original descriptor
     std::string strValue;
-    for (auto& item : pDescriptor->BooleanLookUpTable)
-        if ((strValue = origVars.find(hash, item)).empty())
+    for (auto& item : acpDescriptor->BooleanLookUpTable)
+        if ((strValue = origVars.find(acHash, item)).empty())
             spdlog::error(__FUNCTION__ ": unable to find string for original BooleanVar {}", item);
         else
             boolVarNames.push_back(strValue);
 
-   for (auto& item : pDescriptor->FloatLookupTable)
-        if ((strValue = origVars.find(hash, item)).empty())
+   for (auto& item : acpDescriptor->FloatLookupTable)
+        if ((strValue = origVars.find(acHash, item)).empty())
             spdlog::error(__FUNCTION__ ": unable to find string for original FloatVar {}", item);
         else
             floatVarNames.push_back(strValue);
 
-   for (auto& item : pDescriptor->IntegerLookupTable)
-        if ((strValue = origVars.find(hash, item)).empty())
+   for (auto& item : acpDescriptor->IntegerLookupTable)
+        if ((strValue = origVars.find(acHash, item)).empty())
             spdlog::error(__FUNCTION__ ": unable to find string for original IntVar {}", item);
         else
             intVarNames.push_back(strValue);
 
     // Process each set of variables
-   processVariableSet(reversemap, boolVars, boolVarNames, spdlog::level::level_enum::err);
-   processVariableSet(reversemap, floatVars, floatVarNames, spdlog::level::level_enum::err);
-   processVariableSet(reversemap, intVars, intVarNames, spdlog::level::level_enum::err);
+   processVariableSet(acReversemap, aBoolVars, boolVarNames, spdlog::level::level_enum::err);
+   processVariableSet(acReversemap, aFloatVars, floatVarNames, spdlog::level::level_enum::err);
+   processVariableSet(acReversemap, aIntVars, intVarNames, spdlog::level::level_enum::err);
 }
 
 // Syntax for a signature is [!]sig1[,[!]sig2]... Must be at least one. Each signature var possibly negated
@@ -190,7 +190,7 @@ void BehaviorVar::seedAnimationVariables(
 // Requires that whitespace has already been deleted (which it was, when directories were loaded).
 // Tokenize on ','
 //
-const std::vector<std::string> BehaviorVar::tokenizeBehaviorSig(const std::string signature) const
+const std::vector<std::string> BehaviorVar::tokenizeBehaviorSig(const std::string acSignature) const
 {
     const static std::string notVal{"!"};
     std::vector<std::string> retVal;
@@ -199,14 +199,14 @@ const std::vector<std::string> BehaviorVar::tokenizeBehaviorSig(const std::strin
 
     do
     {
-        if (signature[offset] == '!')
+        if (acSignature[offset] == '!')
         {
             offset++;
             retVal.push_back(notVal);
         }
 
-        commaPos = signature.find(',', offset);
-        retVal.push_back(signature.substr(offset, commaPos));
+        commaPos = acSignature.find(',', offset);
+        retVal.push_back(acSignature.substr(offset, commaPos));
         offset = commaPos + 1;
 
     } while (commaPos != std::string::npos);

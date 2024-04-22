@@ -22,8 +22,8 @@ struct BehaviorVar
 
     static BehaviorVar* Get();
     const AnimationGraphDescriptor* Patch(BSAnimationGraphManager* apManager, Actor* apActor);
-    boolean failListed(uint64_t hash);
-    void failList(uint64_t hash);
+    boolean failListed(const uint64_t acHash);
+    void failList(const uint64_t acHash);
 
     void Init();
     void Debug();
@@ -33,20 +33,20 @@ struct BehaviorVar
     uint64_t invocations = 0;
 
     void seedAnimationVariables(
-        uint64_t hash, 
-        const AnimationGraphDescriptor* pDescriptor, 
-        std::map<const std::string, const uint32_t>& reversemap,
-        std::set<uint32_t>& boolVars, 
-        std::set<uint32_t>& floatVars,
-        std::set<uint32_t>& intVars);
+        const uint64_t acHash, 
+        const AnimationGraphDescriptor* acpDescriptor, 
+        const std::map<const std::string, const uint32_t>& acReversemap,
+        std::set<uint32_t>& aBoolVars, 
+        std::set<uint32_t>& aFloatVars,
+        std::set<uint32_t>& aIntVars);
 
-    const std::vector<std::string> tokenizeBehaviorSig(const std::string signature) const;
+    const std::vector<std::string> tokenizeBehaviorSig(const std::string acSignature) const;
     const AnimationGraphDescriptor* constructModdedDescriptor(
-        const uint64_t acNewHash, const Replacer& acOldBehavior,
+        const uint64_t acNewHash, const Replacer& acReplacer,
         std::map<const std::string, const uint32_t>& acReverseMap);
 
     std::vector<std::filesystem::path> loadDirs(const std::filesystem::path& acPATH);
-    Replacer* loadReplacerFromDir(std::filesystem::path aDir);
+    Replacer* loadReplacerFromDir(const std::filesystem::path acDir);
     std::vector<uint64_t> signatureMatches(const uint64_t acHash, const std::string acSignature) const;
 
     std::vector<Replacer> behaviorPool; // Pool for loaded behaviours
