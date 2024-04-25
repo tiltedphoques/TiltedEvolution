@@ -1,5 +1,5 @@
 param (
-    [string]$name = "Skyrim",
+    [string]$name = "Skyrim"
 )
 
 Set-PSDebug -Trace 1
