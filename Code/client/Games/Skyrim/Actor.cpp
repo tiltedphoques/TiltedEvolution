@@ -542,6 +542,17 @@ bool Actor::IsDead() const noexcept
 
 bool Actor::IsDragon() const noexcept
 {
+#ifdef MODDED_BEHAVIOR_COMPATIBILITY
+    const ActorExtension* pExtension = const_cast<Actor*>(this)->GetExtension();
+    auto hash = pExtension->UnmoddedGraphDescriptorHash;
+
+    if (hash)
+        return AnimationGraphDescriptor_BHR_Master::m_key == hash;
+
+    // Still want to continue with the original code, because if Nemesis/Pandora
+    // isn't on the client at all, BehaviorVar::Patch doesn't run on the Dragons.
+#endif MODDED_BEHAVIOR_COMPATIBILITY
+
     // TODO: if anyone has a better way of doing this, please do tell.
     BSAnimationGraphManager* pManager = nullptr;
     animationGraphHolder.GetBSAnimationGraph(&pManager);

@@ -314,8 +314,8 @@ const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uin
 
 const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apManager, Actor* apActor)
 {
-    // Serialize, Actors are multi-threaded. Might not be strictly necessary, I think we're on
-    // the main game loop, but if so it won't hurt anything.
+    // Serialize, Actors are multi-threaded. Might not be strictly necessary between being on
+    // the main game loop and under a BSRecursiveLock, but if so it won't hurt anything.
     std::lock_guard guard(mutex_lock);
 
     // Check if the animation descriptor has already been built.
@@ -430,10 +430,13 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
         hash,
                  hexFormID, foundRep.creatureName, foundRep.signatureVar); 
     
-    // Save the new hash for the actor, and save it as the original actor hash.
-    // The latter is to assist with humanoid actors popping back from a beast form.
+    // Save the new hash for the actor. Save a copy to restore to if overwritten; this currently
+    // only happens when humanoids enter beast mode, Humanoid copy is used to change back.
+    // We also save the original (unmodded) STR hash, because there are some hardwired tests
+    // that need it (like the IsDragon() test).
     pExtendedActor->GraphDescriptorHash = hash;
-    pExtendedActor->OrigGraphDescriptorHash = hash;
+    pExtendedActor->HumanoidGraphDescriptorHash = hash;
+    pExtendedActor->UnmoddedGraphDescriptorHash = foundRep.origHash;
 
     return constructModdedDescriptor(hash, foundRep, reversemap);
 }
