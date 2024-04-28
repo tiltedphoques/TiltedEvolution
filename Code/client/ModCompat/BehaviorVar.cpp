@@ -70,8 +70,7 @@ namespace
 {
 std::string toLowerCase(const std::string& acStr)
 {
-    std::string lowerCaseStr;
-    lowerCaseStr.reserve(acStr.size());
+    std::string lowerCaseStr(acStr);
     std::transform(acStr.begin(), acStr.end(), lowerCaseStr.begin(),
                    [](unsigned char c) { return std::tolower(c); });
     return lowerCaseStr;
