@@ -38,7 +38,7 @@ std::optional<std::wstring> OpenPathSelectionDialog2(const std::wstring& aPathSu
 
     pFileDialog->SetTitle(L"Select the game executable (" TARGET_NAME L".exe)");
 
-    static constinit COMDLG_FILTERSPEC rgSpec[] = {{L"Executables", L"*.exe"}};
+    static constinit COMDLG_FILTERSPEC rgSpec[] = {{L"Executables", TARGET_NAME L".exe"}};
     pFileDialog->SetFileTypes(1, &rgSpec[0]);
 
     // pre select suggested folder & exe
