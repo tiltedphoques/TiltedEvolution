@@ -82,7 +82,25 @@ bool SelectInstall(bool aForceSelect)
     auto exePath = Registry::ReadString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe");
 
     bool result = true;
-    if (!std::filesystem::exists(titlePath) || !std::filesystem::exists(exePath) || aForceSelect)
+    bool correctExeFound = false;
+
+    if (!aForceSelect)
+    {
+        std::wstring suggestedExe = SuggestTitlePath().append(TARGET_NAME L".exe");
+
+        if (std::filesystem::exists(suggestedExe))
+        {
+            correctExeFound = true;
+
+            exePath = suggestedExe;
+            titlePath = exePath.substr(0, exePath.find_last_of(L'\\'));
+
+            result = Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath", titlePath) &&
+                     Registry::WriteString(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe", exePath);
+        }
+    }
+
+    if (!std::filesystem::exists(titlePath) || !std::filesystem::exists(exePath) || aForceSelect || !correctExeFound)
     {
         constexpr int kSelectionAttempts = 3;
 
