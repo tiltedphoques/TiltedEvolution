@@ -19,6 +19,11 @@
 #include <Messages/PartyKickRequest.h>
 #include <Messages/NotifyPlayerJoined.h>
 
+namespace
+{
+Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer", "Whether to list the server on the public server list", false};
+}
+
 PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_updateEvent(aDispatcher.sink<UpdateEvent>().connect<&PartyService::OnUpdate>(this))
@@ -116,7 +121,7 @@ void PartyService::OnPartyCreate(const PacketEvent<PartyCreateRequest>& acPacket
         spdlog::debug("[PartyService]: Created party for {}", player->GetId());
         SendPartyJoinedEvent(party, player);
 
-        if (m_parties.size() == 1)
+        if (m_parties.size() == 1 && !bAnnounceServer)
         {
             for (Player* otherPlayer : m_world.GetPlayerManager())
             {
@@ -212,7 +217,7 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 
     GameServer::Get()->SendToPlayers(notify, acEvent.pPlayer);
 
-    if (m_parties.size() == 1)
+    if (m_parties.size() == 1 && !bAnnounceServer)
     {
         uint32_t partyId = 0;
         Party& party = m_parties[partyId];
