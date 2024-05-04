@@ -195,7 +195,7 @@ void PartyService::OnPartyKick(const PacketEvent<PartyKickRequest>& acPacket) no
     }
 }
 
-void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
+void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 {
     BroadcastPlayerList();
 
@@ -211,6 +211,27 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
     spdlog::debug("[Party] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
 
     GameServer::Get()->SendToPlayers(notify, acEvent.pPlayer);
+
+    if (m_parties.size() == 1)
+    {
+        for (Player* player : m_world.GetPlayerManager())
+        {
+            if (IsPlayerInParty(player))
+            {
+                uint32_t partyId = 0;
+                Party& party = m_parties[partyId];
+
+                party.Members.push_back(acEvent.pPlayer);
+                acEvent.pPlayer->GetParty().JoinedPartyId = partyId;
+
+                SendPartyJoinedEvent(party, acEvent.pPlayer);
+
+                BroadcastPartyInfo(partyId);
+
+                break;
+            }
+        }
+    }
 }
 
 void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket) noexcept
