@@ -123,8 +123,11 @@ void ImGuiDriver::Initialize(void* apHandle)
     // 1920 =
     // https://github.com/ocornut/imgui/blob/master/docs/FAQ.md#q-how-should-i-handle-dpi-in-my-application
     auto& io = ImGui::GetIO();
+
+    auto* extraGlyphRanges = io.Fonts->GetGlyphRangesCyrillic(); // Includes Latin
     io.Fonts->AddFontFromMemoryCompressedBase85TTF(Roboto_compressed_data_base85,
-                                                   20.f * scaleFactor); //->Scale = scaleFactor;
+                                                   20.f * scaleFactor, //->Scale = scaleFactor;
+                                                   nullptr, extraGlyphRanges);
 
     ImGui::GetStyle().ScaleAllSizes(scaleFactor);
 }
