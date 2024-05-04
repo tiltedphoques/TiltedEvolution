@@ -125,7 +125,7 @@ void processVariableSet(const std::map<const std::string, const uint32_t>& acRev
         {
             aVariableSet.insert(found->second);
             if (item != found->first)
-                spdlog::warn(__FUNCTION__ ": misspelled variable {} found as {}", item, found->first);
+                spdlog::warn(__FUNCTION__ ": misspelled variable {} corrected to {}", item, found->first);
         }
     }
 }
