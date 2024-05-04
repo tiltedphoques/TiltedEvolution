@@ -1,0 +1,175 @@
+{
+  "COMPONENT": {
+    "CHAT": {
+      "SEND": "Gönder",
+      "MESSAGE": "Mesaj",
+      "MESSAGE_TOO_LONG": "{{chatMessageLengthLimit}} harften daha uzun bir mesaj gönderemezsin."
+    },
+    "CONNECT": {
+      "INFO": {
+        "SERVER_ADDRESS": "Sunucunun tam adresine bağlanın. <strong>address:port</strong> Formatını kullanın. Varsayılan port <strong>10578</strong>.",
+        "HELGEN": "Helgen introsunu bitirmediyseniz hiçbir sunucuya BAĞLANMAYIN. İlk öne Helgen'den kaçtığınıza emin olun."
+      },
+      "ADDRESS": "Adres",
+      "PASSWORD": "Şifre",
+      "SAVE_PASSWORD": "Şifreyi Kaydet?",
+      "HIDE_PASSWORD": "Şifreyi Gizle?",
+      "CONNECT": "Bağlan",
+      "CANCEL": "İptal",
+      "PUBLIC_SERVERS": "Herkese Açık Sunucular",
+      "ERROR": {
+        "CONNECTION": "Belirtilen sunucuya bağlanılamadı. Lütfen doğru adresi girdiğinize ve bağlantı sorununuzun olmadığına emin olun.",
+        "VERSION_MISMATCH": "Sunucuya bağlanamazsınız çünkü aynı Skyrim Together versiyonlarına sahip değilsiniz.",
+        "INVALID_ADDRESS": "Adres geçersiz formatta."
+      }
+    },
+    "DISCONNECT": {
+      "PROMPT": "Bağlantıyı kesmek istediğinize emin misiniz??",
+      "PROCEED": "Devam et",
+      "CANCEL": "İptal"
+    },
+    "ERROR": {
+      "OK": "Tamam"
+    },
+    "NOTIFICATIONS": {
+      "MESSAGE_FROM": "Gelen mesaj",
+      "ACCEPT": "Kabul Et",
+      "DECLINE": "Reddet"
+    },
+    "PARTY_MENU": {
+      "ACCEPT_INVITE": "{{name}} oyuncusundan parti daveti",
+      "LAUNCH_PARTY": "Partiyi başlat",
+      "INVITES": "Davetler",
+      "NO_INVITES": "Hiç davetiniz yok",
+      "EXPERIENCE_WARNING": "Optimal bir quest deneyimi için, wikimiz'deki oynama rehberimize bakınız, <b>skyrim-together.com</b>. Rehberin kısa bir özeti:",
+      "GUIDELINES": {
+        "PARTY": "Parti oluşturduğunuzda, \"host\" olurdunuz, parti lideri olarak da bilinir.",
+        "PARTY_LEADER_TALK": "Quest'te ilerlemek için sadece parti liderleri quest NPCleri ile konuşabilir.",
+        "PARTY_LEADER_LOOT_QUESTITEMS": "Sadece parti lideri quest eşyalarını alabilir.",
+        "KEEP_PARTY_LEADER": "Oynanış başına bir parti liderine uyun.",
+        "ONE_PARTY_PER_SERVER": "Sunucu başına bir parti liderine uyun."
+      },
+      "NO_PLAYERS_IN_PARTY": "Partinde kimse yok. Oyuncu listesinden davet ediniz!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "İsim",
+        "LOCATION": "Konum"
+      },
+      "ACTIONS": {
+        "KICK": "At",
+        "TELEPORT": "Işınla",
+        "MAKE_LEADER": "Lider yap"
+      },
+      "LEAVE_PARTY": "Partiden çık"
+    },
+    "PARTY_LIST": {
+      "NO_OTHER_PLAYERS": "Kimsecikler yok.",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "İsim",
+        "LOCATION": "Konum"
+      },
+      "INVITE": "Davet Et"
+    },
+    "PLAYER_MANAGER": {
+      "PLAYER_LIST": "Oyuncu listesi",
+      "PARTY_MENU": "Parti Menüsü",
+      "BACK": "Geri"
+    },
+    "ROOT": {
+      "CONNECT": "Bağlan",
+      "DISCONNECT": "Bağlantıyı Kopar",
+      "RECONNECT": "Geri Bağlan",
+      "PLAYER_MANAGER": "Oyuncu Yöneticisi",
+      "SETTINGS": "Ayarlar",
+      "CONNECTION_IN_PROGRESS": "Bağlanılıyor..."
+    },
+    "SERVER_LIST": {
+      "SEARCH": "Ara...",
+      "REFRESH": "Yenile",
+      "BACK": "Geri",
+      "LOADING": "Yükleniyor...",
+      "NO_SERVERS": "Hiçbir Herkese Açık Sunucu Mevcut Değil",
+      "HIDE_MISMATCHED_SERVERS": "Uyumsuz sürümlü sunucuları gizle",
+      "HIDE_FULL_SERVERS": "Full sunucuları gizle",
+      "HIDE_PASSWORD_PROTECTED_SERVERS": "Şifreli sunucuları gizle",
+      "SERVER_COUNT": "{{count}} sunucudan {{filteredCount}} tanesi gösteriliyor",
+      "TABLE_HEADERS": {
+        "NAME": "Sunucu ismi",
+        "PLAYERS": "Oyuncular / Max.",
+        "COUNTRY": "Ülke",
+        "FAVORITE": "Favori"
+      },
+      "JOIN": "Katıl"
+    },
+    "SETTINGS": {
+      "VERSION": {
+        "HEADER": "Versiyon",
+        "INFO": "Şuan yüklü:",
+        "OUTDATED": "Eski versiyon. Lütfen güncelleyiniz"
+      },
+      "AUDIO": "Ses",
+      "MUTE_UI": "Arayüzü sustur",
+      "UI_VOLUME": "Araüz sesi",
+      "PARTY": "Party",
+      "SHOW_PARTY": "Partiyi göster",
+      "AUTO_HIDE_PARTY": "Partiyi otomatik gizle",
+      "AUTO_HIDE_PARTY_LENGTH": "Otomatik zamanlayıcıyı gizle",
+      "PARTY_ANCHOR": "Pozisyon",
+      "PARTY_ANCHOR_POSITION": {
+        "TOP_LEFT": "Sol üst",
+        "TOP_RIGHT": "Sağ üst",
+        "BOTTOM_RIGHT": "Sağ alt",
+        "BOTTOM_LEFT": "Sol alt"
+      },
+      "PARTY_ANCHOR_OFFSET_X": "Yatay Denge",
+      "PARTY_ANCHOR_OFFSET_Y": "Dikey Denge",
+      "LENGTH": "{{length}}s",
+      "UI": "Arayüz",
+      "LANGUAGE": "Dil",
+      "DEBUG": "Hata Ayıklama",
+      "SHOW_DEBUG_INFO": "Hata Ayıklama Bilgisini Göster",
+      "FONT_SIZE": "Yazı boyutu",
+      "FONT_SIZES": {
+        "XS": "Ekstra Küçük",
+        "S": "Küçük",
+        "M": "Orta",
+        "L": "Büyük",
+        "XL": "Ekstra Büyük"
+      },
+      "BACK": "Geri"
+    }
+  },
+  "SERVICE": {
+    "CLIENT": {
+      "CONNECTION_LOST": "Bağlantı kaybedildi, geri bağlanmaya çalışılıyor. {{remainingReconnectionAttempt}} deneme kaldı.",
+      "CONNECTED": "Sunucuya bağlanıldı.",
+      "DISCONNECTED": "Sunucudan kopuldu.."
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "Mevcut chat komutları: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' geçerli bir komut değil."
+    },
+    "GROUP": {
+      "LEVEL_UP": "{{name}} {{level}} oldu.",
+      "ALREADY_IN_GROUP": "Zaten bir gruptasın. Başka bir gruba katılmak için lütfen şuankinden çıkın.",
+      "KICK_NO_PARTY_LEADER": "Parti lideri olmadığın için diğer oyuncuları atamazsın.",
+      "MAKE_LEADER_NO_PARTY_LEADER": "Parti lideri olmadığın için diğer oyuncuları parti lideri yapamazsın."
+    },
+    "ERROR": {
+      "ERRORS": {
+        "WRONG_VERSION": "Bu sunucu {{expectedVersion}} versiyonu ama sizdeki {{version}}.",
+        "MODS_MISMATCH": "Sunucuda ModPolicy aktif.{{mods}}",
+        "MODS_MISMATCH_REMOVE": "Katılmak için lütfen bu modları silin:\n{{mods}}",
+        "MODS_MISMATCH_INSTALL": "Katılmak için lütfen bu modları indirin:\n{{mods}}",
+        "CLIENT_MODS_DISALLOWED": "Bu sunucu {{mods}} modlarını kabul etmiyor. Katılmak için lütfen siliniz.",
+        "WRONG_PASSWORD": "Girdiğiniz parola yanlış.",
+        "NO_REASON": "Sunucu sebep vermeden bağlantıyı reddetti.",
+        "SERVER_FULL": "Sunucu Dolu."
+      }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} parti daveti attı!"
+    }
+  }
+}
