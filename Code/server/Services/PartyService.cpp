@@ -115,6 +115,22 @@ void PartyService::OnPartyCreate(const PacketEvent<PartyCreateRequest>& acPacket
 
         spdlog::debug("[PartyService]: Created party for {}", player->GetId());
         SendPartyJoinedEvent(party, player);
+
+        if (m_parties.size() == 1)
+        {
+            for (Player* otherPlayer : m_world.GetPlayerManager())
+            {
+                if (otherPlayer->GetId() != player->GetId())
+                {
+                    party.Members.push_back(otherPlayer);
+                    otherPlayer->GetParty().JoinedPartyId = partyId;
+
+                    SendPartyJoinedEvent(party, otherPlayer);
+                }
+            }
+
+            BroadcastPartyInfo(partyId);
+        }
     }
 }
 
@@ -179,7 +195,7 @@ void PartyService::OnPartyKick(const PacketEvent<PartyKickRequest>& acPacket) no
     }
 }
 
-void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
+void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 {
     BroadcastPlayerList();
 
