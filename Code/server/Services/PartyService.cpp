@@ -211,6 +211,19 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
     spdlog::debug("[Party] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
 
     GameServer::Get()->SendToPlayers(notify, acEvent.pPlayer);
+
+    if (m_parties.size() == 1)
+    {
+        uint32_t partyId = 0;
+        Party& party = m_parties[partyId];
+
+        party.Members.push_back(acEvent.pPlayer);
+        acEvent.pPlayer->GetParty().JoinedPartyId = partyId;
+
+        SendPartyJoinedEvent(party, acEvent.pPlayer);
+
+        BroadcastPartyInfo(partyId);
+    }
 }
 
 void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket) noexcept
