@@ -96,7 +96,7 @@ void AnimationVariables::GenerateDiff(const AnimationVariables& aPrevious, Tilte
     auto biter = changedVector.begin() + Booleans.size();
     for (size_t i = 0; i < Integers.size(); i++)
         if (*biter++)
-            TiltedPhoques::Serialization::WriteVarInt(aWriter, Integers[i]);
+            TiltedPhoques::Serialization::WriteVarInt(aWriter, Integers[i] & 0xFFFFFFFF);
     for (size_t i = 0; i < Floats.size(); i++)
         if (*biter++)
             TiltedPhoques::Serialization::WriteFloat(aWriter, Floats[i]);
