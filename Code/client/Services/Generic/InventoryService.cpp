@@ -173,9 +173,11 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     uint32_t equipSlotId = modSystem.GetGameId(acMessage.EquipSlotId);
     TESForm* pEquipSlot = TESForm::GetById(equipSlotId);
 
+#if TP_SKYRIM64
     uint32_t slotId = 0;
     if (pEquipSlot == DefaultObjectManager::Get().rightEquipSlot)
         slotId = 1;
+#endif
 
     auto* pEquipManager = EquipManager::Get();
 
