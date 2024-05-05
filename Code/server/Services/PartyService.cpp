@@ -219,15 +219,24 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 
     if (m_parties.size() == 1 && !bAnnounceServer)
     {
-        uint32_t partyId = 0;
-        Party& party = m_parties[partyId];
+        for (Player* player : m_world.GetPlayerManager())
+        {
+            if (IsPlayerInParty(player))
+            {
+                auto& playerPartyComponent = player->GetParty();
+                Party& party = m_parties[*playerPartyComponent.JoinedPartyId];
 
-        party.Members.push_back(acEvent.pPlayer);
-        acEvent.pPlayer->GetParty().JoinedPartyId = partyId;
+                party.Members.push_back(acEvent.pPlayer);
+                acEvent.pPlayer->GetParty().JoinedPartyId = *playerPartyComponent.JoinedPartyId;
 
-        SendPartyJoinedEvent(party, acEvent.pPlayer);
+                SendPartyJoinedEvent(party, acEvent.pPlayer);
 
-        BroadcastPartyInfo(partyId);
+                BroadcastPartyInfo(*playerPartyComponent.JoinedPartyId);
+
+                break;
+            }
+        }
+        
     }
 }
 
