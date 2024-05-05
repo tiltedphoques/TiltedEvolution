@@ -10,7 +10,8 @@ export interface ErrorEvent {
     | 'client_mods_disallowed'
     | 'wrong_password'
     | 'server_full'
-    | 'no_reason';
+    | 'no_reason'
+    | 'bad_uGridsToLoad';
   data?: Record<any, any>;
 }
 

@@ -16,6 +16,7 @@
 #include <Events/CellChangeEvent.h>
 #include <Events/LocationChangeEvent.h>
 #include <Events/ConnectedEvent.h>
+#include <Events/ConnectionErrorEvent.h>
 
 #include <World.h>
 
@@ -250,6 +251,16 @@ void DiscoveryService::OnUpdate(const PreUpdateEvent& acUpdateEvent) noexcept
 
 void DiscoveryService::OnConnected(const ConnectedEvent& acEvent) noexcept
 {
+    // uGridsToLoad should always be 5, as this is what the server enforces
+    auto* pSetting = INISettingCollection::Get()->GetSetting("uGridsToLoad:General");
+    if (pSetting && pSetting->data != 5)
+    {
+        ConnectionErrorEvent errorEvent{};
+        errorEvent.ErrorDetail = "{\"error\": \"bad_uGridsToLoad\"}";
+
+        m_world.GetRunner().Trigger(errorEvent);
+    }
+
     VisitCell(true);
 }
 
