@@ -165,7 +165,8 @@
         "CLIENT_MODS_DISALLOWED": "This server disallows {{mods}}. Please remove them to join.",
         "WRONG_PASSWORD": "The password you entered is incorrect.",
         "NO_REASON": "The server refused connection without reason.",
-        "SERVER_FULL": "This server is full."
+        "SERVER_FULL": "This server is full.",
+        "NON_DEFAULT_INSTALL": "It seems that your installation is not purely vanilla, i.e. it has Creation Club content (Anniversary Update or otherwise) or other mods.\nWe do NOT recommend playing with mods.\nWe recommend that you uninstall and disable these mods (instructions can be found on the wiki).\n\nFor the best experience, you should have the following mod list:<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp</strong>"
       }
     },
     "PLAYER_LIST": {

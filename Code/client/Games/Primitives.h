@@ -101,6 +101,17 @@ template <class T> struct GameList
     Entry entry;
 
     inline bool Empty() const noexcept { return entry.data == nullptr; }
+    inline size_t Size() const noexcept
+    {
+        if (entry.data == nullptr)
+            return 0ULL;
+
+        size_t size = 0;
+        for (const Entry* current = &entry; current; current = current->next)
+            size++;
+
+        return size;
+    }
 
     // Range for loop compatibility
     struct Iterator
