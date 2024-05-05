@@ -21,7 +21,7 @@
 
 namespace
 {
-Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer", "Whether to list the server on the public server list", false};
+Console::Setting bAutoPartyJoin{"Gameplay:bAutoPartyJoin", "Join parties automatically, as long as there is only one party in the server", true};
 }
 
 PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
@@ -121,7 +121,7 @@ void PartyService::OnPartyCreate(const PacketEvent<PartyCreateRequest>& acPacket
         spdlog::debug("[PartyService]: Created party for {}", player->GetId());
         SendPartyJoinedEvent(party, player);
 
-        if (m_parties.size() == 1 && !bAnnounceServer)
+        if (m_parties.size() == 1 && bAutoPartyJoin)
         {
             for (Player* otherPlayer : m_world.GetPlayerManager())
             {
@@ -217,7 +217,7 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 
     GameServer::Get()->SendToPlayers(notify, acEvent.pPlayer);
 
-    if (m_parties.size() == 1 && !bAnnounceServer)
+    if (m_parties.size() == 1 && bAutoPartyJoin)
     {
         for (Player* player : m_world.GetPlayerManager())
         {
