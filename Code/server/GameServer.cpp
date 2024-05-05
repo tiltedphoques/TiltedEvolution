@@ -53,7 +53,7 @@ Console::Setting bSyncPlayerCalendar{
     "Gameplay:bSyncPlayerCalendar",
     "Syncs up all player calendars to be the same day, month, and year. This uses the date of the player with the furthest ahead date at connection.", false};
 // ModPolicy Stuff
-Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", true,
+Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
                                  Console::SettingsFlags::kLocked};
 Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow clients with SKSE active to join", true,
                             Console::SettingsFlags::kLocked};
