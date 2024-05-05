@@ -16,6 +16,7 @@
 #include <Events/CellChangeEvent.h>
 #include <Events/LocationChangeEvent.h>
 #include <Events/ConnectedEvent.h>
+#include <Events/ConnectionErrorEvent.h>
 
 #include <World.h>
 
@@ -256,6 +257,38 @@ void DiscoveryService::OnConnected(const ConnectedEvent& acEvent) noexcept
 BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDispatcher<TESLoadGameEvent>*)
 {
     spdlog::info("Finished loading, triggering visit cell");
+
+    const TiltedPhoques::String defaultModlist[7] = {"Skyrim.esm",        "Update.esm",     "Dawnguard.esm",
+                                                    "HearthFires.esm",   "Dragonborn.esm", "_ResourcePack.esl",
+                                                    "SkyrimTogether.esp"};
+
+    auto& currentModlist = ModManager::Get()->mods;
+
+    bool isModlistEqual = currentModlist.Size() == 7;
+
+    if (isModlistEqual)
+    {
+        int i = 0;
+        for (const auto& currentMod : currentModlist)
+        {
+            if (currentMod->filename != defaultModlist[i])
+            {
+                isModlistEqual = false;
+                break;
+            }
+
+            i++;
+        }
+    }
+
+    if (!isModlistEqual)
+    {
+        ConnectionErrorEvent errorEvent{};
+        errorEvent.ErrorDetail = "{\"error\": \"non_default_install\"}";
+
+        m_world.GetRunner().Trigger(errorEvent);
+    }
+
     VisitCell(true);
 
     return BSTEventResult::kOk;
