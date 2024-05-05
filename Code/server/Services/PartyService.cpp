@@ -19,6 +19,11 @@
 #include <Messages/PartyKickRequest.h>
 #include <Messages/NotifyPlayerJoined.h>
 
+namespace
+{
+Console::Setting bAutoPartyJoin{"Gameplay:bAutoPartyJoin", "Join parties automatically, as long as there is only one party in the server", true};
+}
+
 PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_updateEvent(aDispatcher.sink<UpdateEvent>().connect<&PartyService::OnUpdate>(this))
@@ -115,6 +120,22 @@ void PartyService::OnPartyCreate(const PacketEvent<PartyCreateRequest>& acPacket
 
         spdlog::debug("[PartyService]: Created party for {}", player->GetId());
         SendPartyJoinedEvent(party, player);
+
+        if (m_parties.size() == 1 && bAutoPartyJoin)
+        {
+            for (Player* otherPlayer : m_world.GetPlayerManager())
+            {
+                if (otherPlayer->GetId() != player->GetId())
+                {
+                    party.Members.push_back(otherPlayer);
+                    otherPlayer->GetParty().JoinedPartyId = partyId;
+
+                    SendPartyJoinedEvent(party, otherPlayer);
+                }
+            }
+
+            BroadcastPartyInfo(partyId);
+        }
     }
 }
 
@@ -179,7 +200,7 @@ void PartyService::OnPartyKick(const PacketEvent<PartyKickRequest>& acPacket) no
     }
 }
 
-void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
+void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 {
     BroadcastPlayerList();
 
@@ -195,6 +216,28 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
     spdlog::debug("[Party] New notify player {:x} {}", notify.PlayerId, notify.Username.c_str());
 
     GameServer::Get()->SendToPlayers(notify, acEvent.pPlayer);
+
+    if (m_parties.size() == 1 && bAutoPartyJoin)
+    {
+        for (Player* player : m_world.GetPlayerManager())
+        {
+            if (IsPlayerInParty(player))
+            {
+                auto& playerPartyComponent = player->GetParty();
+                Party& party = m_parties[*playerPartyComponent.JoinedPartyId];
+
+                party.Members.push_back(acEvent.pPlayer);
+                acEvent.pPlayer->GetParty().JoinedPartyId = *playerPartyComponent.JoinedPartyId;
+
+                SendPartyJoinedEvent(party, acEvent.pPlayer);
+
+                BroadcastPartyInfo(*playerPartyComponent.JoinedPartyId);
+
+                break;
+            }
+        }
+        
+    }
 }
 
 void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket) noexcept

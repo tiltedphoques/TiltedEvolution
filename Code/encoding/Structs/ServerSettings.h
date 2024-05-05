@@ -16,4 +16,5 @@ struct ServerSettings
     bool SyncPlayerHomes{};
     bool DeathSystemEnabled{};
     bool SyncPlayerCalendar{};
+    bool AutoPartyJoin{};
 };
