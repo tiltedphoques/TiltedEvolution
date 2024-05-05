@@ -11,6 +11,7 @@ export interface ErrorEvent {
     | 'wrong_password'
     | 'server_full'
     | 'no_reason'
+    | 'bad_uGridsToLoad'
     | 'non_default_install';
   data?: Record<any, any>;
 }

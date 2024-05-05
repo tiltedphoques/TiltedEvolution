@@ -192,6 +192,7 @@ struct INISettingCollection
         Entry* next;
     };
 
+    // TODO(FT): Setting a setting should be followed by SettingHandlerMap::SettingUpdated() call
     Setting* GetSetting(const char* acpName) noexcept;
 
     uint8_t unk0[0x118];
