@@ -5,7 +5,7 @@ target(name)
     set_group("Client")
     add_defines(def)
 
-    add_includedirs(".")
+    add_includedirs(".","../../Libraries/")
     set_pcxxheader("TiltedOnlinePCH.h")
 
     -- exclude game specifc stuff
