@@ -76,11 +76,17 @@ bool TiltedOnlineApp::EndMain()
 
 void TiltedOnlineApp::Update()
 {
-    // Every frame make sure we won't use preprocessed facegen
-    POINTER_SKYRIMSE(uint32_t, bUseFaceGenPreprocessedHeads, 378620);
-
-    *bUseFaceGenPreprocessedHeads = 0;
-
+    // Reverting a change that used to be here to disable bUseFaceGenPreprocessedHeads==true (which is 
+    // the default) handling. Extensive testing over months by multiple parties showed that enabling 
+    // the flag introduces no issues WITH PROPERLY GENERATED CHARACTERS (in-game character generation 
+    // or showracemenu). The shortcut of  "coc riverwood" from the main menu skips proper character generation.
+    // 
+    // Plus, having it on  has some benefits like helping with neck seams. Comment to avoid revisiting.
+    // 
+    // There are still some issues to track down, like hair color and maybe face tint not syncing correctly,
+    // but they are unrelated and unchanged by this flag.
+    // 
+ 
     // Make sure the window stays active
     POINTER_SKYRIMSE(uint32_t, bAlwaysActive, 380768);
 
