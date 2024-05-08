@@ -360,7 +360,7 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
 
                 if (pVariableSet->size > idx)
                 {
-                    pVariableSet->data[idx] = aVariables.Booleans[i];
+                    pVariableSet->data[idx] = aVariables.Booleans.size() > i ? aVariables.Booleans[i] : false;
                 }
             }
 
