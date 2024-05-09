@@ -157,7 +157,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
     // Consumables are "equipped" as well. We don't want this to sync, for several reasons.
     // The right hand item on the server would be overridden by the consumable.
     // Furthermore, the equip action on the other clients would doubly subtract the consumables.
-    if (pExtension->IsLocal() && !apItem->IsConsumable())
+    if (pExtension->IsLocal() && !apItem->IsConsumable() && !apData->bQueueEquip)
     {
         EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
@@ -189,7 +189,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
             return nullptr;
     }
 
-    if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
+    if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden() && !apData->bQueueEquip)
     {
         EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
@@ -216,7 +216,7 @@ void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* ap
     if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
         return nullptr;
 
-    if (pExtension->IsLocal())
+    if (pExtension->IsLocal() && !apData->bQueueEquip)
     {
         EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
@@ -241,7 +241,7 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
     if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
         return nullptr;
 
-    if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
+    if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden() && !apData->bQueueEquip)
     {
         EquipmentChangeEvent evt{};
         evt.ActorId = apActor->formID;
@@ -265,6 +265,7 @@ void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* ap
     if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
         return nullptr;
 
+    // TODO: queue check?
     if (pExtension->IsLocal())
     {
         EquipmentChangeEvent evt{};
@@ -289,6 +290,7 @@ void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* 
     if (pExtension->IsRemote() && !ScopedEquipOverride::IsOverriden())
         return nullptr;
 
+    // TODO: queue check?
     if (pExtension->IsLocal() && !ScopedUnequipOverride::IsOverriden())
     {
         EquipmentChangeEvent evt{};

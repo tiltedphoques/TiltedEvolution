@@ -28,3 +28,12 @@ bool ExtraContainerChanges::Entry::IsQuestObject() noexcept
 
     return TiltedPhoques::ThisCall(s_isQuestObject, this);
 }
+
+TESObjectARMO* ExtraContainerChanges::Data::GetArmor(uint32_t aSlotId) noexcept
+{
+    TP_THIS_FUNCTION(TGetArmor, TESObjectARMO*, ExtraContainerChanges::Data, uint32_t);
+
+    POINTER_SKYRIMSE(TGetArmor, s_getArmor, 16113);
+
+    return TiltedPhoques::ThisCall(s_getArmor, this, aSlotId);
+}

@@ -52,6 +52,9 @@ Console::Setting uTimeScale{
 Console::Setting bSyncPlayerCalendar{
     "Gameplay:bSyncPlayerCalendar",
     "Syncs up all player calendars to be the same day, month, and year. This uses the date of the player with the furthest ahead date at connection.", false};
+Console::Setting bAutoPartyJoin{
+    "Gameplay:bAutoPartyJoin",
+    "Join parties automatically, as long as there is only one party in the server", true};
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Bypass the checking of mods on the server", false,
                                  Console::SettingsFlags::kLocked};
@@ -142,6 +145,7 @@ ServerSettings GetSettings()
     settings.SyncPlayerHomes = bSyncPlayerHomes;
     settings.DeathSystemEnabled = bEnableDeathSystem;
     settings.SyncPlayerCalendar = bSyncPlayerCalendar;
+    settings.AutoPartyJoin = bAutoPartyJoin;
     return settings;
 }
 

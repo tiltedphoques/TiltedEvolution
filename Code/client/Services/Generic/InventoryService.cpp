@@ -23,6 +23,8 @@
 #include <Games/TES.h>
 #include <Games/Overrides.h>
 #include <EquipManager.h>
+#include <Games/ActorExtension.h>
+#include <Forms/TESNPC.h>
 
 #if TP_FALLOUT4
 #include <Forms/BGSObjectInstance.h>
@@ -45,6 +47,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     RunWeaponStateUpdates();
+    RunNakedNPCBugChecks();
 }
 
 void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEvent) noexcept
@@ -170,20 +173,10 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     uint32_t equipSlotId = modSystem.GetGameId(acMessage.EquipSlotId);
     TESForm* pEquipSlot = TESForm::GetById(equipSlotId);
 
-    // TODO: ft, does it have the same problem?
 #if TP_SKYRIM64
     uint32_t slotId = 0;
     if (pEquipSlot == DefaultObjectManager::Get().rightEquipSlot)
         slotId = 1;
-
-    // There's a bug where double equipping something magically unequips something secretly.
-    // TODO: should this be done for armor as well?
-    // Also, find out why the client is sending two equip messages in the first place.
-    // TODO: this fix makes it so that weapons and spells are sometimes invisible :/
-    #if 0
-    if (!acMessage.Unequip && pActor->GetEquippedWeapon(slotId) == pItem)
-        return;
-    #endif
 #endif
 
     auto* pEquipManager = EquipManager::Get();
@@ -290,4 +283,50 @@ void InventoryService::RunWeaponStateUpdates() noexcept
             m_transport.Send(request);
         }
     }
+}
+
+void InventoryService::RunNakedNPCBugChecks() noexcept
+{
+#if TP_SKYRIM64
+    if (!m_transport.IsConnected())
+        return;
+
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 1000ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    auto view = m_world.view<FormIdComponent>();
+
+    for (auto entity : view)
+    {
+        const auto& formIdComponent = view.get<FormIdComponent>(entity);
+        Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+        if (!pActor)
+            continue;
+
+        if (pActor->GetExtension()->IsPlayer())
+            continue;
+
+        if (pActor->IsDead())
+            continue;
+
+        if (pActor->IsWearingBodyPiece())
+            continue;
+
+        if (!pActor->ShouldWearBodyPiece())
+            continue;
+
+        // Don't broadcast changes, it'll just make things messier.
+        // If all clients have this problem, they'll all fix it individually.
+        ScopedEquipOverride seo;
+        ScopedInventoryOverride sio;
+
+        pActor->ResetInventory(false);
+    }
+#endif
 }

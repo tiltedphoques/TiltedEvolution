@@ -1,0 +1,175 @@
+{
+  "COMPONENT": {
+    "CHAT": {
+      "SEND": "보내기",
+      "MESSAGE": "메시지",
+      "MESSAGE_TOO_LONG": "{{chatMessageLengthLimit}}자를 초과하는 메시지는 보낼 수 없습니다."
+    },
+    "CONNECT": {
+      "INFO": {
+        "SERVER_ADDRESS": "전체 주소를 사용하여 서버에 연결합니다. <strong>주소:포트</strong> 형식을 사용하세요. 포트의 기본값은 <strong>10578</strong>입니다.",
+        "HELGEN": "아직 헬겐 인트로 시퀀스에 있는 경우 서버에 연결하지 마세요. 먼저 헬겐에서 탈출했는지 확인하세요."
+      },
+      "ADDRESS": "주소",
+      "PASSWORD": "암호",
+      "SAVE_PASSWORD": "암호 저장 여부?",
+      "HIDE_PASSWORD": "암호 숨김 여부?",
+      "CONNECT": "연결",
+      "CANCEL": "취소",
+      "PUBLIC_SERVERS": "공개 서버",
+      "ERROR": {
+        "CONNECTION": "지정된 서버에 연결할 수 없습니다. 올바른 주소를 입력했는지, 네트워크 문제가 발생하고 있지 않은지 확인하세요",
+        "VERSION_MISMATCH": "귀하와 동일한 버전의 Skyrim Together가 없기 때문에 서버에 연결할 수 없습니다.",
+        "INVALID_ADDRESS": "주소 형식이 잘못되었습니다."
+      }
+    },
+    "DISCONNECT": {
+      "PROMPT": "정말로 연결을 끊으시겠어요?",
+      "PROCEED": "진행",
+      "CANCEL": "취소"
+    },
+    "ERROR": {
+      "OK": "Ok"
+    },
+    "NOTIFICATIONS": {
+      "MESSAGE_FROM": "메시지 보낸 사람:",
+      "ACCEPT": "승인",
+      "DECLINE": "거절"
+    },
+    "PARTY_MENU": {
+      "ACCEPT_INVITE": "{{name}}님의 초대 수락",
+      "LAUNCH_PARTY": "파티 실행",
+      "INVITES": "초대",
+      "NO_INVITES": "초대장이 없습니다",
+      "EXPERIENCE_WARNING": "최적의 퀘스트 경험을 위해서는 우리 웹사이트 <b>skyrim-together.com</b>에서 찾을 수 있는 위키의 플레이 가이드를 꼭 읽어보세요. 다음은 지침을 간략히 요약한 것입니다:",
+      "GUIDELINES": {
+        "PARTY": "파티를 만들면 귀하가 일종의 \"호스트\", 즉 파티 리더가 됩니다.",
+        "PARTY_LEADER_TALK": "파티 리더만이 퀘스트 NPC와 대화하여 퀘스트를 진행할 수 있습니다.",
+        "PARTY_LEADER_LOOT_QUESTITEMS": "파티 리더만이 퀘스트 아이템을 전리품으로 얻을 수 있습니다.",
+        "KEEP_PARTY_LEADER": "플레이할 때마다 한 명의 파티 리더를 선택하세요.",
+        "ONE_PARTY_PER_SERVER": "서버 당 하나의 파티를 고수하세요."
+      },
+      "NO_PLAYERS_IN_PARTY": "아직 파티에 아무도 없습니다. 플레이어 목록을 통해 초대해보세요!",
+      "TABLE_HEADERS": {
+        "LEVEL": "레벨",
+        "NAME": "이름",
+        "LOCATION": "위치"
+      },
+      "ACTIONS": {
+        "KICK": "추방",
+        "TELEPORT": "순간 이동",
+        "MAKE_LEADER": "리더 임명"
+      },
+      "LEAVE_PARTY": "파티에서 탈퇴"
+    },
+    "PARTY_LIST": {
+      "NO_OTHER_PLAYERS": "여기엔 우리 닭들 외에는 아무도 없어",
+      "TABLE_HEADERS": {
+        "LEVEL": "레벨",
+        "NAME": "이름",
+        "LOCATION": "위치"
+      },
+      "INVITE": "초대"
+    },
+    "PLAYER_MANAGER": {
+      "PLAYER_LIST": "플레이어 목록",
+      "PARTY_MENU": "파티 메뉴",
+      "BACK": "뒤로"
+    },
+    "ROOT": {
+      "CONNECT": "연결",
+      "DISCONNECT": "연결 해제",
+      "RECONNECT": "재연결",
+      "PLAYER_MANAGER": "플레이어 관리자",
+      "SETTINGS": "설정",
+      "CONNECTION_IN_PROGRESS": "연결 진행중..."
+    },
+    "SERVER_LIST": {
+      "SEARCH": "검색...",
+      "REFRESH": "새로 고침",
+      "BACK": "뒤로",
+      "LOADING": "로드 중...",
+      "NO_SERVERS": "사용 가능한 공용 서버가 없습니다",
+      "HIDE_MISMATCHED_SERVERS": "호환되지 않는 버전의 서버 숨기기",
+      "HIDE_FULL_SERVERS": "만석 서버 숨기기",
+      "HIDE_PASSWORD_PROTECTED_SERVERS": "비밀번호로 보호된 서버 숨기기",
+      "SERVER_COUNT": "서버 {{count}}대 중 {{filteredCount}}대 표시 중",
+      "TABLE_HEADERS": {
+        "NAME": "서버 이름",
+        "PLAYERS": "플레이어 수 / 최대 수.",
+        "COUNTRY": "지역",
+        "FAVORITE": "즐겨찾기"
+      },
+      "JOIN": "참가"
+    },
+    "SETTINGS": {
+      "VERSION": {
+        "HEADER": "버전",
+        "INFO": "현재 설치된 버전:",
+        "OUTDATED": "버전이 오래되었습니다. 업데이트하세요."
+      },
+      "AUDIO": "오디오",
+      "MUTE_UI": "사용자 인터페이스 음소거",
+      "UI_VOLUME": "사용자 인터페이스 음량",
+      "PARTY": "파티",
+      "SHOW_PARTY": "파티 표시",
+      "AUTO_HIDE_PARTY": "파티 자동 숨기기",
+      "AUTO_HIDE_PARTY_LENGTH": "자동 숨기기 타이머 크기",
+      "PARTY_ANCHOR": "위치",
+      "PARTY_ANCHOR_POSITION": {
+        "TOP_LEFT": "상단 왼쪽",
+        "TOP_RIGHT": "상단 오른쪽",
+        "BOTTOM_RIGHT": "하단 오른쪽",
+        "BOTTOM_LEFT": "하단 왼쪽"
+      },
+      "PARTY_ANCHOR_OFFSET_X": "수평 오프셋",
+      "PARTY_ANCHOR_OFFSET_Y": "수직 오프셋",
+      "LENGTH": "{{length}}초",
+      "UI": "사용자 인터페이스",
+      "LANGUAGE": "언어",
+      "DEBUG": "디버그",
+      "SHOW_DEBUG_INFO": "디버그 정보 표시",
+      "FONT_SIZE": "글꼴 크기",
+      "FONT_SIZES": {
+        "XS": "매우 작게",
+        "S": "작게",
+        "M": "중간",
+        "L": "크게",
+        "XL": "매우 크게"
+      },
+      "BACK": "뒤로"
+    }
+  },
+  "SERVICE": {
+    "CLIENT": {
+      "CONNECTION_LOST": "연결이 끊어졌습니다. 다시 연결을 시도 중입니다. {{remainingReconnectionAttempt}}회 시도가 남았습니다.",
+      "CONNECTED": "서버에 성공적으로 연결되었습니다.",
+      "DISCONNECTED": "서버와의 연결이 끊어졌습니다."
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "다음과 같은 대화 명령어가 사용 가능합니다: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}'은(는) 명령어로 인식되지 않습니다."
+    },
+    "GROUP": {
+      "LEVEL_UP": "{{name}}님이 {{level}} 레벨에 도달했습니다.",
+      "ALREADY_IN_GROUP": "귀하는 이미 그룹에 속해 있습니다. 다른 그룹에 참가하려면 현재 그룹을 탈퇴하세요.",
+      "KICK_NO_PARTY_LEADER": "귀하는 파티 리더가 아니므로 다른 멤버를 추방할 수 없습니다.",
+      "MAKE_LEADER_NO_PARTY_LEADER": "귀하는 파티 리더가 아니므로 다른 멤버를 리더로 임명할 수 없습니다."
+    },
+    "ERROR": {
+      "ERRORS": {
+        "WRONG_VERSION": "이 서버는 {{expectedVersion}} 버전을 예상하지만 현재 버전은 {{version}}입니다.",
+        "MODS_MISMATCH": "이 서버에는 ModPolicy가 활성화되어 있습니다. {{mods}}",
+        "MODS_MISMATCH_REMOVE": "참가하려면 다음 모드를 제거하세요:\n{{mods}}",
+        "MODS_MISMATCH_INSTALL": "참가하려면 다음 모드를 설치하세요:\n{{mods}}",
+        "CLIENT_MODS_DISALLOWED": "이 서버는 {{mods}}를 허용하지 않습니다. 가입하려면 해당 항목을 삭제하세요.",
+        "WRONG_PASSWORD": "입력한 암호가 올바르지 않습니다.",
+        "NO_REASON": "서버가 이유 없이 연결을 거부했습니다.",
+        "SERVER_FULL": "이 서버는 만석입니다."
+      }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}}님이 귀하를 파티에 초대했습니다"
+    }
+  }
+}
