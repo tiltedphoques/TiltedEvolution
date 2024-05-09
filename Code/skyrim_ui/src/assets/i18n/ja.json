@@ -1,0 +1,177 @@
+{
+  "COMPONENT": {
+    "CHAT": {
+      "SEND": "送信",
+      "MESSAGE": "メッセージ",
+      "MESSAGE_TOO_LONG": "{{chatMessageLengthLimit}}字以上のメッセージは送信不可能。"
+    },
+    "CONNECT": {
+      "INFO": {
+        "SERVER_ADDRESS": "IPv4アドラスを入力してサーバーに入ります。 形式は、 <strong>IPアドレス：ポート</strong>。 デフォルトのポート番号は<strong>10578</strong>。",
+        "HELGEN": "ヘルゲンの脱出チュートリアルが終わってからサーバーに接続してください。脱出する前に接続するとバッグが発生します。"
+      },
+      "ADDRESS": "IPアドレス",
+      "PASSWORD": "パスワード",
+      "SAVE_PASSWORD": "パスワードの保存",
+      "HIDE_PASSWORD": "パスワードを非表示にする",
+      "CONNECT": "接続",
+      "CANCEL": "キャンセル",
+      "PUBLIC_SERVERS": "公開サーバー",
+      "ERROR": {
+        "CONNECTION": "接続できませんでした。 IPアドレスとネットワークの安定を確認してから再度お試しください。",
+        "VERSION_MISMATCH": "サーバーの「Skyrim Together」バージョンが違う為、接続することができません。",
+        "INVALID_ADDRESS": "アドレスの形式が無効です。"
+      }
+    },
+    "DISCONNECT": {
+      "PROMPT": "切断しますか?",
+      "PROCEED": "はい",
+      "CANCEL": "いいえ"
+    },
+    "ERROR": {
+      "OK": "閉じる"
+    },
+    "NOTIFICATIONS": {
+      "MESSAGE_FROM": "メッセージが届いていますー＞",
+      "ACCEPT": "承認",
+      "DECLINE": "否認"
+    },
+    "PARTY_MENU": {
+      "ACCEPT_INVITE": "{{name}}からの招待を承認する",
+      "LAUNCH_PARTY": "パーティーを組む",
+      "INVITES": "招待",
+      "NO_INVITES": "招待はありません。",
+      "EXPERIENCE_WARNING": "クエストがスムーズに進むよう、気を付けてサイトにある「プレイガイド」をお読みください。　<b>skyrim-together.com</b>. 以下がおおよそのルール：",
+      "GUIDELINES": {
+        "PARTY": "まずはパーティーを組むことで、中軸の「ホスト」、いわゆる「パーティーリーダー」になります。",
+        "PARTY_LEADER_TALK": "このパーティーリーダーだけがクエストを進めるためにNPCと話す。",
+        "PARTY_LEADER_LOOT_QUESTITEMS": "同じく、このパーティーリーダーだけがクエストアイテムを取る。",
+        "KEEP_PARTY_LEADER": "プレイする時は１周に１人、同じリーダーにする。",
+        "ONE_PARTY_PER_SERVER": "１つのサーバーには１つだけのパーティーを組む。"
+      },
+      "NO_PLAYERS_IN_PARTY": "まだ誰もパーティーに入っていないようです。 プレイヤーリストから招待して組んでみましょう!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "名前",
+        "LOCATION": "位置"
+      },
+      "ACTIONS": {
+        "KICK": "キック",
+        "TELEPORT": "テレポート",
+        "MAKE_LEADER": "リーダーにする"
+      },
+      "LEAVE_PARTY": "パーティーを抜ける"
+    },
+    "PARTY_LIST": {
+      "NO_OTHER_PLAYERS": "ニワトリしかいないね。",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "名前",
+        "LOCATION": "位置"
+      },
+      "INVITE": "招待"
+    },
+    "PLAYER_MANAGER": {
+      "PLAYER_LIST": "プレイヤーメニュー",
+      "PARTY_MENU": "パーティーメニュー",
+      "BACK": "戻る"
+    },
+    "ROOT": {
+      "CONNECT": "接続",
+      "DISCONNECT": "切断",
+      "RECONNECT": "再接続",
+      "PLAYER_MANAGER": "プレイヤーの管理",
+      "SETTINGS": "設定",
+      "CONNECTION_IN_PROGRESS": "接続しています…"
+    },
+    "SERVER_LIST": {
+      "SEARCH": "検索",
+      "REFRESH": "リフレッシュ",
+      "BACK": "戻る",
+      "LOADING": "読み込んでいます…",
+      "NO_SERVERS": "公開サーバーはありません。",
+      "HIDE_MISMATCHED_SERVERS": "一致するバージョンでないサーバーを非表示",
+      "HIDE_FULL_SERVERS": "満員のサーバーを非表示",
+      "HIDE_PASSWORD_PROTECTED_SERVERS": "パスワード保護されたサーバーを非表示",
+      "SERVER_COUNT": "{{count}}の内から{{filteredCount}}を表示しています",
+      "TABLE_HEADERS": {
+        "NAME": "サーバーネーム",
+        "PLAYERS": "プレイヤー",
+        "COUNTRY": "国",
+        "FAVORITE": "お気に入り"
+      },
+      "JOIN": "入る"
+    },
+    "SETTINGS": {
+      "VERSION": {
+        "HEADER": "バージョン",
+        "INFO": "現バージョン：",
+        "OUTDATED": "バージョンが古い。 アップデートしてください。"
+      },
+      "AUDIO": "オーディオ",
+      "MUTE_UI": "UI消音",
+      "UI_VOLUME": "UIボリューム",
+      "PARTY": "パーティー",
+      "SHOW_PARTY": "パーティーUIの表示",
+      "AUTO_HIDE_PARTY": "自動的にパーティーUIを非表示にする",
+      "AUTO_HIDE_PARTY_LENGTH": "自動非表示タイマー",
+      "PARTY_ANCHOR": "位置",
+      "PARTY_ANCHOR_POSITION": {
+        "TOP_LEFT": "左上",
+        "TOP_RIGHT": "右上",
+        "BOTTOM_RIGHT": "右下",
+        "BOTTOM_LEFT": "左下"
+      },
+      "PARTY_ANCHOR_OFFSET_X": "水平オフセット",
+      "PARTY_ANCHOR_OFFSET_Y": "垂直オフセット",
+      "LENGTH": "{{length}}",
+      "UI": "ユーザーインターフェース",
+      "LANGUAGE": "言語",
+      "DEBUG": "デバッグ",
+      "SHOW_DEBUG_INFO": "デバッグ情報の表示",
+      "FONT_SIZE": "フォントサイズ",
+      "FONT_SIZES": {
+        "XS": "最小",
+        "S": "小",
+        "M": "普",
+        "L": "大",
+        "XL": "最大"
+      },
+      "BACK": "戻る"
+    }
+  },
+  "SERVICE": {
+    "CLIENT": {
+      "CONNECTION_LOST": "サーバーから切断されました。再接続しようとしています… 後{{remainingReconnectionAttempt}}回試します。",
+      "CONNECTED": "接続しました。",
+      "DISCONNECTED": "サーバーから切断されました。"
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "使用できるコマンド: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' はコマンドではありません."
+    },
+    "GROUP": {
+      "LEVEL_UP": "{{name}}がLv.{{level}}になりました。",
+      "ALREADY_IN_GROUP": "既にパーティーに入っています。 現在入っているパーティーを抜けてから他のパーティーに入りましょう。",
+      "KICK_NO_PARTY_LEADER": "パーティーリーダーでない為、他のプレイヤーをキックすることは出来ません。",
+      "MAKE_LEADER_NO_PARTY_LEADER": "パーティーリーダーでない為、他のプレイヤーをリーダーにすることは出来ません。"
+    },
+    "ERROR": {
+      "ERRORS": {
+        "WRONG_VERSION": "サーバーバージョン「{{expectedVersion}}」 とクライアントバージョン「{{version}}」が違います。",
+        "MODS_MISMATCH": "このサーバーは　「ModPolicy」　がオンに設定してあります。{{mods}}",
+        "MODS_MISMATCH_REMOVE": "このサーバーに入るには以下のMODSを削除する必要があります:\n{{mods}}",
+        "MODS_MISMATCH_INSTALL": "このサーバーに入るには以下のMODSをインストールする必要があります:\n{{mods}}",
+        "CLIENT_MODS_DISALLOWED": "このサーバーでは、　 {{mods}}　が禁止とされています. 入るには削除する必要があります。",
+        "WRONG_PASSWORD": "パスワードが間違っています。",
+        "NO_REASON": "接続出来ませんでした。",
+        "SERVER_FULL": "このサーバーは満員です。",
+        "BAD_UGRIDSTOLOAD": "Skyrim.iniの「uGridsToLoad」値がデフォルトではないようです。これはイケマセン。「Skyrim Together」が故障してしまいます。この値をデフォルト（５）に戻すか、Skyrim.iniを削除し１回バニラで起動し新しいファイルをジェネレートしてください。「uExterior Cell Buffer」と「uInterior Cell Buffer」もデフォルトの値のままであったほうがマシです。やり方が分からない場合はSkyrim TogetherのRedditやDiscordをご参考にしてください。",
+        "NON_DEFAULT_INSTALL": "スカイリムが純粋なバニラではないようです［CCコンテンツなど］。\nMODSを使わなかったほうがマシ。\nAEのCCコンテンツコンテンツも含めて、インストールしたMODSを削除し無効にすることをお勧めします［詳細はWIKIに。］\n\n有効な順番はこの通り：<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp</strong>"
+      }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} がパーティーに招待しました。"
+    }
+  }
+}
