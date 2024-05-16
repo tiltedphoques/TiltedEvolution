@@ -1,3 +1,0 @@
-iSyncIdleLocomotion
-iSyncTurnState
-iState
