@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve Skyrim Together
 title: ''
-labels: bug
+labels: bug,1.6.5
 assignees: ''
 
 ---
