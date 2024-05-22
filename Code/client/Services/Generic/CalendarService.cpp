@@ -128,10 +128,10 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
         // time transition in
         if (m_fadeTimer < kTransitionSpeed)
         {
-            pGameTime->GameHour->f = TimeInterpolate(m_offlineTime.m_timeModel, m_onlineTime.m_timeModel);
+            pGameTime->GameHour->f = TimeInterpolate(m_offlineTime, m_onlineTime);
             m_fadeTimer += updateDelta;
         }
         else
-            pGameTime->GameHour->f = m_onlineTime.m_timeModel.Time;
+            pGameTime->GameHour->f = m_onlineTime.Time;
     }
 }

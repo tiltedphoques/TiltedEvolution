@@ -2,8 +2,6 @@
 
 #include <cstdint>
 
-#include <TiltedCore/Buffer.hpp>
-
 using TiltedPhoques::Buffer;
 
 struct TimeModel
@@ -15,8 +13,16 @@ struct TimeModel
     uint32_t Month = 1;
     uint32_t Day = 1;
 
+    [[nodiscard]] static uint32_t GetNumberOfDaysByMonthIndex(int index);
+
+    void Update(uint64_t aDeltaTick);
+    float GetDeltaTime(uint64_t aDeltaTick) const noexcept;
+    float GetTimeInDays() const noexcept;
+
     void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
     void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
+
+    std::string ToString() const noexcept;
 
     bool operator==(const TimeModel& achRhs) const noexcept { return TimeScale == achRhs.TimeScale && Time == achRhs.Time && Day == achRhs.Day && Month == achRhs.Month && Year == achRhs.Year; }
     bool operator!=(const TimeModel& achRhs) const noexcept { return !this->operator==(achRhs); }

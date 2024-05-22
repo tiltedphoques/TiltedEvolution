@@ -30,7 +30,7 @@ void CalendarService::OnUpdate(const UpdateEvent&) noexcept
 
     auto delta = now - m_lastTick;
     m_lastTick = now;
-    m_dateTime.Update(delta);
+    m_timeModel.Update(delta);
 }
 
 void CalendarService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcept
@@ -44,14 +44,14 @@ void CalendarService::OnPlayerJoin(const PlayerJoinEvent& acEvent) const noexcep
 
 bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept
 {
-    m_dateTime.m_timeModel.TimeScale = aScale;
+    m_timeModel.TimeScale = aScale;
 
     if (aHours >= 0 && aHours <= 23 && aMinutes >= 0 && aMinutes <= 59)
     {
         // encode time as skyrim time
         auto minutes = static_cast<float>(aMinutes) * 0.17f;
         minutes = floor(minutes * 100) / 1000;
-        m_dateTime.m_timeModel.Time = static_cast<float>(aHours) + minutes;
+        m_timeModel.Time = static_cast<float>(aHours) + minutes;
 
         ServerTimeSettings timeMsg;
         timeMsg.TimeScale = m_timeModel.TimeScale;
@@ -65,8 +65,8 @@ bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept
 
 CalendarService::TTime CalendarService::GetTime() const noexcept
 {
-    const auto hour = floor(m_dateTime.m_timeModel.Time);
-    const auto minutes = (m_dateTime.m_timeModel.Time - hour) / 17.f;
+    const auto hour = floor(m_timeModel.Time);
+    const auto minutes = (m_timeModel.Time - hour) / 17.f;
 
     const auto flatMinutes = static_cast<int>(ceil((minutes * 100.f) * 10.f));
     return {static_cast<int>(hour), flatMinutes};
@@ -82,14 +82,14 @@ CalendarService::TTime CalendarService::GetRealTime() noexcept
 
 CalendarService::TDate CalendarService::GetDate() const noexcept
 {
-    return {m_dateTime.m_timeModel.Day, m_dateTime.m_timeModel.Month, m_dateTime.m_timeModel.Year};
+    return {m_timeModel.Day, m_timeModel.Month, m_timeModel.Year};
 }
 
 bool CalendarService::SetTimeScale(float aScale) noexcept
 {
     if (aScale >= 0.f && aScale <= 1000.f)
     {
-        m_dateTime.m_timeModel.TimeScale = aScale;
+        m_timeModel.TimeScale = aScale;
 
         ServerTimeSettings timeMsg;
         timeMsg.TimeScale = m_timeModel.TimeScale;
