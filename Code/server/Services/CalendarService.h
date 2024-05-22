@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Events/PacketEvent.h>
-#include <DateTime.h>
+#include <Structs/TimeModel.h>
 #include <Structs/GameId.h>
 
 struct World;
@@ -23,7 +23,6 @@ public:
     using TDate = std::tuple<int, int, int>;
 
     bool SetTime(int aHour, int aMinutes, float aScale) noexcept;
-    bool SetDate(int aDay, int aMonth, float aYear) noexcept;
 
     // returns hours, minutes
     TTime GetTime() const noexcept;
@@ -32,17 +31,15 @@ public:
     // returns dd/mm/yy
     TDate GetDate() const noexcept;
 
-    float GetTimeScale() const noexcept { return m_dateTime.m_timeModel.TimeScale; }
+    float GetTimeScale() const noexcept { return m_timeModel.TimeScale; }
     bool SetTimeScale(float aScale) noexcept;
 
 private:
     void OnUpdate(const UpdateEvent&) noexcept;
-    void OnPlayerJoin(const PlayerJoinEvent&) noexcept;
-    void SendTimeResync() noexcept;
+    void OnPlayerJoin(const PlayerJoinEvent&) const noexcept;
 
-    DateTime m_dateTime;
+    TimeModel m_timeModel;
     uint64_t m_lastTick = 0;
-    bool m_timeSetFromFirstPlayer = false;
 
     World& m_world;
 

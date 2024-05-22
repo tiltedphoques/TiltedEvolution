@@ -20,7 +20,6 @@ void ServerSettings::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noe
     Serialization::WriteBool(aWriter, PvpEnabled);
     Serialization::WriteBool(aWriter, SyncPlayerHomes);
     Serialization::WriteBool(aWriter, DeathSystemEnabled);
-    Serialization::WriteBool(aWriter, SyncPlayerCalendar);
     Serialization::WriteBool(aWriter, AutoPartyJoin);
 }
 
@@ -31,6 +30,5 @@ void ServerSettings::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcep
     PvpEnabled = Serialization::ReadBool(aReader);
     SyncPlayerHomes = Serialization::ReadBool(aReader);
     DeathSystemEnabled = Serialization::ReadBool(aReader);
-    SyncPlayerCalendar = Serialization::ReadBool(aReader);
     AutoPartyJoin = Serialization::ReadBool(aReader);
 }

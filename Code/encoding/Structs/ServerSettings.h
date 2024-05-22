@@ -15,6 +15,5 @@ struct ServerSettings
     bool PvpEnabled{};
     bool SyncPlayerHomes{};
     bool DeathSystemEnabled{};
-    bool SyncPlayerCalendar{};
     bool AutoPartyJoin{};
 };

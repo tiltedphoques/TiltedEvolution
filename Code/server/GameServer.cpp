@@ -49,9 +49,6 @@ Console::Setting bEnableDeathSystem{"Gameplay:bEnableDeathSystem", "Enables the 
 Console::Setting uTimeScale{
     "Gameplay:uTimeScale",
     "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
-Console::Setting bSyncPlayerCalendar{
-    "Gameplay:bSyncPlayerCalendar",
-    "Syncs up all player calendars to be the same day, month, and year. This uses the date of the player with the furthest ahead date at connection.", false};
 Console::Setting bAutoPartyJoin{
     "Gameplay:bAutoPartyJoin",
     "Join parties automatically, as long as there is only one party in the server", true};
@@ -120,12 +117,6 @@ constexpr char kMopoRecordsMissing[]{
     "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
     "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
-constexpr char kCalendarSyncWarning[]{
-    "Calendar sync is enabled. We generally do not recommend that you use this feature."
-    "Calendar sync can cause the calendar to jump ahead or behind, which might mess up the timing of quests."
-    "If you disable this feature again (which is the default setting), the days will still progress, but the"
-    "exact date will differ slightly between clients (which has no impact on gameplay)."};
-
 static uint16_t GetUserTickRate()
 {
     return bPremiumTickrate ? 60 : 30;
@@ -144,7 +135,6 @@ ServerSettings GetSettings()
     settings.PvpEnabled = bEnablePvp;
     settings.SyncPlayerHomes = bSyncPlayerHomes;
     settings.DeathSystemEnabled = bEnableDeathSystem;
-    settings.SyncPlayerCalendar = bSyncPlayerCalendar;
     settings.AutoPartyJoin = bAutoPartyJoin;
     return settings;
 }
@@ -208,9 +198,6 @@ void GameServer::Initialize()
 {
     if (!CheckMoPo())
         return;
-
-    if (bSyncPlayerCalendar)
-        spdlog::warn(kCalendarSyncWarning);
 
     BindServerCommands();
     m_pWorld->GetScriptService().Initialize(*m_pResources);
@@ -361,26 +348,6 @@ void GameServer::BindServerCommands()
             else
             {
                 out->error("Hour must be between 0-23 and minute must be between 0-59");
-            }
-        });
-
-    m_commands.RegisterCommand<int64_t, int64_t, int64_t>(
-        "SetDate", "Set ingame day, month, and year", [&](Console::ArgStack& aStack) {
-            auto out = spdlog::get("ConOut");
-
-            auto day = aStack.Pop<int64_t>();
-            auto month = aStack.Pop<int64_t>();
-            auto year = aStack.Pop<int64_t>();
-
-            bool time_set_successfully = m_pWorld->GetCalendarService().SetDate(day, month, year);
-
-            if (time_set_successfully)
-            {
-                out->info("Time set to {:02}/{:02}:{:02}", month, day, year);
-            }
-            else
-            {
-                out->error("Day must be between 0 and 31, month must be between 0 and 11, and year must be between 0 and 999.");
             }
         });
 }
@@ -880,7 +847,7 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
             Send(pPlayer->GetConnectionId(), notify);
         }
 
-        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId, acRequest->PlayerTime));
+        m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId));
     }
     /*
         else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
