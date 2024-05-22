@@ -117,12 +117,6 @@ constexpr char kMopoRecordsMissing[]{
     "to join! Please create a Data/ directory, and put a \"loadorder.txt\" file in there."
     "Check the wiki, which can be found on skyrim-together.com, for more details."};
 
-constexpr char kCalendarSyncWarning[]{
-    "Calendar sync is enabled. We generally do not recommend that you use this feature."
-    "Calendar sync can cause the calendar to jump ahead or behind, which might mess up the timing of quests."
-    "If you disable this feature again (which is the default setting), the days will still progress, but the"
-    "exact date will differ slightly between clients (which has no impact on gameplay)."};
-
 static uint16_t GetUserTickRate()
 {
     return bPremiumTickrate ? 60 : 30;
@@ -204,9 +198,6 @@ void GameServer::Initialize()
 {
     if (!CheckMoPo())
         return;
-
-    if (bSyncPlayerCalendar)
-        spdlog::warn(kCalendarSyncWarning);
 
     BindServerCommands();
     m_pWorld->GetScriptService().Initialize(*m_pResources);
