@@ -236,6 +236,7 @@ static bool g_enableCellWindow{false};
 static bool g_enableProcessesWindow{false};
 static bool g_enableWeatherWindow{false};
 static bool g_enableCombatWindow{false};
+static bool g_enableDragonSpawnerWindow{false};
 
 void DebugService::DrawServerView() noexcept
 {
@@ -335,6 +336,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Entities", nullptr, &g_enableEntitiesWindow);
         ImGui::MenuItem("Server", nullptr, &g_enableServerWindow);
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
+        ImGui::MenuItem("Dragon spawner", nullptr, &g_enableDragonSpawnerWindow);
 
 #if (!IS_MASTER)
         ImGui::MenuItem("Network", nullptr, &g_enableNetworkWindow);
@@ -378,6 +380,8 @@ void DebugService::OnDraw() noexcept
         DrawServerView();
     if (g_enablePartyWindow)
         DrawPartyView();
+    if (g_enableDragonSpawnerWindow)
+        DrawDragonSpawnerView();
 
 #if (!IS_MASTER)
     if (g_enableNetworkWindow)

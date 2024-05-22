@@ -591,6 +591,12 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
     return pActor;
 }
 
+GamePtr<Actor> Actor::Spawn(uint32_t aBaseFormId) noexcept
+{
+    TESNPC* pNpc = Cast<TESNPC>(TESForm::GetById(aBaseFormId));
+    return Actor::Create(pNpc);
+}
+
 void Actor::SetLevelMod(uint32_t aLevel) noexcept
 {
     TP_THIS_FUNCTION(TActorSetLevelMod, void, ExtraDataList, uint32_t);

@@ -58,6 +58,7 @@ private:
     void DrawProcessView();
     void DrawWeatherView();
     void DrawCombatView();
+    void DrawDragonSpawnerView();
 
 public:
     bool m_showDebugStuff = false;
