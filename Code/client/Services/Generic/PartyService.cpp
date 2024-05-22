@@ -124,6 +124,9 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
         {
             TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
             pWorldEncountersEnabled->f = 1.f;
+
+            TESGlobal* pMQ106TurnOffRandomDragons = Cast<TESGlobal>(TESForm::GetById(0xC65BB));
+            pMQ106TurnOffRandomDragons->f = 0.f;
         }
 #elif TP_FALLOUT4
         // TODO: ft

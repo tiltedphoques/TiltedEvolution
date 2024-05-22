@@ -65,6 +65,9 @@ void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 #if TP_SKYRIM64
     TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
     pWorldEncountersEnabled->f = 0.f;
+
+    TESGlobal* pMQ106TurnOffRandomDragons = Cast<TESGlobal>(TESForm::GetById(0xC65BB));
+    pMQ106TurnOffRandomDragons->f = 1.f;
 #elif TP_FALLOUT4
     // Makes it so that VATS doesn't slow down time
     float* vatsTargetingMult = Settings::GetVATSSelectTargetTimeMultiplier();
@@ -91,6 +94,9 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 
     TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
     pWorldEncountersEnabled->f = 1.f;
+
+    TESGlobal* pMQ106TurnOffRandomDragons = Cast<TESGlobal>(TESForm::GetById(0xC65BB));
+    pMQ106TurnOffRandomDragons->f = 0.f;
 #elif TP_FALLOUT4
     *greetDistance = 175.f;
 
@@ -196,6 +202,9 @@ void PlayerService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
     {
         TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
         pWorldEncountersEnabled->f = 1.f;
+
+        TESGlobal* pMQ106TurnOffRandomDragons = Cast<TESGlobal>(TESForm::GetById(0xC65BB));
+        pMQ106TurnOffRandomDragons->f = 0.f;
     }
 #elif TP_FALLOUT4
     // TODO: ft
@@ -210,6 +219,9 @@ void PlayerService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
     {
         TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
         pWorldEncountersEnabled->f = 0.f;
+
+        TESGlobal* pMQ106TurnOffRandomDragons = Cast<TESGlobal>(TESForm::GetById(0xC65BB));
+        pMQ106TurnOffRandomDragons->f = 1.f;
     }
 #elif TP_FALLOUT4
     // TODO: ft
