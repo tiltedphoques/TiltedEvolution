@@ -1,0 +1,177 @@
+{
+  "COMPONENT": {
+    "CHAT": {
+      "SEND": "Send",
+      "MESSAGE": "Melding",
+      "MESSAGE_TOO_LONG": "Meldingen din er for lang. Den må være under {{chatMessageLengthLimit}} karakterer."
+    },
+    "CONNECT": {
+      "INFO": {
+        "SERVER_ADDRESS": "Koble til en server med nettaddressen. Bruk formatet <strong>addresse:port</strong>. Standardporten er <strong>10578</strong>.",
+        "HELGEN": "Du må IKKE koble til en server før du er ferdig med introen. Du må ha flyktet fra Helgen først."
+      },
+      "ADDRESS": "Nettadresse",
+      "PASSWORD": "Passord",
+      "SAVE_PASSWORD": "Lagre passordet?",
+      "HIDE_PASSWORD": "Skjul passordet?",
+      "CONNECT": "Koblte til",
+      "CANCEL": "Avbryt",
+      "PUBLIC_SERVERS": "Offentlige servere",
+      "ERROR": {
+        "CONNECTION": "Kunne ikke koble til den valgte serveren. Forsikre deg om at du har skrevet inn den rette nettaddressen og at du har netttilgang.",
+        "VERSION_MISMATCH": "Du kan kun koble til servere som kjører samme version av Skyrim Together som deg.",
+        "INVALID_ADDRESS": "Addressen er ikke riktig formatert."
+      }
+    },
+    "DISCONNECT": {
+      "PROMPT": "Er du sikker på at vil koble fra?",
+      "PROCEED": "Fortsett",
+      "CANCEL": "Avbryt"
+    },
+    "ERROR": {
+      "OK": "Ok"
+    },
+    "NOTIFICATIONS": {
+      "MESSAGE_FROM": "Message from",
+      "ACCEPT": "Aksepter",
+      "DECLINE": "Avslå"
+    },
+    "PARTY_MENU": {
+      "ACCEPT_INVITE": "Aksepter invitasjon fra {{name}}",
+      "LAUNCH_PARTY": "Lag ny gruppe",
+      "INVITES": "Invitasjoner",
+      "NO_INVITES": "Du har ingen invitasjoner.",
+      "EXPERIENCE_WARNING": "Det anbefales at du leser spillerguiden på wikien vår, før du legger ut på eventyr. Denne finnes på nettsiden vår: <b>skyrim-together.com</b>. Her er et sammendrag:",
+      "GUIDELINES": {
+        "PARTY": "Når du lager er grupper blir du lederen for de andre spillerne.",
+        "PARTY_LEADER_TALK": "Kun gruppelederen har lov til å snakke med viktige NPCer for å fortsette quester.",
+        "PARTY_LEADER_LOOT_QUESTITEMS": "Kun gruppeledere kan plyndre viktige gjenstander relatert til quests.",
+        "KEEP_PARTY_LEADER": "Hold deg til en gruppeledeer for hver gjennomgang av spillet.",
+        "ONE_PARTY_PER_SERVER": "Maks en gruppeleder per server."
+      },
+      "NO_PLAYERS_IN_PARTY": "Det er ingen i gruppen din enda. Inviter dem gjennom spillerlisten!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Navn",
+        "LOCATION": "Sted"
+      },
+      "ACTIONS": {
+        "KICK": "Hiv ut",
+        "TELEPORT": "Teleporter",
+        "MAKE_LEADER": "Make leader"
+      },
+      "LEAVE_PARTY": "Leave party"
+    },
+    "PARTY_LIST": {
+      "NO_OTHER_PLAYERS": "Nobody here but us chickens",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Navn",
+        "LOCATION": "Sted"
+      },
+      "INVITE": "Inviter"
+    },
+    "PLAYER_MANAGER": {
+      "PLAYER_LIST": "Spillere",
+      "PARTY_MENU": "Grupper",
+      "BACK": "Tilbake"
+    },
+    "ROOT": {
+      "CONNECT": "Koblte til",
+      "DISCONNECT": "Koble fra",
+      "RECONNECT": "Koble til på nytt",
+      "PLAYER_MANAGER": "Spillerliste",
+      "SETTINGS": "Innstillinger",
+      "CONNECTION_IN_PROGRESS": "Kobler til..."
+    },
+    "SERVER_LIST": {
+      "SEARCH": "Søk...",
+      "REFRESH": "Oppdater",
+      "BACK": "Tilbake",
+      "LOADING": "Laster...",
+      "NO_SERVERS": "Ingen tilgjengelige servere",
+      "HIDE_MISMATCHED_SERVERS": "Skjul servere med feil versjon",
+      "HIDE_FULL_SERVERS": "Skjul fulle servere",
+      "HIDE_PASSWORD_PROTECTED_SERVERS": "Skjul passordbeskyttede servere",
+      "SERVER_COUNT": "Viser {{filteredCount}} av {{count}} servere",
+      "TABLE_HEADERS": {
+        "NAME": "Server Navn",
+        "PLAYERS": "Spillere / Max.",
+        "COUNTRY": "Land",
+        "FAVORITE": "Favoritt"
+      },
+      "JOIN": "Bli med"
+    },
+    "SETTINGS": {
+      "VERSION": {
+        "HEADER": "Versjon",
+        "INFO": "Nåverende installert:",
+        "OUTDATED": "Versjonen er utdatert. Vennligst oppdater."
+      },
+      "AUDIO": "Lyd",
+      "MUTE_UI": "Skru av UI lyder",
+      "UI_VOLUME": "UI Volum",
+      "PARTY": "Gruppe",
+      "SHOW_PARTY": "Vis gruppe",
+      "AUTO_HIDE_PARTY": "Skjul gruppe automatisk",
+      "AUTO_HIDE_PARTY_LENGTH": "Skjul gruppe etter tid",
+      "PARTY_ANCHOR": "Posisjon",
+      "PARTY_ANCHOR_POSITION": {
+        "TOP_LEFT": "Oppe til venstre",
+        "TOP_RIGHT": "Oppe til høyre",
+        "BOTTOM_RIGHT": "Nede til høyre",
+        "BOTTOM_LEFT": "Nede til venstre"
+      },
+      "PARTY_ANCHOR_OFFSET_X": "Horizontalt Offset",
+      "PARTY_ANCHOR_OFFSET_Y": "Vertikal Offset",
+      "LENGTH": "{{length}}s",
+      "UI": "Brukergrensesnitt",
+      "LANGUAGE": "Språk",
+      "DEBUG": "Debug",
+      "SHOW_DEBUG_INFO": "Vis debug informasjon",
+      "FONT_SIZE": "Skriftstørrelse",
+      "FONT_SIZES": {
+        "XS": "Ekstra liten",
+        "S": "Liten",
+        "M": "Medium",
+        "L": "Stor",
+        "XL": "Extra stor"
+      },
+      "BACK": "Tilbake"
+    }
+  },
+  "SERVICE": {
+    "CLIENT": {
+      "CONNECTION_LOST": "Mistet tilkobling, prøver å koble til på nytt. {{remainingReconnectionAttempt}} forsøk igjen.",
+      "CONNECTED": "Koblet til server.",
+      "DISCONNECTED": "Koble fra server."
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "tilgjengelige chat kommandoer: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' er ikke gjenkjent som en kommando."
+    },
+    "GROUP": {
+      "LEVEL_UP": "{{name}} har nådd level {{level}}.",
+      "ALREADY_IN_GROUP": "Du er allerede i en gruppe. Forlat din nåverende gruppe og prøv igjen.",
+      "KICK_NO_PARTY_LEADER": "Kun gruppelederen kan hive ut andre medlemmer.",
+      "MAKE_LEADER_NO_PARTY_LEADER": "Kun gruppelederen kan gjøre andre til leder."
+    },
+    "ERROR": {
+      "ERRORS": {
+        "WRONG_VERSION": "Denne serveren forventer versjon {{expectedVersion}}, men du er på versjon {{version}}.",
+        "MODS_MISMATCH": "Denne serveren har ModPolicy aktivert.{{mods}}",
+        "MODS_MISMATCH_REMOVE": "Vennligst fjern følgende spillendringer for å bli med:\n{{mods}}",
+        "MODS_MISMATCH_INSTALL": "Vennligst installer følgende spillendringer for å bli med:\n{{mods}}",
+        "CLIENT_MODS_DISALLOWED": "Denne serveren tilatter deg ikke å bruke {{mods}}. Vennligst fjern dem for å bli med.",
+        "WRONG_PASSWORD": "Passordet er feil.",
+        "NO_REASON": "Serveren avviste tilkoblingen.",
+        "SERVER_FULL": "Denne serveren er full.",
+        "BAD_UGRIDSTOLOAD": "Det ser ut som Skyrim.ini har en feil verdi for 'uGridsToLoad'. DETTE ER EN VELDIG DÅRLIG IDE, og vil mest sannsynling knekke denne modden. Sett denne tilbake til (5), eller fjern Skyrim.ini filen and kjør Skyrim vanilla en gang for en ny fil. Instillingen 'uExterior Cell Buffer' og 'uInterior Cell Buffer' bør også bli værende på standardinnstillingen. Hvis du trenger hjelp med dette kan du spør på Discord, Reddit eller wikien.",
+        "NON_DEFAULT_INSTALL": "Det ser ut som innstallasjonen din ikke er vanilla. Creation Club mods (inkluderte de fra Anniversary oppdateringen) eller andre mods bør unngås .\nVi anbefaller IKKE å spille med mods.\nDu bør avinstallere og skru av disse (instruksjoner kan finnes på wikien).\n\nFor den beste opplevelsen bør du ha følgene mods:<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp</strong>"
+      }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} inviterte deg til en gruppe."
+    }
+  }
+}
