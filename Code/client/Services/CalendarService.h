@@ -1,6 +1,6 @@
 #pragma once
 
-#include <DateTime.h>
+#include <Structs/TimeModel.h>
 #include <Events/EventDispatcher.h>
 #include <Games/Events.h>
 
@@ -32,13 +32,13 @@ private:
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_disconnectedConnection;
 
-    DateTime m_onlineTime;
-    DateTime m_offlineTime;
+    TimeModel m_onlineTime;
+    TimeModel m_offlineTime;
     float m_fadeTimer = 0.f;
+    bool m_switchToOffline = false;
     static bool s_gameClockLocked;
 
     uint64_t m_lastTick = 0;
-    uint64_t m_lastLogTick = 0;
     World& m_world;
     TransportService& m_transport;
 };

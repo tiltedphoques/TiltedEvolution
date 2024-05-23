@@ -25,6 +25,7 @@ struct Actor : TESObjectREFR
 
     static GamePtr<Actor> New() noexcept;
     static GamePtr<Actor> Create(TESNPC* apNpc) noexcept;
+    static GamePtr<Actor> Spawn(uint32_t aBaseFormId) noexcept;
 
     virtual void sub_C4();
     virtual void sub_C5();
