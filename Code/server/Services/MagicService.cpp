@@ -54,6 +54,7 @@ void MagicService::OnAddTargetRequest(const PacketEvent<AddTargetRequest>& acMes
 
     NotifyAddTarget notify;
     notify.TargetId = message.TargetId;
+    notify.CasterId = message.CasterId;
     notify.SpellId = message.SpellId;
     notify.EffectId = message.EffectId;
     notify.Magnitude = message.Magnitude;

@@ -91,6 +91,7 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
 
     AddTargetEvent addTargetEvent{};
     addTargetEvent.TargetID = pTargetActor->formID;
+    addTargetEvent.CasterID = arData.pCaster ? arData.pCaster->formID : 0;
     addTargetEvent.SpellID = arData.pSpell->formID;
     addTargetEvent.EffectID = arData.pEffectItem->pEffectSetting->formID;
     addTargetEvent.Magnitude = arData.fMagnitude;

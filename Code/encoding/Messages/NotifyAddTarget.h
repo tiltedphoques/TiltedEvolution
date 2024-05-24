@@ -17,12 +17,13 @@ struct NotifyAddTarget final : ServerMessage
 
     bool operator==(const NotifyAddTarget& acRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() && TargetId == acRhs.TargetId && SpellId == acRhs.SpellId &&
+        return GetOpcode() == acRhs.GetOpcode() && TargetId == acRhs.TargetId && CasterId == acRhs.CasterId && SpellId == acRhs.SpellId &&
                EffectId == acRhs.EffectId && Magnitude == acRhs.Magnitude && IsDualCasting == acRhs.IsDualCasting &&
                ApplyHealPerkBonus == acRhs.ApplyHealPerkBonus && ApplyStaminaPerkBonus == acRhs.ApplyStaminaPerkBonus;
     }
 
     uint32_t TargetId{};
+    uint32_t CasterId{};
     GameId SpellId{};
     GameId EffectId{};
     float Magnitude{};

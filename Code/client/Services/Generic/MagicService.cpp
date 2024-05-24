@@ -339,6 +339,20 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     }
 
     request.TargetId = serverIdRes.value();
+
+    const auto casterIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.CasterID, view](auto entity) { return view.get<FormIdComponent>(entity).Id == id; });
+
+    if (casterIt == std::end(view))
+    {
+        spdlog::warn("Form id not found for magic add target, form id: {:X}", acEvent.CasterID);
+        m_queuedEffects[acEvent.TargetID] = request;
+        return;
+    }
+
+    serverIdRes = Utils::GetServerId(*casterIt);
+    if (serverIdRes.has_value())
+        request.CasterId = serverIdRes.value();
+
     request.IsDualCasting = acEvent.IsDualCasting;
     request.ApplyHealPerkBonus = acEvent.ApplyHealPerkBonus;
     request.ApplyStaminaPerkBonus = acEvent.ApplyStaminaPerkBonus;
@@ -410,6 +424,8 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     // This hack is here because slow time seems to be twice as slow when cast by an npc
     if (pEffect->IsSlowEffect())
         pActor = PlayerCharacter::Get();
+
+    data.pCaster = Utils::GetByServerId<Actor>(acMessage.CasterId);
 
     pActor->magicTarget.AddTarget(data, acMessage.ApplyHealPerkBonus, acMessage.ApplyStaminaPerkBonus);
 
