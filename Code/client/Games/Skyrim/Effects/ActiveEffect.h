@@ -40,7 +40,9 @@ struct ActiveEffect
 
     static ActiveEffect* Instantiate(Actor* apCaster, MagicItem* apSpell, EffectItem* apEffect);
 
-    uint8_t pad8[0x38];
+    uint8_t pad8[0x34 - 0x8];
+    uint32_t hCaster;
+    NiNode* pSourceNode;
     MagicItem* pSpell;
     void* pEffect;
     MagicTarget* pTarget;
