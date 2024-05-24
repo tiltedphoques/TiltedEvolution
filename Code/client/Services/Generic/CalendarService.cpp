@@ -105,7 +105,7 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
         pGameTime->GameDay->f = m_onlineTime.m_timeModel.Day;
         pGameTime->GameMonth->f = m_onlineTime.m_timeModel.Month;
         pGameTime->GameYear->f = m_onlineTime.m_timeModel.Year;
-        pGameTime->GameDaysPassed->f += m_onlineTime.GetDeltaTime(delta);
+        pGameTime->GameDaysPassed->f += m_onlineTime.GetDeltaTime(delta) * (1.f / 24.f);
 
         // time transition in
         if (m_fadeTimer < kTransitionSpeed)

@@ -236,6 +236,7 @@ static bool g_enableCellWindow{false};
 static bool g_enableProcessesWindow{false};
 static bool g_enableWeatherWindow{false};
 static bool g_enableCombatWindow{false};
+static bool g_enableCalendarWindow{false};
 static bool g_enableDragonSpawnerWindow{false};
 
 void DebugService::DrawServerView() noexcept
@@ -349,6 +350,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
         ImGui::MenuItem("Weather", nullptr, &g_enableWeatherWindow);
         ImGui::MenuItem("Combat", nullptr, &g_enableCombatWindow);
+        ImGui::MenuItem("Calendar", nullptr, &g_enableCalendarWindow);
 #endif
 
         ImGui::EndMenu();
@@ -406,6 +408,8 @@ void DebugService::OnDraw() noexcept
         DrawWeatherView();
     if (g_enableCombatWindow)
         DrawCombatView();
+    if (g_enableCalendarWindow)
+        DrawCalendarView();
 
     if (m_drawComponentsInWorldSpace)
         DrawComponentDebugView();
