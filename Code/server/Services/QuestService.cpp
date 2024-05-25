@@ -45,6 +45,10 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
 
                 notify.Status = NotifyQuestUpdate::Started;
             }
+            else
+            {
+                notify.Status = NotifyQuestUpdate::StageUpdate;
+            }
         }
         else
         {
