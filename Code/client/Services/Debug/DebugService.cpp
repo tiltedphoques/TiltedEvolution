@@ -199,18 +199,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f7Pressed = true;
 
-            auto* pIdle = Cast<TESIdleForm>(TESForm::GetById(0x20023fe));
-
-            g_forceAnimation = true;
-            auto* pActor = Cast<Actor>(TESForm::GetById(m_formId));
-            BSFixedString str("LevitationToggle");
-            //bool res = pActor->PlayAnimation(&str);
-            bool res = pActor->SendAnimationEvent(&str);
-            spdlog::error("{}", res);
-            g_forceAnimation = false;
-
-            //auto* pIdle = Cast<TESIdleForm>(TESForm::GetById(0x20023fe));
-            //PlayerCharacter::Get()->PlayIdle(pIdle);
+            //
         }
     }
     else
@@ -223,18 +212,6 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             s_f8Pressed = true;
 
             //PlaceActorInWorld();
-
-            BSFixedString str("isLevitating");
-            uint32_t res = PlayerCharacter::Get()->GetAnimationVariableInt(&str);
-            spdlog::error("{}", res);
-
-        #if 0
-            auto* pObjForm = TESForm::GetById(0x2011a86);
-            if (!pObjForm)
-                spdlog::error("Not found");
-
-            EquipManager::Get()->Equip(PlayerCharacter::Get(), pObjForm, nullptr, 1, nullptr, false, true, false, false);
-        #endif
         }
     }
     else

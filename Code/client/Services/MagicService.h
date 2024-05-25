@@ -72,8 +72,6 @@ private:
      */
     void ApplyQueuedEffects() noexcept;
 
-    void RunVampireLordTransformationFinish(double aDelta) noexcept;
-
     /**
      * Apply the "reveal players" effect on remote players.
      */

@@ -496,7 +496,6 @@ void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMes
             auto& characterComponent = view.get<CharacterComponent>(*it);
             characterComponent.SaveBuffer = acMessage.Packet.AppearanceBuffer;
             characterComponent.ChangeFlags = acMessage.Packet.ChangeFlags;
-            spdlog::info("Respawning with new buffer");
         }
 
         NotifyRespawn notify;
