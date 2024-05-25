@@ -167,6 +167,7 @@ struct TESObjectREFR : TESForm
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
+    uint32_t GetAnimationVariableInt(BSFixedString* apVariableName) noexcept;
 
     void RemoveAllItems() noexcept;
     void Delete() const noexcept;

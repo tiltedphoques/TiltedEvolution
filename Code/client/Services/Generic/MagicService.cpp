@@ -55,7 +55,7 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
         return;
 
     ApplyQueuedEffects();
-    RunVampireLordTransformationFinish(acEvent.Delta);
+    //RunVampireLordTransformationFinish(acEvent.Delta);
 
     UpdateRevealOtherPlayersEffect();
 }

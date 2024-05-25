@@ -209,6 +209,7 @@ struct Actor : TESObjectREFR
     [[nodiscard]] uint8_t GetPerkRank(uint32_t aPerkFormId) const noexcept;
     [[nodiscard]] bool IsWearingBodyPiece() const noexcept;
     [[nodiscard]] bool ShouldWearBodyPiece() const noexcept;
+    [[nodiscard]] bool IsVampireLord() const noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
@@ -248,6 +249,7 @@ struct Actor : TESObjectREFR
     void StartCombat(Actor* apTarget) noexcept;
     void StopCombat() noexcept;
     bool PlayIdle(TESIdleForm* apIdle) noexcept;
+    void FixVampireLordModel() noexcept;
 
     enum ActorFlags
     {

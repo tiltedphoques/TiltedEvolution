@@ -456,6 +456,15 @@ void TESObjectREFR::Enable() const noexcept
     s_pEnable(this, true);
 }
 
+uint32_t TESObjectREFR::GetAnimationVariableInt(BSFixedString* apVariableName) noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(uint32_t, ObjectReference, GetAnimationVariableInt, BSFixedString*);
+
+    return s_pGetAnimationVariableInt(this, apVariableName);
+}
+
 // Skyrim: MoveTo() can fail, causing the object to be deleted
 void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept
 {

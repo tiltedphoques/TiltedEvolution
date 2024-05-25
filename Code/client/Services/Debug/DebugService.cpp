@@ -223,11 +223,18 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
             s_f8Pressed = true;
 
             //PlaceActorInWorld();
+
+            BSFixedString str("isLevitating");
+            uint32_t res = PlayerCharacter::Get()->GetAnimationVariableInt(&str);
+            spdlog::error("{}", res);
+
+        #if 0
             auto* pObjForm = TESForm::GetById(0x2011a86);
             if (!pObjForm)
                 spdlog::error("Not found");
 
             EquipManager::Get()->Equip(PlayerCharacter::Get(), pObjForm, nullptr, 1, nullptr, false, true, false, false);
+        #endif
         }
     }
     else
