@@ -161,9 +161,10 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
 void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool aEntering)
 {
     if (!aEntering)
+    {
         PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_Master_Behavior::m_key;
-
-    World::Get().GetRunner().Trigger(BeastFormChangeEvent());
+        World::Get().GetRunner().Trigger(BeastFormChangeEvent());
+    }
 
     TiltedPhoques::ThisCall(RealSetBeastForm, apThis, apUnk1, apUnk2, aEntering);
 }

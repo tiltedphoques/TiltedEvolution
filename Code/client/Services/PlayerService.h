@@ -50,6 +50,7 @@ private:
      */
     void RunDifficultyUpdates() const noexcept;
     void RunLevelUpdates() const noexcept;
+    void RunBeastFormDetection() const noexcept;
 
     void ToggleDeathSystem(bool aSet) noexcept;
 

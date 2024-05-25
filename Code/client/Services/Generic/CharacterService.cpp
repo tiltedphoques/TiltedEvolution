@@ -404,7 +404,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
         if (waitingItor != std::end(waitingView))
         {
-            spdlog::info("Character with form id {:X} already has a spawn request in progress.", acMessage.FormId);
+            spdlog::info("Character with form id {:X} already has a spawn request in progress.", cActorId);
             return;
         }
 
