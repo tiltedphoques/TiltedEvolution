@@ -44,7 +44,9 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
                 spdlog::debug("Started quest: {:X}:{:X}, stage: {}", message.Id.ModId, message.Id.BaseId, message.Stage);
 
                 notify.Status = NotifyQuestUpdate::Started;
-            }else{
+            }
+            else
+            {
                 notify.Status = NotifyQuestUpdate::StageUpdate;
             }
         }
