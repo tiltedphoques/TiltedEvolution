@@ -147,6 +147,8 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
     moveData.position = acEvent.Position;
 }
 
+extern thread_local bool g_forceAnimation;
+
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     if (!BSGraphics::GetMainWindow()->IsForeground())
@@ -197,11 +199,18 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f7Pressed = true;
 
-            static char s_address[256] = "de.playtogether.gg:10100";
-            if (!m_transport.IsOnline())
-                m_transport.Connect(s_address);
-            else
-                m_transport.Close();
+            auto* pIdle = Cast<TESIdleForm>(TESForm::GetById(0x20023fe));
+
+            g_forceAnimation = true;
+            auto* pActor = Cast<Actor>(TESForm::GetById(m_formId));
+            BSFixedString str("LevitationToggle");
+            //bool res = pActor->PlayAnimation(&str);
+            bool res = pActor->SendAnimationEvent(&str);
+            spdlog::error("{}", res);
+            g_forceAnimation = false;
+
+            //auto* pIdle = Cast<TESIdleForm>(TESForm::GetById(0x20023fe));
+            //PlayerCharacter::Get()->PlayIdle(pIdle);
         }
     }
     else
@@ -213,7 +222,12 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            //PlaceActorInWorld();
+            auto* pObjForm = TESForm::GetById(0x2011a86);
+            if (!pObjForm)
+                spdlog::error("Not found");
+
+            EquipManager::Get()->Equip(PlayerCharacter::Get(), pObjForm, nullptr, 1, nullptr, false, true, false, false);
         }
     }
     else

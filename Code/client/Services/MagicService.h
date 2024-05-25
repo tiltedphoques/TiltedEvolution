@@ -72,6 +72,8 @@ private:
      */
     void ApplyQueuedEffects() noexcept;
 
+    void RunVampireLordTransformationFinish(double aDelta) noexcept;
+
     /**
      * Apply the "reveal players" effect on remote players.
      */
@@ -87,6 +89,7 @@ private:
      */
     Map<uint32_t, AddTargetRequest> m_queuedEffects;
     Map<uint32_t, NotifyAddTarget> m_queuedRemoteEffects;
+    Map<uint32_t, double> m_queuedVampireLords;
 
     bool m_revealOtherPlayers = false;
 

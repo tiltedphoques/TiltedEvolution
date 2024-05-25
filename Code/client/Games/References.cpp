@@ -846,6 +846,12 @@ void Actor::StopCombat() noexcept
     s_pStopCombat(this);
 }
 
+bool Actor::PlayIdle(TESIdleForm* apIdle) noexcept
+{
+    PAPYRUS_FUNCTION(bool, Actor, PlayIdle, TESIdleForm*);
+    return s_pPlayIdle(this, apIdle);
+}
+
 bool Actor::HasPerk(uint32_t aPerkFormId) const noexcept
 {
     return GetPerkRank(aPerkFormId) != 0;

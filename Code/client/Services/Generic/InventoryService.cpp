@@ -121,6 +121,8 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.CurrentInventory = pActor->GetEquipment();
 
     m_transport.Send(request);
+
+    spdlog::info("Sending equipment request, item: {:X}, count: {}, target object: {:X}", acEvent.ItemId, acEvent.Count, acEvent.ActorId);
 }
 
 void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept

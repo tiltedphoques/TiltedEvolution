@@ -16,6 +16,7 @@
 #include <Actor.h>
 #include <Magic/ActorMagicCaster.h>
 #include <Games/ActorExtension.h>
+#include <EquipManager.h>
 
 #include <Structs/Skyrim/AnimationGraphDescriptor_VampireLordBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_WerewolfBehavior.h>
@@ -54,6 +55,7 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
         return;
 
     ApplyQueuedEffects();
+    RunVampireLordTransformationFinish(acEvent.Delta);
 
     UpdateRevealOtherPlayersEffect();
 }
@@ -418,7 +420,10 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
 
     if (pEffect->IsVampireLordEffect())
+    {
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
+        m_queuedVampireLords[pActor->formID] = 0.0;
+    }
 
     // TODO: ft, check if this bug also occurs in fallout 4
     // This hack is here because slow time seems to be twice as slow when cast by an npc
@@ -485,6 +490,50 @@ void MagicService::ApplyQueuedEffects() noexcept
 
     for (uint32_t serverId : markedForRemoval)
         m_queuedRemoteEffects.erase(serverId);
+}
+
+extern thread_local bool g_forceAnimation;
+
+void MagicService::RunVampireLordTransformationFinish(double aDelta) noexcept
+{
+    Vector<uint32_t> markedForRemoval{};
+
+    for (auto& [formId, _] : m_queuedVampireLords)
+    {
+        auto& timer = m_queuedVampireLords[formId];
+
+        timer += aDelta;
+        if (timer < 5.0)
+            continue;
+
+        markedForRemoval.push_back(formId);
+
+        Actor* pActor = Cast<Actor>(TESForm::GetById(formId));
+        if (pActor == nullptr)
+            continue;
+
+        auto* pObjForm = TESForm::GetById(0x2011a84);
+        TESBoundObject* pObject = Cast<TESBoundObject>(pObjForm);
+
+        {
+            ScopedInventoryOverride _;
+            pActor->AddObjectToContainer(pObject, nullptr, 1, nullptr);
+        }
+
+        EquipManager::Get()->Equip(pActor, pObject, nullptr, 1, nullptr, false, true, false, false);
+
+        auto* pIdle = Cast<TESIdleForm>(TESForm::GetById(0x20023fe));
+
+        g_forceAnimation = true;
+        BSFixedString levitation("LevitationToggle");
+        pActor->SendAnimationEvent(&levitation);
+        BSFixedString weapEquip("WeapEquip");
+        pActor->SendAnimationEvent(&weapEquip);
+        g_forceAnimation = false;
+    }
+
+    for (uint32_t formId : markedForRemoval)
+        m_queuedVampireLords.erase(formId);
 }
 
 void MagicService::UpdateRevealOtherPlayersEffect() noexcept

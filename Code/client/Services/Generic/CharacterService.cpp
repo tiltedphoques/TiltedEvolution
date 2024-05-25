@@ -650,6 +650,7 @@ void CharacterService::OnNotifyRespawn(const NotifyRespawn& acMessage) const noe
     m_transport.Send(request);
 }
 
+// TODO: delete this shit
 void CharacterService::OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) const noexcept
 {
     auto view = m_world.view<FormIdComponent>();

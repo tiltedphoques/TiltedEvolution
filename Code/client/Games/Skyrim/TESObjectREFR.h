@@ -175,6 +175,7 @@ struct TESObjectREFR : TESForm
     void MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept;
     void PayGold(int32_t aAmount) noexcept;
     void PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept;
+    bool SendAnimationEvent(BSFixedString* apEventName) noexcept;
 
     bool Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept;
 
