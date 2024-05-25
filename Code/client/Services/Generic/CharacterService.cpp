@@ -27,7 +27,7 @@
 #include <Events/DisconnectedEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/InitPackageEvent.h>
-#include <Events/LeaveBeastFormEvent.h>
+#include <Events/BeastFormChangeEvent.h>
 #include <Events/AddExperienceEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Events/SubtitleEvent.h>
@@ -95,7 +95,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_newPackageConnection = m_dispatcher.sink<NotifyNewPackage>().connect<&CharacterService::OnNotifyNewPackage>(this);
 
     m_notifyRespawnConnection = m_dispatcher.sink<NotifyRespawn>().connect<&CharacterService::OnNotifyRespawn>(this);
-    m_leaveBeastFormConnection = m_dispatcher.sink<LeaveBeastFormEvent>().connect<&CharacterService::OnLeaveBeastForm>(this);
+    m_beastFormChangeConnection = m_dispatcher.sink<BeastFormChangeEvent>().connect<&CharacterService::OnBeastFormChange>(this);
 
     m_addExperienceEventConnection = m_dispatcher.sink<AddExperienceEvent>().connect<&CharacterService::OnAddExperienceEvent>(this);
     m_syncExperienceConnection = m_dispatcher.sink<NotifySyncExperience>().connect<&CharacterService::OnNotifySyncExperience>(this);
@@ -634,24 +634,33 @@ void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage)
 
 void CharacterService::OnNotifyRespawn(const NotifyRespawn& acMessage) const noexcept
 {
-    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ActorId);
-    if (!pActor)
+    auto view = m_world.view<FormIdComponent, RemoteComponent>();
+    const auto entityIt = std::find_if(view.begin(), view.end(), [view, id = acMessage.ActorId](auto aEntity) { return view.get<RemoteComponent>(aEntity).Id == id; });
+
+    if (entityIt == view.end())
     {
-        spdlog::error("{}: could not find actor server id {:X}", __FUNCTION__, acMessage.ActorId);
+        spdlog::error("Actor to respawn not found in: {:X}", acMessage.ActorId);
         return;
     }
 
-    pActor->Delete();
+    const auto cId = *entityIt;
 
-    // TODO: delete components?
+    auto& formIdComponent = view.get<FormIdComponent>(cId);
+    CancelServerAssignment(*entityIt, formIdComponent.Id);
+
+    if (m_world.all_of<FormIdComponent>(cId))
+        m_world.remove<FormIdComponent>(cId);
+
+    if (m_world.orphan(cId))
+        m_world.destroy(cId);
 
     RequestRespawn request;
     request.ActorId = acMessage.ActorId;
+
     m_transport.Send(request);
 }
 
-// TODO: delete this shit
-void CharacterService::OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) const noexcept
+void CharacterService::OnBeastFormChange(const BeastFormChangeEvent& acEvent) const noexcept
 {
     auto view = m_world.view<FormIdComponent>();
 
@@ -670,8 +679,15 @@ void CharacterService::OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) cons
     request.ActorId = serverId;
 
     Actor* pActor = Utils::GetByServerId<Actor>(serverId);
-    if (pActor)
-        pActor->Delete();
+    if (!pActor)
+        return;
+
+    TESNPC* pNpc = Cast<TESNPC>(pActor->baseForm);
+    if (!pNpc)
+        return;
+
+    pNpc->Serialize(&request.AppearanceBuffer);
+    request.ChangeFlags = pNpc->GetChangeFlags();
 
     m_transport.Send(request);
 }
