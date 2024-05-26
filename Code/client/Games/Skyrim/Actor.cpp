@@ -580,6 +580,12 @@ void Actor::Reset() noexcept
     s_pReset(this, 0, nullptr);
 }
 
+bool Actor::PlayIdle(TESIdleForm* apIdle) noexcept
+{
+    PAPYRUS_FUNCTION(bool, Actor, PlayIdle, TESIdleForm*);
+    return s_pPlayIdle(this, apIdle);
+}
+
 void Actor::Respawn() noexcept
 {
     Resurrect(false);

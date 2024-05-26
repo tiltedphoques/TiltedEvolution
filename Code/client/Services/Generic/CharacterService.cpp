@@ -1529,8 +1529,10 @@ void CharacterService::RunRemoteUpdates() noexcept
         if (pActor->IsDead() != waitingFor3D.SpawnRequest.IsDead)
             waitingFor3D.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
 
+#if TP_SKYRIM64
         if (pActor->IsVampireLord())
             pActor->FixVampireLordModel();
+#endif
 
         toRemove.push_back(entity);
 

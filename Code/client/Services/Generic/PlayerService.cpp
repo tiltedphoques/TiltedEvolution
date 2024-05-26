@@ -359,6 +359,7 @@ void PlayerService::RunLevelUpdates() const noexcept
 
 void PlayerService::RunBeastFormDetection() const noexcept
 {
+#if TP_SKYRIM64
     static uint32_t lastRaceFormID = 0;
     static std::chrono::steady_clock::time_point lastSendTimePoint;
     constexpr auto cDelayBetweenUpdates = 250ms;
@@ -380,6 +381,7 @@ void PlayerService::RunBeastFormDetection() const noexcept
         m_world.GetDispatcher().trigger(BeastFormChangeEvent());
 
     lastRaceFormID = pPlayer->race->formID;
+#endif
 }
 
 void PlayerService::ToggleDeathSystem(bool aSet) noexcept
