@@ -536,6 +536,15 @@ void TESObjectREFR::EnableImpl() noexcept
     TiltedPhoques::ThisCall(s_enable, this, false);
 }
 
+uint32_t TESObjectREFR::GetAnimationVariableInt(BSFixedString* apVariableName) noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(uint32_t, ObjectReference, GetAnimationVariableInt, BSFixedString*);
+
+    return s_pGetAnimationVariableInt(this, apVariableName);
+}
+
 static thread_local bool s_cancelAnimationWaitEvent = false;
 
 bool TESObjectREFR::PlayAnimationAndWait(BSFixedString* apAnimation, BSFixedString* apEventName) noexcept
@@ -576,6 +585,11 @@ bool TESObjectREFR::PlayAnimation(BSFixedString* apEventName) noexcept
     bool result = s_pPlayAnimation(this, apEventName);
     s_cancelAnimationEvent = false;
     return result;
+}
+
+bool TESObjectREFR::SendAnimationEvent(BSFixedString* apEventName) noexcept
+{
+    return animationGraphHolder.SendAnimationEvent(apEventName);
 }
 
 bool TP_MAKE_THISCALL(HookPlayAnimation, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apEventName)

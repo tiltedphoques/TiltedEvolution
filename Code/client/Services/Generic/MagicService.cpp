@@ -16,6 +16,7 @@
 #include <Actor.h>
 #include <Magic/ActorMagicCaster.h>
 #include <Games/ActorExtension.h>
+#include <EquipManager.h>
 
 #include <Structs/Skyrim/AnimationGraphDescriptor_VampireLordBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_WerewolfBehavior.h>

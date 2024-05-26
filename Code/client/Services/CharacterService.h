@@ -31,7 +31,7 @@ struct NotifyMount;
 struct InitPackageEvent;
 struct NotifyNewPackage;
 struct NotifyRespawn;
-struct LeaveBeastFormEvent;
+struct BeastFormChangeEvent;
 struct AddExperienceEvent;
 struct NotifySyncExperience;
 struct DialogueEvent;
@@ -78,7 +78,7 @@ struct CharacterService
     void OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept;
     void OnNotifyNewPackage(const NotifyNewPackage& acMessage) const noexcept;
     void OnNotifyRespawn(const NotifyRespawn& acMessage) const noexcept;
-    void OnLeaveBeastForm(const LeaveBeastFormEvent& acEvent) const noexcept;
+    void OnBeastFormChange(const BeastFormChangeEvent& acEvent) const noexcept;
     void OnAddExperienceEvent(const AddExperienceEvent& acEvent) noexcept;
     void OnNotifySyncExperience(const NotifySyncExperience& acMessage) noexcept;
     void OnDialogueEvent(const DialogueEvent& acEvent) noexcept;
@@ -114,6 +114,7 @@ private:
 
     float m_cachedExperience = 0.f;
 
+    // TODO: revamp this, read the local anim var like vampire lord?
     struct WeaponDrawData
     {
         WeaponDrawData() = default;
@@ -147,7 +148,7 @@ private:
     entt::scoped_connection m_initPackageConnection;
     entt::scoped_connection m_newPackageConnection;
     entt::scoped_connection m_notifyRespawnConnection;
-    entt::scoped_connection m_leaveBeastFormConnection;
+    entt::scoped_connection m_beastFormChangeConnection;
     entt::scoped_connection m_addExperienceEventConnection;
     entt::scoped_connection m_syncExperienceConnection;
     entt::scoped_connection m_dialogueEventConnection;

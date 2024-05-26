@@ -147,6 +147,8 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
     moveData.position = acEvent.Position;
 }
 
+extern thread_local bool g_forceAnimation;
+
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     if (!BSGraphics::GetMainWindow()->IsForeground())
@@ -197,11 +199,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f7Pressed = true;
 
-            static char s_address[256] = "de.playtogether.gg:10100";
-            if (!m_transport.IsOnline())
-                m_transport.Connect(s_address);
-            else
-                m_transport.Close();
+            //
         }
     }
     else
@@ -213,7 +211,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            //PlaceActorInWorld();
         }
     }
     else

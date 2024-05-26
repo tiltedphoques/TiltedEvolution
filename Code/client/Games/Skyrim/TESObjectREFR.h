@@ -167,6 +167,7 @@ struct TESObjectREFR : TESForm
 
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
+    uint32_t GetAnimationVariableInt(BSFixedString* apVariableName) noexcept;
 
     void RemoveAllItems() noexcept;
     void Delete() const noexcept;
@@ -175,6 +176,7 @@ struct TESObjectREFR : TESForm
     void MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept;
     void PayGold(int32_t aAmount) noexcept;
     void PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept;
+    bool SendAnimationEvent(BSFixedString* apEventName) noexcept;
 
     bool Activate(TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept;
 

@@ -480,7 +480,7 @@ void CharacterService::OnNewPackageRequest(const PacketEvent<NewPackageRequest>&
 
 void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMessage) const noexcept
 {
-    auto view = m_world.view<OwnerComponent>();
+    auto view = m_world.view<OwnerComponent, CharacterComponent>();
     auto it = view.find(static_cast<entt::entity>(acMessage.Packet.ActorId));
     if (it == view.end())
     {
@@ -491,6 +491,13 @@ void CharacterService::OnRequestRespawn(const PacketEvent<RequestRespawn>& acMes
     auto& ownerComponent = view.get<OwnerComponent>(*it);
     if (ownerComponent.GetOwner() == acMessage.pPlayer)
     {
+        if (!acMessage.Packet.AppearanceBuffer.empty())
+        {
+            auto& characterComponent = view.get<CharacterComponent>(*it);
+            characterComponent.SaveBuffer = acMessage.Packet.AppearanceBuffer;
+            characterComponent.ChangeFlags = acMessage.Packet.ChangeFlags;
+        }
+
         NotifyRespawn notify;
         notify.ActorId = acMessage.Packet.ActorId;
 
