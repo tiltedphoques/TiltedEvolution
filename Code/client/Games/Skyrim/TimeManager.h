@@ -14,6 +14,6 @@ struct TimeData
     TESGlobal* GameDaysPassed; // 0x0028
     TESGlobal* TimeScale;      // 0x0030
     float unk1;                // 0x0038
-    float timeTick;            // 0x003C
+    float rawDaysPassed;       // 0x003C
     char pad_40[0x88];         // 0x0040
 };

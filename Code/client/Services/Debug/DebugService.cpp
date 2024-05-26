@@ -147,6 +147,8 @@ void DebugService::OnMoveActor(const MoveActorEvent& acEvent) noexcept
     moveData.position = acEvent.Position;
 }
 
+extern thread_local bool g_forceAnimation;
+
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
     if (!BSGraphics::GetMainWindow()->IsForeground())
@@ -197,11 +199,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f7Pressed = true;
 
-            static char s_address[256] = "de.playtogether.gg:10100";
-            if (!m_transport.IsOnline())
-                m_transport.Connect(s_address);
-            else
-                m_transport.Close();
+            //
         }
     }
     else
@@ -213,7 +211,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            PlaceActorInWorld();
+            //PlaceActorInWorld();
         }
     }
     else
@@ -236,6 +234,7 @@ static bool g_enableCellWindow{false};
 static bool g_enableProcessesWindow{false};
 static bool g_enableWeatherWindow{false};
 static bool g_enableCombatWindow{false};
+static bool g_enableCalendarWindow{false};
 static bool g_enableDragonSpawnerWindow{false};
 
 void DebugService::DrawServerView() noexcept
@@ -349,6 +348,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
         ImGui::MenuItem("Weather", nullptr, &g_enableWeatherWindow);
         ImGui::MenuItem("Combat", nullptr, &g_enableCombatWindow);
+        ImGui::MenuItem("Calendar", nullptr, &g_enableCalendarWindow);
 #endif
 
         ImGui::EndMenu();
@@ -406,6 +406,8 @@ void DebugService::OnDraw() noexcept
         DrawWeatherView();
     if (g_enableCombatWindow)
         DrawCombatView();
+    if (g_enableCalendarWindow)
+        DrawCalendarView();
 
     if (m_drawComponentsInWorldSpace)
         DrawComponentDebugView();

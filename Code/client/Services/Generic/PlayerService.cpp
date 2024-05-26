@@ -11,6 +11,7 @@
 #include <Events/PlayerLevelEvent.h>
 #include <Events/PartyJoinedEvent.h>
 #include <Events/PartyLeftEvent.h>
+#include <Events/BeastFormChangeEvent.h>
 
 #include <Messages/PlayerRespawnRequest.h>
 #include <Messages/NotifyPlayerRespawn.h>
@@ -29,6 +30,7 @@
 #include <Games/References.h>
 #include <AI/AIProcess.h>
 #include <EquipManager.h>
+#include <Forms/TESRace.h>
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -54,6 +56,7 @@ void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
     RunPostDeathUpdates(acEvent.Delta);
     RunDifficultyUpdates();
     RunLevelUpdates();
+    RunBeastFormDetection();
 }
 
 void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
@@ -352,6 +355,33 @@ void PlayerService::RunLevelUpdates() const noexcept
 
         oldLevel = newLevel;
     }
+}
+
+void PlayerService::RunBeastFormDetection() const noexcept
+{
+#if TP_SKYRIM64
+    static uint32_t lastRaceFormID = 0;
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cDelayBetweenUpdates = 250ms;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastSendTimePoint < cDelayBetweenUpdates)
+        return;
+
+    lastSendTimePoint = now;
+
+    PlayerCharacter* pPlayer = PlayerCharacter::Get();
+    if (!pPlayer->race)
+        return;
+    
+    if (pPlayer->race->formID == lastRaceFormID)
+        return;
+
+    if (pPlayer->race->formID == 0x200283A || pPlayer->race->formID == 0xCDD84)
+        m_world.GetDispatcher().trigger(BeastFormChangeEvent());
+
+    lastRaceFormID = pPlayer->race->formID;
+#endif
 }
 
 void PlayerService::ToggleDeathSystem(bool aSet) noexcept

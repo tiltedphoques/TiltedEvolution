@@ -21,6 +21,7 @@
 #include <Services/PapyrusService.h>
 
 #include <Forms/ActorValueInfo.h>
+#include <Forms/TESRace.h>
 
 #include <Effects/ValueModifierEffect.h>
 
@@ -579,10 +580,56 @@ void Actor::Reset() noexcept
     s_pReset(this, 0, nullptr);
 }
 
+bool Actor::PlayIdle(TESIdleForm* apIdle) noexcept
+{
+    PAPYRUS_FUNCTION(bool, Actor, PlayIdle, TESIdleForm*);
+    return s_pPlayIdle(this, apIdle);
+}
+
 void Actor::Respawn() noexcept
 {
     Resurrect(false);
     Reset();
+}
+
+bool Actor::IsVampireLord() const noexcept
+{
+    return race && race->formID == 0x200283A;
+}
+
+extern thread_local bool g_forceAnimation;
+
+void Actor::FixVampireLordModel() noexcept
+{
+    TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(0x2011a84));
+    if (!pObject)
+        return;
+
+    {
+        ScopedInventoryOverride _;
+        AddObjectToContainer(pObject, nullptr, 1, nullptr);
+    }
+
+    EquipManager::Get()->Equip(this, pObject, nullptr, 1, nullptr, false, true, false, false);
+
+    g_forceAnimation = true;
+
+    BSFixedString str("isLevitating");
+    uint32_t isLevitating = GetAnimationVariableInt(&str);
+    spdlog::critical("isLevitating {}", isLevitating);
+
+    // By default, a loaded vampire lord is not levitating.
+    if (isLevitating)
+    {
+        BSFixedString levitation("LevitationToggle");
+        SendAnimationEvent(&levitation);
+    }
+
+    // TODO: weapon draw code does not seem to take care of this
+    //BSFixedString weapEquip("WeapEquip");
+    //SendAnimationEvent(&weapEquip);
+
+    g_forceAnimation = false;
 }
 
 TP_THIS_FUNCTION(TForceState, void, Actor, const NiPoint3&, float, float, TESObjectCELL*, TESWorldSpace*, bool);

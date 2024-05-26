@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Message.h"
+#include "Structs/TimeModel.h"
 
 struct ServerTimeSettings final : ServerMessage
 {
@@ -14,8 +15,15 @@ struct ServerTimeSettings final : ServerMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const ServerTimeSettings& achRhs) const noexcept { return Time == achRhs.Time && TimeScale == achRhs.TimeScale && GetOpcode() == achRhs.GetOpcode(); }
+    bool operator==(const ServerTimeSettings& achRhs) const noexcept
+    {
+        return GetOpcode() == achRhs.GetOpcode() && timeModel == achRhs.timeModel;
+    }
 
-    float Time;
-    float TimeScale;
+    bool operator!=(const ServerTimeSettings& achRhs) const noexcept
+    {
+        return !this->operator==(achRhs);
+    }
+
+    TimeModel timeModel;
 };

@@ -2,11 +2,12 @@
 #include <Games/ActorExtension.h>
 
 #include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_VampireLordBehavior.h>
 
 #include <Games/Overrides.h>
 
 #include <Events/InventoryChangeEvent.h>
-#include <Events/LeaveBeastFormEvent.h>
+#include <Events/BeastFormChangeEvent.h>
 #include <Events/AddExperienceEvent.h>
 #include <Events/SetWaypointEvent.h>
 #include <Events/RemoveWaypointEvent.h>
@@ -162,7 +163,7 @@ void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool a
     if (!aEntering)
     {
         PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_Master_Behavior::m_key;
-        World::Get().GetRunner().Trigger(LeaveBeastFormEvent());
+        World::Get().GetRunner().Trigger(BeastFormChangeEvent());
     }
 
     TiltedPhoques::ThisCall(RealSetBeastForm, apThis, apUnk1, apUnk2, aEntering);
