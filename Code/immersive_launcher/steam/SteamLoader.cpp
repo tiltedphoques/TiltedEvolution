@@ -33,6 +33,7 @@ void Load(const fs::path& aGameDir)
     AddDllDirectory(steamPath.c_str());
 
     fs::path clientPath = steamPath / kSteamDllName;
-    LoadLibraryW(clientPath.c_str());
+    // game exe should load steam itself
+    //LoadLibraryW(clientPath.c_str());
 }
 } // namespace steam
