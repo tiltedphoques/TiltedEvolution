@@ -35,7 +35,7 @@ bool MagicItem::IsBoundWeaponSpell() noexcept
 {
     for (EffectItem* pEffect : listOfEffects)
     {
-        if (pEffect->pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kBoundWeapon)
+        if (pEffect->pEffectSetting && pEffect->pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kBoundWeapon)
             return true;
     }
 
