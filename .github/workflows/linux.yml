@@ -40,7 +40,7 @@ jobs:
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
       with:
-        xmake-version: '2.8.5'
+        xmake-version: '2.9.2'
 
     # Update xmake repository (in order to have the file that will be cached)
     - name: Update xmake repository
