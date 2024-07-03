@@ -22,8 +22,8 @@ extern "C"
 auto kSystemPreloadDlls = {
     L"\\dinput8.dll",   // < Skyrim early init hook
     L"\\dsound.dll",    // < breaks DSound init in game code
+    L"\\nvspcap64.dll", // < Nvidia overlay, needs to be loaded before d3d11 device creation
                         // < X360CE v3 is buggy with COM hooks
-    L"\\nvspcap64.dll", // < Nvidia overlay, needs to be loaded before the swap chain creation
     L"\\xinput9_1_0.dll", L"\\xinput1_1.dll", L"\\xinput1_2.dll", L"\\xinput1_3.dll", L"\\xinput1_4.dll", L"\\version.dll"};
 
 static void PreloadSystemDlls()
