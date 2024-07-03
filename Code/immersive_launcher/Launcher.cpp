@@ -7,7 +7,6 @@
 #include "loader/PathRerouting.h"
 
 #include "Utils/Error.h"
-#include "Utils/NvidiaUtil.h"
 #include "Utils/FileVersion.inl"
 
 #include "oobe/PathSelection.h"
@@ -17,7 +16,6 @@
 #include "base/dialogues/win/TaskDialog.h"
 
 #include <BranchInfo.h>
-#include <spdlog/spdlog.h>
 
 // These symbols are defined within the client code skyrimtogetherclient
 extern void InstallStartHook();
@@ -102,13 +100,6 @@ int StartUp(int argc, char** argv)
 
     if (!oobe::SelectInstall(askSelect))
         DIE_NOW(L"Failed to select game install.");
-
-    if (IsNvidiaOverlayLoaded())
-    {
-        HRESULT hr = CreateEarlyDxSwapChain();
-        if (FAILED(hr))
-            spdlog::error("D3D11CreateDeviceAndSwapChain failed! (Detected an NVIDIA GPU, error code={})", hr);
-    }
 
     // Bind path environment.
     loader::InstallPathRouting(LC->gamePath);
