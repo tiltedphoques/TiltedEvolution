@@ -22,7 +22,6 @@ local function build_server()
         "Console",
         "Resources",
         "ESLoader",
-        "CrashHandler",
         "BaseLib",
         "AdminProtocol",
         "TiltedConnect"
