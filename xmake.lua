@@ -40,11 +40,10 @@ add_requires(
     "gtest v1.14.0", 
     "mem 1.0.0", 
     "glm 0.9.9+8", 
-    "sentry-native 0.7.1", 
     "zlib v1.3.1")
 
 add_requireconfs("cpp-httplib", {configs = {ssl = true}})
-add_requireconfs("sentry-native", { configs = { backend = "crashpad" } })
+
 --[[
 add_requireconfs("magnum", { configs = { sdl2 = true }})
 add_requireconfs("magnum-integration",  { configs = { imgui = true }})
@@ -55,8 +54,11 @@ add_requireconfs("magnum-integration.imgui", { override = true })
 if is_plat("windows") then
     add_requires(
         "discord 3.2.1", 
+        "sentry-native 0.7.1",
         "imgui v1.89.7"
     )
+
+    add_requireconfs("sentry-native", { configs = { backend = "crashpad" } })
 end
 
 before_build(function (target)
