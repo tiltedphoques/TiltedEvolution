@@ -47,5 +47,8 @@ function unittest(name)
 includes("console")
 includes("imgui")
 includes("es_loader")
-includes("crash_handler")
-includes("resources")	
+includes("resources")
+
+if is_plat("windows") then
+    includes("crash_handler")
+end
