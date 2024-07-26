@@ -37,8 +37,7 @@ local function build_server()
         "glm",
         "entt",
         "cpp-httplib",
-        "tiltedcore",
-        "sentry-native")
+        "tiltedcore")
 end
 
 target("SkyrimTogetherServer")
