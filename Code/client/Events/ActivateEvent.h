@@ -22,13 +22,14 @@ struct ActivateEvent
     {
     }
 #elif TP_SKYRIM64
-    ActivateEvent(TESObjectREFR* apObject, Actor* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, uint8_t aUnk1, bool aActivateFlag = false)
+    ActivateEvent(TESObjectREFR* apObject, Actor* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, uint8_t aUnk1, TESObjectREFR::OpenState aPreActivationOpenState, bool aActivateFlag = false)
         : pObject(apObject)
         , pActivator(apActivator)
         , pObjectToGet(apObjectToGet)
         , Count(aCount)
         , DefaultProcessing(aDefaultProcessing)
         , Unk1(aUnk1)
+        , PreActivationOpenState(aPreActivationOpenState)
         , ActivateFlag(aActivateFlag)
     {
     }
@@ -46,5 +47,6 @@ struct ActivateEvent
     uint8_t Unk1;
 #endif
 
+    TESObjectREFR::OpenState PreActivationOpenState;
     bool ActivateFlag;
 };
