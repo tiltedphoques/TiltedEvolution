@@ -4,6 +4,7 @@
 
 struct World;
 struct TeleportCommandRequest;
+struct SetTimeCommandRequest;
 
 /**
  * @brief Processes incoming commands.
@@ -16,6 +17,7 @@ struct CommandService
     TP_NOCOPYMOVE(CommandService);
 
 protected:
+    void OnSetTimeCommand(const PacketEvent<SetTimeCommandRequest>& acMessage) const noexcept;
     /**
      * @brief Returns the location of the target player of the teleport command.
      */
@@ -24,5 +26,6 @@ protected:
 private:
     World& m_world;
 
+    entt::scoped_connection m_setTimeConnection;
     entt::scoped_connection m_teleportConnection;
 };

@@ -52,6 +52,7 @@ enum ClientOpcode : unsigned char
     kRequestCurrentWeather,
     kRequestSetWaypoint,
     kRequestRemoveWaypoint,
+    kSetTimeCommandRequest,
     kClientOpcodeMax
 };
 
@@ -111,5 +112,6 @@ enum ServerOpcode : unsigned char
     kNotifyWeatherChange,
     kNotifySetWaypoint,
     kNotifyRemoveWaypoint,
+    kNotifySetTimeResult,
     kServerOpcodeMax
 };
