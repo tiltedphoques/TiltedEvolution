@@ -6,5 +6,6 @@ enum ChatMessageType : unsigned char
     kGlobalChat,
     kPlayerDialogue,
     kPartyChat,
-    kLocalChat
+    kLocalChat,
+    kSetTime
 };
