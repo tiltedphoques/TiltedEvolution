@@ -31,6 +31,15 @@ struct TESObjectREFR : TESForm
         IRR_STORE_IN_TEAMMATE = 0x5,
     };
 
+    enum OpenState : uint8_t
+    {
+        kNone = 0,
+        kOpen,
+        kOpening,
+        kClosed,
+        kClosing,
+    };
+
     struct RemoveItemData
     {
         uint8_t stackData[0x20]{};
@@ -194,6 +203,7 @@ struct TESObjectREFR : TESForm
     void LockChange() noexcept;
 
     const float GetHeight() noexcept;
+    OpenState GetOpenState() noexcept;
 
     Inventory GetInventory() const noexcept;
     void SetInventory(const Inventory& acContainer) noexcept;

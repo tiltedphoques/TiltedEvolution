@@ -277,6 +277,7 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
         return;
 
     request.ActivatorId = serverIdRes.value();
+    request.PreActivationOpenState = acEvent.PreActivationOpenState;
 
     m_transport.Send(request);
 }
@@ -296,6 +297,19 @@ void ObjectService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
     {
         spdlog::error("Failed to retrieve object to activate.");
         return;
+    }
+
+    if (pObject->baseForm->formType == FormType::Door)
+    {
+        auto remotePreActivationState = static_cast<TESObjectREFR::OpenState>(acMessage.PreActivationOpenState);
+        TESObjectREFR::OpenState localState = pObject->GetOpenState();
+
+        if (remotePreActivationState != localState)
+        {
+            // The doors are unsynced at this point. If we'll Activate the one on our side
+            // it'll just continue to be unsynced (open remotely, closed locally and vice versa)
+            return;
+        }
     }
 
     // unsure if these flags are the best, but these are passed with the papyrus Activate fn
