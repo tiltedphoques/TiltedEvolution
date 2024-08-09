@@ -55,7 +55,9 @@ void sendPlayerMessage(const ChatMessageType acType, const String acContent, Pla
                 spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
         }
         break;
-
+    case kSetTime:
+        GameServer::Get()->SendToPlayers(notifyMessage);
+        break;
     default: spdlog::error("{} is not a known MessageType", static_cast<uint64_t>(notifyMessage.MessageType)); break;
     }
 }

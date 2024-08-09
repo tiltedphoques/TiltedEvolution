@@ -30,6 +30,8 @@ ServerListService::ServerListService(World& aWorld, entt::dispatcher& aDispatche
     if (!bAnnounceServer)
         spdlog::warn("bAnnounceServer is set to false. The server will not show up as a public server. "
                      "If you are just playing with friends, this is probably what you want.");
+
+    GameServer::Get()->SetPublic(bAnnounceServer);
 }
 
 void ServerListService::OnUpdate(const UpdateEvent& acEvent) noexcept
