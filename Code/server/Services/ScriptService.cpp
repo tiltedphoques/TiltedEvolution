@@ -196,6 +196,11 @@ void ScriptService::HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisc
     CallEvent("onPlayerQuit", aConnectionId, reason);
 }
 
+void ScriptService::HandleSetTime(int aHours, int aMinutes, int aTimeScale) noexcept
+{
+    CallEvent("onSetTime", aHours, aMinutes, aTimeScale);
+}
+
 #if 0
 void ScriptService::RegisterExtensions(ScriptContext& aContext)
 {
