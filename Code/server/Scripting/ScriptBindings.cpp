@@ -44,6 +44,8 @@ void CreateMathBindings(sol::state_view);
 void CreatePlayerBindings(sol::state_view);
 void CreateComponentBindings(sol::state_view);
 void CreateGameServerBindings(sol::state_view);
+void CreateServicesBindings(sol::state_view);
+void CreateWorldBindings(sol::state_view);
 
 sol::table BindModsComponent(sol::state_view aState)
 {
@@ -98,6 +100,8 @@ void CreateScriptBindings(sol::state& aState)
     CreateComponentBindings(aState);
 
     CreateGameServerBindings(aState);
+    CreateServicesBindings(aState);
+    CreateWorldBindings(aState);
     BindModsComponent(aState);
 }
 } // namespace Script
