@@ -32,12 +32,13 @@ void CreateGameServerBindings(sol::state_view aState)
         notifyMessage.ChatMessage = std::regex_replace(acMessage, escapeHtml, "");
         GameServer::Get()->SendToPlayers(notifyMessage);
     };
-    type["SetTime"] = [](GameServer& aSelf, int aHours, int aMinutes, float aScale = GameServer::Get()->GetWorld().GetCalendarService().GetTimeScale()) {
+    type["SetTime"] = [](GameServer& aSelf, int aHours, int aMinutes,
+                         float aScale = GameServer::Get()->GetWorld().GetCalendarService().GetTimeScale()) -> bool {
         aHours = std::max(0, std::min(aHours, 23));
         aMinutes = std::max(0, std::min(aMinutes, 59));
         aScale = std::max(1.0f, std::min(aScale, 100.0f));
 
-        GameServer::Get()->GetWorld().GetCalendarService().SetTime(aHours, aMinutes, aScale);
+        return GameServer::Get()->GetWorld().GetCalendarService().SetTime(aHours, aMinutes, aScale);
     };
     // type["SendPacket"]
 }
