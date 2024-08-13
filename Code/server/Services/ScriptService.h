@@ -33,7 +33,7 @@ struct ScriptService
 
     void HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisconnectReason aReason) noexcept;
 
-    void HandleSetTime(int aHours, int aMinutes, int aTimeScale) noexcept;
+    std::tuple<bool, String> HandleSetTime(int aHours, int aMinutes, float aTimeScale) noexcept;
 
   protected:
     // void RegisterExtensions(ScriptContext& aContext) override;

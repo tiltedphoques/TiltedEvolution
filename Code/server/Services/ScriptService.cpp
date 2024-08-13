@@ -196,9 +196,9 @@ void ScriptService::HandlePlayerQuit(ConnectionId_t aConnectionId, Server::EDisc
     CallEvent("onPlayerQuit", aConnectionId, reason);
 }
 
-void ScriptService::HandleSetTime(int aHours, int aMinutes, int aTimeScale) noexcept
+std::tuple<bool, String> ScriptService::HandleSetTime(int aHours, int aMinutes, float aTimeScale) noexcept
 {
-    CallEvent("onSetTime", aHours, aMinutes, aTimeScale);
+    return CallCancelableEvent("onSetTime", aHours, aMinutes, aTimeScale);
 }
 
 #if 0
