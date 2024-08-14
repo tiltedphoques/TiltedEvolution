@@ -5,8 +5,7 @@
       "MESSAGE": "Message",
       "MESSAGE_TOO_LONG": "You cannot send a message longer than {{chatMessageLengthLimit}} characters.",
       "SET_TIME_ARGUMENT_COUNT": "Wrong arguments, usage: /settime HH MM, example: /settime 15 32.",
-      "SET_TIME_INVALID_ARGUMENTS": "The hours must be between 0 and 23, and the minutes between 0 and 59.",
-      "SET_TIME_RESPONSE": "Time set to {{hours}}:{{minutes}}"
+      "SET_TIME_INVALID_ARGUMENTS": "The hours must be between 0 and 23, and the minutes between 0 and 59."
     },
     "CONNECT": {
       "INFO": {
