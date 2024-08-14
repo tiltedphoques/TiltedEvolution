@@ -1,5 +1,4 @@
-import { formatNumber, getLocaleDateTimeFormat } from '@angular/common';
-import { ChatService, MessageTypes } from '../chat.service';
+import { ChatService } from '../chat.service';
 
 export interface Command {
   readonly name: string;
@@ -39,15 +38,8 @@ export class CommandHandler {
         return;
       }
       skyrimtogether.setTime(hoursNum, minutesNum);
-      skyrimtogether.sendMessage(
-        MessageTypes.SET_TIME, 
-        'COMPONENT.CHAT.SET_TIME_RESPONSE', 
-        { 
-          cmds,
-          hours: formatNumber(hoursNum, 'en-US', "2.0-0"),
-          minutes: formatNumber(minutesNum, 'en-US', "2.0-0"),
-        },
-      );
+      // TODO (Toe Knee): Ideally send a localizable response string here,
+      // currently relies on user making it themselves with serverside scripting
     },
   }
 
