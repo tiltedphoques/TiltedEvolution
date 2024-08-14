@@ -9,7 +9,6 @@ export enum MessageTypes {
   PLAYER_DIALOGUE = 2,
   PARTY_CHAT = 3,
   LOCAL_CHAT = 4,
-  SET_TIME = 5,
 }
 
 export interface ChatMessage {
@@ -49,13 +48,6 @@ export class ChatService {
   }
 
   /**
-   * Send system message to the Server. Does not add anything to the local mesesage list.
-   */
-  public sendSystemMessage(translationKey: string, params: Record<string, any> = undefined,) {
-      skyrimtogether.sendMessage(MessageTypes.SYSTEM_MESSAGE, translationKey, { params });
-  }
-
-  /**
    * Pushes a message to the chat window, without sending anything to the Server.
    */
   public pushMessage(message: ChatMessage) {
@@ -80,13 +72,8 @@ export class ChatService {
     type: MessageTypes,
     content: string,
     senderName: string | undefined = undefined,
-    params: Record<string, any> = undefined,
   ): void {
-    if (type === MessageTypes.SET_TIME) {
-      this.pushSystemMessage(content, { params });
-    } else {
-      this.messageList.next({ type, content, senderName });
-    }
+    this.messageList.next({ type, content, senderName });
   }
 
   private CommandHandler: CommandHandler;

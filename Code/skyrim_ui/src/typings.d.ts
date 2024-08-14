@@ -94,8 +94,6 @@ declare namespace SkyrimTogetherTypes {
   type PartyLeftCallback = (inviterId: number) => void;
 
   type PartyInviteReceivedCallback = (inviterId: number) => void;
-
-  type SetTimeCallback = (translationKey: string, params: Record<string, any>) => void;
 }
 
 /** Global Skyrim: Together object. */
@@ -219,10 +217,6 @@ interface SkyrimTogether {
   on(
     event: 'partyInviteReceived',
     callback: SkyrimTogetherTypes.PartyInviteReceivedCallback,
-  ): void;
-
-  on(event: 'setTime',
-    callback: SkyrimTogetherTypes.SetTimeCallback,
   ): void;
 
   /** Remove listener from when the application is first initialized. */
@@ -373,11 +367,6 @@ interface SkyrimTogether {
    * Send message to server.
    */
   sendMessage(type: number, message: string): void;
-
-  /**
-   * Send localizable system message to server.
-   */
-  sendMessage(type: number, translationKey: string, params: Record<string, any>): void;
 
   /**
    * Send a request to the server for changing the in-game time.
