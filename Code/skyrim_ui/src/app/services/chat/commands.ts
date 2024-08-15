@@ -28,16 +28,16 @@ export class CommandHandler {
         );
         return;
       }
-      const hoursNum = parseInt(args[0]);
-      const minutesNum = parseInt(args[1]);
-      if (hoursNum < 0 || hoursNum > 23 || minutesNum < 0 || minutesNum > 59) {
+      const hours = parseInt(args[0]);
+      const minutes = parseInt(args[1]);
+      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59 || Number.isNaN(hours) || Number.isNaN(minutes)) {
         this.chatService.pushSystemMessage(
           'COMPONENT.CHAT.SET_TIME_INVALID_ARGUMENTS',
           { cmds },
         );
         return;
       }
-      skyrimtogether.setTime(hoursNum, minutesNum);
+      skyrimtogether.setTime(hours, minutes);
       // TODO (Toe Knee): Ideally send a localizable response string here,
       // currently relies on user making it themselves with serverside scripting
     },
