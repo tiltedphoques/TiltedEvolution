@@ -222,6 +222,14 @@ void GameServer::Kill()
     m_requestStop = true;
 }
 
+void GameServer::RemoveAdminSession(ConnectionId_t acSession) noexcept
+{
+    if (m_adminSessions.contains(acSession))
+    {
+        m_adminSessions.erase(acSession);
+    }
+}
+
 bool GameServer::CheckMoPo()
 {
     if (!bEnableModCheck)
@@ -382,6 +390,84 @@ void GameServer::BindServerCommands()
             {
                 out->error("Day must be between 0 and 31, month must be between 0 and 11, and year must be between 0 and 999.");
             }
+        });
+
+    m_commands.RegisterCommand<std::string>(
+        "AddAdmin", "Add admin privileges from player", [&](Console::ArgStack& aStack) {
+            auto out = spdlog::get("ConOut");
+
+            const auto& cUsername = aStack.Pop<String>();
+
+            bool playerFound = false;
+
+            PlayerManager::Get()->ForEach([&](const Player* apPlayer) {
+                if (apPlayer->GetUsername() == cUsername)
+                {
+                    AddAdminSession(apPlayer->GetConnectionId());
+                    out->info("{} admin privileges added", cUsername.c_str());
+                    playerFound = true;
+                    return;
+                }
+            });
+
+            if (!playerFound)
+            {
+                out->warn("{} is not a valid player", cUsername.c_str());
+            }
+        });
+    m_commands.RegisterCommand<std::string>(
+        "RemoveAdmin", "Remove admin privileges from player", [&](Console::ArgStack& aStack) {
+            auto out = spdlog::get("ConOut");
+
+            const auto& cUsername = aStack.Pop<String>();
+
+            bool playerFound = false;
+
+            for (const auto& cAdmin : m_adminSessions)
+            {
+                Player* pPlayer = PlayerManager::Get()->GetByConnectionId(cAdmin);
+                if (pPlayer->GetUsername() == cUsername)
+                {
+                    RemoveAdminSession(pPlayer->GetConnectionId());
+                    out->info("{} admin privileges revoked", cUsername.c_str());
+                    playerFound = true;
+                    break;
+                }
+            }
+
+            if (!playerFound)
+            {
+                out->warn("{} is not an admin", cUsername.c_str());
+            }
+        });
+    m_commands.RegisterCommand<>(
+        "admins", "List all admins", [&](Console::ArgStack& aStack) {
+            auto out = spdlog::get("ConOut");
+            if (m_adminSessions.size() == 0)
+            {
+                out->warn("No admins");
+                return;
+            }
+
+            String output = "Admins: ";
+            bool _first = true;
+
+            for (const auto& cAdmin : m_adminSessions)
+            {
+                const auto& cUsername = PlayerManager::Get()->GetByConnectionId(cAdmin)->GetUsername();
+
+                if (_first)
+                {
+                    _first = false;
+                }
+                else
+                {
+                    output += ", ";
+                }
+                output += cUsername;
+            }
+
+            out->info("{}", output.c_str());
         });
 }
 
