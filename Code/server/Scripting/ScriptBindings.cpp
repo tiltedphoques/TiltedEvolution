@@ -44,7 +44,12 @@ void CreateMathBindings(sol::state_view);
 void CreatePlayerBindings(sol::state_view);
 void CreateComponentBindings(sol::state_view);
 void CreateGameServerBindings(sol::state_view);
-void CreateServicesBindings(sol::state_view);
+void CreateCalendarServiceBindings(sol::state_view);
+void CreatePartyServiceBindings(sol::state_view);
+void CreateCharacterServiceBindings(sol::state_view);
+void CreatePlayerServiceBindings(sol::state_view);
+void CreateQuestServiceBindings(sol::state_view);
+void CreateScriptServiceBindings(sol::state_view);
 void CreateWorldBindings(sol::state_view);
 
 sol::table BindModsComponent(sol::state_view aState)
@@ -100,7 +105,15 @@ void CreateScriptBindings(sol::state& aState)
     CreateComponentBindings(aState);
 
     CreateGameServerBindings(aState);
-    CreateServicesBindings(aState);
+
+    // services
+    CreateCalendarServiceBindings(aState);
+    CreatePartyServiceBindings(aState);
+    CreateCharacterServiceBindings(aState);
+    CreatePlayerServiceBindings(aState);
+    CreateQuestServiceBindings(aState);
+    CreateScriptServiceBindings(aState);
+
     CreateWorldBindings(aState);
     BindModsComponent(aState);
 }
