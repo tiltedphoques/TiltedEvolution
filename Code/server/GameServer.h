@@ -112,6 +112,13 @@ struct GameServer final : Server
         return m_adminSessions;
     }
 
+    void AddAdminSession(ConnectionId_t acSession) noexcept
+    {
+        m_adminSessions.insert(acSession);
+    }
+
+    void RemoveAdminSession(ConnectionId_t acSession) noexcept;
+
   protected:
     bool ValidateAuthParams(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
     void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
