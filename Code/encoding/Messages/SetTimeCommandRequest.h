@@ -15,9 +15,10 @@ struct SetTimeCommandRequest final : ClientMessage
 
     bool operator==(const SetTimeCommandRequest& acRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() && Hours == acRhs.Hours && Minutes == acRhs.Minutes;
+        return GetOpcode() == acRhs.GetOpcode() && Hours == acRhs.Hours && Minutes == acRhs.Minutes && PlayerId == acRhs.PlayerId;
     }
 
     uint8_t Hours{};
     uint8_t Minutes{};
+    uint32_t PlayerId{};
 };

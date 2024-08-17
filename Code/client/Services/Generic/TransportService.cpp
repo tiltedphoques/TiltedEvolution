@@ -37,6 +37,7 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher)
 {
     m_updateConnection = m_dispatcher.sink<UpdateEvent>().connect<&TransportService::HandleUpdate>(this);
     m_settingsChangeConnection = m_dispatcher.sink<NotifySettingsChange>().connect<&TransportService::HandleNotifySettingsChange>(this);
+    m_connectedConnection = m_dispatcher.sink<ConnectedEvent>().connect<&TransportService::HandleConnect>(this);
 
     m_connected = false;
 
@@ -179,6 +180,11 @@ void TransportService::OnUpdate()
 void TransportService::HandleUpdate(const UpdateEvent& acEvent) noexcept
 {
     Update();
+}
+
+void TransportService::HandleConnect(const ConnectedEvent& acEvent) noexcept
+{
+    m_localPlayerId = acEvent.PlayerId;
 }
 
 void TransportService::HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept

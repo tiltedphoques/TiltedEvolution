@@ -30,6 +30,7 @@ void CommandService::OnSetTimeCommand(const SetTimeCommandEvent& acEvent) const 
     SetTimeCommandRequest request{};
     request.Hours = acEvent.Hours;
     request.Minutes = acEvent.Minutes;
+    request.PlayerId = acEvent.PlayerId;
     m_transport.Send(request);
 }
 

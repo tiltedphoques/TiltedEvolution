@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Events/ConnectedEvent.h"
+
 #include <atomic>
 #include <Client.hpp>
 
@@ -32,10 +34,12 @@ struct TransportService : Client
 
     [[nodiscard]] bool IsOnline() const noexcept { return m_connected; }
     void SetServerPassword(const std::string& acPassword) noexcept { m_serverPassword = acPassword; }
+    const uint32_t& GetLocalPlayerId() const noexcept { return m_localPlayerId; }
 
 protected:
     // Event handlers
     void HandleUpdate(const UpdateEvent& acEvent) noexcept;
+    void HandleConnect(const ConnectedEvent& acEvent) noexcept;
 
     // Packet handlers
     void HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept;
@@ -46,9 +50,11 @@ private:
     entt::dispatcher& m_dispatcher;
     bool m_connected;
     String m_serverPassword{};
+    uint32_t m_localPlayerId;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_sendServerMessageConnection;
     entt::scoped_connection m_settingsChangeConnection;
+    entt::scoped_connection m_connectedConnection;
     std::function<void(UniquePtr<ServerMessage>&)> m_messageHandlers[kServerOpcodeMax];
 };

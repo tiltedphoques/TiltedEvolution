@@ -20,20 +20,26 @@ void CommandService::OnSetTimeCommand(const PacketEvent<SetTimeCommandRequest>& 
 {
     NotifySetTimeResult response{};
 
-    if (GameServer::Get()->IsPublic())
-    {
-        response.Result = NotifySetTimeResult::SetTimeResult::kPublicServer;
-        acMessage.pPlayer->Send(response);
+    const auto cPlayerId = static_cast<uint32_t>(acMessage.Packet.PlayerId);
 
-        return;
+    // Only set time if player is an admin
+    for (const auto session : GameServer::Get()->GetAdminSessions())
+    {
+        if (PlayerManager::Get()->GetByConnectionId(session)->GetId() == cPlayerId)
+        {
+            const auto cHours = static_cast<int>(acMessage.Packet.Hours);
+            const auto cMinutes = static_cast<int>(acMessage.Packet.Minutes);
+
+            m_world.GetCalendarService().SetTime(cHours, cMinutes, m_world.GetCalendarService().GetTimeScale());
+
+            response.Result = NotifySetTimeResult::SetTimeResult::kSuccess;
+            acMessage.pPlayer->Send(response);
+
+            return;
+        }
     }
 
-    const auto cHours = static_cast<int>(acMessage.Packet.Hours);
-    const auto cMinutes = static_cast<int>(acMessage.Packet.Minutes);
-
-    m_world.GetCalendarService().SetTime(cHours, cMinutes, m_world.GetCalendarService().GetTimeScale());
-
-    response.Result = NotifySetTimeResult::SetTimeResult::kSuccess;
+    response.Result = NotifySetTimeResult::SetTimeResult::kNoPermission;
     acMessage.pPlayer->Send(response);
 }
 

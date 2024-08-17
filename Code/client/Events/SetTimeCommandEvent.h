@@ -3,10 +3,11 @@
 struct SetTimeCommandEvent
 {
     SetTimeCommandEvent() = delete;
-    SetTimeCommandEvent(int32_t aHours, int32_t aMinutes) : Hours(aHours), Minutes(aMinutes)
+    SetTimeCommandEvent(uint8_t aHours, uint8_t aMinutes, uint32_t aPlayerId) : Hours(aHours), Minutes(aMinutes), PlayerId(aPlayerId)
     {
     }
 
     uint8_t Hours;
     uint8_t Minutes;
+    uint32_t PlayerId;
 };
