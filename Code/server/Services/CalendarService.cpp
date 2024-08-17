@@ -74,6 +74,8 @@ bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept
         m_dateTime.m_timeModel.Time = static_cast<float>(aHours) + minutes;
 
         SendTimeResync();
+
+        GameServer::Get()->GetWorld().GetScriptService().HandleSetTime(aHours, aMinutes, aScale);
         return true;
     }
     return false;
