@@ -122,9 +122,10 @@ void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
 
 void OverlayClient::ProcessSetTimeCommand(CefRefPtr<CefListValue> aEventArgs)
 {
-    uint8_t hours = static_cast<uint8_t>(aEventArgs->GetInt(0));
-    uint8_t minutes = static_cast<uint8_t>(aEventArgs->GetInt(1));
-    World::Get().GetDispatcher().trigger(SetTimeCommandEvent(hours, minutes));
+    const uint8_t hours = static_cast<uint8_t>(aEventArgs->GetInt(0));
+    const uint8_t minutes = static_cast<uint8_t>(aEventArgs->GetInt(1));
+    const uint32_t senderId = m_transport.GetLocalPlayerId();
+    World::Get().GetDispatcher().trigger(SetTimeCommandEvent(hours, minutes, senderId));
 }
 
 void OverlayClient::ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs)

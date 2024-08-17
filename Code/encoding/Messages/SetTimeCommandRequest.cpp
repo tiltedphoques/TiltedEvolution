@@ -4,6 +4,7 @@ void SetTimeCommandRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
 {
     aWriter.WriteBits(Hours, 8);
     aWriter.WriteBits(Minutes, 8);
+    aWriter.WriteBits(PlayerId, 32);
 }
 
 void SetTimeCommandRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -15,4 +16,6 @@ void SetTimeCommandRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
     Hours = dest & 0xFF;
     aReader.ReadBits(dest, 8);
     Minutes = dest & 0xFF;
+    aReader.ReadBits(dest, 32);
+    PlayerId = dest & 0xFFFFFFFF;
 }

@@ -33,7 +33,7 @@ Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick r
 
 Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list",
                                    "Dedicated Together Server"};
-// Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
+Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
 
 // Gameplay
@@ -444,7 +444,8 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
     ViewBuffer buf((uint8_t*)apData, aSize);
     Buffer::Reader reader(&buf);
 
-    if (m_adminSessions.contains(aConnectionId)) [[unlikely]]
+    // TODO: ClientAdminMessageFactory
+    /*if (m_adminSessions.contains(aConnectionId)) [[unlikely]]
     {
         const ClientAdminMessageFactory factory;
         auto pMessage = factory.Extract(reader);
@@ -457,7 +458,7 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         m_adminMessageHandlers[pMessage->GetOpcode()](pMessage, aConnectionId);
     }
     else
-    {
+    {*/
         const ClientMessageFactory factory;
         auto pMessage = factory.Extract(reader);
         if (!pMessage)
@@ -467,7 +468,7 @@ void GameServer::OnConsume(const void* apData, const uint32_t aSize, const Conne
         }
 
         m_messageHandlers[pMessage->GetOpcode()](pMessage, aConnectionId);
-    }
+    //}
 }
 
 void GameServer::OnConnection(const ConnectionId_t aHandle)
@@ -747,8 +748,14 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     }
 
     // check if the proper server password was supplied.
-    if (acRequest->Token == sPassword.value())
+    if (acRequest->Token == sPassword.value() || (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty()))
     {
+        if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
+        {
+            m_adminSessions.insert(aConnectionId);
+            spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
+        }
+
         Mods& responseList = serverResponse.UserMods;
         auto& modsComponent = m_pWorld->ctx().at<ModsComponent>();
 
@@ -882,16 +889,14 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
 
         m_pWorld->GetDispatcher().trigger(PlayerJoinEvent(pPlayer, acRequest->WorldSpaceId, acRequest->CellId, acRequest->PlayerTime));
     }
-    /*
-        else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
-        {
-            AdminSessionOpen response;
-            Send(aConnectionId, response);
+    /*else if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
+    {
+        AdminSessionOpen response;
+        Send(aConnectionId, response);
 
-            m_adminSessions.insert(aConnectionId);
-            spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
-        }
-    */
+        m_adminSessions.insert(aConnectionId);
+        spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
+    } */
     else
     {
         spdlog::info("New player {:x} '{}' has a bad password, kicking.", aConnectionId, remoteAddress);
