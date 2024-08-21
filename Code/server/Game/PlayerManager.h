@@ -44,6 +44,9 @@ struct PlayerManager
     Player* GetById(uint32_t aId) noexcept;
     Player const* GetById(uint32_t aId) const noexcept;
 
+    Player* GetByUsername(const String& acUsername) const noexcept;
+    Player const* GetByUsername(const String& acUsername) noexcept;
+
     uint32_t Count() const noexcept;
 
     template <class T> void ForEach(const T& acFunctor) noexcept

@@ -222,14 +222,6 @@ void GameServer::Kill()
     m_requestStop = true;
 }
 
-void GameServer::RemoveAdminSession(ConnectionId_t acSession) noexcept
-{
-    if (m_adminSessions.contains(acSession))
-    {
-        m_adminSessions.erase(acSession);
-    }
-}
-
 bool GameServer::CheckMoPo()
 {
     if (!bEnableModCheck)
@@ -393,48 +385,37 @@ void GameServer::BindServerCommands()
         });
 
     m_commands.RegisterCommand<std::string>(
-        "AddAdmin", "Add admin privileges from player", [&](Console::ArgStack& aStack) {
+        "AddAdmin", "Add admin privileges to player", [&](Console::ArgStack& aStack) {
             auto out = spdlog::get("ConOut");
 
             const auto& cUsername = aStack.Pop<String>();
-
-            bool playerFound = false;
-
-            PlayerManager::Get()->ForEach([&](const Player* apPlayer) {
-                if (apPlayer->GetUsername() == cUsername)
-                {
-                    AddAdminSession(apPlayer->GetConnectionId());
-                    out->info("{} admin privileges added", cUsername.c_str());
-                    playerFound = true;
-                    return;
-                }
-            });
-
-            if (!playerFound)
+            if (GetAdminByUsername(cUsername))
             {
-                // space in username handling
-                String backupUsername = cUsername;
-                if (cUsername.find('_') != std::string::npos)
+                out->info("{} is already an admin", cUsername.c_str());
+                return;
+            }
+
+            auto* pPlayer = PlayerManager::Get()->GetByUsername(cUsername);
+            if (pPlayer)
+            {
+                AddAdminSession(pPlayer->GetConnectionId());
+                out->info("{} admin privileges added", cUsername.c_str());
+            }
+            else
+            {
+                // retry after sanitizing username
+                String backupUsername = SanitizeUsername(cUsername);
+                pPlayer = PlayerManager::Get()->GetByUsername(backupUsername);
+
+                if (pPlayer)
                 {
-
-                    while (backupUsername.find('_') != std::string::npos)
-                    {
-                        std::ranges::replace(backupUsername, '_', ' ');
-                    }
-
-                    PlayerManager::Get()->ForEach([&](const Player* apPlayer) {
-                        if (apPlayer->GetUsername() == backupUsername)
-                        {
-                            AddAdminSession(apPlayer->GetConnectionId());
-                            out->info("{} admin privileges added", backupUsername.c_str());
-                            playerFound = true;
-                            return;
-                        }
-                    });
-
+                    AddAdminSession(pPlayer->GetConnectionId());
+                    out->info("{} admin privileges added", cUsername.c_str());
                 }
-                if (!playerFound)
-                    out->warn("{} is not an admin", backupUsername.c_str());
+                else
+                {
+                    out->warn("{} is not a valid player", backupUsername.c_str());
+                }
             }
         });
     m_commands.RegisterCommand<std::string>(
@@ -442,47 +423,28 @@ void GameServer::BindServerCommands()
             auto out = spdlog::get("ConOut");
 
             const auto& cUsername = aStack.Pop<String>();
-            bool playerFound = false;
+            auto* pPlayer = GetAdminByUsername(cUsername);
 
-            for (const auto& cAdmin : m_adminSessions)
+            if (pPlayer)
             {
-                Player* pPlayer = PlayerManager::Get()->GetByConnectionId(cAdmin);
-                if (pPlayer->GetUsername() == cUsername)
+                RemoveAdminSession(pPlayer->GetConnectionId());
+                out->info("{} admin privileges revoked", cUsername.c_str());
+            }
+            else
+            {
+                // retry after sanitizing username
+                String backupUsername = SanitizeUsername(cUsername);
+                pPlayer = GetAdminByUsername(backupUsername);
+
+                if (pPlayer)
                 {
                     RemoveAdminSession(pPlayer->GetConnectionId());
                     out->info("{} admin privileges revoked", cUsername.c_str());
-                    playerFound = true;
-                    break;
                 }
-            }
-
-            if (!playerFound)
-            {
-                // space in username handling
-                String backupUsername = cUsername;
-                if (cUsername.find('_') != std::string::npos)
+                else
                 {
-
-                    while (backupUsername.find('_') != std::string::npos)
-                    {
-                        std::ranges::replace(backupUsername, '_', ' ');
-                    }
-
-                    for (const auto& cAdmin : m_adminSessions)
-                    {
-                        Player* pPlayer = PlayerManager::Get()->GetByConnectionId(cAdmin);
-                        if (pPlayer->GetUsername() == backupUsername)
-                        {
-                            RemoveAdminSession(pPlayer->GetConnectionId());
-                            out->info("{} admin privileges revoked", backupUsername.c_str());
-                            playerFound = true;
-                            break;
-                        }
-                    }
-
-                }
-                if (!playerFound)
                     out->warn("{} is not an admin", backupUsername.c_str());
+                }
             }
         });
     m_commands.RegisterCommand<>(
@@ -497,9 +459,17 @@ void GameServer::BindServerCommands()
             String output = "Admins: ";
             bool _first = true;
 
-            for (const auto& cAdmin : m_adminSessions)
+            for (const auto& cAdminSession : m_adminSessions)
             {
-                const auto& cUsername = PlayerManager::Get()->GetByConnectionId(cAdmin)->GetUsername();
+                auto* pPlayer = PlayerManager::Get()->GetByConnectionId(cAdminSession);
+
+                if (!pPlayer)
+                {
+                    out->error("Admin session not found: {}", cAdminSession);
+                    continue;
+                }
+
+                const auto& cUsername = pPlayer->GetUsername();
 
                 if (_first)
                 {
@@ -1069,4 +1039,42 @@ void GameServer::UpdateTitle() const
 #else
     std::cout << "\033]0;" << title << "\007";
 #endif
+}
+
+Player* GameServer::GetAdminByUsername(const String& acUsername) const noexcept
+{
+    for (auto session : m_adminSessions)
+    {
+        if (auto* pPlayer = PlayerManager::Get()->GetByConnectionId(session))
+        {
+            if (pPlayer->GetUsername() == acUsername)
+                return pPlayer;
+        }
+    }
+
+    return nullptr;
+}
+
+Player const* GameServer::GetAdminByUsername(const String& acUsername) noexcept
+{
+    for (auto session : m_adminSessions)
+    {
+        if (auto const* pPlayer = PlayerManager::Get()->GetByConnectionId(session))
+        {
+            if (pPlayer->GetUsername() == acUsername)
+                return pPlayer;
+        }
+    }
+
+    return nullptr;
+}
+
+String GameServer::SanitizeUsername(const String& acUsername) const noexcept
+{
+    String username = acUsername;
+
+    // space in username handling | "_" -> space
+    std::ranges::replace(username, '_', ' ');
+
+    return username;
 }

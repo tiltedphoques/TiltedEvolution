@@ -78,11 +78,7 @@ struct GameServer final : Server
     {
         return m_isPasswordProtected;
     }
-    void SetPublic(bool aIsPublic) noexcept
-    {
-        m_isPublic = aIsPublic;
-    }
-    bool IsPublic() const noexcept
+    [[nodiscard]] bool IsPublic() const noexcept
     {
         return m_isPublic;
     }
@@ -117,7 +113,13 @@ struct GameServer final : Server
         m_adminSessions.insert(acSession);
     }
 
-    void RemoveAdminSession(ConnectionId_t acSession) noexcept;
+    void RemoveAdminSession(ConnectionId_t acSession) noexcept
+    {
+        m_adminSessions.erase(acSession);
+    }
+
+    Player* GetAdminByUsername(const String& acUsername)  const noexcept;
+    Player const* GetAdminByUsername(const String& acUsername) noexcept;
 
   protected:
     bool ValidateAuthParams(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
@@ -131,6 +133,7 @@ struct GameServer final : Server
 
   private:
     void UpdateTitle() const;
+    String SanitizeUsername(const String& acUsername) const noexcept;
 
   private:
     std::chrono::high_resolution_clock::time_point m_startTime;

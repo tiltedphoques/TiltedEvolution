@@ -90,6 +90,31 @@ Player const* PlayerManager::GetById(uint32_t aId) const noexcept
     return nullptr;
 }
 
+Player* PlayerManager::GetByUsername(const String& acUsername) const noexcept
+{
+    auto itor = std::begin(m_players);
+    const auto end = std::end(m_players);
+
+    for (; itor != end; ++itor)
+        if (itor.value()->GetUsername() == acUsername)
+            return itor.value().get();
+
+    return nullptr;
+}
+
+
+Player const* PlayerManager::GetByUsername(const String& acUsername) noexcept
+{
+    auto itor = std::begin(m_players);
+    const auto end = std::end(m_players);
+
+    for (; itor != end; ++itor)
+        if (itor.value()->GetUsername() == acUsername)
+            return itor.value().get();
+
+    return nullptr;
+}
+
 uint32_t PlayerManager::Count() const noexcept
 {
     return static_cast<uint32_t>(m_players.size());

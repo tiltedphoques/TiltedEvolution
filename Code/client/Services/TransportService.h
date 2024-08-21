@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Events/ConnectedEvent.h"
+#include "Events/DisconnectedEvent.h"
 
 #include <atomic>
 #include <Client.hpp>
@@ -39,7 +40,8 @@ struct TransportService : Client
 protected:
     // Event handlers
     void HandleUpdate(const UpdateEvent& acEvent) noexcept;
-    void HandleConnect(const ConnectedEvent& acEvent) noexcept;
+    void HandleConnected(const ConnectedEvent& acEvent) noexcept;
+    void HandleDisconnected(const DisconnectedEvent& acEvent) noexcept;
 
     // Packet handlers
     void HandleAuthenticationResponse(const AuthenticationResponse& acMessage) noexcept;
@@ -56,5 +58,6 @@ private:
     entt::scoped_connection m_sendServerMessageConnection;
     entt::scoped_connection m_settingsChangeConnection;
     entt::scoped_connection m_connectedConnection;
+    entt::scoped_connection m_disconnectedConnection;
     std::function<void(UniquePtr<ServerMessage>&)> m_messageHandlers[kServerOpcodeMax];
 };
