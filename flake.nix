@@ -4,14 +4,13 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    msvc-llvm-nix.url = "github:roblabla/msvc-llvm-nix";
   };
 
-  outputs = { self, nixpkgs, flake-utils, msvc-llvm-nix }:
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         overlays = [
-            msvc-llvm-nix.overlay
+           # msvc-llvm-nix.overlay
         ];
         pkgs = import nixpkgs {
           inherit system overlays;
@@ -27,7 +26,8 @@
             cmake
             xmake
             gnumake
-            msvc-toolchain
+            stdenv.cc.cc.lib
+            #msvc-toolchain
           ];
 
           shellHook = ''
@@ -43,6 +43,9 @@
             unset CFLAGS
             unset CXXFLAGS
             unset LDFLAGS
+            export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath [
+                pkgs.stdenv.cc.cc
+            ]}
             echo "C++ development environment loaded"
           '';
         };
