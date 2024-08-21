@@ -858,10 +858,12 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         return;
     }
 
+    bool adminPasswordUsed = acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty();
+
     // check if the proper server password was supplied.
-    if (acRequest->Token == sPassword.value() || (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty()))
+    if (acRequest->Token == sPassword.value() || adminPasswordUsed)
     {
-        if (acRequest->Token == sAdminPassword.value() && !sAdminPassword.empty())
+        if (adminPasswordUsed)
         {
             m_adminSessions.insert(aConnectionId);
             spdlog::warn("New admin session for {:x} '{}'", aConnectionId, remoteAddress);
