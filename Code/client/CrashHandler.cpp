@@ -22,58 +22,123 @@ std::string SerializeTimePoint(const time_point& time, const std::string& format
 
 LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 {
-    static int alreadycrashed = 0;
+    static int alreadyCrashed = 0;
+    auto retval = EXCEPTION_CONTINUE_SEARCH;
 
-    if (pExceptionInfo->ExceptionRecord->ExceptionCode == 0xC0000005 && alreadycrashed++ == 0)
+    // Serialize 
+    static std::mutex singleThreaded;;
+    const std::lock_guard lock{singleThreaded};
+
+    // Check for severe, not continuable and not software-originated exception
+    if (pExceptionInfo->ExceptionRecord->ExceptionCode >= 0x80000000 &&
+        (pExceptionInfo->ExceptionRecord->ExceptionFlags & EXCEPTION_SOFTWARE_ORIGINATE) == 0 && 
+        alreadyCrashed++ == 0)
     {
-        spdlog::error("Crash occurred!");
-        MINIDUMP_EXCEPTION_INFORMATION M;
-        char dumpPath[MAX_PATH];
+        spdlog::critical (__FUNCTION__ ": crash occurred!"); 
+        
+        auto present = IsDebuggerPresent() ? "already" : "not";
+        spdlog::error(__FUNCTION__ ": debugger is {} present at critical exception time, code{:x}, address{}, flags {:x} ",
+                      present,
+                      pExceptionInfo->ExceptionRecord->ExceptionCode,
+                      pExceptionInfo->ExceptionRecord->ExceptionAddress,
+                      pExceptionInfo->ExceptionRecord->ExceptionFlags);
 
-        M.ThreadId = GetCurrentThreadId();
-        M.ExceptionPointers = pExceptionInfo;
-        M.ClientPointers = 0;
+#if (IS_MASTER)
+        volatile static bool bMiniDump = false;
+#else
+        volatile static bool bMiniDump = true;
+#endif
+        if (bMiniDump)
+        {
+            HANDLE hDumpFile = NULL;
+            try
+            {
+                MINIDUMP_EXCEPTION_INFORMATION M;
+                char dumpPath[MAX_PATH];
 
-        std::ostringstream oss;
-        oss << "crash_" << SerializeTimePoint(std::chrono::system_clock::now(), "UTC_%Y-%m-%d_%H-%M-%S") << ".dmp";
+                M.ThreadId = GetCurrentThreadId();
+                M.ExceptionPointers = pExceptionInfo;
+                M.ClientPointers = 0;
 
-        GetModuleFileNameA(NULL, dumpPath, sizeof(dumpPath));
-        std::filesystem::path modulePath(dumpPath);
-        auto subPath = modulePath.parent_path();
+                std::ostringstream oss;
+                oss << "crash_" << SerializeTimePoint(std::chrono::system_clock::now(), "UTC_%Y-%m-%d_%H-%M-%S")
+                    << ".dmp";
 
-        CrashHandler::RemovePreviousDump(subPath);
+                GetModuleFileNameA(NULL, dumpPath, sizeof(dumpPath));
+                std::filesystem::path modulePath(dumpPath);
+                auto subPath = modulePath.parent_path();
 
-        subPath /= oss.str();
+                CrashHandler::RemovePreviousDump(subPath);
 
-        auto hDumpFile = CreateFileA(subPath.string().c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+                subPath /= oss.str();
 
-        // baseline settings from https://stackoverflow.com/a/63123214/5273909
-        auto dumpSettings = MiniDumpWithDataSegs | MiniDumpWithProcessThreadData | MiniDumpWithHandleData | MiniDumpWithThreadInfo |
-                            /*
-                            //MiniDumpWithPrivateReadWriteMemory | // this one gens bad dump
-                            MiniDumpWithUnloadedModules |
-                            MiniDumpWithFullMemoryInfo |
-                            MiniDumpWithTokenInformation |
-                            MiniDumpWithPrivateWriteCopyMemory |
-                            */
-                            0;
+                hDumpFile = CreateFileA(subPath.string().c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+                                        FILE_ATTRIBUTE_NORMAL, NULL);
 
-        MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, (MINIDUMP_TYPE)dumpSettings, (pExceptionInfo) ? &M : NULL, NULL, NULL);
+                // baseline settings from https://stackoverflow.com/a/63123214/5273909
+                auto dumpSettings = MiniDumpWithDataSegs | MiniDumpWithProcessThreadData | MiniDumpWithHandleData |
+                                    MiniDumpWithThreadInfo |
+                                    /*
+                                    //MiniDumpWithPrivateReadWriteMemory | // this one gens bad dump
+                                    MiniDumpWithUnloadedModules |
+                                    MiniDumpWithFullMemoryInfo |
+                                    MiniDumpWithTokenInformation |
+                                    MiniDumpWithPrivateWriteCopyMemory |
+                                    */
+                                    0;
 
-        CloseHandle(hDumpFile);
+                MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, (MINIDUMP_TYPE)dumpSettings,
+                                  (pExceptionInfo) ? &M : NULL, NULL, NULL);
+            }
+            catch (...) // Mini-dump is best effort only.
+            {
+            }
 
-        spdlog::error("Coredump created -> flush logs.");
+            if (!hDumpFile)
+                spdlog::critical(__FUNCTION__ ": coredump may have failed.");
+            else
+            {
+                CloseHandle(hDumpFile);
+                spdlog::critical(__FUNCTION__ ": coredump created -> flush logs.");
+            }
+        }
+
         spdlog::default_logger()->flush();
 
-        return EXCEPTION_EXECUTE_HANDLER;
-    }
+        // Something in STR breaks top-level unhandled exception filters.
+        // The Win API for them is pretty clunky (non-atomic, not chainable), 
+        // but they can do some important things. If someone actually set one
+        // they probably meant it; make sure it actually runs.
+        // This will make more CrashLogger mods work with STR.
 
-    return EXCEPTION_CONTINUE_SEARCH;
+        // Get the current unhandled exception filter. If it has changed
+        // from when STR started up, invoke it here.
+        LPTOP_LEVEL_EXCEPTION_FILTER pCurrentUnhandledExceptionFilter = SetUnhandledExceptionFilter(CrashHandler::GetOriginalUnhandledExceptionFilter());
+        SetUnhandledExceptionFilter(pCurrentUnhandledExceptionFilter);
+        if (pCurrentUnhandledExceptionFilter != CrashHandler::GetOriginalUnhandledExceptionFilter())
+        {
+            spdlog::critical(__FUNCTION__ ": UnhandledExceptionFilter() workaround triggered.");
+
+            singleThreaded.unlock();        // Might reenter, but is safe at this point.
+            if ((*pCurrentUnhandledExceptionFilter)(pExceptionInfo) == EXCEPTION_CONTINUE_EXECUTION)
+                retval = EXCEPTION_CONTINUE_EXECUTION;
+            singleThreaded.lock();
+        }
+    }
+    return retval;
 }
 
+LPTOP_LEVEL_EXCEPTION_FILTER CrashHandler::m_pUnhandled;
 CrashHandler::CrashHandler()
 {
-    AddVectoredExceptionHandler(1, &VectoredExceptionHandler);
+    // Record the original (or as close as we can get) top-level unhandled exception handler.
+    // We grab this so we can see if it is changed, presumably by a mod or even graphics drivers.
+    // Something in STR breaks unhandled exception handling, so we'll fake it if necessary.
+    // This is the only way to get the current setting, but the race is small.
+    m_pUnhandled = SetUnhandledExceptionFilter(NULL);
+    SetUnhandledExceptionFilter(m_pUnhandled);
+
+    m_handler = AddVectoredExceptionHandler(1, &VectoredExceptionHandler);
 }
 
 CrashHandler::~CrashHandler()
