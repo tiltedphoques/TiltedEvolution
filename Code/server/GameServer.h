@@ -58,30 +58,15 @@ struct GameServer final : Server
     void Send(ConnectionId_t aConnectionId, const ServerAdminMessage& acServerMessage) const;
     void SendToLoaded(const ServerMessage& acServerMessage) const;
     void SendToPlayers(const ServerMessage& acServerMessage, const Player* apExcludeSender = nullptr) const;
-    bool SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin,
-                              const Player* apExcludeSender = nullptr) const;
-    void SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
-                     const Player* apExcludeSender = nullptr) const;
-    void SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent,
-                            const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
+    bool SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
+    void SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apExcludeSender = nullptr) const;
+    void SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
 
-    const Info& GetInfo() const noexcept
-    {
-        return m_info;
-    }
+    const Info& GetInfo() const noexcept { return m_info; }
 
-    bool IsRunning() const noexcept
-    {
-        return !m_requestStop;
-    }
-    bool IsPasswordProtected() const noexcept
-    {
-        return m_isPasswordProtected;
-    }
-    [[nodiscard]] bool IsPublic() const noexcept
-    {
-        return m_isPublic;
-    }
+    bool IsRunning() const noexcept { return !m_requestStop; }
+    bool IsPasswordProtected() const noexcept { return m_isPasswordProtected; }
+    [[nodiscard]] bool IsPublic() const noexcept { return m_isPublic; }
 
     template <class T> void ForEachAdmin(const T& aFunctor)
     {
@@ -98,30 +83,18 @@ struct GameServer final : Server
     };
     Uptime GetUptime() const noexcept;
 
-    World& GetWorld() const noexcept
-    {
-        return *m_pWorld;
-    }
+    World& GetWorld() const noexcept { return *m_pWorld; }
 
-    [[nodiscard]] const TiltedPhoques::Set<ConnectionId_t>& GetAdminSessions() const noexcept
-    {
-        return m_adminSessions;
-    }
+    [[nodiscard]] const TiltedPhoques::Set<ConnectionId_t>& GetAdminSessions() const noexcept { return m_adminSessions; }
 
-    void AddAdminSession(ConnectionId_t acSession) noexcept
-    {
-        m_adminSessions.insert(acSession);
-    }
+    void AddAdminSession(ConnectionId_t acSession) noexcept { m_adminSessions.insert(acSession); }
 
-    void RemoveAdminSession(ConnectionId_t acSession) noexcept
-    {
-        m_adminSessions.erase(acSession);
-    }
+    void RemoveAdminSession(ConnectionId_t acSession) noexcept { m_adminSessions.erase(acSession); }
 
-    Player* GetAdminByUsername(const String& acUsername)  const noexcept;
+    Player* GetAdminByUsername(const String& acUsername) const noexcept;
     Player const* GetAdminByUsername(const String& acUsername) noexcept;
 
-  protected:
+protected:
     bool ValidateAuthParams(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
     void HandleAuthenticationRequest(ConnectionId_t aConnectionId, const UniquePtr<AuthenticationRequest>& acRequest);
 
@@ -131,11 +104,11 @@ struct GameServer final : Server
     void OnConnection(ConnectionId_t aHandle) override;
     void OnDisconnection(ConnectionId_t aConnectionId, EDisconnectReason aReason) override;
 
-  private:
+private:
     void UpdateTitle() const;
     String SanitizeUsername(const String& acUsername) const noexcept;
 
-  private:
+private:
     std::chrono::high_resolution_clock::time_point m_startTime;
     std::chrono::high_resolution_clock::time_point m_lastFrameTime;
     std::function<void(UniquePtr<ClientMessage>&, ConnectionId_t)> m_messageHandlers[kClientOpcodeMax];

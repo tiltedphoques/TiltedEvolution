@@ -102,7 +102,6 @@ Player* PlayerManager::GetByUsername(const String& acUsername) const noexcept
     return nullptr;
 }
 
-
 Player const* PlayerManager::GetByUsername(const String& acUsername) noexcept
 {
     auto itor = std::begin(m_players);
