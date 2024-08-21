@@ -27,6 +27,7 @@
             xmake
             gnumake
             stdenv.cc.cc.lib
+            mold
             #msvc-toolchain
           ];
 
@@ -46,6 +47,10 @@
             export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath [
                 pkgs.stdenv.cc.cc
             ]}
+            export CC="${pkgs.gcc14}/bin/gcc"
+            export CXX="${pkgs.gcc14}/bin/g++"
+            export LD="${pkgs.mold}/bin/mold"
+
             echo "C++ development environment loaded"
           '';
         };
