@@ -611,7 +611,15 @@ bool TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, u
     // Exclude books from activation since only reading them removes them from the cell
     // Note: Books are now unsynced 
     if (pActivator && apThis->baseForm->formType != FormType::Book)
-        World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aUnk1, aCount, aDefaultProcessing));
+    {
+        auto openState = TESObjectREFR::kNone;
+        if (apThis->baseForm->formType == FormType::Door)
+            openState = apThis->GetOpenState();
+
+        World::Get().GetRunner().Trigger(
+            ActivateEvent(apThis, pActivator, apObjectToGet, aCount, aDefaultProcessing, aUnk1, openState)
+        );
+    }
 
     return TiltedPhoques::ThisCall(RealActivate, apThis, apActivator, aUnk1, apObjectToGet, aCount, aDefaultProcessing);
 }

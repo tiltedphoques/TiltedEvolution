@@ -122,6 +122,7 @@ void ObjectService::OnActivate(const PacketEvent<ActivateRequest>& acMessage) co
     NotifyActivate notifyActivate;
     notifyActivate.Id = acMessage.Packet.Id;
     notifyActivate.ActivatorId = acMessage.Packet.ActivatorId;
+    notifyActivate.PreActivationOpenState = acMessage.Packet.PreActivationOpenState;
 
     for (auto pPlayer : m_world.GetPlayerManager())
     {
