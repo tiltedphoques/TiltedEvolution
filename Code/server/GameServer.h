@@ -66,7 +66,6 @@ struct GameServer final : Server
 
     bool IsRunning() const noexcept { return !m_requestStop; }
     bool IsPasswordProtected() const noexcept { return m_isPasswordProtected; }
-    [[nodiscard]] bool IsPublic() const noexcept { return m_isPublic; }
 
     template <class T> void ForEachAdmin(const T& aFunctor)
     {
@@ -115,7 +114,6 @@ private:
     std::function<void(UniquePtr<ClientAdminMessage>&, ConnectionId_t)> m_adminMessageHandlers[kClientAdminOpcodeMax];
 
     bool m_isPasswordProtected{};
-    bool m_isPublic{};
 
     Info m_info{};
     UniquePtr<Resources::ResourceCollection> m_pResources;
