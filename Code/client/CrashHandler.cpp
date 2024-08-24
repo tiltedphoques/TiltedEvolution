@@ -31,14 +31,13 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 
     // Check for severe, not continuable and not software-originated exception
     if (pExceptionInfo->ExceptionRecord->ExceptionCode >= 0x80000000 &&
+        pExceptionInfo->ExceptionRecord->ExceptionCode != 0xE06D7363 && // Sigh. C++ exceptions forgot the SOFTWARE_ORIGINATE flag.
         (pExceptionInfo->ExceptionRecord->ExceptionFlags & EXCEPTION_SOFTWARE_ORIGINATE) == 0 && 
         alreadyCrashed++ == 0)
     {
         spdlog::critical (__FUNCTION__ ": crash occurred!"); 
         
-        auto present = IsDebuggerPresent() ? "already" : "not";
-        spdlog::error(__FUNCTION__ ": debugger is {} present at critical exception time, code{:x}, address{}, flags {:x} ",
-                      present,
+        spdlog::error(__FUNCTION__ ": exception code is {:x}, at address {}, flags {:x} ",
                       pExceptionInfo->ExceptionRecord->ExceptionCode,
                       pExceptionInfo->ExceptionRecord->ExceptionAddress,
                       pExceptionInfo->ExceptionRecord->ExceptionFlags);
