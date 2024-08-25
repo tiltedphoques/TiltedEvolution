@@ -12,7 +12,8 @@ export interface ErrorEvent {
     | 'server_full'
     | 'no_reason'
     | 'bad_uGridsToLoad'
-    | 'non_default_install';
+    | 'non_default_install'
+    | 'set_time_public_server';
   data?: Record<any, any>;
 }
 

@@ -258,7 +258,7 @@ void ConsoleRegistry::StoreCommandInHistory(const TiltedPhoques::String& acLine)
     // Do some housekeeping.
     if (m_commandHistory.size() == 10)
     {
-        m_commandHistory.erase(m_commandHistory.end());
+        m_commandHistory.pop_back();
     }
 }
 
