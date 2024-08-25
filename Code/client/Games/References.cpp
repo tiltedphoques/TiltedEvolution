@@ -690,6 +690,15 @@ const float TESObjectREFR::GetHeight() noexcept
     return boundMax.z - GetBoundMin().z;
 }
 
+TESObjectREFR::OpenState TESObjectREFR::GetOpenState() noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(TESObjectREFR::OpenState, ObjectReference, GetOpenState);
+
+    return s_pGetOpenState(this);
+}
+
 bool ActorState::SetWeaponDrawn(bool aDraw) noexcept
 {
     TP_THIS_FUNCTION(TSetWeaponState, bool, ActorState, bool aDraw);

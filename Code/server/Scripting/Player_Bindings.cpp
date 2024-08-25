@@ -32,6 +32,10 @@ void BindPlayer(sol::state_view aState)
     playerType["SetLevel"] = &Player::SetLevel;
     playerType["SetCellComponent"] = &Player::SetCellComponent;
     playerType["Send"] = &Player::Send;
+    playerType["IsPartyLeader"] = [](Player& aSelf) {
+        return GameServer::Get()->GetWorld().GetPartyService().IsPlayerLeader(
+            PlayerManager::Get()->GetByConnectionId(aSelf.GetConnectionId()));
+    };
 }
 
 void BindPlayerManager(sol::state_view aState)
