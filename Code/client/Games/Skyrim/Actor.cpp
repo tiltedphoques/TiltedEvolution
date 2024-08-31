@@ -654,9 +654,9 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter, bo
                 float maxHealth = apHitter->GetActorPermanentValue(ActorValueInfo::kHealth);
                 // Difficulty range is 0-5
                 uint32_t difficulty = World::Get().GetServerSettings().Difficulty;
-                float percentage = difficulty*0.15f;
+                float percentage = difficulty * 0.15f;
                 // Restore 20% of max health to the attacker
-                float recoveryHealth = maxHealth*0.2f;
+                float recoveryHealth = maxHealth * 0.2f;
                 // Legendary difficulty
                 if(difficulty == 5)
                     recoveryHealth = maxHealth;
@@ -665,7 +665,7 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter, bo
                 if(remainingHealth > 0)
                 {
                     // Restore health lost based on a proportion
-                    float lostHealth = (maxHealth-remainingHealth)*percentage;
+                    float lostHealth = (maxHealth - remainingHealth) * percentage;
                     // Final restored value
                     recoveryHealth = lostHealth > recoveryHealth ? lostHealth : recoveryHealth;
                     World::Get().GetRunner().Trigger(HealthChangeEvent(apHitter->formID, recoveryHealth));
