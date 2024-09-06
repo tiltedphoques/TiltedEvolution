@@ -68,8 +68,7 @@ bool PathArgument(const std::string& acPath)
     }
 
     // Write to registry so oobe::SelectInstall can handle the rest
-    bool result = Registry::WriteString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath", g_titlePath) && 
-        Registry::WriteString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe", g_exePath);
+    bool result = Registry::WriteString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath", g_titlePath) && Registry::WriteString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe", g_exePath);
 
     if (!result)
     {
