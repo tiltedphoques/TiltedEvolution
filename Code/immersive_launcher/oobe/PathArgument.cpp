@@ -37,6 +37,10 @@ bool ValidatePath(const std::wstring& acPath)
     {
         errorText += acPath.substr(acPath.find_last_of('\\') + 1, acPath.back()) + L" is not an executable file\n";
     }
+    else if (!acPath.ends_with(TARGET_NAME L".exe"))
+    {
+        errorText += TARGET_NAME L".exe not found\n";
+    }
 
     if (!std::filesystem::exists(g_exePath) || !std::filesystem::exists(g_titlePath))
     {
