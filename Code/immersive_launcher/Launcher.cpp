@@ -66,7 +66,8 @@ void SetMaxstdio()
 int StartUp(int argc, char** argv)
 {
     bool askSelect = (GetAsyncKeyState(VK_SPACE) & 0x8000);
-    HandleArguments(argc, argv, askSelect);
+    if (!HandleArguments(argc, argv, askSelect))
+        return -1;
 
     // TODO(Force): Make some InitSharedResources func.
     g_SharedWindowIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102));
@@ -150,12 +151,14 @@ bool HandleArguments(int aArgc, char** aArgv, bool& aAskSelect)
         {
             if (!aArgv[i + 1])
             {
-                DIE_NOW(L"No exe path specified");
+                Die(L"No exe path specified", true);
+                return false;
             }
 
             if (!oobe::PathArgument(aArgv[i + 1]))
             {
-                DIE_NOW(L"Failed to parse path argument");
+                Die(L"Failed to parse path argument", true);
+                return false;
             }
         }
     }
