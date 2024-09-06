@@ -10,10 +10,12 @@
 #include "Utils/FileVersion.inl"
 
 #include "oobe/PathSelection.h"
+#include "oobe/PathArgument.h"
 #include "oobe/SupportChecks.h"
 #include "steam/SteamLoader.h"
 
 #include "base/dialogues/win/TaskDialog.h"
+#include "utils/Registry.h"
 
 #include <BranchInfo.h>
 
@@ -64,11 +66,7 @@ void SetMaxstdio()
 int StartUp(int argc, char** argv)
 {
     bool askSelect = (GetAsyncKeyState(VK_SPACE) & 0x8000);
-    for (int i = 1; i < argc; i++)
-    {
-        if (std::strcmp(argv[i], "-r") == 0)
-            askSelect = true;
-    }
+    HandleArguments(argc, argv, askSelect);
 
     // TODO(Force): Make some InitSharedResources func.
     g_SharedWindowIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(102));
@@ -140,6 +138,29 @@ void InitClient()
 {
     // Jump into client code.
     RunTiltedApp();
+}
+
+bool HandleArguments(int aArgc, char** aArgv, bool& aAskSelect)
+{
+    for (int i = 1; i < aArgc; i++)
+    {
+        if (std::strcmp(aArgv[i], "-r") == 0)
+            aAskSelect = true;
+        else if (std::strcmp(aArgv[i], "--exePath") == 0)
+        {
+            if (!aArgv[i + 1])
+            {
+                DIE_NOW(L"No exe path specified");
+            }
+
+            if (!oobe::PathArgument(aArgv[i + 1]))
+            {
+                DIE_NOW(L"Failed to parse path argument");
+            }
+        }
+    }
+
+    return true;
 }
 } // namespace launcher
 
