@@ -23,7 +23,7 @@ constexpr wchar_t kTiltedRegistryPath[] = LR"(Software\TiltedPhoques\TiltedEvolu
 
 bool ValidatePath(const std::wstring& acPath)
 {
-    const std::wstring titlePath = acPath.substr(0, acPath.find_last_of('\\'));
+    const std::wstring cTitlePath = acPath.substr(0, acPath.find_last_of('\\'));
     std::wstring errorText{};
 
     if (acPath.find_last_of('\\') == std::string::npos || acPath.ends_with(*"\\"))
@@ -43,7 +43,7 @@ bool ValidatePath(const std::wstring& acPath)
         errorText += TARGET_NAME L".exe not found\n";
     }
 
-    if (!std::filesystem::exists(acPath) || !std::filesystem::exists(titlePath))
+    if (!std::filesystem::exists(acPath) || !std::filesystem::exists(cTitlePath))
     {
         SetLastError(ERROR_BAD_PATHNAME);
         errorText += L"Path does not exist\n";
@@ -61,16 +61,16 @@ bool ValidatePath(const std::wstring& acPath)
 
 bool PathArgument(const std::string& acPath)
 {
-    const std::wstring exePath = std::wstring(acPath.begin(), acPath.end());
-    const std::wstring titlePath = exePath.substr(0, exePath.find_last_of('\\'));
+    const std::wstring cExePath = std::wstring(acPath.begin(), acPath.end());
+    const std::wstring cTitlePath = cExePath.substr(0, cExePath.find_last_of('\\'));
 
-    if (!ValidatePath(exePath))
+    if (!ValidatePath(cExePath))
     {
         DIE_NOW(L"Failed to validate path")
     }
 
     // Write to registry so oobe::SelectInstall can handle the rest
-    const bool result = Registry::WriteString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath", titlePath) && Registry::WriteString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe", exePath);
+    const bool result = Registry::WriteString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitlePath", cTitlePath) && Registry::WriteString<wchar_t>(HKEY_CURRENT_USER, kTiltedRegistryPath, L"TitleExe", cExePath);
 
     if (!result)
     {
