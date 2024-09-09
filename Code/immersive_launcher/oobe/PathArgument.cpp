@@ -43,7 +43,6 @@ bool ValidatePath(const std::wstring& acPath)
         errorText += TARGET_NAME L".exe not found\n";
     }
 
-
     if (!std::filesystem::exists(acPath) || !std::filesystem::exists(titlePath))
     {
         SetLastError(ERROR_BAD_PATHNAME);

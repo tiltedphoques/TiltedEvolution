@@ -149,7 +149,7 @@ bool HandleArguments(int aArgc, char** aArgv, bool& aAskSelect)
             aAskSelect = true;
         else if (std::strcmp(aArgv[i], "--exePath") == 0)
         {
-            if(i + 1 >= aArgc)
+            if (i + 1 >= aArgc)
             {
                 SetLastError(ERROR_BAD_PATHNAME);
                 Die(L"No exe path specified", true);
