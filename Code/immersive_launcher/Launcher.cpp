@@ -149,14 +149,16 @@ bool HandleArguments(int aArgc, char** aArgv, bool& aAskSelect)
             aAskSelect = true;
         else if (std::strcmp(aArgv[i], "--exePath") == 0)
         {
-            if (!aArgv[i + 1])
+            if(i + 1 >= aArgc)
             {
+                SetLastError(ERROR_BAD_PATHNAME);
                 Die(L"No exe path specified", true);
                 return false;
             }
 
             if (!oobe::PathArgument(aArgv[i + 1]))
             {
+                SetLastError(ERROR_BAD_ARGUMENTS);
                 Die(L"Failed to parse path argument", true);
                 return false;
             }

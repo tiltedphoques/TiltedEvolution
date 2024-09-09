@@ -30,26 +30,30 @@ bool ValidatePath(const std::wstring& acPath)
 
     if (acPath.find_last_of('\\') == std::string::npos || acPath.ends_with(*"\\"))
     {
+        SetLastError(ERROR_BAD_PATHNAME);
         errorText += L"Invalid path\n";
     }
 
     if (!acPath.ends_with(L".exe"))
     {
+        SetLastError(ERROR_BAD_ARGUMENTS);
         errorText += acPath.substr(acPath.find_last_of('\\') + 1, acPath.back()) + L" is not an executable file\n";
     }
     else if (!acPath.ends_with(TARGET_NAME L".exe"))
     {
+        SetLastError(ERROR_FILE_NOT_FOUND);
         errorText += TARGET_NAME L".exe not found\n";
     }
 
     if (!std::filesystem::exists(g_exePath) || !std::filesystem::exists(g_titlePath))
     {
+        SetLastError(ERROR_BAD_PATHNAME);
         errorText += L"Path does not exist\n";
     }
 
     if (!errorText.empty())
     {
-        errorText += L"Path: " + acPath;
+        errorText += L"\nPath: " + acPath;
         DIE_NOW(errorText.c_str())
     }
 
