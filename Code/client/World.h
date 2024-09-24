@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <Services/RunnerService.h>
 #include <Services/TransportService.h>
 #include <Services/PartyService.h>
@@ -7,6 +8,7 @@
 #include <Services/OverlayService.h>
 #include <Services/CharacterService.h>
 #include <Services/DebugService.h>
+#include "Services/InputService.h"
 
 #include <Systems/ModSystem.h>
 
@@ -31,6 +33,8 @@ struct World : entt::registry
     const OverlayService& GetOverlayService() const noexcept { return ctx().at<const OverlayService>(); }
     DebugService& GetDebugService() noexcept { return ctx().at<DebugService>(); }
     const DebugService& GetDebugService() const noexcept { return ctx().at<const DebugService>(); }
+    InputService& GetInputService() noexcept { return ctx().at<InputService>(); }
+    const InputService& GetInputService() const noexcept { return ctx().at<const InputService>(); }
 
     auto& GetDispatcher() noexcept { return m_dispatcher; }
 

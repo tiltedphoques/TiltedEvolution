@@ -236,6 +236,7 @@ static bool g_enableWeatherWindow{false};
 static bool g_enableCombatWindow{false};
 static bool g_enableCalendarWindow{false};
 static bool g_enableDragonSpawnerWindow{false};
+static bool g_enableRebindWindow{false};
 
 void DebugService::DrawServerView() noexcept
 {
@@ -336,6 +337,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Server", nullptr, &g_enableServerWindow);
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
         ImGui::MenuItem("Dragon spawner", nullptr, &g_enableDragonSpawnerWindow);
+        ImGui::MenuItem("Rebind", nullptr, &g_enableRebindWindow);
 
 #if (!IS_MASTER)
         ImGui::MenuItem("Network", nullptr, &g_enableNetworkWindow);
@@ -382,6 +384,8 @@ void DebugService::OnDraw() noexcept
         DrawPartyView();
     if (g_enableDragonSpawnerWindow)
         DrawDragonSpawnerView();
+    if (g_enableRebindWindow)
+        DrawRebindView();
 
 #if (!IS_MASTER)
     if (g_enableNetworkWindow)
