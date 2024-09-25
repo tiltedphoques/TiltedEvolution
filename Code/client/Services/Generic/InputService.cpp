@@ -95,7 +95,7 @@ uint32_t GetCefModifiers(uint16_t aVirtualKey)
 // remember to update this when updating toggle keys
 bool IsToggleKey(int aKey) noexcept
 {
-    return aKey == World::Get().GetInputService().GetUIKey().second;
+    return aKey == World::Get().GetInputService().GetUIKey().second.vkKeyCode;
 }
 
 bool IsDisableKey(int aKey) noexcept
@@ -458,54 +458,21 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     return 0;
 }
 
-const std::pair<TiltedPhoques::String, int32_t>& InputService::GetKey(int32_t aKeyCode) const noexcept
+bool InputService::SetUIKey(const RebindService::Key& acKey) noexcept
 {
-    for (const auto& key : m_virtualKeys)
-    {
-        if (key.second == aKeyCode)
-            return key;
-    }
-
-    return std::pair<TiltedPhoques::String, int32_t>("", -1);
+    if (acKey.first.empty() || acKey.second.diKeyCode == -1 || acKey.second.vkKeyCode == -1)
+        return false;
+    
+    m_pUiKey = acKey;
+    return true;
 }
 
-const std::pair<TiltedPhoques::String, int32_t>& InputService::GetKey(const TiltedPhoques::String& acKeyName) const noexcept
-{
-    for (const auto& key : m_virtualKeys)
-    {
-        if (key.first == acKeyName)
-            return key;
-    }
-
-    return std::pair<TiltedPhoques::String, int32_t>("", -1);
-}
-
-bool InputService::SetUIKey(const TiltedPhoques::String& acKeyName) noexcept
-{
-    if (const auto& key = GetKey(acKeyName); !key.first.empty())
-    {
-        World::Get().GetInputService().m_uiKey = key;
-        return true;
-    }
-
-    return false;
-}
-
-bool InputService::SetUIKey(int32_t aKeyCode) noexcept
-{
-    if (const auto& key = GetKey(aKeyCode); key.second != -1)
-    {
-        World::Get().GetInputService().m_uiKey = key;
-        return true;
-    }
-
-    return false;
-}
 
 InputService::InputService(OverlayService& aOverlay) noexcept
 {
     s_pOverlay = &aOverlay;
     s_currentACP = GetRealACP();
+    m_pUiKey = {"F2", {VK_F2, DIK_F2}};
 }
 
 InputService::~InputService() noexcept

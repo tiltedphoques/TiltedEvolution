@@ -1,6 +1,7 @@
 ﻿#include "DInputHook.hpp"
 
 #include <Services/DebugService.h>
+#include <Services/RebindService.h>
 
 #include "World.h"
 
@@ -10,7 +11,8 @@ void DebugService::DrawRebindView()
 {
 #if TP_SKYRIM64
     auto& inputService = World::Get().GetInputService();
-    std::pair<String, int32_t> uiKey = inputService.GetUIKey();
+    auto& rebindService = World::Get().GetRebindService();
+    auto uiKey = inputService.GetUIKey();
     static bool s_bindingActive = false;
 
     ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
@@ -18,7 +20,7 @@ void DebugService::DrawRebindView()
 
     if (ImGui::CollapsingHeader("UI"))
     {
-        if (ImGui::Button("Open/Close", ImVec2(150, 30)) || s_bindingActive)
+        if (ImGui::Button("Open/Close", ImVec2(100, 30)) || s_bindingActive)
         {
             ImGui::SameLine(0);
             s_bindingActive = true;
@@ -36,22 +38,16 @@ void DebugService::DrawRebindView()
                     if (key == VK_ESCAPE || key == VK_LBUTTON || key == VK_RBUTTON)
                         break;
 
-                    auto& newKey = inputService.GetKey(key);
+                    auto& newKey = rebindService.GetKeyFromVKKeyCode(key);
 
                     if (!newKey.first.empty())
                     {
                         s_bindingActive = false;
                         uiKey = newKey;
 
-                        if(inputService.SetUIKey(uiKey.first))
+                        if(rebindService.SetUIKey(uiKey))
                         {
-                            uint32_t directInputKey = inputService.GetDirectInputKeyCode(uiKey.second);
-
-                            if (directInputKey)
-                            {
-                                TiltedPhoques::DInputHook::Get().SetToggleKeys({DIK_RCONTROL, directInputKey});
-                            }
-
+                            TiltedPhoques::DInputHook::Get().SetToggleKeys({DIK_RCONTROL, static_cast<unsigned>(uiKey.second.diKeyCode)});
                             break;
                         }
 

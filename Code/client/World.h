@@ -9,6 +9,7 @@
 #include <Services/CharacterService.h>
 #include <Services/DebugService.h>
 #include "Services/InputService.h"
+#include "Services/RebindService.h"
 
 #include <Systems/ModSystem.h>
 
@@ -35,6 +36,9 @@ struct World : entt::registry
     const DebugService& GetDebugService() const noexcept { return ctx().at<const DebugService>(); }
     InputService& GetInputService() noexcept { return ctx().at<InputService>(); }
     const InputService& GetInputService() const noexcept { return ctx().at<const InputService>(); }
+    RebindService& GetRebindService() noexcept { return ctx().at<RebindService>(); }
+    const RebindService& GetRebindService() const noexcept { return ctx().at<const RebindService>(); }
+
 
     auto& GetDispatcher() noexcept { return m_dispatcher; }
 
