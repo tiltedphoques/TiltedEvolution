@@ -42,7 +42,7 @@ void DebugService::DrawRebindView()
 
                     auto newKey = rebindService.GetKeyFromVKKeyCode(key);
                     
-                    if (!newKey->first.empty())
+                    if (newKey != nullptr)
                     {
                         m_rebindActive = false;
                             uiKey = *newKey;
