@@ -5,47 +5,46 @@ RebindService::RebindService(InputService& aInputService) :
 {
 }
 
-const RebindService::Key& RebindService::GetKeyFromName(const TiltedPhoques::String& acKeyName) const noexcept
+std::shared_ptr<RebindService::Key> RebindService::GetKeyFromName(const TiltedPhoques::String& acKeyName) const noexcept
 {
     const auto& key = std::find_if(m_keys.begin(), m_keys.end(), [acKeyName](const Key& aKey) { return aKey.first == acKeyName; });
 
-    Key pKey;
+    std::shared_ptr newKey = std::make_shared<Key>(*key);
 
     if (key != m_keys.end())
     {
-        pKey = *key;
+        *newKey = *key;
     }
 
-    return pKey;
+    return newKey;
 }
 
-
-const RebindService::Key& RebindService::GetKeyFromVKKeyCode(int32_t aKeyCode) const noexcept
+std::shared_ptr<RebindService::Key> RebindService::GetKeyFromVKKeyCode(int32_t aKeyCode) const noexcept
 {
     const auto& key = std::find_if(m_keys.begin(), m_keys.end(), [aKeyCode](const Key& aKey) { return aKey.second.vkKeyCode == aKeyCode; });
 
-    Key pKey;
+    std::shared_ptr newKey = std::make_shared<Key>(*key);
 
     if (key != m_keys.end())
     {
-        pKey = *key;
+        *newKey = *key;
     }
 
-    return pKey;
+    return newKey;
 }
 
-const RebindService::Key& RebindService::GetKeyFromDIKeyCode(int32_t aKeyCode) const noexcept
+std::shared_ptr<RebindService::Key> RebindService::GetKeyFromDIKeyCode(int32_t aKeyCode) const noexcept
 {
     const auto& key = std::find_if(m_keys.begin(), m_keys.end(), [aKeyCode](const Key& aKey) { return aKey.second.diKeyCode == aKeyCode; });
 
-    Key pKey;
+    std::shared_ptr newKey = std::make_shared<Key>(*key);
 
     if (key != m_keys.end())
     {
-        pKey = *key;
+        *newKey = *key;
     }
 
-    return pKey;
+    return newKey;
 }
 
 int32_t RebindService::GetDIKeyCode(const TiltedPhoques::String& aKeyName) const noexcept
@@ -80,10 +79,10 @@ int32_t RebindService::GetVKKeyCode(const TiltedPhoques::String& aKeyName) const
     return KeyCodes::Error;
 }
 
-bool RebindService::SetUIKey(const Key& apKey) noexcept
+bool RebindService::SetUIKey(std::shared_ptr<RebindService::Key> apKey) noexcept
 {
-    m_inputService.SetUIKey(apKey);
-    m_pUiKey = apKey;
+    m_pUiKey = *apKey;
+    m_inputService.SetUIKey(std::move(apKey));
     return true;
 }
 
@@ -91,10 +90,10 @@ bool RebindService::SetUIKeyFromVKKeyCode(int32_t aKeyCode) noexcept
 {
     const auto& key = GetKeyFromVKKeyCode(aKeyCode);
 
-    if (key != m_errorKey)
+    if (!key->first.empty())
     {
-        m_inputService.SetUIKey(key);
-        m_pUiKey = key;
+        m_pUiKey = *key;
+        m_inputService.SetUIKey(std::move(key));
         return true;
     }
 
@@ -105,10 +104,10 @@ bool RebindService::SetUIKeyFromDIKeyCode(int32_t aKeyCode) noexcept
 {
     const auto& key = GetKeyFromDIKeyCode(aKeyCode);
 
-    if (key != m_errorKey)
+    if (!key->first.empty())
     {
+        m_pUiKey = *key;
         m_inputService.SetUIKey(key);
-        m_pUiKey = key;
         return true;
     }
 
@@ -117,11 +116,10 @@ bool RebindService::SetUIKeyFromDIKeyCode(int32_t aKeyCode) noexcept
 
 bool RebindService::SetUIKeyFromKeyName(const TiltedPhoques::String& acKeyName) noexcept
 {
-    if (const auto& key = GetKeyFromName(acKeyName); key != m_errorKey)
+    if (const auto& key = GetKeyFromName(acKeyName); !key->first.empty())
     {
-        //World::Get().GetInputService().SetUIKey(key);
+        m_pUiKey = *key;
         m_inputService.SetUIKey(key);
-        m_pUiKey = key;
         return true;
     }
 

@@ -8,87 +8,45 @@ struct RebindService
 {
     struct KeyCodes
     {
-        enum
-        {
-            Error = -1
-        };
+        enum { Error = -1 };
 
         int32_t vkKeyCode = Error;
         int32_t diKeyCode = Error;
-
-        bool operator==(const KeyCodes& acKeyCodes) const
-        {
-            return this->vkKeyCode == acKeyCodes.vkKeyCode && this->diKeyCode == acKeyCodes.diKeyCode;
-        }
     };
 
-    /*struct Key
-    {
-        TiltedPhoques::String keyName;
-        KeyCodes keyCodes;
-
-        Key() : keyName(""), keyCodes({KeyCodes::Error, KeyCodes::Error})
-        {
-        }
-
-        Key(const TiltedPhoques::String& acKeyName, const KeyCodes& acKeyCodes) :
-            keyName(acKeyName), keyCodes(acKeyCodes)
-        {
-        }
-
-        Key(const Key& acKey)
-        {
-            keyName = acKey.keyName;
-            keyCodes = acKey.keyCodes;
-        }
-
-        Key(const std::pair<TiltedPhoques::String, KeyCodes>& acKey)
-        {
-            keyName = acKey.first;
-            keyCodes = acKey.second;
-        }
-
-        bool operator==(const Key& acKey) const
-        {
-            return this->keyName == acKey.keyName && this->keyCodes == acKey.keyCodes;
-        }
-
-        bool operator==(const std::pair<TiltedPhoques::String, KeyCodes>& acKey) const
-        {
-            return this->keyName == acKey.first && this->keyCodes == acKey.second;
-        }
-    };*/
-
     using Key = std::pair<TiltedPhoques::String, KeyCodes>;
-
 
     RebindService(InputService& aInputService);
     ~RebindService() = default;
 
     TP_NOCOPYMOVE(RebindService);
 
-    const Key& GetUIKey() const noexcept { return m_pUiKey; }
-    const Key& GetDebugKey() const noexcept { return m_pDebugKey; }
+    TiltedPhoques::Map<Key::first_type, Key::second_type> GetKeys() const noexcept { return m_keys; }
 
-    bool SetUIKey(const Key& apKey) noexcept;
+    // UI Key
+    const Key& GetUIKey() const noexcept { return m_pUiKey; }
+    bool SetUIKey(std::shared_ptr<RebindService::Key> apKey) noexcept;
     bool SetUIKeyFromKeyName(const TiltedPhoques::String& acKeyName) noexcept;
     bool SetUIKeyFromVKKeyCode(int32_t aKeyCode) noexcept;
     bool SetUIKeyFromDIKeyCode(int32_t aKeyCode) noexcept;
 
-    const Key& GetKeyFromName(const TiltedPhoques::String& acKeyName) const noexcept;
-    const Key& GetKeyFromVKKeyCode(int32_t aKeyCode) const noexcept;
-    const Key& GetKeyFromDIKeyCode(int32_t aKeyCode) const noexcept;
+    // Debug Key
+    const Key& GetDebugKey() const noexcept { return m_pDebugKey; }
 
-    TiltedPhoques::Map<Key::first_type, Key::second_type> GetKeys() const noexcept { return m_keys; }
-    //const TiltedPhoques::Map<TiltedPhoques::String, KeyCodes>& GetKeys() const noexcept { return m_keys; }
-
-    // Get DirectInput KeyCode
-    int32_t GetDIKeyCode(const TiltedPhoques::String& aKeyName) const noexcept;
-    // Get VirtualKey KeyCode
+    // General Key
+    std::shared_ptr<RebindService::Key> GetKeyFromName(const TiltedPhoques::String& acKeyName) const noexcept;
+    std::shared_ptr<RebindService::Key> GetKeyFromVKKeyCode(int32_t aKeyCode) const noexcept;
     int32_t GetVKKeyCode(const TiltedPhoques::String& aKeyName) const noexcept;
+    std::shared_ptr<RebindService::Key> GetKeyFromDIKeyCode(int32_t aKeyCode) const noexcept;
+    int32_t GetDIKeyCode(const TiltedPhoques::String& aKeyName) const noexcept;
+    bool IsValidKey(const TiltedPhoques::String& acKeyName) const noexcept { return m_keys.find(acKeyName) != m_keys.end(); }
 
 private:
+    Key m_pUiKey = {"F2", {VK_F2, DIK_F2}};
+    Key m_pDebugKey = {"F3", {VK_F3, DIK_F3}};
     
+    InputService& m_inputService;
+
     const TiltedPhoques::Map<Key::first_type, Key::second_type> m_keys
     {
         {"", {KeyCodes::Error, KeyCodes::Error}},
@@ -224,12 +182,4 @@ private:
         {"]", {VK_OEM_6, DIK_RBRACKET}},
         {"'", {VK_OEM_7, DIK_APOSTROPHE}},
     };
-        
-
-private:
-    Key m_pUiKey = {"F2", {VK_F2, DIK_F2}};
-    Key m_pDebugKey = {"F3", {VK_F3, DIK_F3}};
-    Key m_errorKey = {"", {KeyCodes::Error, KeyCodes::Error}};
-
-    InputService& m_inputService;
 };

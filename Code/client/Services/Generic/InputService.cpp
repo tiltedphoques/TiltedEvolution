@@ -458,12 +458,12 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     return 0;
 }
 
-bool InputService::SetUIKey(const RebindService::Key& acKey) noexcept
+bool InputService::SetUIKey(std::shared_ptr<RebindService::Key> acKey) noexcept
 {
-    if (acKey.first.empty() || acKey.second.diKeyCode == -1 || acKey.second.vkKeyCode == -1)
+    if (acKey->first.empty() || acKey->second.diKeyCode == -1 || acKey->second.vkKeyCode == -1)
         return false;
     
-    m_pUiKey = acKey;
+    m_pUiKey = *acKey;
     return true;
 }
 

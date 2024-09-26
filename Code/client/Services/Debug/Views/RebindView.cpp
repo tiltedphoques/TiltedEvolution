@@ -13,19 +13,18 @@ void DebugService::DrawRebindView()
     auto& inputService = World::Get().GetInputService();
     auto& rebindService = World::Get().GetRebindService();
     auto uiKey = inputService.GetUIKey();
-    static bool s_bindingActive = false;
 
     ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Rebind");
 
     if (ImGui::CollapsingHeader("UI"))
     {
-        if (ImGui::Button("Open/Close", ImVec2(100, 30)) || s_bindingActive)
+        if (ImGui::Button("Open/Close", ImVec2(100, 30)) || m_rebindActive)
         {
             ImGui::SameLine(0);
-            s_bindingActive = true;
+            m_rebindActive = true;
 
-            if (s_bindingActive)
+            if (m_rebindActive)
                 ImGui::Text("Press a key...");
             else
                 ImGui::Text(uiKey.first.c_str());
@@ -36,16 +35,19 @@ void DebugService::DrawRebindView()
                 if (GetAsyncKeyState(key) & 0x8000)
                 {
                     if (key == VK_ESCAPE || key == VK_LBUTTON || key == VK_RBUTTON)
-                        break;
-
-                    auto& newKey = rebindService.GetKeyFromVKKeyCode(key);
-
-                    if (!newKey.first.empty())
                     {
-                        s_bindingActive = false;
-                        uiKey = newKey;
+                        m_rebindActive = false;
+                        break;
+                    }
 
-                        if(rebindService.SetUIKey(uiKey))
+                    auto newKey = rebindService.GetKeyFromVKKeyCode(key);
+                    
+                    if (!newKey->first.empty())
+                    {
+                        m_rebindActive = false;
+                            uiKey = *newKey;
+
+                        if(rebindService.SetUIKey(std::move(newKey)))
                         {
                             TiltedPhoques::DInputHook::Get().SetToggleKeys({DIK_RCONTROL, static_cast<unsigned>(uiKey.second.diKeyCode)});
                             break;

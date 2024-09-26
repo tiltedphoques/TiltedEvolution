@@ -81,6 +81,8 @@ private:
     String SubtitleText = "";
     uint32_t TopicID = 0;
 
+    bool m_rebindActive = false;
+
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;
     entt::scoped_connection m_dialogueConnection;
