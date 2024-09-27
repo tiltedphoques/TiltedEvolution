@@ -88,3 +88,5 @@ distrib_releasedbg/
 new_addresses.txt
 
 packaged/*
+
+makefile

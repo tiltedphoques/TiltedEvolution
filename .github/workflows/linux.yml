@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
         arch: [x64]
         mode: [debug]
 
@@ -25,41 +25,16 @@ jobs:
         git submodule sync --recursive
         git submodule update --init --force --recursive --depth=1
 
-    # Install dependencies
-    - name: Update apt repositories
-      run: sudo apt-get update
-      
-    - name: Install GCC12
-      shell: bash
-      run:  |
-          sudo apt update
-          sudo apt install gcc-12 g++-12
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 110 --slave /usr/bin/g++ g++ /usr/bin/g++-12 --slave /usr/bin/gcov gcov /usr/bin/gcov-12
-          
-    # Install xmake
-    - name: Setup xmake
-      uses: xmake-io/github-action-setup-xmake@v1
+    - name: Setup development environment with nix
+      uses: cachix/install-nix-action@v27
       with:
-        xmake-version: '2.9.3'
+        github_access_token: ${{ secrets.GH_TOKEN }}
 
-    # Update xmake repository (in order to have the file that will be cached)
-    - name: Update xmake repository
-      run: xmake repo --update
+    - run: nix flake check
 
-    # Setup compilation mode and install project dependencies
-    - name: Configure xmake and install dependencies
-      run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes
+    # Kickoff install in its own step - it will be cached anyway
+    - name: Fetch build tools
+      run: nix develop
 
-    # Build the game
     - name: Build
-      run: xmake
-    
-    # Create install
-    #- name: Install
-    # run: xmake install -o packaged
-
-    # Upload artifacts
-    #- uses: actions/upload-artifact@v2
-    #  with:
-    #    name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}
-    #    path: packaged/bin/**
+      run: nix develop --command bash -c 'xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes && xmake'
