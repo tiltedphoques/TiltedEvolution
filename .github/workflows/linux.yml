@@ -18,7 +18,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'ci skip')"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Checkout submodules
       run: |
@@ -28,7 +28,7 @@ jobs:
     # Install dependencies
     - name: Update apt repositories
       run: sudo apt-get update
-          
+
     # Install xmake
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
@@ -40,13 +40,15 @@ jobs:
       run: xmake repo --update
 
     # Setup compilation mode and install project dependencies
+    # (continue-on-error + timeout is a temporary solution until sentry-native is fixed; shouldn't affect the building step)
     - name: Configure xmake and install dependencies
-      run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes
+      continue-on-error: true
+      run: timeout 15m xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes
 
-    # Build the game
+    # Build the server
     - name: Build
-      run: xmake
-    
+      run: xmake -y
+
     # Create install
     #- name: Install
     # run: xmake install -o packaged
