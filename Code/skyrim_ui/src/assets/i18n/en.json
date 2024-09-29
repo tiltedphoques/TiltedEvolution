@@ -3,7 +3,9 @@
     "CHAT": {
       "SEND": "Send",
       "MESSAGE": "Message",
-      "MESSAGE_TOO_LONG": "You cannot send a message longer than {{chatMessageLengthLimit}} characters."
+      "MESSAGE_TOO_LONG": "You cannot send a message longer than {{chatMessageLengthLimit}} characters.",
+      "SET_TIME_ARGUMENT_COUNT": "Wrong arguments, usage: /settime HH MM, example: /settime 15 32.",
+      "SET_TIME_INVALID_ARGUMENTS": "The hours must be between 0 and 23, and the minutes between 0 and 59."
     },
     "CONNECT": {
       "INFO": {
@@ -148,7 +150,8 @@
     },
     "COMMANDS": {
       "AVAILABLE_COMMANDS": "Available chat commands: {{cmds}}",
-      "COMMAND_NOT_FOUND": "'{{cmd}}' is not recognized as a command."
+      "COMMAND_NOT_FOUND": "'{{cmd}}' is not a recognized command.",
+      "NOT_ADMIN": "You must be an admin to use that command."
     },
     "GROUP": {
       "LEVEL_UP": "{{name}} has reached level {{level}}.",

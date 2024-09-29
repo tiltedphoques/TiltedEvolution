@@ -30,7 +30,7 @@ jobs:
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
       with:
-        xmake-version: '2.9.2'
+        xmake-version: '2.9.5'
 
     # Install node
     #- name: Setup nodejs

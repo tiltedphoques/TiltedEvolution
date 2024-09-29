@@ -31,6 +31,17 @@ bool MagicItem::IsBuffSpell() const noexcept
     }
 }
 
+bool MagicItem::IsBoundWeaponSpell() noexcept
+{
+    for (EffectItem* pEffect : listOfEffects)
+    {
+        if (pEffect->pEffectSetting && pEffect->pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kBoundWeapon)
+            return true;
+    }
+
+    return false;
+}
+
 EffectItem* MagicItem::GetEffect(const uint32_t aEffectId) noexcept
 {
     for (EffectItem* pEffect : listOfEffects)

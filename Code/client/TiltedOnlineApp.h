@@ -1,6 +1,7 @@
 #pragma once
 
 #include <BranchInfo.h>
+#include <d3d11.h>
 
 #if (!IS_MASTER)
 #include "CrashHandler.h"
@@ -35,9 +36,11 @@ protected:
     void UninstallHooks();
 
 private:
+    void ApplyNvidiaFix() noexcept;
 #if (!IS_MASTER)
     CrashHandler m_crashHandler;
 #else
     //ScopedCrashHandler m_crashHandler;
 #endif
+    ID3D11Device* m_pDevice = nullptr;
 };

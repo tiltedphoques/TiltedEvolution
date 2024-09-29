@@ -47,6 +47,15 @@ struct TESObjectREFR : TESForm
         CHANGE_REFR_EXTRA_GAME_ONLY = 1u << 31,
     };
 
+    enum OpenState : uint8_t
+    {
+        kNone = 0,
+        kOpen,
+        kOpening,
+        kClosed,
+        kClosing,
+    };
+
     static TESObjectREFR* GetByHandle(uint32_t aHandle) noexcept;
     static uint32_t* GetNullHandle() noexcept;
 
@@ -188,6 +197,7 @@ struct TESObjectREFR : TESForm
 
     const float GetHeight() noexcept;
     void EnableImpl() noexcept;
+    OpenState GetOpenState() noexcept;
 
     Inventory GetInventory() const noexcept;
     Inventory GetInventory(std::function<bool(TESForm&)> aFilter) const noexcept;

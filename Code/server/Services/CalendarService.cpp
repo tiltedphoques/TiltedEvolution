@@ -10,7 +10,8 @@
 
 #include "Game/Player.h"
 
-CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher) : m_world(aWorld)
+CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher)
+    : m_world(aWorld)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CalendarService::OnUpdate>(this);
     m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&CalendarService::OnPlayerJoin>(this);
@@ -74,6 +75,8 @@ bool CalendarService::SetTime(int aHours, int aMinutes, float aScale) noexcept
         m_dateTime.m_timeModel.Time = static_cast<float>(aHours) + minutes;
 
         SendTimeResync();
+
+        GameServer::Get()->GetWorld().GetScriptService().HandleSetTime(aHours, aMinutes, aScale);
         return true;
     }
     return false;
