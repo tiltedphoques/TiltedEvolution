@@ -7,61 +7,68 @@
 
 #include <imgui.h>
 
+const TiltedPhoques::String& BindKey(const TiltedPhoques::String& aKeyName, bool& aBindActive)
+{
+    auto& rebindService = World::Get().GetRebindService();
+    TiltedPhoques::String keyName = aKeyName;
+
+    ImGui::SameLine(0);
+    aBindActive = true;
+
+    for (int key = 255; key > 1; key--)
+    {
+        if (GetAsyncKeyState(key) & 0x8000)
+        {
+            if (key == VK_ESCAPE || key == VK_LBUTTON || key == VK_RBUTTON)
+            {
+                aBindActive = false;
+                break;
+            }
+
+            aBindActive = false;
+            rebindService.BindNewKey(key);
+
+            break;
+        }
+    }
+
+    if (aBindActive)
+    {
+        ImGui::Text("Press a key...");
+    }
+    else
+    {
+        ImGui::Text(keyName.c_str());
+    }
+
+    return keyName;
+}
+
 void DebugService::DrawRebindView()
 {
 #if TP_SKYRIM64
-    auto& inputService = World::Get().GetInputService();
-    auto& rebindService = World::Get().GetRebindService();
-    auto uiKey = inputService.GetUIKey();
-
     ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);
     ImGui::Begin("Rebind");
 
+
     if (ImGui::CollapsingHeader("UI"))
     {
+        const auto& uiKey = World::Get().GetInputService().GetUIKey();
+        TiltedPhoques::String keyName = uiKey.first;
+        spdlog::info("{}", uiKey.first);
+
         if (ImGui::Button("Open/Close", ImVec2(100, 30)) || m_rebindActive)
         {
-            ImGui::SameLine(0);
             m_rebindActive = true;
 
-            if (m_rebindActive)
-                ImGui::Text("Press a key...");
-            else
-                ImGui::Text(uiKey.first.c_str());
-
-            // Loop through all virtual keys to find which key is pressed
-            for (int key = 1; key < 256; key++)
-            {
-                if (GetAsyncKeyState(key) & 0x8000)
-                {
-                    if (key == VK_ESCAPE || key == VK_LBUTTON || key == VK_RBUTTON)
-                    {
-                        m_rebindActive = false;
-                        break;
-                    }
-
-                    auto newKey = rebindService.GetKeyFromVKKeyCode(key);
-                    
-                    if (newKey != nullptr)
-                    {
-                        m_rebindActive = false;
-                            uiKey = *newKey;
-
-                        if(rebindService.SetUIKey(std::move(newKey)))
-                        {
-                            TiltedPhoques::DInputHook::Get().SetToggleKeys({DIK_RCONTROL, static_cast<unsigned>(uiKey.second.diKeyCode)});
-                            break;
-                        }
-
-                        spdlog::warn("{} key was not found", uiKey.first);
-                    }
-                }
-            }
+            keyName = BindKey(uiKey.first, m_rebindActive);
         }
         else
         {
             ImGui::SameLine(0);
-            ImGui::Text("%s", uiKey.first.c_str());
+            ImGui::Text("%s", keyName.c_str());
+
+            m_rebindActive = false;
         }
     }
 

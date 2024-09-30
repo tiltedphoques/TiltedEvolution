@@ -13,7 +13,7 @@ struct InputService
     ~InputService() noexcept;
 
     // Use this function to get the player's current UI key
-    RebindService::Key GetUIKey() const noexcept { return m_pUiKey; }
+    const RebindService::Key& GetUIKey() const noexcept { return m_pUiKey; }
     bool SetUIKey(std::shared_ptr<RebindService::Key> apKey) noexcept;
 
     static LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
