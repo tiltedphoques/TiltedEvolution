@@ -53,28 +53,26 @@ struct KeybindService
     const Key& GetDebugKey() const noexcept { return m_debugKey; }
     bool SetDebugKey(std::shared_ptr<KeybindService::Key> apKey) noexcept;
     void BindNewKey(int32_t aKeyCode) noexcept;
+
     void OnDirectInputKeyPress(unsigned long aKeyCode);
-    wchar_t ConvertToUnicode(int32_t aKeyCode) noexcept;
 
-    // Config
     void SetupConfig() noexcept;
+    const Config& GetConfig() const noexcept { return config; }
 
-    Config config{};
 
 private:
+    wchar_t ConvertToUnicode(int32_t aKeyCode) noexcept;
+
     InputService& m_inputService;
     TiltedPhoques::DInputHook* m_inputHook;
 
-    unsigned long m_lastKeyPressed{0};
     int32_t m_keyCode{0};
-    bool m_newKeyPressed{false};
-    bool m_bindActive{false};
 
-    // Flag for checking if key is being rebound during OnDirectInputKeyPress
     bool m_keybindConfirmed{false};
-    bool m_convertedToUnicode{false};
 
     size_t m_keyPressConnection;
+
+    Config config{};
 
     // Keys not actually "set" until they are pressed from both UI and ingame
     Key m_uiKey{};

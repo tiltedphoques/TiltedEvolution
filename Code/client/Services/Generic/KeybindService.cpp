@@ -6,8 +6,7 @@ KeybindService::KeybindService(InputService& aInputService) : m_inputService(aIn
 {
     m_inputHook = &TiltedPhoques::DInputHook::Get();
 
-    m_keyPressConnection =
-        m_inputHook->OnKeyPress.Connect(std::bind(&KeybindService::OnDirectInputKeyPress, this, std::placeholders::_1));
+    m_keyPressConnection = m_inputHook->OnKeyPress.Connect(std::bind(&KeybindService::OnDirectInputKeyPress, this, std::placeholders::_1));
 
     SetupConfig();
 }
@@ -62,21 +61,17 @@ bool KeybindService::SetDebugKey(std::shared_ptr<KeybindService::Key> apKey) noe
 
 void KeybindService::BindNewKey(int32_t aKeyCode) noexcept
 {
-    m_keyPressConnection =
-        m_inputHook->OnKeyPress.Connect(std::bind(&KeybindService::OnDirectInputKeyPress, this, std::placeholders::_1));
+    m_keyPressConnection = m_inputHook->OnKeyPress.Connect(std::bind(&KeybindService::OnDirectInputKeyPress, this, std::placeholders::_1));
 
     m_keybindConfirmed = false;
     m_keyCode = aKeyCode;
 
     TiltedPhoques::String newName = {static_cast<char>(toupper(ConvertToUnicode(aKeyCode)))};
-    m_convertedToUnicode = true;
 
     // Still inserts a null terminator if not found :/
     if (newName.starts_with('\0') && newName.length() == 1)
     {
-        auto modKey = std::ranges::find_if(m_modifiedKeys, [&](const std::pair<Key::first_type, int32_t>& acKey) {
-            return acKey.second == m_keyCode;
-        });
+        auto modKey = std::ranges::find_if(m_modifiedKeys, [&](const std::pair<Key::first_type, int32_t>& acKey) { return acKey.second == m_keyCode; });
 
         if (modKey != m_modifiedKeys.end())
         {
@@ -92,9 +87,6 @@ void KeybindService::BindNewKey(int32_t aKeyCode) noexcept
 
 void KeybindService::OnDirectInputKeyPress(unsigned long aKeyCode)
 {
-    m_newKeyPressed = true;
-    m_lastKeyPressed = aKeyCode;
-
     if (!m_keybindConfirmed || m_keyCode != 0)
     {
         m_keybindConfirmed = true;
