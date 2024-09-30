@@ -1,7 +1,5 @@
-﻿#include "DInputHook.hpp"
-
-#include <Services/DebugService.h>
-#include <Services/RebindService.h>
+﻿#include <Services/DebugService.h>
+#include <Services/KeybindService.h>
 
 #include "World.h"
 
@@ -9,7 +7,7 @@
 
 const TiltedPhoques::String& BindKey(const TiltedPhoques::String& aKeyName, bool& aBindActive)
 {
-    auto& rebindService = World::Get().GetRebindService();
+    auto& rebindService = World::Get().GetKeybindService();
     TiltedPhoques::String keyName = aKeyName;
 
     ImGui::SameLine(0);
@@ -44,7 +42,7 @@ const TiltedPhoques::String& BindKey(const TiltedPhoques::String& aKeyName, bool
     return keyName;
 }
 
-void DebugService::DrawRebindView()
+void DebugService::DrawKeybindView()
 {
 #if TP_SKYRIM64
     ImGui::SetNextWindowSize(ImVec2(250, 440), ImGuiCond_FirstUseEver);

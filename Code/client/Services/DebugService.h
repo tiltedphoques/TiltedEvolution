@@ -60,7 +60,7 @@ private:
     void DrawCombatView();
     void DrawCalendarView();
     void DrawDragonSpawnerView();
-    void DrawRebindView();
+    void DrawKeybindView();
 
 public:
     bool m_showDebugStuff = false;

@@ -12,11 +12,11 @@ namespace fs = std::filesystem;
 /**
  * @brief Handles keybinds
  *
- * @details Loads a config when constructing, a key name will be set. The key will not actually be set until it is pressed.
- * This is due to needing separate VirtualKey and DirectInput keycodes that can only be done after being pressed. The service only
+ * @details Loads a config during construction, a key name will be set. The key will not actually be set until it is pressed.
+ * This is due to needing separate VirtualKey and DirectInput keycodes that can only be determined after being pressed. The service only
  * connects to the DInputHook OnKeyPress Signal when it is checking for keycodes, disconnected otherwise.
  */
-struct RebindService
+struct KeybindService
 {
     struct Config
     {
@@ -44,14 +44,14 @@ struct RebindService
 
     using Key = std::pair<TiltedPhoques::String, KeyCodes>;
 
-    RebindService(InputService& aInputService);
-    ~RebindService() = default;
+    KeybindService(InputService& aInputService);
+    ~KeybindService() = default;
 
-    TP_NOCOPYMOVE(RebindService);
+    TP_NOCOPYMOVE(KeybindService);
 
-    const Key& GetUIKey() const noexcept { return m_pUiKey; }
-    const Key& GetDebugKey() const noexcept { return m_pDebugKey; }
-    bool SetDebugKey(std::shared_ptr<RebindService::Key> apKey) noexcept;
+    const Key& GetUIKey() const noexcept { return m_uiKey; }
+    const Key& GetDebugKey() const noexcept { return m_debugKey; }
+    bool SetDebugKey(std::shared_ptr<KeybindService::Key> apKey) noexcept;
     void BindNewKey(int32_t aKeyCode) noexcept;
     void OnDirectInputKeyPress(unsigned long aKeyCode);
     wchar_t ConvertToUnicode(int32_t aKeyCode) noexcept;
@@ -69,15 +69,16 @@ private:
     int32_t m_keyCode{0};
     bool m_newKeyPressed{false};
     bool m_bindActive{false};
+
     // Flag for checking if key is being rebound during OnDirectInputKeyPress
     bool m_keybindConfirmed{false};
     bool m_convertedToUnicode{false};
 
     size_t m_keyPressConnection;
 
-    // Keys not actually "set" until pressed
-    Key m_pUiKey{};
-    Key m_pDebugKey{};
+    // Keys not actually "set" until they are pressed from both UI and ingame
+    Key m_uiKey{};
+    Key m_debugKey{};
 
     // Keys that have custom names
     TiltedPhoques::Map<Key::first_type, int32_t> m_modifiedKeys

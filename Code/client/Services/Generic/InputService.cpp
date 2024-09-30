@@ -458,7 +458,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     return 0;
 }
 
-bool InputService::SetUIKey(std::shared_ptr<RebindService::Key> apKey) noexcept
+bool InputService::SetUIKey(std::shared_ptr<KeybindService::Key> apKey) noexcept
 {
     m_pUiKey = *apKey;
     return true;
