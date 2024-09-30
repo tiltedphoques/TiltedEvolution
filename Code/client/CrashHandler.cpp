@@ -30,9 +30,7 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
     const std::lock_guard lock{singleThreaded};
 
     // Check for severe, not continuable and not software-originated exception
-    if (pExceptionInfo->ExceptionRecord->ExceptionCode >= 0x80000000 &&
-        pExceptionInfo->ExceptionRecord->ExceptionCode != 0xE06D7363 && // Sigh. C++ exceptions forgot the SOFTWARE_ORIGINATE flag.
-        (pExceptionInfo->ExceptionRecord->ExceptionFlags & EXCEPTION_SOFTWARE_ORIGINATE) == 0 && 
+    if (pExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION &&
         alreadyCrashed++ == 0)
     {
         spdlog::critical (__FUNCTION__ ": crash occurred!"); 
