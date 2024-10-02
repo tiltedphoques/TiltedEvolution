@@ -9,11 +9,11 @@ struct BehaviorVar
     {
         uint64_t origHash;
         uint64_t newHash;
-        std::string signatureVar;
-        std::string creatureName;
-        std::vector<std::string> syncBooleanVar;
-        std::vector<std::string> syncFloatVar;
-        std::vector<std::string> syncIntegerVar;
+        TiltedPhoques::String signatureVar;
+        TiltedPhoques::String creatureName;
+        TiltedPhoques::Vector<TiltedPhoques::String> syncBooleanVar;
+        TiltedPhoques::Vector<TiltedPhoques::String> syncFloatVar;
+        TiltedPhoques::Vector<TiltedPhoques::String> syncIntegerVar;
         bool operator==(const uint64_t& acRHS) const
         {
             return origHash == acRHS;
@@ -22,8 +22,8 @@ struct BehaviorVar
 
     static BehaviorVar* Get();
     const AnimationGraphDescriptor* Patch(BSAnimationGraphManager* apManager, Actor* apActor);
-    boolean failListed(const uint64_t acHash);
-    void failList(const uint64_t acHash);
+    bool FailListed(const uint64_t acHash);
+    void FailList(const uint64_t acHash);
 
     void Init();
     void Debug();
@@ -32,25 +32,26 @@ struct BehaviorVar
     static BehaviorVar* single;
     uint64_t invocations = 0;
 
-    void seedAnimationVariables(
+    void SeedAnimationVariables(
         const uint64_t acHash, 
         const AnimationGraphDescriptor* acpDescriptor, 
-        const std::map<const std::string, const uint32_t>& acReversemap,
-        std::set<uint32_t>& aBoolVars, 
-        std::set<uint32_t>& aFloatVars,
-        std::set<uint32_t>& aIntVars);
+        TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acReverseMap, 
+        TiltedPhoques::Set<uint32_t>& aBoolVars, 
+        TiltedPhoques::Set<uint32_t>& aFloatVars, 
+        TiltedPhoques::Set<uint32_t>& aIntVars);
 
-    const std::vector<std::string> tokenizeBehaviorSig(const std::string acSignature) const;
-    const AnimationGraphDescriptor* constructModdedDescriptor(
-        const uint64_t acNewHash, const Replacer& acReplacer,
-        std::map<const std::string, const uint32_t>& acReverseMap);
+    const TiltedPhoques::Vector<TiltedPhoques::String> TokenizeBehaviorSig(const TiltedPhoques::String& acSignature) const;
+    const AnimationGraphDescriptor* ConstructModdedDescriptor(
+        const uint64_t acNewHash, 
+        const Replacer& acReplacer, 
+        TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acReverseMap);
 
-    std::vector<std::filesystem::path> loadDirs(const std::filesystem::path& acPATH);
-    Replacer* loadReplacerFromDir(const std::filesystem::path acDir);
-    std::vector<uint64_t> signatureMatches(const uint64_t acHash, const std::string acSignature) const;
+    TiltedPhoques::Vector<std::filesystem::path> LoadDirs(const std::filesystem::path& acPath);
+    Replacer* LoadReplacerFromDir(const std::filesystem::path& acDir);
+    TiltedPhoques::Vector<uint64_t> SignatureMatches(const uint64_t acHash, const TiltedPhoques::String& acSignature) const;
 
-    std::vector<Replacer> behaviorPool; // Pool for loaded behaviours
-    std::map<uint64_t, std::chrono::steady_clock::time_point> failedBehaviors;
+    TiltedPhoques::Vector<Replacer> behaviorPool; // Pool for loaded behaviors
+    TiltedPhoques::Map<uint64_t, std::chrono::steady_clock::time_point> failedBehaviors;
 };
 
 extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* apManager, Actor* apActor);

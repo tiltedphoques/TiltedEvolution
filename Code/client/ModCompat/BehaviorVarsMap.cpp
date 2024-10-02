@@ -2,31 +2,31 @@
 #include "BehaviorVarsMap.h"
 
 
-uint32_t BehaviorVarsMap::find(const uint64_t acKey, const std::string acName)
+const uint32_t BehaviorVarsMap::find(const uint64_t acBehaviorVarsKey, const TiltedPhoques::String acName)
 {
-    auto map = m_map.find(acKey);
+    auto map = m_map.find(acBehaviorVarsKey);
 
     if (map != m_map.end())
     {
-        auto map2 = map->second.m_namemap.find(acName);
+        auto map2 = map->second.m_nameMap.find(acName);
 
-        if (map2 != map->second.m_namemap.end())
+        if (map2 != map->second.m_nameMap.end())
             return map2->second;
     }
 
     return UINT32_MAX;
 }
 
-std::string BehaviorVarsMap::find(const uint64_t acKey, const uint32_t acValue)
+const TiltedPhoques::String BehaviorVarsMap::find(const uint64_t acBehaviorVarsKey, const uint32_t acValue)
 {
-    constexpr std::string empty;
+    const TiltedPhoques::String empty;
     
-    auto map = m_map.find(acKey);
+    auto map = m_map.find(acBehaviorVarsKey);
     if (map != m_map.end())
     {
-        auto map2 = map->second.m_valuemap.find(acValue);
+        auto map2 = map->second.m_valueMap.find(acValue);
 
-        if (map2 != map->second.m_valuemap.end())
+        if (map2 != map->second.m_valueMap.end())
             return map2->second;
     }
 

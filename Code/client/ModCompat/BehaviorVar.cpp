@@ -68,34 +68,35 @@ const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* apMana
 // We'd like to be able to handle other vars for which this may be the case.
 namespace
 {
-std::string toLowerCase(const std::string& acStr)
+TiltedPhoques::String ToLowerCase(const TiltedPhoques::String& acStr)
 {
-    std::string lowerCaseStr(acStr);
+    TiltedPhoques::String lowerCaseStr(acStr);
     std::transform(acStr.begin(), acStr.end(), lowerCaseStr.begin(),
                    [](unsigned char c) { return std::tolower(c); });
     return lowerCaseStr;
 }
 
-// Converts the keys of a map (which are const std::string) to lowercase.
+// Converts the keys of a map (which are TiltedPhoques::String) to lowercase.
 // This is our "Plan C" if a vanilla var isn't found to make sure it isn't just a case-sensitivity issue.
-void lowerCaseKeys(const std::map<const std::string, const uint32_t>& acMap,
-                   std::map<const std::string, const uint32_t>& aLowerCaseMap)
+void LowerCaseKeys(const TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acMap, TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& aLowerCaseMap)
 {
     for (const auto& item : acMap)
-        aLowerCaseMap.insert({toLowerCase(item.first), item.second});
+        aLowerCaseMap.insert({ToLowerCase(item.first), item.second});
 }
 
 // Process a set of variables, adding them to the aVariableSet
-void processVariableSet(const std::map<const std::string, const uint32_t>& acReverseMap,
-                        std::set<uint32_t>& aVariableSet, const std::vector<std::string>& acVariables,
-                        spdlog::level::level_enum aLogLevel)
+void ProcessVariableSet(
+    TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acReverseMap, 
+    TiltedPhoques::Set<uint32_t>& aVariableSet, 
+    const TiltedPhoques::Vector<TiltedPhoques::String>& acVariables,
+    spdlog::level::level_enum aLogLevel)
 {
     // Not filled until needed, which should be never.
-    std::map<const std::string, const uint32_t> lowerCaseMap;
+    TiltedPhoques::Map<TiltedPhoques::String, uint32_t> lowerCaseMap;
 
     for (const auto& item : acVariables)
     {
-        std::string foundForm = item;
+        auto foundForm = item;
         auto found = acReverseMap.find(item);
         if (found == acReverseMap.end())
         {
@@ -107,7 +108,7 @@ void processVariableSet(const std::map<const std::string, const uint32_t>& acRev
         if (found == acReverseMap.end())
         {
             // Check lower case.
-            foundForm = toLowerCase(item);
+            foundForm = ToLowerCase(item);
             found = acReverseMap.find(foundForm);
         }
 
@@ -115,7 +116,7 @@ void processVariableSet(const std::map<const std::string, const uint32_t>& acRev
         {
             // Check case-independent
             if (lowerCaseMap.empty())
-                lowerCaseKeys(acReverseMap, lowerCaseMap);
+                LowerCaseKeys(acReverseMap, lowerCaseMap);
             found = lowerCaseMap.find(foundForm);
         }
 
@@ -143,23 +144,23 @@ void processVariableSet(const std::map<const std::string, const uint32_t>& acRev
 // The machine-generated table hack to do this can be removed with STR-devs'
 // permission to also embed the string information in the Code\encoding\structs files.
 //
-void BehaviorVar::seedAnimationVariables(
+void BehaviorVar::SeedAnimationVariables(
     const uint64_t acHash, 
     const AnimationGraphDescriptor* acpDescriptor,
-    const std::map<const std::string, const uint32_t>& acReversemap,
-    std::set<uint32_t>& aBoolVars, 
-    std::set<uint32_t>& aFloatVars,
-    std::set<uint32_t>& aIntVars)
+    TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acReverseMap, 
+    TiltedPhoques::Set<uint32_t>& aBoolVars, 
+    TiltedPhoques::Set<uint32_t>& aFloatVars, 
+    TiltedPhoques::Set<uint32_t>& aIntVars)
 {
     auto& origVars = BehaviorVarsMap::getInstance();
 
     // Prepare lists of variables to process
-    std::vector<std::string> boolVarNames;
-    std::vector<std::string> floatVarNames;
-    std::vector<std::string> intVarNames;
+    TiltedPhoques::Vector<TiltedPhoques::String> boolVarNames;
+    TiltedPhoques::Vector<TiltedPhoques::String> floatVarNames;
+    TiltedPhoques::Vector<TiltedPhoques::String> intVarNames;
 
     // Populate lists from the original descriptor
-    std::string strValue;
+    TiltedPhoques::String strValue;
     for (auto& item : acpDescriptor->BooleanLookUpTable)
         if ((strValue = origVars.find(acHash, item)).empty())
             spdlog::error(__FUNCTION__ ": unable to find string for original BooleanVar {}", item);
@@ -179,9 +180,9 @@ void BehaviorVar::seedAnimationVariables(
             intVarNames.push_back(strValue);
 
     // Process each set of variables
-   processVariableSet(acReversemap, aBoolVars, boolVarNames, spdlog::level::level_enum::err);
-   processVariableSet(acReversemap, aFloatVars, floatVarNames, spdlog::level::level_enum::err);
-   processVariableSet(acReversemap, aIntVars, intVarNames, spdlog::level::level_enum::err);
+   ProcessVariableSet(acReverseMap, aBoolVars, boolVarNames, spdlog::level::level_enum::err);
+   ProcessVariableSet(acReverseMap, aFloatVars, floatVarNames, spdlog::level::level_enum::err);
+   ProcessVariableSet(acReverseMap, aIntVars, intVarNames, spdlog::level::level_enum::err);
 }
 
 // Syntax for a signature is [!]sig1[,[!]sig2]... Must be at least one. Each signature var possibly negated
@@ -189,10 +190,10 @@ void BehaviorVar::seedAnimationVariables(
 // Requires that whitespace has already been deleted (which it was, when directories were loaded).
 // Tokenize on ','
 //
-const std::vector<std::string> BehaviorVar::tokenizeBehaviorSig(const std::string acSignature) const
+const TiltedPhoques::Vector<TiltedPhoques::String> BehaviorVar::TokenizeBehaviorSig(const TiltedPhoques::String& acSignature) const
 {
-    const static std::string notVal{"!"};
-    std::vector<std::string> retVal;
+    const static TiltedPhoques::String notVal{"!"};
+    TiltedPhoques::Vector<TiltedPhoques::String> retVal;
     size_t commaPos;
     size_t offset = 0;
 
@@ -212,16 +213,12 @@ const std::vector<std::string> BehaviorVar::tokenizeBehaviorSig(const std::strin
 
     return retVal;
 }
-
-const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uint64_t acNewHash, const Replacer& acReplacer, std::map<const std::string, const uint32_t>& acReverseMap)
+const AnimationGraphDescriptor* BehaviorVar::ConstructModdedDescriptor(const uint64_t acNewHash, const Replacer& acReplacer, TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acReverseMap)
 {
     // Build the set of BehaviorVar strings as sets (not vectors) to eliminate dups
-    // Also, we want the set sorted, so these have to be std::sets. TiltedPhoques::Set
-    // uses a hash map instead of a sorted tree, and I don't want to have to figure
-    // out how to override that.
-    std::set<uint32_t> boolVar;
-    std::set<uint32_t> floatVar;
-    std::set<uint32_t> intVar;
+    TiltedPhoques::Set<uint32_t> boolVar;
+    TiltedPhoques::Set<uint32_t> floatVar;
+    TiltedPhoques::Set<uint32_t> intVar; 
 
     // If we can find the original behavior that is being modded,
     // get the descriptor and seed the behavior vars with it.
@@ -230,7 +227,7 @@ const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uin
     const AnimationGraphDescriptor* pTmpGraph = nullptr;
     if (acReplacer.origHash && (pTmpGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(acReplacer.origHash)))
     {
-        seedAnimationVariables(acReplacer.origHash, pTmpGraph, acReverseMap, boolVar, floatVar, intVar);
+        SeedAnimationVariables(acReplacer.origHash, pTmpGraph, acReverseMap, boolVar, floatVar, intVar);
         spdlog::info(__FUNCTION__ ": Original game descriptor with hash {} has {} boolean, {} float, {} integer behavior vars",
                      acReplacer.origHash, boolVar.size(), floatVar.size(), intVar.size());
     }
@@ -286,10 +283,17 @@ const AnimationGraphDescriptor* BehaviorVar::constructModdedDescriptor(const uin
                      intVar.size(),
                      acReplacer.syncIntegerVar.size());
 
+    // We need the sets sorted, and TiltedPhoques::Set is not. Copying to an std::set
+    // isn't the most efficient approach, but it is simple and doesn't happen often enough
+    // to worry about. And doing it here isolates/minimizes use of std::set.
+    std::set<uint32_t> boolVarSorted(boolVar.begin(), boolVar.end());
+    std::set<uint32_t> floatVarSorted(floatVar.begin(), floatVar.end());
+    std::set<uint32_t> intVarSorted(intVar.begin(), intVar.end());
+
     // Reshape the (sorted, unique) sets to vectors
-    TiltedPhoques::Vector<uint32_t> boolVector(boolVar.begin(), boolVar.end());
-    TiltedPhoques::Vector<uint32_t> floatVector(floatVar.begin(), floatVar.end());
-    TiltedPhoques::Vector<uint32_t> intVector(intVar.begin(), intVar.end());
+    TiltedPhoques::Vector<uint32_t> boolVector(boolVarSorted.begin(), boolVarSorted.end());
+    TiltedPhoques::Vector<uint32_t> floatVector(floatVarSorted.begin(), floatVarSorted.end());
+    TiltedPhoques::Vector<uint32_t> intVector(intVarSorted.begin(), intVarSorted.end());
 
     // Construct a new descriptor
     auto panimGraphDescriptor = new AnimationGraphDescriptor();
@@ -350,7 +354,7 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
     // modded behavior. Only failListed for minutes to occasionally get log messages
     // so we can think about fixing it. Or the case of dynamic behavior and behavior
     // signature changes that might work later (yes, mods like that exist)
-    if (failListed(hash))
+    if (FailListed(hash))
         return nullptr;
 
     // Up to here the routine is pretty cheap, and WILL be called a bunch of times
@@ -365,12 +369,12 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
 
     // Get all animation variables for this actor, then create a acReverseMap to go from strings to animation enum.
     auto pDumpVar = apManager->DumpAnimationVariables(false);
-    std::map<const std::string, const uint32_t> reversemap;
+    TiltedPhoques::Map< TiltedPhoques::String, uint32_t> reverseMap;
     spdlog::info("Known behavior variables for formID {:x}:", hexFormID);
     for (auto& item : pDumpVar)
     {
         spdlog::info("    {}:{}", item.first, item.second);
-        reversemap.insert({static_cast<const std::string>(item.second), item.first});
+        reverseMap.insert({item.second, item.first});
     }
 
     // See if these animation variables include a signature for one of the replacers.
@@ -389,15 +393,15 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
 
     for (size_t i = 0; i < behaviorPool.size(); i++)
     {
-        auto tokens = tokenizeBehaviorSig(behaviorPool[i].signatureVar);
+        auto tokens = TokenizeBehaviorSig(behaviorPool[i].signatureVar);
         auto found  = tokens.size() > 0;
 
         for (auto titer = tokens.begin(); found && titer < tokens.end(); titer++)
         {
             if (*titer == "!")
-                found = reversemap.find(*++titer) == reversemap.end();
+                found = reverseMap.find(*++titer) == reverseMap.end();
             else 
-                found = reversemap.find(*titer) != reversemap.end();
+                found = reverseMap.find(*titer) != reverseMap.end();
         }
         if (found)
             matchedReplacers.push_back(i);
@@ -409,7 +413,7 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
         spdlog::warn(__FUNCTION__ ": no original behavior found for behavior hash {:x} (found on formID {:x}), adding to "
                                   "fail list",
                      hash, hexFormID);
-            failList(hash);
+            FailList(hash);
             return nullptr;
 
         case 1:
@@ -419,15 +423,14 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
             spdlog::critical(__FUNCTION__ ": multiple behavior replacers have the same signature, this must be corrected:");
             for (auto& item : matchedReplacers)
                 spdlog::critical("   {}", behaviorPool[item].creatureName);
-            failList(hash);
+            FailList(hash);
             return nullptr;
 
     }
 
     auto& foundRep = behaviorPool[matchedReplacers[0]];
     spdlog::info(__FUNCTION__ ": found match, behavior hash {:x} (found on formID {:x}) has original behavior {} signature {}",
-        hash,
-                 hexFormID, foundRep.creatureName, foundRep.signatureVar); 
+                 hash, hexFormID, foundRep.creatureName, foundRep.signatureVar); 
     
     // Save the new hash for the actor. Save a copy to restore to if overwritten; this currently
     // only happens when humanoids enter beast mode, Humanoid copy is used to change back.
@@ -437,33 +440,33 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
     pExtendedActor->HumanoidGraphDescriptorHash = hash;
     pExtendedActor->UnmoddedGraphDescriptorHash = foundRep.origHash;
 
-    return constructModdedDescriptor(hash, foundRep, reversemap);
+    return ConstructModdedDescriptor(hash, foundRep, reverseMap);
 }
 
 // Check if the behavior hash is on the failed liist
-boolean BehaviorVar::failListed(uint64_t hash)
+bool BehaviorVar::FailListed(uint64_t hash)
 {
     auto iter = failedBehaviors.find(hash);
     return iter != failedBehaviors.end() && std::chrono::steady_clock::now() < iter->second;
 }
 
 //Place the behavior hash on the failed list
-void BehaviorVar::failList(uint64_t hash)
+void BehaviorVar::FailList(uint64_t hash)
 {
     failedBehaviors.insert_or_assign(hash, std::chrono::steady_clock::now() + FAILLIST_DURATION);
 }
 
 // Find all the subdirectories of behavior variables
-std::vector<std::filesystem::path> BehaviorVar::loadDirs(const std::filesystem::path& acPATH)
+TiltedPhoques::Vector<std::filesystem::path> BehaviorVar::LoadDirs(const std::filesystem::path& acPath)
 {
-    std::vector<std::filesystem::path> result;
-    for (auto& p : std::filesystem::directory_iterator(acPATH))
+    TiltedPhoques::Vector<std::filesystem::path> result;
+    for (auto& p : std::filesystem::directory_iterator(acPath))
         if (p.is_directory())
             result.push_back(p.path().string());
     return result;
 }
 
-BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::filesystem::path aDir)
+BehaviorVar::Replacer* BehaviorVar::LoadReplacerFromDir(const std::filesystem::path& aDir)
 {
     // Enumerate all files in the directory and push bools, ints and floats 
     // to their respective vectors
@@ -478,16 +481,16 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::filesystem::path aD
     // modded actor, that we can use to connect the actor to their modded behavior variables.
     // It's not actually sync'ed, just there so we can find the match. For example, currently
     // bSTRMaster is used for humanoid/Player actors, and bSTRDragon for dragon behavior.
-    std::string hashFile;
-    std::string signatureFile;
-    std::vector<std::string> floatVarsFile;
-    std::vector<std::string> intVarsFile;
-    std::vector<std::string> boolVarsFile;
+    TiltedPhoques::String hashFile;
+    TiltedPhoques::String signatureFile;
+    TiltedPhoques::Vector<TiltedPhoques::String> floatVarsFile;
+    TiltedPhoques::Vector<TiltedPhoques::String> intVarsFile;
+    TiltedPhoques::Vector<TiltedPhoques::String> boolVarsFile;
     
     for (auto& p : std::filesystem::directory_iterator(aDir))
     {
-        std::string path = p.path().string();
-        std::string base_filename = path.substr(path.find_last_of("/\\") + 1);
+        TiltedPhoques::String path(p.path().string());
+        TiltedPhoques::String base_filename = path.substr(path.find_last_of("/\\") + 1);
 
         spdlog::debug("base_path: {}", base_filename);
 
@@ -531,17 +534,21 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::filesystem::path aD
         return nullptr;
 
     // Prepare reading files
-    std::string sigVar;
-    std::string creatureName = aDir.filename().string();
-    std::vector<std::string> floatVar;
-    std::vector<std::string> intVar;
-    std::vector<std::string> boolVar;
-    std::string tempString;  // Temp string
+    TiltedPhoques::String sigVar;
+    TiltedPhoques::String creatureName(aDir.filename().string());
+    TiltedPhoques::Vector<TiltedPhoques::String> floatVar;
+    TiltedPhoques::Vector<TiltedPhoques::String> intVar;
+    TiltedPhoques::Vector<TiltedPhoques::String> boolVar;
+    TiltedPhoques::String tempString; // Temp string
 
-    std::ifstream fileSig(signatureFile);
+    // If signature file is unreadable, this directory is useless.
+    std::ifstream fileSig(signatureFile.c_str(), std::ifstream::in);
+    if (!fileSig.is_open())
+        return nullptr;     
+
     getline(fileSig, sigVar);  // grab the signature variable
     fileSig.close();
-    erase_if(sigVar, isspace); // removes any inadvertant whitespace
+    erase_if(sigVar, isspace); // removes any inadvertent whitespace
     if (sigVar.size() == 0)
         return nullptr;
     spdlog::info(__FUNCTION__ ": found {} with signature variable {}", creatureName, sigVar);
@@ -561,12 +568,15 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::filesystem::path aD
     uint64_t orgHash = 0;
     if (hashFile.size())
     {
-        std::ifstream file(hashFile);
-        getline(file, tempString);
-        file.close();
-        erase_if(tempString, isspace); // removes any inadvertant whitespace
-        orgHash = std::strtoull(tempString.c_str(), nullptr, 10);
-        spdlog::info("Replacer specifies original hash {} for {}", orgHash, creatureName);
+        std::ifstream file(hashFile.c_str(), std::ifstream::in);
+        if (file.is_open())
+        {
+            getline(file, tempString);
+            file.close();
+            erase_if(tempString, isspace); // removes any inadvertant whitespace
+            orgHash = std::strtoull(tempString.c_str(), nullptr, 10);
+            spdlog::info("Replacer specifies original hash {} for {}", orgHash, creatureName);        
+        }
     }
 
     // Build lists of variables to sync
@@ -574,48 +584,57 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::filesystem::path aD
     spdlog::debug("reading float var");
     for (auto& item : floatVarsFile)
     {
-        std::ifstream file(item);
-        while (std::getline(file, tempString))
+        std::ifstream file(item.c_str(), std::ifstream::in);
+        if (file.is_open())
         {
-            floatVar.push_back(tempString);
+            while (std::getline(file, tempString))
+            {
+                floatVar.push_back(tempString);
 
-            spdlog::debug("    " + tempString);
+                spdlog::debug("    " + tempString);
+            }
+            file.close();
         }
-        file.close();
     }
 
     // Read integer behavior variables
     spdlog::debug("reading int vars");
     for (auto& item : intVarsFile)
     {
-        std::ifstream file(item);
-        while (std::getline(file, tempString))
+        std::ifstream file(item.c_str(), std::ifstream::in);
+        if (file.is_open())
         {
-            intVar.push_back(tempString);
+            while (std::getline(file, tempString))
+            {
+                intVar.push_back(tempString);
 
-            spdlog::debug("    " + tempString);
+                spdlog::debug("    " + tempString);
+            }
+            file.close();
         }
-        file.close();
     }
 
     // Read boolean behavior variables
     spdlog::debug("reading bool vars");
     for (auto& item : boolVarsFile)
     {
-        std::ifstream file(item);
-        while (std::getline(file, tempString))
+        std::ifstream file(item.c_str(), std::ifstream::in);
+        if (file.is_open())
         {
-            boolVar.push_back(tempString);
+            while (std::getline(file, tempString))
+            {
+                boolVar.push_back(tempString);
 
-            spdlog::debug("     " + tempString);
+                spdlog::debug("     " + tempString);
+            }
+            file.close();
         }
-        file.close();
     }
 
     // Create the replacer
     Replacer* result = new Replacer();
 
-    result->origHash = orgHash;
+    result->origHash       = orgHash;
     result->signatureVar   = sigVar;
     result->creatureName   = creatureName;
     result->syncBooleanVar = boolVar;
@@ -628,13 +647,13 @@ BehaviorVar::Replacer* BehaviorVar::loadReplacerFromDir(std::filesystem::path aD
 // Find any behaviors which match the signature.
 // There should be exactly one.
 //
-std::vector<uint64_t> BehaviorVar::signatureMatches(const uint64_t acHash, const std::string acSignature) const
+TiltedPhoques::Vector<uint64_t> BehaviorVar::SignatureMatches(const uint64_t acHash, const TiltedPhoques::String& acSignature) const
 {
     auto& bvMap = BehaviorVarsMap::getInstance();
-    std::vector<uint64_t> hashes;
+    TiltedPhoques::Vector<uint64_t> hashes;
 
-    bvMap.hashes(hashes);
-    auto tokens = tokenizeBehaviorSig(acSignature);
+    bvMap.Hashes(hashes);
+    auto tokens = TokenizeBehaviorSig(acSignature);
     for (size_t i = 0; i < hashes.size(); i++)
     {
         if (hashes[i] == acHash)
@@ -667,11 +686,11 @@ void BehaviorVar::Init()
     if (!std::filesystem::is_directory(pBehaviorsPath))
         return;
 
-    auto behaviorDirs = loadDirs(pBehaviorsPath);
+    auto behaviorDirs = LoadDirs(pBehaviorsPath);
 
     for (auto& dir : behaviorDirs)
     {
-        Replacer* sig = loadReplacerFromDir(dir);
+        Replacer* sig = LoadReplacerFromDir(dir);
         if (sig)
         {
             behaviorPool.push_back(*sig);
@@ -683,7 +702,7 @@ void BehaviorVar::Init()
     {
         static size_t firsttime = 0;
 
-        auto matches = signatureMatches(signature.origHash, signature.signatureVar);
+        auto matches = SignatureMatches(signature.origHash, signature.signatureVar);
         switch (matches.size())
         {
         case 0:

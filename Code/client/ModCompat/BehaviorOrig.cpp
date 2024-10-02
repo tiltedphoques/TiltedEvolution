@@ -18,14 +18,14 @@ template <typename V> void GenerateFromEnum(uint64_t aKey)
     sig.m_key = aKey;
     for (size_t index = 0; index < count; index++)
     {
-        std::string name = static_cast<std::string>(variables_names[index]);
+        TiltedPhoques::String name(variables_names[index]);
         uint32_t value = enum_integer(variables_values[index]);
 
         // Remove the leading 'k'
         name = name.substr(1, name.size() - 1);
 
-        sig.m_namemap[name]   = value;
-        sig.m_valuemap[value] = name;
+        sig.m_nameMap[name]   = value;
+        sig.m_valueMap[value] = name;
     }
 
     BehaviorVarsMap::getInstance().Register(sig);
