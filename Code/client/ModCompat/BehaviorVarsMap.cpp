@@ -1,7 +1,6 @@
 #ifdef MODDED_BEHAVIOR_COMPATIBILITY
 #include "BehaviorVarsMap.h"
 
-
 const uint32_t BehaviorVarsMap::find(const uint64_t acBehaviorVarsKey, const TiltedPhoques::String acName)
 {
     auto map = m_map.find(acBehaviorVarsKey);
@@ -20,7 +19,7 @@ const uint32_t BehaviorVarsMap::find(const uint64_t acBehaviorVarsKey, const Til
 const TiltedPhoques::String BehaviorVarsMap::find(const uint64_t acBehaviorVarsKey, const uint32_t acValue)
 {
     const TiltedPhoques::String empty;
-    
+
     auto map = m_map.find(acBehaviorVarsKey);
     if (map != m_map.end())
     {
@@ -37,7 +36,6 @@ void BehaviorVarsMap::Register(const BehaviorVars aMap)
 {
     m_map.insert_or_assign(aMap.m_key, aMap);
 }
-
 
 BehaviorVarsMap& BehaviorVarsMap::getInstance()
 {

@@ -6,14 +6,14 @@
 // for unlimited behavior variables, for seeding modded behaviors with the original BehaviorVars
 // (decoupling STR devs decisions from what modders need to know) and support for beast forms
 // among many more changes.
-// 
+//
 // One of the greatest features ensuring the longevity of Bethesda games is their support
-// for community modification, and many of the most popular mods also change the behavior 
+// for community modification, and many of the most popular mods also change the behavior
 // of creatures. STR and FTR don't support mods as a matter of policy. And supporting
 // behavior mods is particularly difficult. This mod provides the option to use modified
-// behaviors in Skyrim|Fallout Together Reborn, but has yet to be endorsed by the TiltedPhoques 
+// behaviors in Skyrim|Fallout Together Reborn, but has yet to be endorsed by the TiltedPhoques
 // team. Use at own risk.
-// 
+//
 // The game determines a set of behavior variables that must be synced and locks that down.
 // Changing the list is difficult, because behavior mods won't just add to the list, they
 // will change the order of the list also changing the shorthand numeric codes for behavior
@@ -25,7 +25,7 @@
 //     3) We must add in the additional behavior variables requested by modders
 //     4) Finally, that will push us over some hard-coded limits, in particular
 //        a limit of 64 boolean vars that can be synced. Remove the limit.
-// 
+//
 #ifdef MODDED_BEHAVIOR_COMPATIBILITY
 
 #include <immersive_launcher/launcher.h>
@@ -36,7 +36,7 @@
 
 #if TP_SKYRIM64
 #include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
-#include <Camera/TESCamera.h>       // Camera 1st person is only in Skyrim?
+#include <Camera/TESCamera.h> // Camera 1st person is only in Skyrim?
 #include <Camera/PlayerCamera.h>
 #endif
 
@@ -56,7 +56,7 @@ BehaviorVar* BehaviorVar::Get()
     return BehaviorVar::single;
 }
 
-// A simple function can be declared, caller file doesn't have to include our 
+// A simple function can be declared, caller file doesn't have to include our
 // class/struct header.
 const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* apManager, Actor* apActor)
 {
@@ -71,7 +71,7 @@ namespace
 TiltedPhoques::String ToLowerCase(const TiltedPhoques::String& acStr)
 {
     TiltedPhoques::String lowerCaseStr(acStr);
-    std::transform(acStr.begin(), acStr.end(), lowerCaseStr.begin(),
+    std::transform(acStr.begin(), acStr.end(), lowerCaseStr.begin(), 
                    [](unsigned char c) { return std::tolower(c); });
     return lowerCaseStr;
 }
@@ -86,8 +86,8 @@ void LowerCaseKeys(const TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& ac
 
 // Process a set of variables, adding them to the aVariableSet
 void ProcessVariableSet(
-    TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acReverseMap, 
-    TiltedPhoques::Set<uint32_t>& aVariableSet, 
+    TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acReverseMap,
+    TiltedPhoques::Set<uint32_t>& aVariableSet,
     const TiltedPhoques::Vector<TiltedPhoques::String>& acVariables,
     spdlog::level::level_enum aLogLevel)
 {
@@ -130,7 +130,7 @@ void ProcessVariableSet(
         }
     }
 }
-           
+
 } // End anonymous namespace
 
 //
@@ -140,16 +140,16 @@ void ProcessVariableSet(
 // BehaviorVars chosen (numerically) by the STR devs to their new numeric values.
 // We do this with a hack to translate old numeric value back to a string, then we
 // can forward-translate the string to its new numeric value.
-// 
+//
 // The machine-generated table hack to do this can be removed with STR-devs'
 // permission to also embed the string information in the Code\encoding\structs files.
 //
 void BehaviorVar::SeedAnimationVariables(
-    const uint64_t acHash, 
+    const uint64_t acHash,
     const AnimationGraphDescriptor* acpDescriptor,
-    TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acReverseMap, 
-    TiltedPhoques::Set<uint32_t>& aBoolVars, 
-    TiltedPhoques::Set<uint32_t>& aFloatVars, 
+    TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acReverseMap,
+    TiltedPhoques::Set<uint32_t>& aBoolVars,
+    TiltedPhoques::Set<uint32_t>& aFloatVars,
     TiltedPhoques::Set<uint32_t>& aIntVars)
 {
     auto& origVars = BehaviorVarsMap::getInstance();
@@ -167,22 +167,22 @@ void BehaviorVar::SeedAnimationVariables(
         else
             boolVarNames.push_back(strValue);
 
-   for (auto& item : acpDescriptor->FloatLookupTable)
+    for (auto& item : acpDescriptor->FloatLookupTable)
         if ((strValue = origVars.find(acHash, item)).empty())
             spdlog::error(__FUNCTION__ ": unable to find string for original FloatVar {}", item);
         else
             floatVarNames.push_back(strValue);
 
-   for (auto& item : acpDescriptor->IntegerLookupTable)
+    for (auto& item : acpDescriptor->IntegerLookupTable)
         if ((strValue = origVars.find(acHash, item)).empty())
             spdlog::error(__FUNCTION__ ": unable to find string for original IntVar {}", item);
         else
             intVarNames.push_back(strValue);
 
     // Process each set of variables
-   ProcessVariableSet(acReverseMap, aBoolVars, boolVarNames, spdlog::level::level_enum::err);
-   ProcessVariableSet(acReverseMap, aFloatVars, floatVarNames, spdlog::level::level_enum::err);
-   ProcessVariableSet(acReverseMap, aIntVars, intVarNames, spdlog::level::level_enum::err);
+    ProcessVariableSet(acReverseMap, aBoolVars, boolVarNames, spdlog::level::level_enum::err);
+    ProcessVariableSet(acReverseMap, aFloatVars, floatVarNames, spdlog::level::level_enum::err);
+    ProcessVariableSet(acReverseMap, aIntVars, intVarNames, spdlog::level::level_enum::err);
 }
 
 // Syntax for a signature is [!]sig1[,[!]sig2]... Must be at least one. Each signature var possibly negated
@@ -213,12 +213,15 @@ const TiltedPhoques::Vector<TiltedPhoques::String> BehaviorVar::TokenizeBehavior
 
     return retVal;
 }
-const AnimationGraphDescriptor* BehaviorVar::ConstructModdedDescriptor(const uint64_t acNewHash, const Replacer& acReplacer, TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acReverseMap)
+const AnimationGraphDescriptor* BehaviorVar::ConstructModdedDescriptor(
+    const uint64_t acNewHash,
+    const Replacer& acReplacer,
+    TiltedPhoques::Map<TiltedPhoques::String, uint32_t>& acReverseMap)
 {
     // Build the set of BehaviorVar strings as sets (not vectors) to eliminate dups
     TiltedPhoques::Set<uint32_t> boolVar;
     TiltedPhoques::Set<uint32_t> floatVar;
-    TiltedPhoques::Set<uint32_t> intVar; 
+    TiltedPhoques::Set<uint32_t> intVar;
 
     // If we can find the original behavior that is being modded,
     // get the descriptor and seed the behavior vars with it.
@@ -228,8 +231,12 @@ const AnimationGraphDescriptor* BehaviorVar::ConstructModdedDescriptor(const uin
     if (acReplacer.origHash && (pTmpGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(acReplacer.origHash)))
     {
         SeedAnimationVariables(acReplacer.origHash, pTmpGraph, acReverseMap, boolVar, floatVar, intVar);
-        spdlog::info(__FUNCTION__ ": Original game descriptor with hash {} has {} boolean, {} float, {} integer behavior vars",
-                     acReplacer.origHash, boolVar.size(), floatVar.size(), intVar.size());
+        spdlog::info(
+            __FUNCTION__ ": Original game descriptor with hash {} has {} boolean, {} float, {} integer behavior vars",
+            acReplacer.origHash,
+            boolVar.size(),
+            floatVar.size(),
+            intVar.size());
     }
 
     // Check requested behavior vars for those that ARE legit
@@ -247,8 +254,7 @@ const AnimationGraphDescriptor* BehaviorVar::ConstructModdedDescriptor(const uin
         }
     }
     if (foundCount)
-        spdlog::info("Now have {} boolVar descriptors after searching {} BehavivorVar strings", boolVar.size(),
-                     acReplacer.syncBooleanVar.size());
+        spdlog::info("Now have {} boolVar descriptors after searching {} BehavivorVar strings", boolVar.size(), acReplacer.syncBooleanVar.size());
 
     foundCount = 0;
     for (auto& item : acReplacer.syncFloatVar)
@@ -263,8 +269,7 @@ const AnimationGraphDescriptor* BehaviorVar::ConstructModdedDescriptor(const uin
         }
     }
     if (foundCount)
-        spdlog::info("Now have {} floatVar descriptors after searching {} BehavivorVar strings", floatVar.size(),
-                     acReplacer.syncFloatVar.size());
+        spdlog::info("Now have {} floatVar descriptors after searching {} BehavivorVar strings", floatVar.size(), acReplacer.syncFloatVar.size());
 
     foundCount = 0;
     for (auto& item : acReplacer.syncIntegerVar)
@@ -279,9 +284,7 @@ const AnimationGraphDescriptor* BehaviorVar::ConstructModdedDescriptor(const uin
         }
     }
     if (foundCount)
-        spdlog::info(__FUNCTION__ ": now have {} intVar descriptors after searching {} BehavivorVar strings",
-                     intVar.size(),
-                     acReplacer.syncIntegerVar.size());
+        spdlog::info(__FUNCTION__ ": now have {} intVar descriptors after searching {} BehavivorVar strings", intVar.size(), acReplacer.syncIntegerVar.size());
 
     // We need the sets sorted, and TiltedPhoques::Set is not. Copying to an std::set
     // isn't the most efficient approach, but it is simple and doesn't happen often enough
@@ -306,14 +309,12 @@ const AnimationGraphDescriptor* BehaviorVar::ConstructModdedDescriptor(const uin
 
     // Add the new graph to the known behavior graphs
     // TODO: doesn't handle case of the acNewHash already existing.
-    // That has to be addressed before we can support just adding 
-    // more pre-existing vars to sync. For now, only get here 
+    // That has to be addressed before we can support just adding
+    // more pre-existing vars to sync. For now, only get here
     // when mods have changed the hash.
     new AnimationGraphDescriptorManager::Builder(AnimationGraphDescriptorManager::Get(), acNewHash, *panimGraphDescriptor);
     return AnimationGraphDescriptorManager::Get().GetDescriptor(acNewHash);
 }
-
-
 
 const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apManager, Actor* apActor)
 {
@@ -334,7 +335,7 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
     // Remote players are ALWAYS in 3rd person by definition
     if (hexFormID == 0x14 && PlayerCamera::Get()->IsFirstPerson())
     {
-        hash   = AnimationGraphDescriptor_Master_Behavior::m_key;
+        hash = AnimationGraphDescriptor_Master_Behavior::m_key;
         pGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
     }
 #endif
@@ -342,7 +343,7 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
     // If we found the descriptor we're done.
     if (pGraph)
         return pGraph;
-    
+
     // If BehaviorVar replacement fails, the hash is failListed for a period of time.
     // This handles a number of special cases for us. Many behaviors are not synced; the
     // game just ignores them and let's the multiple clients each handle it.
@@ -359,17 +360,16 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
 
     // Up to here the routine is pretty cheap, and WILL be called a bunch of times
     // if the only humanoid Actor is the Dragonborn/player in 1st person.
-    // With that case filtered out, keep a counter to see if we need to defend against other 
+    // With that case filtered out, keep a counter to see if we need to defend against other
     // cases (like a modded behavior where we CAN't find the signature var).
     if (invocations++ == 100)
         spdlog::warn(__FUNCTION__ ": warning, more than 100 invocations, investigate why");
- 
-    spdlog::info(__FUNCTION__ ": actor with formID {:x} with hash of {} has modded (or not synced) behavior", hexFormID,
-                 hash);
+
+    spdlog::info(__FUNCTION__ ": actor with formID {:x} with hash of {} has modded (or not synced) behavior", hexFormID, hash);
 
     // Get all animation variables for this actor, then create a acReverseMap to go from strings to animation enum.
     auto pDumpVar = apManager->DumpAnimationVariables(false);
-    TiltedPhoques::Map< TiltedPhoques::String, uint32_t> reverseMap;
+    TiltedPhoques::Map<TiltedPhoques::String, uint32_t> reverseMap;
     spdlog::info("Known behavior variables for formID {:x}:", hexFormID);
     for (auto& item : pDumpVar)
     {
@@ -385,7 +385,7 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
     //
     // That's enough info to create a unique signature in the base game descriptors. At least,
     // it was at the time of writing.
-    // 
+    //
     // O(N) loop, but this typically only gets executed a few times (once for each modded
     // creature TYPE, not each modded creature).
     //
@@ -394,13 +394,13 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
     for (size_t i = 0; i < behaviorPool.size(); i++)
     {
         auto tokens = TokenizeBehaviorSig(behaviorPool[i].signatureVar);
-        auto found  = tokens.size() > 0;
+        auto found = tokens.size() > 0;
 
         for (auto titer = tokens.begin(); found && titer < tokens.end(); titer++)
         {
             if (*titer == "!")
                 found = reverseMap.find(*++titer) == reverseMap.end();
-            else 
+            else
                 found = reverseMap.find(*titer) != reverseMap.end();
         }
         if (found)
@@ -409,29 +409,32 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
 
     switch (matchedReplacers.size())
     {
-        case 0:
-        spdlog::warn(__FUNCTION__ ": no original behavior found for behavior hash {:x} (found on formID {:x}), adding to "
-                                  "fail list",
-                     hash, hexFormID);
-            FailList(hash);
-            return nullptr;
+    case 0:
+        spdlog::warn(
+            __FUNCTION__ ": no original behavior found for behavior hash {:x} (found on formID {:x}), adding to fail list",
+            hash,
+            hexFormID);
+        FailList(hash);
+        return nullptr;
 
-        case 1:
-            break;
+    case 1: break;
 
-        default:
-            spdlog::critical(__FUNCTION__ ": multiple behavior replacers have the same signature, this must be corrected:");
-            for (auto& item : matchedReplacers)
-                spdlog::critical("   {}", behaviorPool[item].creatureName);
-            FailList(hash);
-            return nullptr;
-
+    default:
+        spdlog::critical(__FUNCTION__ ": multiple behavior replacers have the same signature, this must be corrected:");
+        for (auto& item : matchedReplacers)
+            spdlog::critical("   {}", behaviorPool[item].creatureName);
+        FailList(hash);
+        return nullptr;
     }
 
     auto& foundRep = behaviorPool[matchedReplacers[0]];
-    spdlog::info(__FUNCTION__ ": found match, behavior hash {:x} (found on formID {:x}) has original behavior {} signature {}",
-                 hash, hexFormID, foundRep.creatureName, foundRep.signatureVar); 
-    
+    spdlog::info(
+        __FUNCTION__ ": found match, behavior hash {:x} (found on formID {:x}) has original behavior {} signature {}",
+        hash,
+        hexFormID,
+        foundRep.creatureName,
+        foundRep.signatureVar);
+
     // Save the new hash for the actor. Save a copy to restore to if overwritten; this currently
     // only happens when humanoids enter beast mode, Humanoid copy is used to change back.
     // We also save the original (unmodded) STR hash, because there are some hardwired tests
@@ -450,7 +453,7 @@ bool BehaviorVar::FailListed(uint64_t hash)
     return iter != failedBehaviors.end() && std::chrono::steady_clock::now() < iter->second;
 }
 
-//Place the behavior hash on the failed list
+// Place the behavior hash on the failed list
 void BehaviorVar::FailList(uint64_t hash)
 {
     failedBehaviors.insert_or_assign(hash, std::chrono::steady_clock::now() + FAILLIST_DURATION);
@@ -468,11 +471,11 @@ TiltedPhoques::Vector<std::filesystem::path> BehaviorVar::LoadDirs(const std::fi
 
 BehaviorVar::Replacer* BehaviorVar::LoadReplacerFromDir(const std::filesystem::path& aDir)
 {
-    // Enumerate all files in the directory and push bools, ints and floats 
+    // Enumerate all files in the directory and push bools, ints and floats
     // to their respective vectors
 
     // The hashFile *__hash.txt file should contain the hashed signature of the ORIGINAL GAME
-    // actor. That enables us to look up the synced animation variables selected by 
+    // actor. That enables us to look up the synced animation variables selected by
     // the STR devs and include them in the updated behavior/animation sync. Mod
     // devs don't have to know anything but what they've added, and this support for
     // Nemesis will work with more versions of the game.
@@ -486,7 +489,7 @@ BehaviorVar::Replacer* BehaviorVar::LoadReplacerFromDir(const std::filesystem::p
     TiltedPhoques::Vector<TiltedPhoques::String> floatVarsFile;
     TiltedPhoques::Vector<TiltedPhoques::String> intVarsFile;
     TiltedPhoques::Vector<TiltedPhoques::String> boolVarsFile;
-    
+
     for (auto& p : std::filesystem::directory_iterator(aDir))
     {
         TiltedPhoques::String path(p.path().string());
@@ -544,27 +547,27 @@ BehaviorVar::Replacer* BehaviorVar::LoadReplacerFromDir(const std::filesystem::p
     // If signature file is unreadable, this directory is useless.
     std::ifstream fileSig(signatureFile.c_str(), std::ifstream::in);
     if (!fileSig.is_open())
-        return nullptr;     
+        return nullptr;
 
-    getline(fileSig, sigVar);  // grab the signature variable
+    getline(fileSig, sigVar); // grab the signature variable
     fileSig.close();
     erase_if(sigVar, isspace); // removes any inadvertent whitespace
     if (sigVar.size() == 0)
         return nullptr;
     spdlog::info(__FUNCTION__ ": found {} with signature variable {}", creatureName, sigVar);
 
-    // Check to see if there is a hash file. 
-    // This is recommended, and shouild contain the ORIGINAL hash, 
+    // Check to see if there is a hash file.
+    // This is recommended, and shouild contain the ORIGINAL hash,
     // before modding, of the behavior. It's not reasonable for a mod
-    // developer to have to "know" the complete set of variables the STR 
+    // developer to have to "know" the complete set of variables the STR
     // devs have selected, so we'll want to get them from the original behaviors
     // via the original hash. If provided, we'll start with those vars and the
     // mod developer only lists the added ones they need.
-    // 
+    //
     // The orginal version of this patch by Spvvd also included the "new" hash,
     // but that seems to be another thing a mod dev has no easy way to get their hands
     // on. So stripped off the need to provide the new hash, we'll just calculate it.
-    // 
+    //
     uint64_t orgHash = 0;
     if (hashFile.size())
     {
@@ -575,7 +578,7 @@ BehaviorVar::Replacer* BehaviorVar::LoadReplacerFromDir(const std::filesystem::p
             file.close();
             erase_if(tempString, isspace); // removes any inadvertant whitespace
             orgHash = std::strtoull(tempString.c_str(), nullptr, 10);
-            spdlog::info("Replacer specifies original hash {} for {}", orgHash, creatureName);        
+            spdlog::info("Replacer specifies original hash {} for {}", orgHash, creatureName);
         }
     }
 
@@ -634,11 +637,11 @@ BehaviorVar::Replacer* BehaviorVar::LoadReplacerFromDir(const std::filesystem::p
     // Create the replacer
     Replacer* result = new Replacer();
 
-    result->origHash       = orgHash;
-    result->signatureVar   = sigVar;
-    result->creatureName   = creatureName;
+    result->origHash = orgHash;
+    result->signatureVar = sigVar;
+    result->creatureName = creatureName;
     result->syncBooleanVar = boolVar;
-    result->syncFloatVar   = floatVar;
+    result->syncFloatVar = floatVar;
     result->syncIntegerVar = intVar;
 
     return result;
@@ -678,7 +681,7 @@ void BehaviorVar::Init()
 {
     // Initialize original (base STR) behaviors so we can search them.
     BehaviorOrig::BehaviorOrigInit();
-    
+
     // Check if the behaviors folder exists
     std::filesystem::path pBehaviorsPath;
     pBehaviorsPath = launcher::GetLaunchContext()->gamePath / L"Data" / L"SkyrimTogetherRebornBehaviors";
@@ -705,15 +708,13 @@ void BehaviorVar::Init()
         auto matches = SignatureMatches(signature.origHash, signature.signatureVar);
         switch (matches.size())
         {
-        case 0:
-            spdlog::critical(__FUNCTION__ ": failure to find self in behaviorPool, {}", signature.creatureName);
-        case 1:
-            break;
+        case 0: spdlog::critical(__FUNCTION__ ": failure to find self in behaviorPool, {}", signature.creatureName);
+        case 1: break;
 
         default:
             if (firsttime++ == 0)
                 spdlog::warn(__FUNCTION__ ": some creatures have ambiguous signatures. This is expected for now,\n"
-                             "    but a modder must create a unique signature in their mod.");
+                                          "    but a modder must create a unique signature in their mod.");
 
             spdlog::warn(__FUNCTION__ ": {} signature {} matches:", signature.creatureName, signature.signatureVar);
             for (auto hash : matches)
@@ -722,14 +723,11 @@ void BehaviorVar::Init()
                 if (iter < behaviorPool.end())
                     spdlog::warn("    {}", std::find(behaviorPool.begin(), behaviorPool.end(), hash)->creatureName);
                 else
-                    spdlog::warn(
-                        "    {}: unable to find creature name for this hash, likely typo in SkyrimTogetherReborn tree",
-                        hash);
+                    spdlog::warn("    {}: unable to find creature name for this hash, likely typo in SkyrimTogetherReborn tree", hash);
             }
             break;
         }
     }
-
 }
 
 void BehaviorVar::Debug()

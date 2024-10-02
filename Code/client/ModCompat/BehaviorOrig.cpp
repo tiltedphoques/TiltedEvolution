@@ -4,7 +4,6 @@
 #define MAGIC_ENUM_RANGE_MAX 400
 #include "magic_enum.hpp"
 
-
 namespace BehaviorOrig
 {
 template <typename V> void GenerateFromEnum(uint64_t aKey)
@@ -24,7 +23,7 @@ template <typename V> void GenerateFromEnum(uint64_t aKey)
         // Remove the leading 'k'
         name = name.substr(1, name.size() - 1);
 
-        sig.m_nameMap[name]   = value;
+        sig.m_nameMap[name] = value;
         sig.m_valueMap[value] = name;
     }
 
@@ -37,6 +36,6 @@ template <typename V> void GenerateFromEnum(uint64_t aKey)
 #include "BehaviorOrig.Fallout4"
 #endif
 
-} // using namespace BehaviorOrig
+} // namespace BehaviorOrig
 
 #endif MODDED_BEHAVIOR_COMPATIBILITY

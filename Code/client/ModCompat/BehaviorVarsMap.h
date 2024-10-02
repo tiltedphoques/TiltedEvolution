@@ -1,6 +1,5 @@
 #pragma once
 
-
 struct BehaviorVars
 {
     uint64_t m_key;
@@ -8,19 +7,17 @@ struct BehaviorVars
     TiltedPhoques::Map<uint32_t, TiltedPhoques::String> m_valueMap;
 };
 
-
-
 class BehaviorVarsMap
 {
-  private:
+private:
     TiltedPhoques::Map<uint64_t, BehaviorVars> m_map;
 
     // Singleton
     BehaviorVarsMap(){};
     BehaviorVarsMap(BehaviorVarsMap const&) = delete;
-    void operator=(BehaviorVarsMap const&)  = delete;
+    void operator=(BehaviorVarsMap const&) = delete;
 
-  public:
+public:
     const uint32_t find(const uint64_t acBehaviorVarKey, const TiltedPhoques::String acName);
 
     const TiltedPhoques::String find(const uint64_t acBehaviorVarKey, const uint32_t acValue);
@@ -38,5 +35,5 @@ class BehaviorVarsMap
 
 namespace BehaviorOrig
 {
-    extern void BehaviorOrigInit();
+extern void BehaviorOrigInit();
 };
