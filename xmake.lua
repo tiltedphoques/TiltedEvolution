@@ -23,7 +23,7 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 add_vectorexts("neon")
 
 -- build configurations
-add_rules("mode.debug", "mode.releasedbg")
+add_rules("mode.debug", "mode.releasedbg", "mode.release")
 
 if has_config("unitybuild") then
     add_rules("c.unity_build")
