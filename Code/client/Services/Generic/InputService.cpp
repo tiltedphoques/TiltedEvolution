@@ -8,12 +8,13 @@
 #include <DInputHook.hpp>
 #include <WindowsHook.hpp>
 
-#include <include/internal/cef_types.h>
 #include <Services/ImguiService.h>
 #include <Services/DiscordService.h>
 #include <World.h>
 
 #include "Games/Skyrim/Interface/MenuControls.h"
+
+#include "Events/KeyPressEvent.h"
 
 static OverlayService* s_pOverlay = nullptr;
 static UINT s_currentACP = CP_ACP;
@@ -123,12 +124,52 @@ void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
     while (ShowCursor(FALSE) >= 0)
         ;
 }
+
+void Toggle(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexcept
+{
+    auto& overlay = *s_pOverlay;
+
+    const auto pApp = overlay.GetOverlayApp();
+    if (!pApp)
+        return;
+
+    const auto pClient = pApp->GetClient();
+    if (!pClient)
+        return;
+
+    const auto pRenderer = pClient->GetOverlayRenderHandler();
+    if (!pRenderer)
+        return;
+
+    const auto active = overlay.GetActive();
+
+    if (aType != KEYEVENT_CHAR && (IsToggleKey(aKey) || (IsDisableKey(aKey) && active)))
+    {
+        if (!overlay.GetInGame())
+        {
+            TiltedPhoques::DInputHook::Get().SetEnabled(false);
+        }
+        else if (aType == KEYEVENT_KEYUP)
+        {
+            SetUIActive(overlay, pRenderer, !active);
+        }
+    }
+    else if (active)
+    {
+        pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
+    }
+}
 #endif
 
 void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType, bool aE0, bool aE1)
 {
     if (aType != KEYEVENT_CHAR)
     {
+        if (aType == KEYEVENT_KEYUP)
+        {
+            World::Get().GetDispatcher().trigger(KeyPressEvent{aKey});
+        }
+
         if (!aKey || aKey == 255)
         {
             return;
@@ -204,21 +245,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 
     spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
 
-    if (aType != KEYEVENT_CHAR && (IsToggleKey(aKey) || (IsDisableKey(aKey) && active)))
-    {
-        if (!overlay.GetInGame())
-        {
-            TiltedPhoques::DInputHook::Get().SetEnabled(false);
-        }
-        else if (aType == KEYEVENT_KEYUP)
-        {
-            SetUIActive(overlay, pRenderer, !active);
-        }
-    }
-    else if (active)
-    {
-        pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
-    }
+    Toggle(aKey, aScanCode, aType);
 
 #else
     const auto active = pRenderer->IsVisible();
@@ -333,6 +360,7 @@ UINT GetRealACP()
 
 LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+
     const auto pApp = s_pOverlay->GetOverlayApp();
     if (!pApp)
         return 0;
@@ -438,7 +466,8 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
         if (!IsWindowUnicode(hwnd))
         {
             wchar_t wch;
-            ::MultiByteToWideChar(s_currentACP, MB_PRECOMPOSED, reinterpret_cast<char*>(&virtualKey), 2, &wch, sizeof(wchar_t));
+            ::MultiByteToWideChar(s_currentACP, MB_PRECOMPOSED, reinterpret_cast<char*>(&virtualKey), 2, &wch,
+                                  sizeof(wchar_t));
             virtualKey = wch;
         }
         ProcessKeyboard(virtualKey, scancode, KEYEVENT_CHAR, false, false);
@@ -458,12 +487,16 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     return 0;
 }
 
-bool InputService::SetUIKey(std::shared_ptr<KeybindService::Key> apKey) noexcept
+bool InputService::SetUIKey(const TiltedPhoques::SharedPtr<KeybindService::Key>& acpKey) noexcept
 {
-    m_pUiKey = *apKey;
+    m_pUiKey = *acpKey;
     return true;
 }
 
+void InputService::Toggle(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexcept
+{
+    ::Toggle(aKey, aScanCode, aType);
+}
 
 InputService::InputService(OverlayService& aOverlay) noexcept
 {

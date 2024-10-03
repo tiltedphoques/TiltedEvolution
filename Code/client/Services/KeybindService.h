@@ -5,16 +5,29 @@
 
 #include <dinput.h>
 
+namespace TiltedPhoques
+{
+struct OverlayClient;
+struct OverlayRenderHandler;
+}
+
 struct InputService;
+struct DebugService;
+struct OverlayService;
+
+struct KeyPressEvent;
 
 namespace fs = std::filesystem;
+
+// TODO (Toe Knee): Cache away an internal-use Key somewhere after a keybind is "set" to not require the key to be pressed to remap an already confirmed Key layout
 
 /**
  * @brief Handles keybinds
  *
  * @details Loads a config during construction, a key name will be set. The key will not actually be set until it is pressed.
- * This is due to needing separate VirtualKey and DirectInput keycodes that can only be determined after being pressed. The service only
- * connects to the DInputHook OnKeyPress Signal when it is checking for keycodes, disconnected otherwise.
+ * This is due to needing separate VirtualKey and DirectInput keycodes that can only be determined after being pressed. This service
+ * needs to stay connected to DInputHook OnKeyPress Signal due to handling UI toggling (sometimes misses otherwise)
+ * Does not currently support wide characters.
  */
 struct KeybindService
 {
@@ -38,48 +51,61 @@ struct KeybindService
     {
         enum { Error = 0 };
 
-        int32_t vkKeyCode = Error;
+        uint16_t vkKeyCode = Error;
         unsigned long diKeyCode = Error;
     };
 
     using Key = std::pair<TiltedPhoques::String, KeyCodes>;
 
-    KeybindService(InputService& aInputService);
-    ~KeybindService() = default;
+    KeybindService(entt::dispatcher& aDispatcher, InputService& aInputService, DebugService& aDebugService);
+    ~KeybindService();
 
     TP_NOCOPYMOVE(KeybindService);
 
+    // BindKey functions configure 2/3 of setting a key,
+    // DirectInput keycode value gets set in OnDirectInputKeyPress
+    bool BindUIKey(const uint16_t& acKeyCode) noexcept;
+    bool BindDebugKey(const uint16_t& acKeyCode) noexcept;
+
     const Key& GetUIKey() const noexcept { return m_uiKey; }
     const Key& GetDebugKey() const noexcept { return m_debugKey; }
-    bool SetDebugKey(std::shared_ptr<KeybindService::Key> apKey) noexcept;
-    void BindNewKey(int32_t aKeyCode) noexcept;
 
-    void OnDirectInputKeyPress(unsigned long aKeyCode);
-
-    void SetupConfig() noexcept;
-    const Config& GetConfig() const noexcept { return config; }
-
+    const Config& GetConfig() const noexcept { return m_config; }
 
 private:
-    wchar_t ConvertToUnicode(int32_t aKeyCode) noexcept;
+    void OnDirectInputKeyPress(const unsigned long& acKeyCode) noexcept;
+    void OnVirtualKeyKeyPress(const KeyPressEvent& acKeyCode) noexcept;
 
+    bool SetDebugKey(const unsigned long& acKeyCode) noexcept;
+    bool SetUIKey(const unsigned long& acKeyCode) noexcept;
+
+    uint16_t ReconcileKeyPress() noexcept;
+
+    const Key& MakeKey(const uint16_t& acKeyCode) noexcept;
+
+    void SetupConfig() noexcept;
+
+    entt::dispatcher& m_dispatcher;
     InputService& m_inputService;
-    TiltedPhoques::DInputHook* m_inputHook;
+    DebugService& m_debugService;
+    TiltedPhoques::DInputHook* m_pInputHook;
 
-    int32_t m_keyCode{0};
+    uint16_t m_keyCode{0};
 
-    bool m_keybindConfirmed{false};
+    bool m_uiKeybindConfirmed{false};
+    bool m_debugKeybindConfirmed{false};
 
-    size_t m_keyPressConnection;
+    size_t m_dikKeyPressConnection{0};
+    entt::scoped_connection m_vkKeyPressConnection{}; 
 
-    Config config{};
+    Config m_config{};
 
-    // Keys not actually "set" until they are pressed from both UI and ingame
+    // Keys are not actually "set" until they are pressed from both UI and ingame (to tie together VirtualKeys with DirectInput)
     Key m_uiKey{};
     Key m_debugKey{};
 
-    // Keys that have custom names
-    TiltedPhoques::Map<Key::first_type, int32_t> m_modifiedKeys
+    // Keys with custom names
+    TiltedPhoques::Map<Key::first_type, uint16_t> m_modifiedKeys
     {
         {"Backspace", VK_BACK},
         {"Tab", VK_TAB},

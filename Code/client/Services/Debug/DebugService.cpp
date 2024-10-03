@@ -164,9 +164,11 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     static std::atomic<bool> s_f7Pressed = false;
     static std::atomic<bool> s_f6Pressed = false;
 
-    if (GetAsyncKeyState(VK_F3) & 0x01)
+    // Bool state handled via KeybindService due to sometimes missing the key state changes
+    if (m_debugKeyPressed)
     {
         m_showDebugStuff = !m_showDebugStuff;
+        m_debugKeyPressed = false;
     }
 
 #if (!IS_MASTER)
@@ -330,6 +332,18 @@ void DebugService::OnDraw() noexcept
         ImGui::EndMenu();
     }
 #endif
+    if (ImGui::BeginMenu("Keybinds"))
+    {
+        ImGui::MenuItem("Open rebind window", nullptr, &g_enableKeybindWindow);
+        if (ImGui::BeginMenu("Current binds"))
+        {
+            ImGui::Text("Show/Hide UI: %s", World::Get().GetInputService().GetUIKey().first.c_str());
+            ImGui::Text("Show/Hide Debug: %s", m_debugKeybind.first.c_str());
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenu();
+    }
     if (ImGui::BeginMenu("Debuggers"))
     {
         ImGui::MenuItem("Quests", nullptr, &g_enableQuestWindow);
