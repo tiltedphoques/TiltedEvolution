@@ -6,7 +6,7 @@ using TiltedPhoques::Vector;
 
 struct AnimationVariables
 {
-    uint64_t Booleans{0};
+    Vector<bool> Booleans{};
     Vector<uint32_t> Integers{};
     Vector<float> Floats{};
 
@@ -18,4 +18,6 @@ struct AnimationVariables
 
     void GenerateDiff(const AnimationVariables& aPrevious, TiltedPhoques::Buffer::Writer& aWriter) const;
     void ApplyDiff(TiltedPhoques::Buffer::Reader& aReader);
+    void VectorBool_to_String(const Vector<bool>& bools, TiltedPhoques::String& chars) const;
+    void String_to_VectorBool(const TiltedPhoques::String& chars, Vector<bool>& bools);
 };
