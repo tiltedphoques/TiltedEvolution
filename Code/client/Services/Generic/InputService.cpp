@@ -143,7 +143,9 @@ void Toggle(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexc
 
     const auto active = overlay.GetActive();
 
-    if (aType != KEYEVENT_CHAR && (IsToggleKey(aKey) || (IsDisableKey(aKey) && active)))
+    const auto& isRebinding = World::Get().GetDebugService().IsRebinding();
+
+    if (aType != KEYEVENT_CHAR && (IsToggleKey(aKey) || (IsDisableKey(aKey) && active && isRebinding)))
     {
         if (!overlay.GetInGame())
         {

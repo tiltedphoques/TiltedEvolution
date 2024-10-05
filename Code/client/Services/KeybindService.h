@@ -27,7 +27,7 @@ namespace fs = std::filesystem;
  * @details Loads a config during construction, a key name will be set. The key will not actually be set until it is pressed.
  * This is due to needing separate VirtualKey and DirectInput keycodes that can only be determined after being pressed. This service
  * needs to stay connected to DInputHook OnKeyPress Signal due to handling UI toggling (sometimes misses otherwise)
- * Does not currently support wide characters.
+ * Does not currently support wide characters or mouse buttons.
  */
 struct KeybindService
 {
@@ -62,8 +62,8 @@ struct KeybindService
 
     TP_NOCOPYMOVE(KeybindService);
 
-    // BindKey functions configure 2/3 of setting a key,
-    // DirectInput keycode value gets set in OnDirectInputKeyPress
+    // BindKey functions set 2/3 of a key,
+    // DirectInput keycode value gets set in HandleKeybind
     bool BindUIKey(const uint16_t& acKeyCode) noexcept;
     bool BindDebugKey(const uint16_t& acKeyCode) noexcept;
 
@@ -76,12 +76,17 @@ private:
     void OnDirectInputKeyPress(const unsigned long& acKeyCode) noexcept;
     void OnVirtualKeyKeyPress(const KeyPressEvent& acKeyCode) noexcept;
 
-    bool SetDebugKey(const unsigned long& acKeyCode) noexcept;
-    bool SetUIKey(const unsigned long& acKeyCode) noexcept;
+    void InitializeKeys(bool aLoadDefaults) noexcept;
+    bool SetDebugKey(const unsigned long& acKeyCode, const TiltedPhoques::String& acKeyName) noexcept;
+    bool CanToggleDebug(const unsigned long& acKeyCode) const noexcept { return (m_keyCode == m_debugKey.second.vkKeyCode || acKeyCode == m_debugKey.second.diKeyCode);}
+    bool SetUIKey(const unsigned long& acKeyCode, const TiltedPhoques::String& acKeyName) noexcept;
+    void HandleKeybind(const unsigned long& acKeyCode) noexcept;
 
     uint16_t ReconcileKeyPress() noexcept;
 
-    const Key& MakeKey(const uint16_t& acKeyCode) noexcept;
+    Key MakeKey(const uint16_t& acKeyCode) noexcept;
+
+    wchar_t ConvertToUnicode(const uint16_t& aKeyCode) noexcept;
 
     void SetupConfig() noexcept;
 

@@ -17,10 +17,14 @@ const TiltedPhoques::String& BindKey(const TiltedPhoques::String& acKeyName, boo
     {
         if (GetAsyncKeyState(key) & 0x8000)
         {
-            if (key == VK_ESCAPE || key == VK_LBUTTON || key == VK_RBUTTON)
+            if (key == VK_ESCAPE)
             {
                 aBindActive = false;
                 break;
+            }
+            if (key == VK_LBUTTON || key == VK_RBUTTON)
+            {
+                continue;
             }
 
             aBindActive = false;
@@ -35,13 +39,9 @@ const TiltedPhoques::String& BindKey(const TiltedPhoques::String& acKeyName, boo
     }
 
     if (aBindActive)
-    {
         ImGui::Text("Press a key...");
-    }
     else
-    {
         ImGui::Text(keyName.c_str());
-    }
 
     return keyName;
 }
@@ -49,14 +49,12 @@ const TiltedPhoques::String& BindKey(const TiltedPhoques::String& acKeyName, boo
 void DebugService::DrawKeybindView()
 {
 #if TP_SKYRIM64
-    ImGui::SetNextWindowSize(ImVec2(250, 300), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(350, 100), ImGuiCond_FirstUseEver);
     ImGui::Begin("Keybinds");
-
-    ImGui::Text("UI");
 
     TiltedPhoques::String uiKeyName = World::Get().GetInputService().GetUIKey().first;
 
-    if (ImGui::Button("Show/Hide", ImVec2(100, 30)) || m_rebindUI)
+    if (ImGui::Button("Show/Hide STR UI", ImVec2(200, 30)) || m_rebindUI)
     {
         m_rebindUI = true;
 
@@ -70,12 +68,9 @@ void DebugService::DrawKeybindView()
         m_rebindUI = false;
     }
 
-    ImGui::NewLine();
-    ImGui::Text("Debug");
-
     TiltedPhoques::String debugKeyName = World::Get().GetDebugService().GetDebugKey().first;
 
-    if (ImGui::Button("Show/Hide", ImVec2(100, 30)) || m_rebindDebug)
+    if (ImGui::Button("Show/Hide Debug UI", ImVec2(200, 30)) || m_rebindDebug)
     {
         m_rebindDebug = true;
 

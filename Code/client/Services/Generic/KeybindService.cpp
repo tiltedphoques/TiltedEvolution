@@ -5,17 +5,6 @@
 
 #include "Events/KeyPressEvent.h"
 
-wchar_t ConvertToUnicode(const uint16_t& aKeyCode) noexcept
-{
-    wchar_t buffer[10];
-    BYTE keyboardState[256];
-    GetKeyboardState(keyboardState);
-
-    ToUnicode(aKeyCode, 0, keyboardState, buffer, 10, 0);
-
-    return buffer[0];
-}
-
 KeybindService::KeybindService(entt::dispatcher& aDispatcher, InputService& aInputService, DebugService& aDebugService)
     :
     m_dispatcher(aDispatcher),
@@ -49,30 +38,22 @@ void KeybindService::SetupConfig() noexcept
 
     if (!exists(m_config.path))
     {
-        spdlog::info("{} not found, creating...", Config::kKeybindsFileName);
+        spdlog::debug("{} not found, creating...", Config::kKeybindsFileName);
 
-        if (!m_config.Create())
+        if (m_config.Create())
         {
-            m_uiKey = {"F2", {VK_F2, DIK_F2}};
-            m_debugKey = {"F3", {VK_F3, DIK_F3}};
-
-            m_inputService.SetUIKey(TiltedPhoques::MakeShared<Key>(m_uiKey));
-            m_debugService.SetDebugKey(TiltedPhoques::MakeShared<Key>(m_debugKey));
+            InitializeKeys(true);
         }
     }
     else
     {
-        spdlog::info("{} found, loading...", Config::kKeybindsFileName);
+        spdlog::debug("{} found, loading...", Config::kKeybindsFileName);
 
         if (m_config.Load())
         {
             spdlog::debug("Successfully loaded {}", Config::kKeybindsFileName);
 
-            m_uiKey.first = m_config.ini.GetValue("UI", "sUiKey", "F2");
-            m_debugKey.first = m_config.ini.GetValue("UI", "sDebugKey", "F3");
-
-            m_debugService.SetDebugKey(TiltedPhoques::MakeShared<Key>(m_debugKey));
-            m_inputService.SetUIKey(TiltedPhoques::MakeShared<Key>(m_uiKey));
+            InitializeKeys(false);
         }
         else
         {
@@ -80,15 +61,35 @@ void KeybindService::SetupConfig() noexcept
         }
     }
 
-    spdlog::debug("Debug key: {} | UI key: {}", m_debugKey.first.c_str(), m_uiKey.first.c_str());
+    spdlog::info("UI key: {} | Debug key: {}", m_uiKey.first.c_str(), m_debugKey.first.c_str());
 }
 
-bool KeybindService::SetDebugKey(const unsigned long& acKeyCode) noexcept
+void KeybindService::InitializeKeys(bool aLoadDefaults) noexcept
 {
-    m_debugKey = {m_debugKey.first, {m_keyCode, acKeyCode}};
+    if (aLoadDefaults)
+    {
+        m_uiKey = {"F2", {VK_F2, DIK_F2}};
+        m_debugKey = {"F3", {VK_F3, DIK_F3}};
+
+        m_inputService.SetUIKey(TiltedPhoques::MakeShared<Key>(m_uiKey));
+        m_debugService.SetDebugKey(TiltedPhoques::MakeShared<Key>(m_debugKey));
+    }
+    else
+    {
+        m_uiKey.first = m_config.ini.GetValue("UI", "sUiKey", "F2");
+        m_debugKey.first = m_config.ini.GetValue("UI", "sDebugKey", "F3");
+
+        m_inputService.SetUIKey(TiltedPhoques::MakeShared<Key>(m_uiKey));
+        m_debugService.SetDebugKey(TiltedPhoques::MakeShared<Key>(m_debugKey));
+    }
+}
+
+bool KeybindService::SetDebugKey(const unsigned long& acKeyCode, const TiltedPhoques::String& acKeyName) noexcept
+{
+    m_debugKey = {acKeyName, {m_keyCode, acKeyCode}};
     m_debugService.SetDebugKey(TiltedPhoques::MakeShared<Key>(m_debugKey));
 
-    if (m_debugKeybindConfirmed)
+    if (acKeyCode != KeyCodes::Error)
     {
         // DebugService would check if the key was pressed before it gets set here,
         // so this is necessary to toggle ImGui without having to press the key again
@@ -98,154 +99,128 @@ bool KeybindService::SetDebugKey(const unsigned long& acKeyCode) noexcept
     return m_config.SetKey("UI", "sDebugKey", m_debugKey.first.c_str());
 }
 
-bool KeybindService::SetUIKey(const unsigned long& acKeyCode) noexcept
+bool KeybindService::SetUIKey(const unsigned long& acKeyCode, const TiltedPhoques::String& acKeyName) noexcept
 {
-    m_uiKey = {m_uiKey.first, {m_keyCode, acKeyCode}};
+    m_uiKey = {acKeyName, {m_keyCode, acKeyCode}};
     m_inputService.SetUIKey(TiltedPhoques::MakeShared<Key>(m_uiKey));
-    m_pInputHook->SetToggleKeys({m_uiKey.second.diKeyCode});
 
-    if (m_uiKeybindConfirmed)
-    {
-        // InputService would check if the key was pressed before it gets set here,
-        // so these are necessary to toggle the UI without having to press the key again
-        m_pInputHook->SetEnabled(true);
-        m_inputService.Toggle(m_keyCode, MapVirtualKey(m_uiKey.second.vkKeyCode, MAPVK_VK_TO_VSC), KEYEVENT_CHAR);
-    }
+    if (m_uiKey.second.diKeyCode != 0)
+        m_pInputHook->SetToggleKeys({m_uiKey.second.diKeyCode});
+
+    // InputService would check if the key was pressed before it gets set here,
+    // so these are necessary to toggle the UI without having to press the key again
+    m_pInputHook->SetEnabled(true);
+    m_inputService.Toggle(m_keyCode, MapVirtualKey(m_uiKey.second.vkKeyCode, MAPVK_VK_TO_VSC), KEYEVENT_CHAR);
 
     return m_config.SetKey("UI", "sUiKey", m_uiKey.first.c_str());
 }
 
 bool KeybindService::BindUIKey(const uint16_t& acKeyCode) noexcept
 {
+    if (acKeyCode == m_debugKey.second.vkKeyCode)
+        return false;
+
     m_uiKeybindConfirmed = false;
-    //m_keyCode = acKeyCode;
 
-    /*TiltedPhoques::String newName = {static_cast<char>(toupper(ConvertToUnicode(acKeyCode)))};
-    auto modKey = std::ranges::find_if(m_modifiedKeys, [&](const std::pair<Key::first_type, uint16_t>& acKey) { return acKey.second == m_keyCode; });
-
-    if (modKey != m_modifiedKeys.end())
-    {
-        newName = modKey->first;
-        m_keyCode = modKey->second;
-    }*/
     const auto& key = MakeKey(acKeyCode);
 
-    m_uiKey.first = newName;
-    return SetUIKey(KeyCodes::Error);
+    return SetUIKey(KeyCodes::Error, key.first);
 }
 
 bool KeybindService::BindDebugKey(const uint16_t& acKeyCode) noexcept
 {
+    if (acKeyCode == m_uiKey.second.vkKeyCode)
+        return false;
+
     m_debugKeybindConfirmed = false;
-    //m_keyCode = acKeyCode;
 
-    /*TiltedPhoques::String newName = {static_cast<char>(toupper(ConvertToUnicode(acKeyCode)))};
-    auto modKey = std::ranges::find_if(m_modifiedKeys, [&](const std::pair<Key::first_type, uint16_t>& acKey) { return acKey.second == m_keyCode; });
+    const auto& key = MakeKey(acKeyCode);
 
-    if (modKey != m_modifiedKeys.end())
-    {
-        if (modKey != m_modifiedKeys.end())
-        {
-            newName = modKey->first;
-            m_keyCode = modKey->second;
-        }
-    }*/
-    const auto& modKey = MakeKey(acKeyCode);
-
-    m_debugKey.first = modKey.first;
-    return SetDebugKey(KeyCodes::Error);
+    return SetDebugKey(KeyCodes::Error, key.first);
 }
 
 void KeybindService::OnVirtualKeyKeyPress(const KeyPressEvent& acEvent) noexcept
 {
     m_keyCode = acEvent.VirtualKey;
 
-    if (acEvent.VirtualKey == m_debugKey.second.vkKeyCode)
+    if (!m_debugKeybindConfirmed)
+    {
+        HandleKeybind(KeyCodes::Error);
+    }
+
+    if (acEvent.VirtualKey == m_debugKey.second.vkKeyCode && m_debugKeybindConfirmed)
         m_debugService.DebugPressed();
+
+    spdlog::info("{}", m_keyCode);
 }
 
 void KeybindService::OnDirectInputKeyPress(const unsigned long& acKeyCode) noexcept
 {
-    if (m_keyCode == 0)
+    if (m_keyCode == 0 || m_keyCode == m_uiKey.second.vkKeyCode)
     {
         // Attempt to reconcile the VirtualKey
         m_keyCode = ReconcileKeyPress();
     }
 
-    if (m_keyCode != 0)
+    // DebugService would sometimes miss debug key's state change so it is handled here
+    if (CanToggleDebug(acKeyCode))
     {
-        // DebugService would sometimes miss debug key's state change so it is handled here
-        if (m_keyCode == m_debugKey.second.vkKeyCode || acKeyCode == m_debugKey.second.diKeyCode)
-            m_debugService.DebugPressed();
+        m_debugService.DebugPressed();
+        spdlog::info("THING HAPPENED");
+    }
 
-        if (!m_uiKeybindConfirmed || !m_debugKeybindConfirmed)
+    if (m_keyCode != 0 && (!m_uiKeybindConfirmed || !m_debugKeybindConfirmed))
+    {
+        HandleKeybind(acKeyCode);
+    }
+
+    m_keyCode = 0;
+}
+
+void KeybindService::HandleKeybind(const unsigned long& acKeyCode) noexcept
+{
+    TiltedPhoques::String key = {static_cast<char>(toupper(ConvertToUnicode(m_keyCode)))};
+    auto modKey = std::ranges::find_if(m_modifiedKeys, [&](const std::pair<Key::first_type, uint16_t>& acKey) { return acKey.second == m_keyCode; });
+
+    // Key has custom name
+    if (modKey != m_modifiedKeys.end())
+    {
+        m_keyCode = modKey->second;
+
+        // UI key pressed
+        if (modKey->first == m_uiKey.first && !m_uiKeybindConfirmed)
         {
-            const TiltedPhoques::String& key = {static_cast<char>(toupper(ConvertToUnicode(m_keyCode)))};
-
-            bool localUIKeybindConfirmed = false;
-            bool localDebugKeybindConfirmed = false;
-
-            // Check if it is a modified key we are looking for
-            auto modKey = std::ranges::find_if(m_modifiedKeys, [&](const std::pair<Key::first_type, uint16_t>& acKey) { return acKey.second == m_keyCode; });
-
-            if (modKey != m_modifiedKeys.end())
-            {
-                m_keyCode = modKey->second;
-
-                // UI key pressed
-                if (modKey->first == m_uiKey.first && !m_uiKeybindConfirmed)
-                {
-                    m_uiKey = {modKey->first, {m_keyCode, m_uiKey.second.diKeyCode}};
-                    m_uiKey.first = modKey->first;
-                    m_uiKey.second.vkKeyCode = m_keyCode;
-                    m_uiKeybindConfirmed = true;
-                    localUIKeybindConfirmed = true;
-                }
-                // Debug key pressed
-                else if (modKey->first == m_debugKey.first && !m_debugKeybindConfirmed)
-                {
-                    m_debugKey.first = modKey->first;
-                    m_debugKey.second.vkKeyCode = m_keyCode;
-                    m_debugKeybindConfirmed = true;
-                    localDebugKeybindConfirmed = true;
-                }
-            }
-            // UI key was pressed
-            else if (key == m_uiKey.first && !m_uiKeybindConfirmed)
-            {
-                m_uiKeybindConfirmed = true;
-                localUIKeybindConfirmed = true;
-            }
-            // Debug key was pressed
-            else if (key == m_debugKey.first && !m_debugKeybindConfirmed)
-            {
-                m_debugKeybindConfirmed = true;
-                localDebugKeybindConfirmed = true;
-            }
-
-            // UI key pressed this iteration
-            if (localUIKeybindConfirmed)
-            {
-                SetUIKey(acKeyCode);
-            }
-
-            // Debug key pressed this iteration
-            if (localDebugKeybindConfirmed)
-            {
-                SetDebugKey(acKeyCode);
-            }
+            key = modKey->first;
+            m_uiKeybindConfirmed = true;
+            SetUIKey(acKeyCode, key);
         }
-
-        m_keyCode = 0;
+        // Debug key pressed
+        else if (modKey->first == m_debugKey.first && !m_debugKeybindConfirmed)
+        {
+            key = modKey->first;
+            m_debugKeybindConfirmed = true;
+            SetDebugKey(acKeyCode, key);
+        }
+    }
+    // UI key was pressed
+    else if (key == m_uiKey.first && !m_uiKeybindConfirmed)
+    {
+        m_uiKeybindConfirmed = true;
+        SetUIKey(acKeyCode, key);
+    }
+    // Debug key was pressed
+    else if (key == m_debugKey.first && !m_debugKeybindConfirmed)
+    {
+        m_debugKeybindConfirmed = true;
+        SetDebugKey(acKeyCode, key);
     }
 }
 
-const KeybindService::Key& KeybindService::MakeKey(const uint16_t& acKeyCode) noexcept
+KeybindService::Key KeybindService::MakeKey(const uint16_t& acKeyCode) noexcept
 {
     m_keyCode = acKeyCode;
 
     TiltedPhoques::String newName = {static_cast<char>(toupper(ConvertToUnicode(acKeyCode)))};
-    // Check if key has a custom name
     auto modKey = std::ranges::find_if(m_modifiedKeys, [&](const std::pair<Key::first_type, uint16_t>& acKey) { return acKey.second == m_keyCode; });
 
     if (modKey != m_modifiedKeys.end())
@@ -257,7 +232,7 @@ const KeybindService::Key& KeybindService::MakeKey(const uint16_t& acKeyCode) no
         }
     }
 
-    return {newName, {m_keyCode, KeyCodes::Error}};
+    return Key{newName, {m_keyCode, KeyCodes::Error}};
 }
 
 uint16_t KeybindService::ReconcileKeyPress() noexcept
@@ -271,6 +246,17 @@ uint16_t KeybindService::ReconcileKeyPress() noexcept
     }
 
     return 0;
+}
+
+wchar_t KeybindService::ConvertToUnicode(const uint16_t& aKeyCode) noexcept
+{
+    wchar_t buffer[10];
+    BYTE keyboardState[256];
+    GetKeyboardState(keyboardState);
+
+    ToUnicode(aKeyCode, 0, keyboardState, buffer, 10, 0);
+
+    return buffer[0];
 }
 
 bool KeybindService::Config::Create() noexcept
