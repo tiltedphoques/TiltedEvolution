@@ -6,10 +6,9 @@
 #include "Events/KeyPressEvent.h"
 
 KeybindService::KeybindService(entt::dispatcher& aDispatcher, InputService& aInputService, DebugService& aDebugService)
-    :
-    m_dispatcher(aDispatcher),
-    m_inputService(aInputService),
-    m_debugService(aDebugService)
+    : m_dispatcher(aDispatcher)
+    , m_inputService(aInputService)
+    , m_debugService(aDebugService)
 {
     m_pInputHook = &TiltedPhoques::DInputHook::Get();
 
@@ -150,8 +149,6 @@ void KeybindService::OnVirtualKeyKeyPress(const KeyPressEvent& acEvent) noexcept
 
     if (acEvent.VirtualKey == m_debugKey.second.vkKeyCode && m_debugKeybindConfirmed)
         m_debugService.DebugPressed();
-
-    spdlog::info("{}", m_keyCode);
 }
 
 void KeybindService::OnDirectInputKeyPress(const unsigned long& acKeyCode) noexcept
@@ -166,7 +163,6 @@ void KeybindService::OnDirectInputKeyPress(const unsigned long& acKeyCode) noexc
     if (CanToggleDebug(acKeyCode))
     {
         m_debugService.DebugPressed();
-        spdlog::info("THING HAPPENED");
     }
 
     if (m_keyCode != 0 && (!m_uiKeybindConfirmed || !m_debugKeybindConfirmed))
@@ -291,8 +287,7 @@ bool KeybindService::Config::Load() noexcept
     return this->ini.LoadFile(this->path.c_str()) == SI_OK;
 }
 
-bool KeybindService::Config::SetKey(const char* acpSection, const char* acpKey, const char* acpValue,
-                                    const char* acpDescription) noexcept
+bool KeybindService::Config::SetKey(const char* acpSection, const char* acpKey, const char* acpValue, const char* acpDescription) noexcept
 {
     this->ini.SetValue(acpSection, acpKey, acpValue, acpDescription);
 

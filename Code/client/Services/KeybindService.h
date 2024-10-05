@@ -9,7 +9,7 @@ namespace TiltedPhoques
 {
 struct OverlayClient;
 struct OverlayRenderHandler;
-}
+} // namespace TiltedPhoques
 
 struct InputService;
 struct DebugService;
@@ -46,10 +46,12 @@ struct KeybindService
         fs::path path{};
     };
 
-
     struct KeyCodes
     {
-        enum { Error = 0 };
+        enum
+        {
+            Error = 0
+        };
 
         uint16_t vkKeyCode = Error;
         unsigned long diKeyCode = Error;
@@ -78,7 +80,7 @@ private:
 
     void InitializeKeys(bool aLoadDefaults) noexcept;
     bool SetDebugKey(const unsigned long& acKeyCode, const TiltedPhoques::String& acKeyName) noexcept;
-    bool CanToggleDebug(const unsigned long& acKeyCode) const noexcept { return (m_keyCode == m_debugKey.second.vkKeyCode || acKeyCode == m_debugKey.second.diKeyCode);}
+    bool CanToggleDebug(const unsigned long& acKeyCode) const noexcept { return (m_keyCode == m_debugKey.second.vkKeyCode || acKeyCode == m_debugKey.second.diKeyCode); }
     bool SetUIKey(const unsigned long& acKeyCode, const TiltedPhoques::String& acKeyName) noexcept;
     void HandleKeybind(const unsigned long& acKeyCode) noexcept;
 
@@ -101,7 +103,7 @@ private:
     bool m_debugKeybindConfirmed{false};
 
     size_t m_dikKeyPressConnection{0};
-    entt::scoped_connection m_vkKeyPressConnection{}; 
+    entt::scoped_connection m_vkKeyPressConnection{};
 
     Config m_config{};
 
@@ -110,8 +112,7 @@ private:
     Key m_debugKey{};
 
     // Keys with custom names
-    TiltedPhoques::Map<Key::first_type, uint16_t> m_modifiedKeys
-    {
+    TiltedPhoques::Map<Key::first_type, uint16_t> m_modifiedKeys{
         {"Backspace", VK_BACK},
         {"Tab", VK_TAB},
         {"Enter", VK_RETURN},

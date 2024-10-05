@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <Services/RunnerService.h>
 #include <Services/TransportService.h>
 #include <Services/PartyService.h>
@@ -38,7 +37,6 @@ struct World : entt::registry
     const InputService& GetInputService() const noexcept { return ctx().at<const InputService>(); }
     KeybindService& GetKeybindService() noexcept { return ctx().at<KeybindService>(); }
     const KeybindService& GetKeybindService() const noexcept { return ctx().at<const KeybindService>(); }
-
 
     auto& GetDispatcher() noexcept { return m_dispatcher; }
 

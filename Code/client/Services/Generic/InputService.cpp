@@ -353,16 +353,12 @@ UINT GetRealACP()
     // Call the GetLocaleInfo function to retrieve the default ANSI code page
     // associated with that language ID.
     UINT acp = CP_ACP;
-    GetLocaleInfo(MAKELCID(langID, SORT_DEFAULT),
-        LOCALE_IDEFAULTANSICODEPAGE | LOCALE_RETURN_NUMBER,
-        (LPTSTR) &acp,
-        sizeof(acp) / sizeof(TCHAR));
+    GetLocaleInfo(MAKELCID(langID, SORT_DEFAULT), LOCALE_IDEFAULTANSICODEPAGE | LOCALE_RETURN_NUMBER, (LPTSTR)&acp, sizeof(acp) / sizeof(TCHAR));
     return acp;
 }
 
 LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-
     const auto pApp = s_pOverlay->GetOverlayApp();
     if (!pApp)
         return 0;
@@ -468,8 +464,7 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
         if (!IsWindowUnicode(hwnd))
         {
             wchar_t wch;
-            ::MultiByteToWideChar(s_currentACP, MB_PRECOMPOSED, reinterpret_cast<char*>(&virtualKey), 2, &wch,
-                                  sizeof(wchar_t));
+            ::MultiByteToWideChar(s_currentACP, MB_PRECOMPOSED, reinterpret_cast<char*>(&virtualKey), 2, &wch, sizeof(wchar_t));
             virtualKey = wch;
         }
         ProcessKeyboard(virtualKey, scancode, KEYEVENT_CHAR, false, false);

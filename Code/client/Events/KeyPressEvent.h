@@ -5,7 +5,8 @@
  */
 struct KeyPressEvent
 {
-    KeyPressEvent(const uint16_t acKeyCode) : VirtualKey(acKeyCode)
+    KeyPressEvent(const uint16_t acKeyCode)
+        : VirtualKey(acKeyCode)
     {
     }
 
