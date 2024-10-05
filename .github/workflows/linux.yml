@@ -18,7 +18,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'ci skip')"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Checkout submodules
       run: |
@@ -28,32 +28,27 @@ jobs:
     # Install dependencies
     - name: Update apt repositories
       run: sudo apt-get update
-      
-    - name: Install GCC12
-      shell: bash
-      run:  |
-          sudo apt update
-          sudo apt install gcc-12 g++-12
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 110 --slave /usr/bin/g++ g++ /usr/bin/g++-12 --slave /usr/bin/gcov gcov /usr/bin/gcov-12
-          
+
     # Install xmake
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
       with:
-        xmake-version: '2.9.3'
+        xmake-version: '2.9.5'
 
     # Update xmake repository (in order to have the file that will be cached)
     - name: Update xmake repository
       run: xmake repo --update
 
     # Setup compilation mode and install project dependencies
+    # (continue-on-error + timeout is a temporary solution until sentry-native is fixed; shouldn't affect the building step)
     - name: Configure xmake and install dependencies
-      run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes
+      continue-on-error: true
+      run: timeout 15m xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes
 
-    # Build the game
+    # Build the server
     - name: Build
-      run: xmake
-    
+      run: xmake -y
+
     # Create install
     #- name: Install
     # run: xmake install -o packaged
