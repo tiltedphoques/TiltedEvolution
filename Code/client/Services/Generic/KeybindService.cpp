@@ -245,7 +245,7 @@ void KeybindService::HandleKeybind(const uint16_t& acVkKeyCode, const unsigned l
         }
     }
 
-    wchar_t keyChar = static_cast<wchar_t>(MapVirtualKeyA(m_keyCode, MAPVK_VK_TO_CHAR));
+    wchar_t keyChar = static_cast<wchar_t>(MapVirtualKeyW(m_keyCode, MAPVK_VK_TO_CHAR));
 
     const TiltedPhoques::WString& cKeyName = {static_cast<wchar_t>(toupper(keyChar))};
     const KeybindService::Key& cKey = {cKeyName, {acVkKeyCode, acDiKeyCode}};
@@ -257,23 +257,23 @@ void KeybindService::HandleKeybind(const uint16_t& acVkKeyCode, const unsigned l
         m_keyCode = pModKey->second.vkKeyCode;
 
         // UI key pressed
-        if (DoesKeyMatch(*pModKey, m_uiKey) && !m_uiKeybindConfirmed)
+        if (DoKeysMatch(*pModKey, m_uiKey) && !m_uiKeybindConfirmed)
         {
             SetUIKey(m_keyCode, acDiKeyCode, pModKey->first, acLoadFromConfig);
         }
         // Debug key pressed
-        else if (DoesKeyMatch(*pModKey, m_debugKey) && !m_debugKeybindConfirmed)
+        else if (DoKeysMatch(*pModKey, m_debugKey) && !m_debugKeybindConfirmed)
         {
             SetDebugKey(m_keyCode, acDiKeyCode, pModKey->first);
         }
     }
     // No custom key name, UI key was pressed
-    else if (DoesKeyMatch(cKey, m_uiKey) && !m_uiKeybindConfirmed)
+    else if (DoKeysMatch(cKey, m_uiKey) && !m_uiKeybindConfirmed)
     {
         SetUIKey(m_keyCode, acDiKeyCode, cKeyName, acLoadFromConfig);
     }
     // No custom key name, Debug key was pressed
-    else if (DoesKeyMatch(cKey, m_debugKey) && !m_debugKeybindConfirmed)
+    else if (DoKeysMatch(cKey, m_debugKey) && !m_debugKeybindConfirmed)
     {
         SetDebugKey(m_keyCode, acDiKeyCode, cKeyName);
     }
@@ -303,14 +303,15 @@ bool KeybindService::CanToggleDebug(const uint16_t& acVkKeyCode, const unsigned 
     return (acVkKeyCode != KeyCodes::Error && acVkKeyCode == m_debugKey.second.vkKeyCode) || (acDiKeyCode != KeyCodes::Error && acDiKeyCode == m_debugKey.second.diKeyCode);
 }
 
-bool KeybindService::DoesKeyMatch(const KeybindService::Key& acLeftKey, const KeybindService::Key& acRightKey) const noexcept
+bool KeybindService::DoKeysMatch(const KeybindService::Key& acLeftKey, const KeybindService::Key& acRightKey) const noexcept
 {
-    return acLeftKey.first == acRightKey.first || acLeftKey.second.vkKeyCode == acRightKey.second.vkKeyCode || acLeftKey.second.diKeyCode == acRightKey.second.diKeyCode;
+    return (!acLeftKey.first.empty() && acLeftKey.first == acRightKey.first) || (acLeftKey.second.vkKeyCode != KeyCodes::Error && acLeftKey.second.vkKeyCode == acRightKey.second.vkKeyCode) ||
+           (acLeftKey.second.diKeyCode != KeyCodes::Error && acLeftKey.second.diKeyCode == acRightKey.second.diKeyCode);
 }
 
 TiltedPhoques::WString KeybindService::ConvertToWString(const TiltedPhoques::String& acString) noexcept
 {
-    int nChars = MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, acString.data(), static_cast<int>(acString.length()), NULL, 0);
+    int nChars = MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, acString.data(), static_cast<int>(acString.length()), nullptr, 0);
 
     TiltedPhoques::WString wstrTo;
     if (nChars > 0)

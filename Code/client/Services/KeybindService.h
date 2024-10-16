@@ -55,6 +55,8 @@ struct KeybindService
         uint16_t vkKeyCode = Error;
         // DirectInput
         unsigned long diKeyCode = Error;
+
+        friend bool operator==(const KeyCodes& acLhs, const KeyCodes& acRhs) noexcept { return acLhs.vkKeyCode == acRhs.vkKeyCode && acLhs.diKeyCode == acRhs.diKeyCode; }
     };
 
     using Key = std::pair<TiltedPhoques::WString, KeyCodes>;
@@ -100,7 +102,7 @@ private:
     bool SetUIKey(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, const TiltedPhoques::WString& acKeyName, const bool& acLoadFromConfig = false) noexcept;
     void HandleKeybind(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, const bool& acLoadFromConfig = false) noexcept;
     bool CanToggleDebug(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode) const noexcept;
-    bool DoesKeyMatch(const KeybindService::Key& acLeftKey, const KeybindService::Key& acRightKey) const noexcept;
+    bool DoKeysMatch(const KeybindService::Key& acLeftKey, const KeybindService::Key& acRightKey) const noexcept;
 
     static TiltedPhoques::WString ConvertToWString(const TiltedPhoques::String& acString) noexcept;
     static TiltedPhoques::String ConvertToString(const TiltedPhoques::WString& acString) noexcept;
