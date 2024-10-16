@@ -201,7 +201,7 @@ private:
         {L"Browser Stop", {VK_BROWSER_STOP, DIK_WEBSTOP}},
         {L"Browser Search", {VK_BROWSER_SEARCH, DIK_WEBSEARCH}},
         {L"Browser Favorites", {VK_BROWSER_FAVORITES, DIK_WEBFAVORITES}},
-        {L"Browser Stard and Home", {VK_BROWSER_HOME, DIK_WEBHOME}},
+        {L"Browser Home", {VK_BROWSER_HOME, DIK_WEBHOME}},
         {L"Volume Mute", {VK_VOLUME_MUTE, DIK_MUTE}},
         {L"Volume Down", {VK_VOLUME_DOWN, DIK_VOLUMEDOWN}},
         {L"Volume Up", {VK_VOLUME_UP, DIK_VOLUMEUP}},
