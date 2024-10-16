@@ -5,10 +5,25 @@
 
 #include <imgui.h>
 
-const TiltedPhoques::String& BindKey(const TiltedPhoques::String& acKeyName, bool& aBindActive, const bool& acDebugKey)
+TiltedPhoques::String ConvertWstringToString(const TiltedPhoques::WString& acWideString)
+{
+    if (acWideString.empty())
+    {
+        return {};
+    }
+
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, acWideString.c_str(), static_cast<int>(acWideString.length()), NULL, 0, NULL, NULL);
+
+    TiltedPhoques::String str(size_needed, 0);
+    WideCharToMultiByte(CP_UTF8, 0, acWideString.c_str(), static_cast<int>(acWideString.length()), &str[0], size_needed, NULL, NULL);
+
+    return str;
+}
+
+const TiltedPhoques::WString& BindKey(const TiltedPhoques::WString& acKeyName, bool& aBindActive, const bool& acDebugKey)
 {
     auto& rebindService = World::Get().GetKeybindService();
-    TiltedPhoques::String keyName = acKeyName;
+    TiltedPhoques::WString keyName = acKeyName;
 
     ImGui::SameLine(0);
     aBindActive = true;
@@ -41,18 +56,24 @@ const TiltedPhoques::String& BindKey(const TiltedPhoques::String& acKeyName, boo
     if (aBindActive)
         ImGui::Text("Press a key...");
     else
-        ImGui::Text(keyName.c_str());
+    {
+        const auto& narrowString = ConvertWstringToString(keyName);
+        ImGui::Text("%s", narrowString.c_str());
+    }
 
-    return keyName;
+    return {keyName};
 }
 
 void DebugService::DrawKeybindView()
 {
 #if TP_SKYRIM64
-    ImGui::SetNextWindowSize(ImVec2(350, 100), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(350, 150), ImGuiCond_FirstUseEver);
     ImGui::Begin("Keybinds");
 
-    TiltedPhoques::String uiKeyName = World::Get().GetInputService().GetUIKey().first;
+    TiltedPhoques::WString uiKeyName = World::Get().GetInputService().GetUIKey().first;
+
+    if (IsRebinding())
+        ImGui::Text("Press Escape to cancel");
 
     if (ImGui::Button("Show/Hide STR UI", ImVec2(200, 30)) || m_rebindUI)
     {
@@ -63,12 +84,13 @@ void DebugService::DrawKeybindView()
     else
     {
         ImGui::SameLine(0);
-        ImGui::Text("%s", uiKeyName.c_str());
+        const auto& narrowString = ConvertWstringToString(uiKeyName);
+        ImGui::Text("%s", narrowString.c_str());
 
         m_rebindUI = false;
     }
 
-    TiltedPhoques::String debugKeyName = World::Get().GetDebugService().GetDebugKey().first;
+    TiltedPhoques::WString debugKeyName = World::Get().GetDebugService().GetDebugKey().first;
 
     if (ImGui::Button("Show/Hide Debug UI", ImVec2(200, 30)) || m_rebindDebug)
     {
@@ -79,7 +101,8 @@ void DebugService::DrawKeybindView()
     else
     {
         ImGui::SameLine(0);
-        ImGui::Text("%s", debugKeyName.c_str());
+        const auto& narrowString = ConvertWstringToString(debugKeyName);
+        ImGui::Text("%s", narrowString.c_str());
 
         m_rebindDebug = false;
     }

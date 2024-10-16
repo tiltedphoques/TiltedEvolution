@@ -19,18 +19,46 @@ struct KeyPressEvent;
 
 namespace fs = std::filesystem;
 
-// TODO (Toe Knee): Cache away an internal-use Key somewhere after a keybind is "set" to not require the key to be pressed to remap an already confirmed Key layout
+#define DEFAULT_UI_KEY    \
+    {                     \
+        L"F2",            \
+        {                 \
+            VK_F2, DIK_F2 \
+        }                 \
+    }
+#define DEFAULT_DEBUG_KEY \
+    {                     \
+        L"F3",            \
+        {                 \
+            VK_F3, DIK_F3 \
+        }                 \
+    }
 
 /**
  * @brief Handles keybinds
  *
- * @details Loads a config during construction, a key name will be set. The key will not actually be set until it is pressed.
+ * @details Loads a config during construction. The key will not actually be set until it is pressed or loaded from config.
  * This is due to needing separate VirtualKey and DirectInput keycodes that can only be determined after being pressed. This service
  * needs to stay connected to DInputHook OnKeyPress Signal due to handling UI toggling (sometimes misses otherwise)
- * Does not currently support wide characters or mouse buttons.
+ * Does not currently support mouse buttons.
  */
 struct KeybindService
 {
+    struct KeyCodes
+    {
+        enum
+        {
+            Error = 0
+        };
+
+        // VirtualKey
+        uint16_t vkKeyCode = Error;
+        // DirectInput
+        unsigned long diKeyCode = Error;
+    };
+
+    using Key = std::pair<TiltedPhoques::WString, KeyCodes>;
+
     struct Config
     {
         static constexpr char kConfigPathName[] = "config";
@@ -40,32 +68,19 @@ struct KeybindService
         bool Save() const noexcept;
         bool Load() noexcept;
 
-        bool SetKey(const char* acpSection, const char* acpKey, const char* acpValue, const char* acpDescription = nullptr) noexcept;
+        bool SetKey(const wchar_t* acpKey, const wchar_t* acpValue, const wchar_t* acpDescription = nullptr) noexcept;
+        bool SetKeyCodes(const wchar_t* acpConfigKey, const KeybindService::KeyCodes& acKeyCodes) noexcept;
+        KeyCodes GetKeyCodes(const wchar_t* acpKey) const noexcept;
 
-        CSimpleIniA ini{};
+        CSimpleIniW ini{};
         fs::path path{};
     };
-
-    struct KeyCodes
-    {
-        enum
-        {
-            Error = 0
-        };
-
-        uint16_t vkKeyCode = Error;
-        unsigned long diKeyCode = Error;
-    };
-
-    using Key = std::pair<TiltedPhoques::String, KeyCodes>;
 
     KeybindService(entt::dispatcher& aDispatcher, InputService& aInputService, DebugService& aDebugService);
     ~KeybindService();
 
     TP_NOCOPYMOVE(KeybindService);
 
-    // BindKey functions set 2/3 of a key,
-    // DirectInput keycode value gets set in HandleKeybind
     bool BindUIKey(const uint16_t& acKeyCode) noexcept;
     bool BindDebugKey(const uint16_t& acKeyCode) noexcept;
 
@@ -78,17 +93,18 @@ private:
     void OnDirectInputKeyPress(const unsigned long& acKeyCode) noexcept;
     void OnVirtualKeyKeyPress(const KeyPressEvent& acKeyCode) noexcept;
 
-    void InitializeKeys(bool aLoadDefaults) noexcept;
-    bool SetDebugKey(const unsigned long& acKeyCode, const TiltedPhoques::String& acKeyName) noexcept;
-    bool CanToggleDebug(const unsigned long& acKeyCode) const noexcept { return (m_keyCode == m_debugKey.second.vkKeyCode || acKeyCode == m_debugKey.second.diKeyCode); }
-    bool SetUIKey(const unsigned long& acKeyCode, const TiltedPhoques::String& acKeyName) noexcept;
-    void HandleKeybind(const unsigned long& acKeyCode) noexcept;
-
-    uint16_t ReconcileKeyPress() noexcept;
-
     Key MakeKey(const uint16_t& acKeyCode) noexcept;
 
-    wchar_t ConvertToUnicode(const uint16_t& aKeyCode) noexcept;
+    void InitializeKeys(bool aLoadDefaults) noexcept;
+    bool SetDebugKey(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, const TiltedPhoques::WString& acKeyName, const bool& acLoadFromConfig = false) noexcept;
+    bool SetUIKey(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, const TiltedPhoques::WString& acKeyName, const bool& acLoadFromConfig = false) noexcept;
+    void HandleKeybind(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, const bool& acLoadFromConfig = false) noexcept;
+    bool CanToggleDebug(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode) const noexcept;
+    bool DoesKeyMatch(const KeybindService::Key& acLeftKey, const KeybindService::Key& acRightKey) const noexcept;
+
+    static TiltedPhoques::WString ConvertToWString(const TiltedPhoques::String& acString) noexcept;
+    static TiltedPhoques::String ConvertToString(const TiltedPhoques::WString& acString) noexcept;
+    static uint16_t ResolveVkKeyModifier(const uint16_t& acKeyCode) noexcept;
 
     void SetupConfig() noexcept;
 
@@ -108,90 +124,90 @@ private:
     Config m_config{};
 
     // Keys are not actually "set" until they are pressed from both UI and ingame (to tie together VirtualKeys with DirectInput)
+    // or loaded from config
     Key m_uiKey{};
     Key m_debugKey{};
 
     // Keys with custom names
-    TiltedPhoques::Map<Key::first_type, uint16_t> m_modifiedKeys{
-        {"Backspace", VK_BACK},
-        {"Tab", VK_TAB},
-        {"Enter", VK_RETURN},
-        {"LSHIFT", VK_LSHIFT},
-        {"RSHIFT", VK_RSHIFT},
-        {"LCTRL", VK_LCONTROL},
-        {"RCTRL", VK_RCONTROL},
-        {"LALT", VK_LMENU},
-        {"RALT", VK_RMENU},
-        {"Pause", VK_PAUSE},
-        {"Caps Lock", VK_CAPITAL},
-        {"IME Kana mode", VK_KANA},
-        {"IME Kanji mode", VK_KANJI},
-        {"Esc", VK_ESCAPE},
-        {"IME convert", VK_CONVERT},
-        {"IME nonconvert", VK_NONCONVERT},
-        {"Space", VK_SPACE},
-        {"Page Up", VK_PRIOR},
-        {"Page Down", VK_NEXT},
-        {"End", VK_END},
-        {"Home", VK_HOME},
-        {"Arrow Left", VK_LEFT},
-        {"Arrow Up", VK_UP},
-        {"Arrow Right", VK_RIGHT},
-        {"Arrow Down", VK_DOWN},
-        {"Ins", VK_INSERT},
-        {"Del", VK_DELETE},
-        {"LWIN", VK_LWIN},
-        {"RWIN", VK_RWIN},
-        {"Applications", VK_APPS},
-        {"Sleep", VK_SLEEP},
-        {"NUMPAD 0", VK_NUMPAD0},
-        {"NUMPAD 1", VK_NUMPAD1},
-        {"NUMPAD 2", VK_NUMPAD2},
-        {"NUMPAD 3", VK_NUMPAD3},
-        {"NUMPAD 4", VK_NUMPAD4},
-        {"NUMPAD 5", VK_NUMPAD5},
-        {"NUMPAD 6", VK_NUMPAD6},
-        {"NUMPAD 7", VK_NUMPAD7},
-        {"NUMPAD 8", VK_NUMPAD8},
-        {"NUMPAD 9", VK_NUMPAD9},
-        {"NUMPAD *", VK_MULTIPLY},
-        {"NUMPAD +", VK_ADD},
-        {"NUMPAD -", VK_SUBTRACT},
-        {"NUMPAD .", VK_DECIMAL},
-        {"NUMPAD /", VK_DIVIDE},
-        {"F1", VK_F1},
-        {"F2", VK_F2},
-        {"F3", VK_F3},
-        {"F4", VK_F4},
-        {"F5", VK_F5},
-        {"F6", VK_F6},
-        {"F7", VK_F7},
-        {"F8", VK_F8},
-        {"F9", VK_F9},
-        {"F10", VK_F10},
-        {"F11", VK_F11},
-        {"F12", VK_F12},
-        {"F13", VK_F13},
-        {"F14", VK_F14},
-        {"F15", VK_F15},
-        {"Num Lock", VK_NUMLOCK},
-        {"ScrLk", VK_SCROLL},
-        {"Browser Back", VK_BROWSER_BACK},
-        {"Browser Forward", VK_BROWSER_FORWARD},
-        {"Browser Refresh", VK_BROWSER_REFRESH},
-        {"Browser Stop", VK_BROWSER_STOP},
-        {"Browser Search", VK_BROWSER_SEARCH},
-        {"Browser Favorites", VK_BROWSER_FAVORITES},
-        {"Browser Stard and Home", VK_BROWSER_HOME},
-        {"Volume Mute", VK_VOLUME_MUTE},
-        {"Volume Down", VK_VOLUME_DOWN},
-        {"Volume Up", VK_VOLUME_UP},
-        {"Next Track", VK_MEDIA_NEXT_TRACK},
-        {"Previous Track", VK_MEDIA_PREV_TRACK},
-        {"Stop Media", VK_MEDIA_STOP},
-        {"Play/Pause Media", VK_MEDIA_PLAY_PAUSE},
-        {"Start Mail", VK_LAUNCH_MAIL},
-        {"Select Media", VK_LAUNCH_MEDIA_SELECT}
+    const TiltedPhoques::Map<Key::first_type, Key::second_type>& m_modifiedKeys{
+        {L"Backspace", {VK_BACK, DIK_BACK}},
+        {L"Tab", {VK_TAB, DIK_TAB}},
+        {L"Enter", {VK_RETURN, DIK_RETURN}},
+        {L"LSHIFT", {VK_LSHIFT, DIK_LSHIFT}},
+        {L"RSHIFT", {VK_RSHIFT, DIK_RSHIFT}},
+        {L"LCTRL", {VK_LCONTROL, DIK_LCONTROL}},
+        {L"RCTRL", {VK_RCONTROL, DIK_RCONTROL}},
+        {L"LALT", {VK_LMENU, DIK_LMENU}},
+        {L"RALT", {VK_RMENU, DIK_RMENU}},
+        {L"Pause", {VK_PAUSE, DIK_PAUSE}},
+        {L"Caps Lock", {VK_CAPITAL, DIK_CAPSLOCK}},
+        {L"IME Kana mode", {VK_KANA, DIK_KANA}},
+        {L"IME Kanji mode", {VK_KANJI, DIK_KANJI}},
+        {L"Esc", {VK_ESCAPE, DIK_ESCAPE}},
+        {L"IME convert", {VK_CONVERT, DIK_CONVERT}},
+        {L"IME nonconvert", {VK_NONCONVERT, DIK_NOCONVERT}},
+        {L"Space", {VK_SPACE, DIK_SPACE}},
+        {L"Page Up", {VK_PRIOR, DIK_PRIOR}},
+        {L"Page Down", {VK_NEXT, DIK_NEXT}},
+        {L"End", {VK_END, DIK_END}},
+        {L"Home", {VK_HOME, DIK_HOME}},
+        {L"Arrow Left", {VK_LEFT, DIK_LEFT}},
+        {L"Arrow Up", {VK_UP, DIK_UP}},
+        {L"Arrow Right", {VK_RIGHT, DIK_RIGHT}},
+        {L"Arrow Down", {VK_DOWN, DIK_DOWN}},
+        {L"Ins", {VK_INSERT, DIK_INSERT}},
+        {L"Del", {VK_DELETE, DIK_DELETE}},
+        {L"LWIN", {VK_LWIN, DIK_LWIN}},
+        {L"RWIN", {VK_RWIN, DIK_RWIN}},
+        {L"Applications", {VK_APPS, DIK_APPS}},
+        {L"Sleep", {VK_SLEEP, DIK_SLEEP}},
+        {L"NUMPAD 0", {VK_NUMPAD0, DIK_NUMPAD0}},
+        {L"NUMPAD 1", {VK_NUMPAD1, DIK_NUMPAD1}},
+        {L"NUMPAD 2", {VK_NUMPAD2, DIK_NUMPAD2}},
+        {L"NUMPAD 3", {VK_NUMPAD3, DIK_NUMPAD3}},
+        {L"NUMPAD 4", {VK_NUMPAD4, DIK_NUMPAD4}},
+        {L"NUMPAD 5", {VK_NUMPAD5, DIK_NUMPAD5}},
+        {L"NUMPAD 6", {VK_NUMPAD6, DIK_NUMPAD6}},
+        {L"NUMPAD 7", {VK_NUMPAD7, DIK_NUMPAD7}},
+        {L"NUMPAD 8", {VK_NUMPAD8, DIK_NUMPAD8}},
+        {L"NUMPAD 9", {VK_NUMPAD9, DIK_NUMPAD9}},
+        {L"NUMPAD *", {VK_MULTIPLY, DIK_MULTIPLY}},
+        {L"NUMPAD +", {VK_ADD, DIK_ADD}},
+        {L"NUMPAD -", {VK_SUBTRACT, DIK_SUBTRACT}},
+        {L"NUMPAD .", {VK_DECIMAL, DIK_DECIMAL}},
+        {L"NUMPAD /", {VK_DIVIDE, DIK_DIVIDE}},
+        {L"F1", {VK_F1, DIK_F1}},
+        {L"F2", {VK_F2, DIK_F2}},
+        {L"F3", {VK_F3, DIK_F3}},
+        {L"F4", {VK_F4, DIK_F4}},
+        {L"F5", {VK_F5, DIK_F5}},
+        {L"F6", {VK_F6, DIK_F6}},
+        {L"F7", {VK_F7, DIK_F7}},
+        {L"F8", {VK_F8, DIK_F8}},
+        {L"F9", {VK_F9, DIK_F9}},
+        {L"F10", {VK_F10, DIK_F10}},
+        {L"F11", {VK_F11, DIK_F11}},
+        {L"F12", {VK_F12, DIK_F12}},
+        {L"F13", {VK_F13, DIK_F13}},
+        {L"F14", {VK_F14, DIK_F14}},
+        {L"F15", {VK_F15, DIK_F15}},
+        {L"Num Lock", {VK_NUMLOCK, DIK_NUMLOCK}},
+        {L"ScrLk", {VK_SCROLL, DIK_SCROLL}},
+        {L"Browser Back", {VK_BROWSER_BACK, DIK_WEBBACK}},
+        {L"Browser Forward", {VK_BROWSER_FORWARD, DIK_WEBFORWARD}},
+        {L"Browser Refresh", {VK_BROWSER_REFRESH, DIK_WEBREFRESH}},
+        {L"Browser Stop", {VK_BROWSER_STOP, DIK_WEBSTOP}},
+        {L"Browser Search", {VK_BROWSER_SEARCH, DIK_WEBSEARCH}},
+        {L"Browser Favorites", {VK_BROWSER_FAVORITES, DIK_WEBFAVORITES}},
+        {L"Browser Stard and Home", {VK_BROWSER_HOME, DIK_WEBHOME}},
+        {L"Volume Mute", {VK_VOLUME_MUTE, DIK_MUTE}},
+        {L"Volume Down", {VK_VOLUME_DOWN, DIK_VOLUMEDOWN}},
+        {L"Volume Up", {VK_VOLUME_UP, DIK_VOLUMEUP}},
+        {L"Next Track", {VK_MEDIA_NEXT_TRACK, DIK_NEXTTRACK}},
+        {L"Previous Track", {VK_MEDIA_PREV_TRACK, DIK_PREVTRACK}},
+        {L"Stop Media", {VK_MEDIA_STOP, DIK_MEDIASTOP}},
+        {L"Start Mail", {VK_LAUNCH_MAIL, DIK_MAIL}},
+        {L"Select Media", {VK_LAUNCH_MEDIA_SELECT, DIK_MEDIASELECT}}
 
     };
 };

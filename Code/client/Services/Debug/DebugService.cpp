@@ -213,7 +213,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            //PlaceActorInWorld();
+            // PlaceActorInWorld();
         }
     }
     else
@@ -334,12 +334,11 @@ void DebugService::OnDraw() noexcept
 #endif
     if (ImGui::BeginMenu("Keybinds"))
     {
-        ImGui::MenuItem("Open rebind window", nullptr, &g_enableKeybindWindow);
-        if (ImGui::BeginMenu("Current binds"))
+        ImGui::MenuItem("Show keybinds menu", nullptr, &g_enableKeybindWindow);
+        if (ImGui::Button("Reset all binds to default"))
         {
-            ImGui::Text("Show/Hide UI: %s", World::Get().GetInputService().GetUIKey().first.c_str());
-            ImGui::Text("Show/Hide Debug: %s", m_debugKeybind.first.c_str());
-            ImGui::EndMenu();
+            World::Get().GetKeybindService().BindUIKey(VK_F2);
+            World::Get().GetKeybindService().BindDebugKey(VK_F3);
         }
 
         ImGui::EndMenu();

@@ -143,7 +143,9 @@ void Toggle(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexc
 
     const auto active = overlay.GetActive();
 
-    const auto& isRebinding = World::Get().GetDebugService().IsRebinding();
+    const auto& debugService = World::Get().GetDebugService();
+    const auto& isRebinding = debugService.IsRebinding();
+    const auto& isDebugKey = aKey == debugService.GetDebugKey().second.vkKeyCode;
 
     if (aType != KEYEVENT_CHAR && (IsToggleKey(aKey) || (IsDisableKey(aKey) && active && isRebinding)))
     {
@@ -156,7 +158,8 @@ void Toggle(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexc
             SetUIActive(overlay, pRenderer, !active);
         }
     }
-    else if (active)
+    // If debug is visible, don't inject key
+    else if (active && (isDebugKey && !debugService.m_showDebugStuff))
     {
         pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
     }
@@ -167,7 +170,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 {
     if (aType != KEYEVENT_CHAR)
     {
-        if (aType == KEYEVENT_KEYUP)
+        if (aType == KEYEVENT_KEYDOWN)
         {
             World::Get().GetDispatcher().trigger(KeyPressEvent{aKey});
         }
