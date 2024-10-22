@@ -512,13 +512,18 @@ void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessag
     if (!pActor)
         return;
 
-    // Only accept spawn position and inventory updates if not for local player
-    // The remote system is simply not authoritative for this info, and trying
-    // to take it from the remote can result in concurrent update corruption
-    // That's the real problem, either s_pRemoveAllItems or s_unequipAll
-    // have async behavior themselves or undocumented behavior that
+    // Only accept spawn position and inventory updates for REMOTE Npcs.
+    // The remote system is simply not authoritative for local Npc info, and trying 
+    // to take it from the remote can result in concurrent update corruption. 
+    // This is true whether it is a local Player (and therefor remote from the
+    // Leader), or a local NPC that is with their leader or is owned instead by 
+    // the local player and their own data, possibly out-of-date, is looping
+    // back in OnRemoteSpawnDataReceived
+    // 
+    // The underlying problem, either s_pRemoveAllItems or s_unequipAll 
+    // have async behavior themselves or undocumented behavior that 
     // causes concurrency issues.
-    if (pActor->GetExtension()->IsPlayer() && !pActor->GetExtension()->IsRemote())
+    if (!pActor->GetExtension()->IsRemote())
     {
 #if TP_SKYRIM64
         auto pNpc = Cast<TESNPC>(pActor);
