@@ -125,7 +125,7 @@ void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
         ;
 }
 
-void Toggle(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexcept
+void ToggleUI(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexcept
 {
     auto& overlay = *s_pOverlay;
 
@@ -250,7 +250,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 
     spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
 
-    Toggle(aKey, aScanCode, aType);
+    ToggleUI(aKey, aScanCode, aType);
 
 #else
     const auto active = pRenderer->IsVisible();
@@ -495,7 +495,7 @@ bool InputService::SetUIKey(const TiltedPhoques::SharedPtr<KeybindService::Key>&
 
 void InputService::Toggle(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexcept
 {
-    ::Toggle(aKey, aScanCode, aType);
+    ToggleUI(aKey, aScanCode, aType);
 }
 
 InputService::InputService(OverlayService& aOverlay) noexcept
