@@ -124,6 +124,7 @@ void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
     while (ShowCursor(FALSE) >= 0)
         ;
 }
+#endif
 
 void ToggleUI(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexcept
 {
@@ -155,7 +156,11 @@ void ToggleUI(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noe
         }
         else if (aType == KEYEVENT_KEYUP)
         {
+#if defined(TP_SKYRIM)
             SetUIActive(overlay, pRenderer, !active);
+#else
+            pRenderer->SetVisible(!active);
+#endif
         }
     }
     // If debug is visible, don't inject key
@@ -164,7 +169,6 @@ void ToggleUI(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noe
         pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
     }
 }
-#endif
 
 void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType, bool aE0, bool aE1)
 {
