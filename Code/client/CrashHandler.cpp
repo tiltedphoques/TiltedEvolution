@@ -26,7 +26,7 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
     auto retval = EXCEPTION_CONTINUE_SEARCH;
 
     // Serialize 
-    static std::mutex singleThreaded;;
+    static std::mutex singleThreaded;
     const std::lock_guard lock{singleThreaded};
 
     // Check for severe, not continuable and not software-originated exception
