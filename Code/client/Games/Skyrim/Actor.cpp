@@ -395,7 +395,9 @@ void Actor::SetActorInventory(const Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for actor {:X}", formID);
 
-    UnEquipAll();
+    // The UnEquipAll() that used to be here is redundant,
+    // as RemoveAllItems() unequips every item if needed.
+    // Placing this UnEquipAll() here seems to trigger a Skyrim bug/race.
 
     SetInventory(aInventory);
     SetMagicEquipment(aInventory.CurrentMagicEquipment);
