@@ -25,9 +25,7 @@
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
 
-#ifdef MODDED_BEHAVIOR_COMPATIBILITY
 #include <ModCompat/BehaviorVar.h>  
-#endif MODDED_BEHAVIOR_COMPATIBILITY
 
 World::World()
     : m_runner(m_dispatcher)
@@ -57,9 +55,7 @@ World::World()
     ctx().emplace<WeatherService>(*this, m_transport, m_dispatcher);
     ctx().emplace<MapService>(*this, m_dispatcher, m_transport);
 
-#ifdef MODDED_BEHAVIOR_COMPATIBILITY
     BehaviorVar::Get()->Init();
-#endif MODDED_BEHAVIOR_COMPATIBILITY
 }
 
 World::~World() = default;

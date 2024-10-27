@@ -163,12 +163,10 @@ void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool a
     if (!aEntering)
     {
         PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_Master_Behavior::m_key;
-#ifdef MODDED_BEHAVIOR_COMPATIBILITY
-        // Restore instead to saved, modified behavior hash. IF Nemesis/Pandora is installed, otherwise BehaviorVar::Patch() doesn't run.
+        // Restore to saved, modified behavior hash, IFF Nemesis/Pandora is installed, otherwise BehaviorVar::Patch() doesn't run.
         auto hash = PlayerCharacter::Get()->GetExtension()->HumanoidGraphDescriptorHash;
         if (hash)
             PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = hash;
-#endif MODDED_BEHAVIOR_COMPATIBILITY
 
         World::Get().GetRunner().Trigger(BeastFormChangeEvent());
     }

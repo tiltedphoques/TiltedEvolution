@@ -25,9 +25,7 @@
 #include <structs/AnimationGraphDescriptorManager.h>
 #include <inttypes.h>
 
-#ifdef MODDED_BEHAVIOR_COMPATIBILITY
 #include <ModCompat/BehaviorVar.h>
-#endif MODDED_BEHAVIOR_COMPATIBILITY
 
 uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
 {
@@ -87,10 +85,8 @@ void DebugService::DrawAnimDebugView()
      if (ImGui::Button("Show cached hash"))
     {
         spdlog::info("{}", pActor->GetExtension()->GraphDescriptorHash);
-#ifdef MODDED_BEHAVIOR_COMPATIBILITY
         BehaviorVar::Get()->Debug();
-#endif MODDED_BEHAVIOR_COMPATIBILITY 
-     }
+    }
 
     if (ImGui::Button("Clear all"))
     {

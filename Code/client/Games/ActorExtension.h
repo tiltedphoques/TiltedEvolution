@@ -20,10 +20,8 @@ struct ActorExtension
 
     ActionEvent LatestAnimation{};
     size_t GraphDescriptorHash = 0;
-#ifdef MODDED_BEHAVIOR_COMPATIBILITY
     size_t UnmoddedGraphDescriptorHash = 0; // Hash before any mods change it.
     size_t HumanoidGraphDescriptorHash = 0; // Copy of hash before overwritten by beast form.
-#endif MODDED_BEHAVIOR_COMPATIBILITY
 
   private:
     uint32_t onlineFlags{0};

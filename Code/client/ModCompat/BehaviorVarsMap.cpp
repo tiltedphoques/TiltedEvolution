@@ -1,4 +1,3 @@
-#ifdef MODDED_BEHAVIOR_COMPATIBILITY
 #include "BehaviorVarsMap.h"
 
 const uint32_t BehaviorVarsMap::find(const uint64_t acBehaviorVarsKey, const TiltedPhoques::String acName)
@@ -45,5 +44,3 @@ BehaviorVarsMap& BehaviorVarsMap::getInstance()
 
     return instance;
 }
-
-#endif MODDED_BEHAVIOR_COMPATIBILITY

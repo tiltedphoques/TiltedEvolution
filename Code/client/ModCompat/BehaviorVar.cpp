@@ -26,7 +26,6 @@
 //     4) Finally, that will push us over some hard-coded limits, in particular
 //        a limit of 64 boolean vars that can be synced. Remove the limit.
 //
-#ifdef MODDED_BEHAVIOR_COMPATIBILITY
 
 #include <immersive_launcher/launcher.h>
 #include <BSAnimationGraphManager.h>
@@ -767,5 +766,3 @@ void BehaviorVar::Debug()
         }
     }
 }
-
-#endif MODDED_BEHAVIOR_COMPATIBILITY
