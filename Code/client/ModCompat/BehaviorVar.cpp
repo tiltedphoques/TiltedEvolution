@@ -34,7 +34,6 @@
 #include "BehaviorVarsMap.h"
 
 #if TP_SKYRIM64
-#include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
 #include <Camera/TESCamera.h> // Camera 1st person is only in Skyrim?
 #include <Camera/PlayerCamera.h>
 #endif
@@ -361,8 +360,8 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
     // if the only humanoid Actor is the Dragonborn/player in 1st person.
     // With that case filtered out, keep a counter to see if we need to defend against other
     // cases (like a modded behavior where we CAN't find the signature var).
-    if (invocations++ == 100)
-        spdlog::warn(__FUNCTION__ ": warning, more than 100 invocations, investigate why");
+    if (invocations++ == 1000)
+        spdlog::warn(__FUNCTION__ ": warning, more than 1000 invocations, investigate why");
 
     spdlog::info(__FUNCTION__ ": actor with formID {:x} with hash of {} has modded (or not synced) behavior", hexFormID, hash);
 
@@ -434,13 +433,22 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
         foundRep.creatureName,
         foundRep.signatureVar);
 
-    // Save the new hash for the actor. Save a copy to restore to if overwritten; this currently
-    // only happens when humanoids enter beast mode, Humanoid copy is used to change back.
-    // We also save the original (unmodded) STR hash, because there are some hardwired tests
-    // that need it (like the IsDragon() test).
+    // Save the new hash for the actor. Save copies of the new hash when humanoids (Master_Behavior)
+    // or dragons (BHR_Master) are modified. The humanoid hash is used to return from beast mode
+    // (werewolf or vampire), and the dragon hash is used to implement an IsDragon() primitive.
     pExtendedActor->GraphDescriptorHash = hash;
-    pExtendedActor->HumanoidGraphDescriptorHash = hash;
-    pExtendedActor->UnmoddedGraphDescriptorHash = foundRep.origHash;
+    switch (foundRep.origHash)
+    {
+    case AnimationGraphDescriptor_Master_Behavior::m_key:
+        m_humanoidGraphDescriptorHash = hash;
+        spdlog::info(__FUNCTION__ ": captured modified Master_Behavior hash {:X}", hash);
+        break;
+
+    case AnimationGraphDescriptor_BHR_Master::m_key:
+        m_dragonGraphDescriptorHash = hash;
+        spdlog::info(__FUNCTION__ ": captured modified BHR_Master (dragon) hash {:X}", hash);
+        break;
+    }
 
     return ConstructModdedDescriptor(hash, foundRep, reverseMap);
 }
