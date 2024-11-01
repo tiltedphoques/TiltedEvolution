@@ -39,6 +39,7 @@
 #include <Services/DebugService.h>
 #include <World.h>
 
+
 #if TP_SKYRIM64
 #include <Combat/CombatController.h>
 #include <AI/AITimer.h>
@@ -48,6 +49,8 @@
 #if TP_FALLOUT4
 #include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
 #endif
+
+extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* pManager, Actor* pActor);
 
 using ScopedReferencesOverride = ScopedOverride<TESObjectREFR>;
 thread_local uint32_t ScopedReferencesOverride::s_refCount = 0;
@@ -219,6 +222,11 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
             auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
+            // Modded behavior check if descriptor wasn't found
+            extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager * pManager, Actor * pActor);
+            if (!pDescriptor)
+                pDescriptor = BehaviorVarPatch(pManager, pActor);
+
             if (!pDescriptor)
                 return;
 
@@ -337,6 +345,10 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 pExtendedActor->GraphDescriptorHash = pManager->GetDescriptorKey();
 
             auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
+
+            // Modded behavior check if descriptor wasn't found
+            if (!pDescriptor)
+                pDescriptor = BehaviorVarPatch(pManager, pActor);
 
             if (!pDescriptor)
                 return;
