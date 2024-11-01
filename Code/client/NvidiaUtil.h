@@ -5,4 +5,4 @@
 
 bool IsNvidiaOverlayLoaded();
 
-HRESULT CreateEarlyDxDevice(ID3D11Device* apOutDevice, D3D_FEATURE_LEVEL* apOutFeatureLevel);
+HRESULT CreateEarlyDxDevice(ID3D11Device** appOutDevice, D3D_FEATURE_LEVEL* apOutFeatureLevel);
