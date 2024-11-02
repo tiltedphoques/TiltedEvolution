@@ -331,7 +331,6 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
 
     for (const auto& [key, value] : acMessage.Values)
     {
-#if TP_SKYRIM64
         // Syncing dragon souls triggers "Dragon soul collected" event
         if (key == ActorValueInfo::kDragonSouls || key == ActorValueInfo::kHealth)
             continue;
@@ -343,7 +342,6 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
             pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, key, value);
             continue;
         }
-#endif
         pActor->SetActorValue(key, value);
     }
 }
@@ -365,10 +363,8 @@ void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges&
 
     for (const auto& [key, value] : acMessage.Values)
     {
-#if TP_SKYRIM64
         if (key == ActorValueInfo::kDragonSouls)
             continue;
-#endif
 
         spdlog::debug("Actor max value update, server ID: {:X}, key: {}, value: {}", acMessage.Id, key, value);
 

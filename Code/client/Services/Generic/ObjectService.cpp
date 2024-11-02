@@ -20,9 +20,7 @@
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
-#if TP_SKYRIM64
 #include <Forms/BGSEncounterZone.h>
-#endif
 
 #include <inttypes.h>
 
@@ -40,14 +38,9 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_scriptAnimationConnection = aDispatcher.sink<ScriptAnimationEvent>().connect<&ObjectService::OnScriptAnimationEvent>(this);
     m_scriptAnimationNotifyConnection = aDispatcher.sink<NotifyScriptAnimation>().connect<&ObjectService::OnNotifyScriptAnimation>(this);
 
-#if TP_SKYRIM64
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
-#else
-    GetEventDispatcher_TESActivateEvent()->RegisterSink(this);
-#endif
 }
 
-#if TP_SKYRIM64
 bool IsPlayerHome(const TESObjectCELL* pCell) noexcept
 {
     if (pCell && pCell->loadedCellData && pCell->loadedCellData->encounterZone)
@@ -79,7 +72,6 @@ bool ShouldSyncObject(const TESObjectREFR* apObject) noexcept
     default: return true;
     }
 }
-#endif
 
 void ObjectService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
@@ -96,10 +88,8 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     // Player homes should not be synced, so that chest contents,
     // which are often used as storage, are never accidentally wiped.
-#if TP_SKYRIM64
     if (!World::Get().GetServerSettings().SyncPlayerHomes && IsPlayerHome(pCell))
         return;
-#endif
 
     GameId cellId{};
     if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellId))
@@ -127,13 +117,11 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     for (TESObjectREFR* pObject : objects)
     {
-#if TP_SKYRIM64
         if (!ShouldSyncObject(pObject))
         {
             spdlog::warn("Excluding sync for {:X}", pObject->formID);
             continue;
         }
-#endif
 
         ObjectData objectData{};
         objectData.CellId = cellId;
@@ -221,11 +209,7 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
 {
     if (acEvent.ActivateFlag)
     {
-#if TP_FALLOUT4
-        acEvent.pObject->Activate(acEvent.pActivator, acEvent.pObjectToGet, acEvent.Count, acEvent.DefaultProcessing, acEvent.FromScript, acEvent.IsLooping);
-#elif TP_SKYRIM64
         acEvent.pObject->Activate(acEvent.pActivator, acEvent.Unk1, acEvent.pObjectToGet, acEvent.Count, acEvent.DefaultProcessing);
-#endif
     }
 
     if (!m_transport.IsConnected())
@@ -245,12 +229,7 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
         return;
     }
 
-    // TODO: ft
-#if TP_SKYRIM64
     TESObjectCELL* pCell = acEvent.pObject->GetParentCellEx();
-#else
-    TESObjectCELL* pCell = acEvent.pObject->parentCell;
-#endif
     if (!pCell)
     {
         spdlog::error("Activated object has no parent cell: {:X}", acEvent.pObject->formID);
@@ -314,11 +293,7 @@ void ObjectService::OnActivateNotify(const NotifyActivate& acMessage) noexcept
 
     // unsure if these flags are the best, but these are passed with the papyrus Activate fn
     // might be an idea to have the client send the flags through NotifyActivate
-#if TP_FALLOUT4
-    pObject->Activate(pActor, nullptr, 1, 0, 0, 0);
-#elif TP_SKYRIM64
     pObject->Activate(pActor, 0, nullptr, 1, 0);
-#endif
 }
 
 void ObjectService::OnLockChange(const LockChangeEvent& acEvent) noexcept
@@ -336,12 +311,7 @@ void ObjectService::OnLockChange(const LockChangeEvent& acEvent) noexcept
 
     const auto* const pObject = Cast<TESObjectREFR>(TESForm::GetById(acEvent.FormId));
 
-    // TODO: ft
-#if TP_SKYRIM64
     TESObjectCELL* pCell = pObject->GetParentCellEx();
-#else
-    TESObjectCELL* pCell = pObject->parentCell;
-#endif
     if (!pCell)
     {
         spdlog::error("Activated object has no parent cell: {:X}", pObject->formID);
@@ -405,7 +375,6 @@ void ObjectService::OnScriptAnimationEvent(const ScriptAnimationEvent& acEvent) 
 
 void ObjectService::OnNotifyScriptAnimation(const NotifyScriptAnimation& acMessage) noexcept
 {
-#if TP_SKYRIM64
     if (acMessage.FormID == 0)
         return;
 
@@ -428,7 +397,6 @@ void ObjectService::OnNotifyScriptAnimation(const NotifyScriptAnimation& acMessa
         BSFixedString animation(acMessage.Animation.c_str());
         pObject->PlayAnimationAndWait(&animation, &eventName);
     }
-#endif
 }
 
 BSTEventResult ObjectService::OnEvent(const TESActivateEvent* acEvent, const EventDispatcher<TESActivateEvent>* aDispatcher)

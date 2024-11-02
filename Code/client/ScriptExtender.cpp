@@ -5,21 +5,9 @@
 
 namespace
 {
-constexpr wchar_t kScriptExtenderName[] =
-#if TP_SKYRIM
-    L"skse64"
-#elif TP_FALLOUT
-    L"f4se"
-#endif
-    ;
+constexpr wchar_t kScriptExtenderName[] = L"skse64";
 
-constexpr char kScriptExtenderEntrypoint[] =
-#if TP_SKYRIM
-    "StartSKSE"
-#elif TP_FALLOUT
-    "StartF4SE"
-#endif
-    ;
+constexpr char kScriptExtenderEntrypoint[] = "StartSKSE";
 
 constexpr size_t kScriptExtenderNameLength = sizeof(kScriptExtenderName) / sizeof(wchar_t) - 1;
 
@@ -136,7 +124,6 @@ void LoadScriptExender()
 
     auto skseVersion = fmt::format("v{}.{}.{}.{}", fileVersion.versions[0], fileVersion.versions[1], fileVersion.versions[2], fileVersion.versions[3]);
 
-#if TP_SKYRIM
     // nice try.
     int SkseVCum = fileVersion.versions[0] * 1000000 + fileVersion.versions[1] * 10000 + fileVersion.versions[2] * 100 + fileVersion.versions[3];
     if (SkseVCum < kSKSEMinBuild)
@@ -144,7 +131,6 @@ void LoadScriptExender()
         spdlog::error("Pre anniversary Script Extender is unsupported");
         return;
     }
-#endif
 
     if (g_SKSEModuleHandle = LoadLibraryW(needle->c_str()))
     {

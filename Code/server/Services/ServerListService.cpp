@@ -13,12 +13,8 @@
 extern Console::Setting<uint32_t> uMaxPlayerCount;
 
 static constexpr char kMasterServerEndpoint[] =
-#if TP_SKYRIM
     //"http://127.0.0.1:8000";
     "https://skyrim-reborn-list.skyrim-together.com";
-#elif TP_FALLOUT
-    "https://fallout-reborn-list.skyrim-together.com";
-#endif
 
 static Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer", "Whether to list the server on the public server list", false};
 
