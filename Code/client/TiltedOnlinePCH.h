@@ -6,22 +6,6 @@
 
 #include <TiltedCore/Platform.hpp>
 
-#if defined(TP_SKYRIM) && TP_PLATFORM_64
-#define TP_SKYRIM64 1
-#define TP_SKYRIM32 0
-#define TP_FALLOUT4 0
-#elif defined(TP_SKYRIM) && TP_PLATFORM_32
-#define TP_SKYRIM64 0
-#define TP_SKYRIM32 1
-#define TP_FALLOUT4 0
-#elif defined(TP_FALLOUT) && TP_PLATFORM_64
-#define TP_SKYRIM64 0
-#define TP_SKYRIM32 0
-#define TP_FALLOUT4 1
-#else
-#error No game matches these build options
-#endif
-
 #include <windows.h>
 #include <intrin.h>
 #include <cstdint>

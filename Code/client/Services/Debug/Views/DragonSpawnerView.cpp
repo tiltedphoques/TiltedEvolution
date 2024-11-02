@@ -3,7 +3,6 @@
 
 void DebugService::DrawDragonSpawnerView()
 {
-#if TP_SKYRIM64
     ImGui::Begin("Dragon spawner");
 
     if (ImGui::CollapsingHeader("Dragons (level 10)"))
@@ -111,5 +110,4 @@ void DebugService::DrawDragonSpawnerView()
     }
 
     ImGui::End();
-#endif
 }

@@ -31,22 +31,13 @@ struct ExtraDataList
 
     [[nodiscard]] bool HasQuestObjectAlias() noexcept;
 
-#if TP_SKYRIM64
     virtual ~ExtraDataList();
-#endif
-
-#if TP_FALLOUT4
-    void* unk0;
-#endif
     BSExtraData* data = nullptr;
 
     struct Bitfield
     {
         uint8_t data[0x18];
     };
-#if TP_FALLOUT4
-    void* unk10;
-#endif
 
     Bitfield* bitfield{};
     mutable BSRecursiveLock lock{};

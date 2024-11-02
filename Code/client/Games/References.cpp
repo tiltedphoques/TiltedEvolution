@@ -39,16 +39,9 @@
 #include <Services/DebugService.h>
 #include <World.h>
 
-
-#if TP_SKYRIM64
 #include <Combat/CombatController.h>
 #include <AI/AITimer.h>
 #include <Combat/CombatTargetSelector.h>
-#endif
-
-#if TP_FALLOUT4
-#include <Structs/Fallout4/AnimationGraphDescriptor_Master_Behavior.h>
-#endif
 
 extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* pManager, Actor* pActor);
 
@@ -76,32 +69,20 @@ namespace Settings
 int32_t* GetDifficulty() noexcept
 {
     POINTER_SKYRIMSE(int32_t, s_difficulty, 381472);
-    POINTER_FALLOUT4(int32_t, s_difficulty, 1072875);
     return s_difficulty.Get();
 }
 
 float* GetGreetDistance() noexcept
 {
     POINTER_SKYRIMSE(float, s_greetDistance, 370892);
-    POINTER_FALLOUT4(float, s_greetDistance, 855966);
     return s_greetDistance.Get();
 }
 
-#if TP_FALLOUT4
-float* GetVATSSelectTargetTimeMultiplier() noexcept
-{
-    POINTER_FALLOUT4(float, s_vatsSelectTargetMult, 302827);
-    return s_vatsSelectTargetMult.Get();
-}
-#endif
 } // namespace Settings
 
 namespace GameplayFormulas
 {
 
-// TODO: ft
-// fallout 4's damage calc code looks a bit different
-// move this from References.cpp
 float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexcept
 {
     using TGetDifficultyMultiplier = float(int32_t, int32_t, bool);
@@ -109,12 +90,7 @@ float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexce
 
     bool isPlayer = apHittee == PlayerCharacter::Get();
 
-    // TODO: ft
-#if TP_SKYRIM64
     float multiplier = s_getDifficultyMultiplier(PlayerCharacter::Get()->difficulty, ActorValueInfo::kHealth, isPlayer);
-#else
-    float multiplier = 1.f;
-#endif
 
     float realDamage = aDamage;
 
@@ -128,14 +104,11 @@ float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexce
 
 } // namespace GameplayFormulas
 
-// TODO: ft
 void FadeOutGame(bool aFadingOut, bool aBlackFade, float aFadeDuration, bool aRemainVisible, float aSecondsToFade) noexcept
 {
-#if TP_SKYRIM64
     using TFadeOutGame = void(bool, bool, float, bool, float);
     POINTER_SKYRIMSE(TFadeOutGame, fadeOutGame, 52847);
     fadeOutGame.Get()(aFadingOut, aBlackFade, aFadeDuration, aRemainVisible, aSecondsToFade);
-#endif
 }
 
 TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
@@ -145,7 +118,6 @@ TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
     using TGetRefrByHandle = void(uint32_t & aHandle, TESObjectREFR * &apResult);
 
     POINTER_SKYRIMSE(TGetRefrByHandle, s_getRefrByHandle, 17201);
-    POINTER_FALLOUT4(TGetRefrByHandle, s_getRefrByHandle, 1152089);
 
     s_getRefrByHandle.Get()(aHandle, pResult);
 
@@ -159,7 +131,6 @@ BSPointerHandle<TESObjectREFR> TESObjectREFR::GetHandle() const noexcept
 {
     TP_THIS_FUNCTION(TGetHandle, BSPointerHandle<TESObjectREFR>, const TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult);
     POINTER_SKYRIMSE(TGetHandle, s_getHandle, 19846);
-    POINTER_FALLOUT4(TGetHandle, s_getHandle, 1573131);
 
     BSPointerHandle<TESObjectREFR> result{};
     TiltedPhoques::ThisCall(s_getHandle, this, &result);
@@ -170,7 +141,6 @@ BSPointerHandle<TESObjectREFR> TESObjectREFR::GetHandle() const noexcept
 uint32_t* TESObjectREFR::GetNullHandle() noexcept
 {
     POINTER_SKYRIMSE(uint32_t, s_nullHandle, 400312);
-    POINTER_FALLOUT4(uint32_t, s_nullHandle, 888642);
 
     return s_nullHandle.Get();
 }
@@ -239,30 +209,9 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             aVariables.Floats.assign(pDescriptor->FloatLookupTable.size(), 0.f);
             aVariables.Integers.assign(pDescriptor->IntegerLookupTable.size(), 0);
 
-#if TP_FALLOUT4
-            // TODO: maybe send a var with the variables indicating first or third person?
-            hkbVariableValueSet* pFirstPersonVariables = nullptr;
-            if (pActor->formID == 0x14)
-                pFirstPersonVariables = pManager->animationGraphs.Get(1)->behaviorGraph->animationVariables;
-#endif
-
             for (size_t i = 0; i < pDescriptor->BooleanLookUpTable.size(); ++i)
             {
                 const auto idx = pDescriptor->BooleanLookUpTable[i];
-
-#if TP_FALLOUT4
-                if (pActor->formID == 0x14)
-                {
-                    auto firstPersonIdx = AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx);
-                    if (!firstPersonIdx)
-                        continue;
-
-                    if (pFirstPersonVariables->data[*firstPersonIdx] != 0)
-                        aVariables.Booleans[i] = true;
-
-                    continue;
-                }
-#endif
 
                 if (pVariableSet->data[idx] != 0)
                     aVariables.Booleans[i] = true;
@@ -272,44 +221,12 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             {
                 const auto idx = pDescriptor->FloatLookupTable[i];
 
-#if TP_FALLOUT4
-                if (pActor->formID == 0x14)
-                {
-                    auto firstPersonIdx = AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx);
-                    if (!firstPersonIdx)
-                    {
-                        aVariables.Floats[i] = 0.f;
-                        continue;
-                    }
-
-                    aVariables.Floats[i] = *reinterpret_cast<float*>(&pFirstPersonVariables->data[*firstPersonIdx]);
-
-                    continue;
-                }
-#endif
-
                 aVariables.Floats[i] = *reinterpret_cast<float*>(&pVariableSet->data[idx]);
             }
 
             for (size_t i = 0; i < pDescriptor->IntegerLookupTable.size(); ++i)
             {
                 const auto idx = pDescriptor->IntegerLookupTable[i];
-
-#if TP_FALLOUT4
-                if (pActor->formID == 0x14)
-                {
-                    auto firstPersonIdx = AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx);
-                    if (!firstPersonIdx)
-                    {
-                        aVariables.Integers[i] = 0.f;
-                        continue;
-                    }
-
-                    aVariables.Integers[i] = *reinterpret_cast<uint32_t*>(&pFirstPersonVariables->data[*firstPersonIdx]);
-
-                    continue;
-                }
-#endif
 
                 aVariables.Integers[i] = *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]);
             }
@@ -475,27 +392,21 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
     TP_THIS_FUNCTION(TInternalMoveTo, bool, const TESObjectREFR, uint32_t*&, TESObjectCELL*, TESWorldSpace*, const NiPoint3&, const NiPoint3&);
 
     POINTER_SKYRIMSE(TInternalMoveTo, s_internalMoveTo, 56626);
-    POINTER_FALLOUT4(TInternalMoveTo, s_internalMoveTo, 1332435);
 
     TiltedPhoques::ThisCall(s_internalMoveTo, this, GetNullHandle(), apCell, apCell->worldspace, acPosition, rotation);
 }
 
-// TODO: ft
 void TESObjectREFR::PayGold(int32_t aAmount) noexcept
 {
-#if TP_SKYRIM64
     ScopedInventoryOverride _;
     PayGoldToContainer(nullptr, aAmount);
-#endif
 }
 
 void TESObjectREFR::PayGoldToContainer(TESObjectREFR* pContainer, int32_t aAmount) noexcept
 {
-#if TP_SKYRIM64
     TP_THIS_FUNCTION(TPayGoldToContainer, void, TESObjectREFR, TESObjectREFR*, int32_t);
     POINTER_SKYRIMSE(TPayGoldToContainer, s_payGoldToContainer, 37511);
     TiltedPhoques::ThisCall(s_payGoldToContainer, this, pContainer, aAmount);
-#endif
 }
 
 float Actor::GetSpeed() noexcept
@@ -517,7 +428,6 @@ uint16_t Actor::GetLevel() const noexcept
 {
     TP_THIS_FUNCTION(TGetLevel, uint16_t, const Actor);
     POINTER_SKYRIMSE(TGetLevel, s_getLevel, 37334);
-    POINTER_FALLOUT4(TGetLevel, s_getLevel, 661618);
     return TiltedPhoques::ThisCall(s_getLevel, this);
 }
 
@@ -535,34 +445,19 @@ void Actor::QueueUpdate() noexcept
     const auto originalValue = pSetting->data;
     pSetting->data = 0;
 
-#ifdef TP_SKYRIM
     TP_THIS_FUNCTION(TQueueUpdate, void, Actor, bool);
-#else
-    TP_THIS_FUNCTION(TQueueUpdate, void, Actor, bool aFaceGen, uint32_t, bool, uint32_t);
-#endif
-
     POINTER_SKYRIMSE(TQueueUpdate, QueueUpdate, 40255);
-    POINTER_FALLOUT4(TQueueUpdate, QueueUpdate, 302889);
 
-#ifdef TP_SKYRIM
     TiltedPhoques::ThisCall(QueueUpdate, this, true);
-#else
-    TiltedPhoques::ThisCall(QueueUpdate, this, true, 0, true, 0);
-#endif
 
     pSetting->data = originalValue;
 }
 
-// TODO: ft
 TESObjectCELL* TESWorldSpace::LoadCell(int32_t aXCoordinate, int32_t aYCoordinate) noexcept
 {
-#if TP_SKYRIM64
     TP_THIS_FUNCTION(TLoadCell, TESObjectCELL*, TESWorldSpace, int32_t aXCoordinate, int32_t aYCoordinate);
     POINTER_SKYRIMSE(TLoadCell, s_loadCell, 20460);
     return TiltedPhoques::ThisCall(s_loadCell, this, aXCoordinate, aYCoordinate);
-#else
-    return nullptr;
-#endif
 }
 
 GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
@@ -591,11 +486,9 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 
     pActor->ForcePosition(position);
 
-#if TP_SKYRIM
     pActor->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
     pActor->GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
     pActor->GetMagicCaster(MagicSystem::CastingSource::OTHER);
-#endif
 
     pActor->flags &= 0xFFDFFFFF;
 
@@ -612,13 +505,8 @@ void Actor::SetLevelMod(uint32_t aLevel) noexcept
 {
     TP_THIS_FUNCTION(TActorSetLevelMod, void, ExtraDataList, uint32_t);
     POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 11806);
-    POINTER_FALLOUT4(TActorSetLevelMod, realSetLevelMod, 780730);
 
-#if TP_FALLOUT4
-    const auto pExtraDataList = extraData;
-#else
     const auto pExtraDataList = &extraData;
-#endif
 
     TiltedPhoques::ThisCall(realSetLevelMod, pExtraDataList, aLevel);
 }
@@ -656,13 +544,11 @@ ExPlayerCharacter* Actor::AsExPlayerCharacter() noexcept
 
 PlayerCharacter* PlayerCharacter::Get() noexcept
 {
-    POINTER_FALLOUT4(PlayerCharacter*, s_character, 303411);
     POINTER_SKYRIMSE(PlayerCharacter*, s_character, 401069);
 
     return *s_character.Get();
 }
 
-#if TP_SKYRIM
 const GameArray<TintMask*>& PlayerCharacter::GetTints() const noexcept
 {
     if (overlayTints)
@@ -670,13 +556,11 @@ const GameArray<TintMask*>& PlayerCharacter::GetTints() const noexcept
 
     return baseTints;
 }
-#endif
 
 Lock* TESObjectREFR::GetLock() const noexcept
 {
     TP_THIS_FUNCTION(TGetLock, Lock*, const TESObjectREFR);
     POINTER_SKYRIMSE(TGetLock, realGetLock, 20223);
-    POINTER_FALLOUT4(TGetLock, realGetLock, 930786);
 
     return TiltedPhoques::ThisCall(realGetLock, this);
 }
@@ -685,7 +569,6 @@ Lock* TESObjectREFR::CreateLock() noexcept
 {
     TP_THIS_FUNCTION(TCreateLock, Lock*, TESObjectREFR);
     POINTER_SKYRIMSE(TCreateLock, realCreateLock, 20221);
-    POINTER_FALLOUT4(TCreateLock, realCreateLock, 1303718);
 
     return TiltedPhoques::ThisCall(realCreateLock, this);
 }
@@ -713,9 +596,7 @@ TESObjectREFR::OpenState TESObjectREFR::GetOpenState() noexcept
 bool ActorState::SetWeaponDrawn(bool aDraw) noexcept
 {
     TP_THIS_FUNCTION(TSetWeaponState, bool, ActorState, bool aDraw);
-
     POINTER_SKYRIMSE(TSetWeaponState, setWeaponState, 38979);
-    POINTER_FALLOUT4(TSetWeaponState, setWeaponState, 835807);
 
     return TiltedPhoques::ThisCall(setWeaponState, this, aDraw);
 }
@@ -753,15 +634,11 @@ void Actor::SetPlayerRespawnMode(bool aSet) noexcept
     // Makes the player go in an unrecoverable bleedout state
     SetNoBleedoutRecovery(aSet);
 
-#if TP_SKYRIM64
     if (formID != 0x14)
     {
         auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
         SetFactionRank(pPlayerFaction, 1);
     }
-#elif TP_FALLOUT4
-    // TODO: ft
-#endif
 }
 
 void Actor::SetEssentialEx(bool aSet) noexcept
@@ -776,7 +653,6 @@ void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
 {
     TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
     POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
-    POINTER_FALLOUT4(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 925299);
     TiltedPhoques::ThisCall(s_setNoBleedoutRecovery, this, aSet);
 }
 
@@ -789,7 +665,6 @@ void MagicTarget::DispelAllSpells(bool aNow) noexcept
 {
     TP_THIS_FUNCTION(TDispelAllSpells, void, MagicTarget, bool aNow);
     POINTER_SKYRIMSE(TDispelAllSpells, dispelAllSpells, 34512);
-    POINTER_FALLOUT4(TDispelAllSpells, dispelAllSpells, 629903);
     TiltedPhoques::ThisCall(dispelAllSpells, this, aNow);
 }
 
@@ -797,14 +672,12 @@ void TESObjectCELL::GetCOCPlacementInfo(NiPoint3* aOutPos, NiPoint3* aOutRot, bo
 {
     TP_THIS_FUNCTION(TGetCOCPlacementInfo, void, TESObjectCELL, NiPoint3*, NiPoint3*, bool);
     POINTER_SKYRIMSE(TGetCOCPlacementInfo, s_getCOCPlacementInfo, 19075);
-    POINTER_FALLOUT4(TGetCOCPlacementInfo, s_getCOCPlacementInfo, 1045265);
     TiltedPhoques::ThisCall(s_getCOCPlacementInfo, this, aOutPos, aOutRot, aAllowCellLoad);
 }
 
 void PlayerCharacter::SetGodMode(bool aSet) noexcept
 {
     POINTER_SKYRIMSE(bool, bGodMode, 404238);
-    POINTER_FALLOUT4(bool, bGodMode, 806707);
     *bGodMode.Get() = aSet;
 }
 
@@ -812,7 +685,6 @@ void AIProcess::KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, 
 {
     TP_THIS_FUNCTION(TKnockExplosion, void, AIProcess, Actor*, const NiPoint3*, float);
     POINTER_SKYRIMSE(TKnockExplosion, knockExplosion, 39895);
-    POINTER_FALLOUT4(TKnockExplosion, knockExplosion, 803088);
     TiltedPhoques::ThisCall(knockExplosion, this, apActor, aSourceLocation, afMagnitude);
 }
 
@@ -839,25 +711,16 @@ void Actor::StartCombatEx(Actor* apTarget) noexcept
     }
 }
 
-// TODO: ft
 void Actor::SetCombatTargetEx(Actor* apTarget) noexcept
 {
-#if TP_SKYRIM64
     if (pCombatController)
         pCombatController->SetTarget(apTarget);
-#endif
 }
 
 void Actor::StartCombat(Actor* apTarget) noexcept
 {
-#if TP_SKYRIM64
     PAPYRUS_FUNCTION(void, Actor, StartCombat, Actor*);
     s_pStartCombat(this, apTarget);
-#elif TP_FALLOUT4
-    // TODO: not sure about this bool
-    PAPYRUS_FUNCTION(void, Actor, StartCombat, Actor*, bool);
-    s_pStartCombat(this, apTarget, true);
-#endif
 }
 
 void Actor::StopCombat() noexcept
@@ -873,7 +736,6 @@ bool Actor::HasPerk(uint32_t aPerkFormId) const noexcept
 
 uint8_t Actor::GetPerkRank(uint32_t aPerkFormId) const noexcept
 {
-#if TP_SKYRIM64
     BGSPerk* pPerk = Cast<BGSPerk>(TESForm::GetById(aPerkFormId));
     if (!pPerk)
         return 0;
@@ -883,9 +745,6 @@ uint8_t Actor::GetPerkRank(uint32_t aPerkFormId) const noexcept
     // TODO(ft)
 
     return TiltedPhoques::ThisCall(getPerkRank, this, pPerk);
-#else
-    return 0;
-#endif
 }
 
 Sky* Sky::Get() noexcept
@@ -893,8 +752,6 @@ Sky* Sky::Get() noexcept
     using SkyGet = Sky*(__fastcall)();
 
     POINTER_SKYRIMSE(SkyGet, skyGet, 13878);
-    // TODO(ft): verify
-    POINTER_FALLOUT4(SkyGet, skyGet, 484695);
 
     return skyGet.Get()();
 }
@@ -913,21 +770,16 @@ void Sky::ForceWeather(TESWeather* apWeather) noexcept
 
 void Sky::ReleaseWeatherOverride() noexcept
 {
-#if TP_SKYRIM64
     TP_THIS_FUNCTION(TReleaseWeatherOverride, void, Sky);
     POINTER_SKYRIMSE(TReleaseWeatherOverride, releaseWeatherOverride, 26244);
-    // TODO(ft)
 
     TiltedPhoques::ThisCall(releaseWeatherOverride, this);
-#endif
 }
 
 void Sky::ResetWeather() noexcept
 {
     TP_THIS_FUNCTION(TResetWeather, void, Sky);
     POINTER_SKYRIMSE(TResetWeather, resetWeather, 26242);
-    // TODO(ft): verify
-    POINTER_FALLOUT4(TResetWeather, resetWeather, 6512);
 
     TiltedPhoques::ThisCall(resetWeather, this);
 }
@@ -1063,10 +915,7 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
     if (pObject)
         formId = pObject->formID;
 
-    // TODO: ft
-#if TP_SKYRIM64
     World::Get().GetDebugService().SetDebugId(formId);
-#endif
 
     return TiltedPhoques::ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }
@@ -1136,47 +985,18 @@ TiltedPhoques::Initializer s_referencesHooks(
     []()
     {
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
-        POINTER_FALLOUT4(TSetPosition, s_setPosition, 1101833);
-
         POINTER_SKYRIMSE(TRotate, s_rotateX, 19787);
-        POINTER_FALLOUT4(TRotate, s_rotateX, 158657);
-
         POINTER_SKYRIMSE(TRotate, s_rotateY, 19788);
-        POINTER_FALLOUT4(TRotate, s_rotateY, 942683);
-
         POINTER_SKYRIMSE(TRotate, s_rotateZ, 19789);
-        POINTER_FALLOUT4(TRotate, s_rotateZ, 144722);
-
         POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 37356);
-        POINTER_FALLOUT4(TActorProcess, s_actorProcess, 1479788);
-
         POINTER_SKYRIMSE(TLockChange, s_lockChange, 19512);
-        POINTER_FALLOUT4(TLockChange, s_lockChange, 1578707);
-
         POINTER_SKYRIMSE(TCheckForNewPackage, s_checkForNewPackage, 39114);
-        POINTER_FALLOUT4(TCheckForNewPackage, s_checkForNewPackage, 609986);
-
         POINTER_SKYRIMSE(TInitFromPackage, s_initFromPackage, 38959);
-        POINTER_FALLOUT4(TInitFromPackage, s_initFromPackage, 644844);
-
         POINTER_SKYRIMSE(TSetCurrentPickREFR, s_setCurrentPickREFR, 51093);
-
         POINTER_SKYRIMSE(TSetWeather, setWeather, 26241);
-        // TODO(ft): verify
-        POINTER_FALLOUT4(TSetWeather, setWeather, 1244029);
-
         POINTER_SKYRIMSE(TForceWeather, forceWeather, 26243);
-        // TODO(ft): verify
-        POINTER_FALLOUT4(TForceWeather, forceWeather, 698559);
-
         POINTER_SKYRIMSE(TUpdateWeather, updateWeather, 26231);
-        // TODO(ft): verify
-        POINTER_FALLOUT4(TUpdateWeather, updateWeather, 1278860);
-
         POINTER_SKYRIMSE(TAddDeathItems, addDeathItems, 37198);
-        // TODO(ft): verify
-        POINTER_FALLOUT4(TAddDeathItems, addDeathItems, 708754);
-
         POINTER_SKYRIMSE(TIsFleeing, isFleeing, 37577);
 
         RealSetPosition = s_setPosition.Get();
@@ -1187,18 +1007,12 @@ TiltedPhoques::Initializer s_referencesHooks(
         RealLockChange = s_lockChange.Get();
         RealCheckForNewPackage = s_checkForNewPackage.Get();
         RealInitFromPackage = s_initFromPackage.Get();
-    // TODO: ft
-#if TP_SKYRIM64
         RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
-#endif
         RealSetWeather = setWeather.Get();
         RealForceWeather = forceWeather.Get();
         RealUpdateWeather = updateWeather.Get();
         RealAddDeathItems = addDeathItems.Get();
-    // TODO: ft
-#if TP_SKYRIM64
         RealIsFleeing = isFleeing.Get();
-#endif
 
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRotateX, HookRotateX);

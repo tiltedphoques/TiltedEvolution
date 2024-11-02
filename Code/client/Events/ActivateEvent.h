@@ -9,19 +9,6 @@ struct TESBoundObject;
  */
 struct ActivateEvent
 {
-#if TP_FALLOUT4
-    ActivateEvent(TESObjectREFR* apObject, Actor* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, bool aFromScript, bool aIsLooping, bool aActivateFlag = false)
-        : pObject(apObject)
-        , pActivator(apActivator)
-        , pObjectToGet(apObjectToGet)
-        , Count(aCount)
-        , DefaultProcessing(aDefaultProcessing)
-        , FromScript(aFromScript)
-        , IsLooping(aIsLooping)
-        , ActivateFlag(aActivateFlag)
-    {
-    }
-#elif TP_SKYRIM64
     ActivateEvent(TESObjectREFR* apObject, Actor* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing, uint8_t aUnk1, TESObjectREFR::OpenState aPreActivationOpenState, bool aActivateFlag = false)
         : pObject(apObject)
         , pActivator(apActivator)
@@ -33,20 +20,13 @@ struct ActivateEvent
         , ActivateFlag(aActivateFlag)
     {
     }
-#endif
 
     TESObjectREFR* pObject;
     Actor* pActivator;
     TESBoundObject* pObjectToGet;
     int32_t Count;
     bool DefaultProcessing;
-#if TP_FALLOUT4
-    bool FromScript;
-    bool IsLooping;
-#elif TP_SKYRIM64
     uint8_t Unk1;
-#endif
-
     TESObjectREFR::OpenState PreActivationOpenState;
     bool ActivateFlag;
 };

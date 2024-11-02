@@ -12,8 +12,6 @@
 
 #include <Structs/Tints.h>
 
-#if TP_SKYRIM
-
 #include <Games/Skyrim/NetImmerse/NiTriBasedGeom.h>
 #include <Games/Skyrim/NetImmerse/NiRenderedTexture.h>
 #include <Games/Skyrim/NetImmerse/BSShaderProperty.h>
@@ -141,21 +139,3 @@ void FaceGenSystem::Setup(World& aWorld, const entt::entity aEntity, const Tints
     auto& component = aWorld.emplace_or_replace<FaceGenComponent>(aEntity);
     component.FaceTints = acTints;
 }
-
-#else
-
-void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFaceGenComponent) noexcept
-{
-    TP_UNUSED(aWorld);
-    TP_UNUSED(apActor);
-    TP_UNUSED(aFaceGenComponent);
-}
-
-void FaceGenSystem::Setup(World& aWorld, const entt::entity aEntity, const Tints& acTints) noexcept
-{
-    TP_UNUSED(aWorld);
-    TP_UNUSED(aEntity);
-    TP_UNUSED(acTints);
-}
-
-#endif

@@ -2,7 +2,6 @@
 #include <imgui.h>
 #include <inttypes.h>
 
-#if TP_SKYRIM64
 #include <Combat/CombatController.h>
 #include <Combat/CombatGroup.h>
 #include <Combat/CombatTargetSelector.h>
@@ -175,11 +174,9 @@ float CalculateTargetScore(CombatTargetSelector* apThis, CombatTarget* apCombatT
     return score;
 }
 } // namespace
-#endif
 
 void DebugService::DrawCombatView()
 {
-#if TP_SKYRIM64
     if (!m_formId)
         return;
 
@@ -225,5 +222,4 @@ void DebugService::DrawCombatView()
     }
 
     ImGui::End();
-#endif
 }

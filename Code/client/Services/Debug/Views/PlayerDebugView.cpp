@@ -33,7 +33,6 @@ void DebugService::DrawPlayerDebugView()
     ImGui::InputScalar("Right Magic", ImGuiDataType_U32, (void*)&rightId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
     ImGui::InputScalar("Left Magic", ImGuiDataType_U32, (void*)&leftId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
 
-#if TP_SKYRIM64
     auto* leftHandCaster = pPlayer->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
     auto* rightHandCaster = pPlayer->GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
     auto* otherHandCaster = pPlayer->GetMagicCaster(MagicSystem::CastingSource::OTHER);
@@ -48,13 +47,10 @@ void DebugService::DrawPlayerDebugView()
     ImGui::InputScalar("rightHandCasterSpell", ImGuiDataType_U64, (void*)&(rightHandCaster->pCurrentSpell), 0, 0, "%" PRIx64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
     ImGui::InputScalar("otherHandCasterSpell", ImGuiDataType_U64, (void*)&(otherHandCaster->pCurrentSpell), 0, 0, "%" PRIx64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
     ImGui::InputScalar("instantHandCasterSpell", ImGuiDataType_U64, (void*)&(instantHandCaster->pCurrentSpell), 0, 0, "%" PRIx64, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_ReadOnly);
-#endif
 
-#if TP_SKYRIM64
     uint32_t shoutId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
 
     ImGui::InputScalar("Shout", ImGuiDataType_U32, (void*)&shoutId, nullptr, nullptr, nullptr, ImGuiInputTextFlags_ReadOnly);
-#endif
 
     if (auto pWorldSpace = pPlayer->GetWorldSpace())
     {
@@ -81,8 +77,6 @@ void DebugService::DrawPlayerDebugView()
 
     auto& modSystem = m_world.GetModSystem();
 
-    // TODO: ft
-#if TP_SKYRIM64
     if (ImGui::CollapsingHeader("Worn armor"))
     {
         Inventory wornArmor{};
@@ -95,5 +89,4 @@ void DebugService::DrawPlayerDebugView()
     }
 
     ImGui::End();
-#endif
 }

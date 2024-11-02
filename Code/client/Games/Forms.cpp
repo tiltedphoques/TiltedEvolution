@@ -62,9 +62,7 @@ void TESNPC::Initialize() noexcept
     combatStyle = pPlayerBaseForm->combatStyle;
     raceForm.race = pPlayerBaseForm->raceForm.race;
     outfits[0] = pPlayerBaseForm->outfits[0];
-#if TP_SKYRIM
     spellList.Initialize();
-#endif
     // End defaults
 
     flags |= 0x200000;
@@ -97,11 +95,7 @@ uint32_t TESForm::GetChangeFlags() const noexcept
 {
     struct Unk
     {
-#if TP_SKYRIM64
         uint8_t unk0[0x330];
-#elif TP_FALLOUT4
-        uint8_t unk0[0x350];
-#endif
         void* unk330;
     };
 
@@ -131,16 +125,13 @@ TESNPC* TESNPC::Create(const String& acBuffer, const uint32_t aChangeFlags) noex
     pNpc->Deserialize(acBuffer, aChangeFlags);
 
     // This forces facegen for some reason
-#if TP_SKYRIM
     pNpc->overlayRace = nullptr;
-#endif
 
     return pNpc;
 }
 
 BGSHeadPart* TESNPC::GetHeadPart(uint32_t aType)
 {
-#ifdef TP_SKYRIM
     if (headparts)
     {
         for (auto i = 0; i < headpartsCount; ++i)
@@ -149,7 +140,6 @@ BGSHeadPart* TESNPC::GetHeadPart(uint32_t aType)
                 return headparts[i];
         }
     }
-#endif
 
     return nullptr;
 }

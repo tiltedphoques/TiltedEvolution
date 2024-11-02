@@ -1,16 +1,14 @@
 
-local function build_client(name, def)
+local function build_client(name)
 target(name)
     set_kind("static")
     set_group("Client")
-    add_defines(def)
-
-    add_includedirs(".","../../Libraries/")
+    add_includedirs(".")
     set_pcxxheader("TiltedOnlinePCH.h")
 
     -- exclude game specifc stuff
-    add_headerfiles("**.h|Games/Fallout4/**|Games/Skyrim/**|Services/Vivox/**")
-    add_files("**.cpp|Games/Fallout4/**|Games/Skyrim/**|Services/Vivox/**")
+    add_headerfiles("**.h|Games/Skyrim/**|Services/Vivox/**")
+    add_files("**.cpp|Games/Skyrim/**|Services/Vivox/**")
 
     after_install(function(target)
         local linkdir = target:pkg("cef"):get("linkdirs")
@@ -22,21 +20,11 @@ target(name)
         os.rm(path.join(target:installdir(), "bin", "**Tests.exe"))
     end)
 
-    -- only include selected files
-    if name == "SkyrimTogetherClient" then
-        add_files("Games/Skyrim/**.cpp")
-        add_headerfiles("Games/Skyrim/**.h")
-        -- rather hacky:
-        add_includedirs("Games/Skyrim")
-        add_deps("SkyrimEncoding")
-    end
-    if name == "FalloutTogetherClient" then
-        add_files("Games/Fallout4/**.cpp")
-        add_headerfiles("Games/Fallout4/**.h")
-        -- rather hacky:
-        add_includedirs("Games/Fallout4")
-        add_deps("FalloutEncoding")
-    end
+    add_files("Games/Skyrim/**.cpp")
+    add_headerfiles("Games/Skyrim/**.h")
+    -- rather hacky:
+    add_includedirs("Games/Skyrim")
+    add_deps("SkyrimEncoding")
     add_deps(
         "UiProcess",
         "CommonLib",
@@ -82,5 +70,4 @@ end
 
 add_requires("tiltedcore v0.2.7", {debug = true})
 
-build_client("SkyrimTogetherClient", "TP_SKYRIM=1")
-build_client("FalloutTogetherClient", "TP_FALLOUT=1")
+build_client("SkyrimTogetherClient")
