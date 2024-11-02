@@ -130,7 +130,7 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
     return TiltedPhoques::ThisCall(RealSetCurrentPickREFR, apThis, apRefr);
 }
 
-TiltedPhoques::Initializer s_referencesHooks(
+static TiltedPhoques::Initializer s_referencesHooks(
     []()
     {
         POINTER_SKYRIMSE(TCheckForNewPackage, s_checkForNewPackage, 39114);
