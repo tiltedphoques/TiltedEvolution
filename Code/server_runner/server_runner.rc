@@ -31,8 +31,4 @@ END
 
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "resources/server.manifest"
 
-#if defined(TARGET_ST)
 102 ICON "resources/st_srv.ico"
-#elif defined(TARGET_FT)
-102 ICON "resources/ft_srv.ico"
-#endif

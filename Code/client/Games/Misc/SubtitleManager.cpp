@@ -40,7 +40,7 @@ void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeake
     TiltedPhoques::ThisCall(RealShowSubtitle, apThis, apSpeaker, apSubtitleText, aIsInDialogue);
 }
 
-TiltedPhoques::Initializer s_subtitleHooks(
+static TiltedPhoques::Initializer s_subtitleHooks(
     []()
     {
         POINTER_SKYRIMSE(TShowSubtitle, s_showSubtitle, 52626);

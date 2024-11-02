@@ -34,7 +34,7 @@ bool TP_MAKE_THISCALL(HookPlayDialogueOption, MenuTopicManager, int32_t aIndex)
     return TiltedPhoques::ThisCall(RealPlayDialogueOption, apThis, aIndex);
 }
 
-TiltedPhoques::Initializer s_menuTopicHooks(
+static TiltedPhoques::Initializer s_menuTopicHooks(
     []()
     {
         POINTER_SKYRIMSE(TPlayDialogueOption, s_playDialogueOption, 35269);
