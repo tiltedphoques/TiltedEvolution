@@ -10,6 +10,7 @@
 #include <ExtraData/ExtraFactionChanges.h>
 #include <Games/Memory.h>
 #include <Forms/TESLevItem.h>
+#include <Combat/CombatController.h>
 
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
@@ -17,6 +18,7 @@
 #include <Events/DialogueEvent.h>
 #include <Events/HitEvent.h>
 
+#include <Games/TES.h>
 #include <World.h>
 #include <Services/PapyrusService.h>
 
@@ -39,6 +41,7 @@
 #include <ExtraData/ExtraTextDisplayData.h>
 #include <Forms/EnchantmentItem.h>
 #include <Forms/AlchemyItem.h>
+#include <Forms/TESObjectCELL.h>
 
 #include <Structs/Skyrim/AnimationGraphDescriptor_BHR_Master.h>
 
@@ -104,6 +107,8 @@ TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
 TP_THIS_FUNCTION(TAddInventoryItem, void, Actor, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner);
 TP_THIS_FUNCTION(TPickUpObject, void*, Actor, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, float aUnk2);
 TP_THIS_FUNCTION(TDropObject, void*, Actor, void* apResult, TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation);
+TP_THIS_FUNCTION(TSetPosition, char, Actor, NiPoint3& acPosition);
+TP_THIS_FUNCTION(TActorProcess, char, Actor, float aValue);
 
 using TGetLocation = TESForm*(TESForm*);
 static TGetLocation* FUNC_GetActorLocation;
@@ -115,6 +120,252 @@ TCharacterDestructor* RealCharacterDestructor;
 static TAddInventoryItem* RealAddInventoryItem = nullptr;
 static TPickUpObject* RealPickUpObject = nullptr;
 static TDropObject* RealDropObject = nullptr;
+static TSetPosition* RealSetPosition = nullptr;
+static TActorProcess* RealActorProcess = nullptr;
+
+float Actor::GetSpeed() noexcept
+{
+    static BSFixedString speedSampledStr("SpeedSampled");
+    float speed = 0.f;
+    animationGraphHolder.GetVariableFloat(&speedSampledStr, &speed);
+
+    return speed;
+}
+
+void Actor::SetSpeed(float aSpeed) noexcept
+{
+    static BSFixedString speedSampledStr("SpeedSampled");
+    animationGraphHolder.SetVariableFloat(&speedSampledStr, aSpeed);
+}
+
+uint16_t Actor::GetLevel() const noexcept
+{
+    TP_THIS_FUNCTION(TGetLevel, uint16_t, const Actor);
+    POINTER_SKYRIMSE(TGetLevel, s_getLevel, 37334);
+    return TiltedPhoques::ThisCall(s_getLevel, this);
+}
+
+void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
+{
+    ScopedReferencesOverride recursionGuard;
+
+    // It just works TM
+    SetPosition(acPosition, true);
+}
+
+void Actor::QueueUpdate() noexcept
+{
+    auto* pSetting = INISettingCollection::Get()->GetSetting("bUseFaceGenPreprocessedHeads:General");
+    const auto originalValue = pSetting->data;
+    pSetting->data = 0;
+
+    TP_THIS_FUNCTION(TQueueUpdate, void, Actor, bool);
+    POINTER_SKYRIMSE(TQueueUpdate, QueueUpdate, 40255);
+
+    TiltedPhoques::ThisCall(QueueUpdate, this, true);
+
+    pSetting->data = originalValue;
+}
+
+GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
+{
+    auto pActor = New();
+    // Prevent saving
+    pActor->SetSkipSaveFlag(true);
+    pActor->GetExtension()->SetRemote(true);
+
+    const auto pPlayer = static_cast<Actor*>(GetById(0x14));
+    auto pCell = pPlayer->parentCell;
+    const auto pWorldSpace = pPlayer->GetWorldSpace();
+
+    pActor->SetLevelMod(4);
+    pActor->MarkChanged(0x40000000);
+    pActor->SetParentCell(pCell);
+    pActor->SetBaseForm(apBaseForm);
+
+    auto position = pPlayer->position;
+    auto rotation = pPlayer->rotation;
+
+    if (pCell && !(pCell->cellFlags[0] & 1))
+        pCell = nullptr;
+
+    ModManager::Get()->Spawn(position, rotation, pCell, pWorldSpace, pActor);
+
+    pActor->ForcePosition(position);
+
+    pActor->GetMagicCaster(MagicSystem::CastingSource::LEFT_HAND);
+    pActor->GetMagicCaster(MagicSystem::CastingSource::RIGHT_HAND);
+    pActor->GetMagicCaster(MagicSystem::CastingSource::OTHER);
+
+    pActor->flags &= 0xFFDFFFFF;
+
+    return pActor;
+}
+
+GamePtr<Actor> Actor::Spawn(uint32_t aBaseFormId) noexcept
+{
+    TESNPC* pNpc = Cast<TESNPC>(TESForm::GetById(aBaseFormId));
+    return Actor::Create(pNpc);
+}
+
+void Actor::SetLevelMod(uint32_t aLevel) noexcept
+{
+    TP_THIS_FUNCTION(TActorSetLevelMod, void, ExtraDataList, uint32_t);
+    POINTER_SKYRIMSE(TActorSetLevelMod, realSetLevelMod, 11806);
+
+    const auto pExtraDataList = &extraData;
+
+    TiltedPhoques::ThisCall(realSetLevelMod, pExtraDataList, aLevel);
+}
+
+ActorExtension* Actor::GetExtension() noexcept
+{
+    if (AsExActor())
+    {
+        return static_cast<ActorExtension*>(AsExActor());
+    }
+
+    if (AsExPlayerCharacter())
+    {
+        return static_cast<ActorExtension*>(AsExPlayerCharacter());
+    }
+
+    return nullptr;
+}
+
+ExActor* Actor::AsExActor() noexcept
+{
+    if (formType == Type && this != PlayerCharacter::Get())
+        return static_cast<ExActor*>(this);
+
+    return nullptr;
+}
+
+ExPlayerCharacter* Actor::AsExPlayerCharacter() noexcept
+{
+    if (this == PlayerCharacter::Get())
+        return static_cast<ExPlayerCharacter*>(this);
+
+    return nullptr;
+}
+
+extern thread_local bool g_forceAnimation;
+
+void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
+{
+    spdlog::debug("Setting weapon drawn: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
+
+    if (actorState.IsWeaponDrawn() == aDraw)
+    {
+        actorState.SetWeaponDrawn(!aDraw);
+
+        spdlog::debug("Setting weapon drawn after update: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
+    }
+
+    g_forceAnimation = true;
+    SetWeaponDrawn(aDraw);
+    g_forceAnimation = false;
+}
+
+static thread_local bool s_execInitPackage = false;
+
+void Actor::SetPackage(TESPackage* apPackage) noexcept
+{
+    s_execInitPackage = true;
+    PutCreatedPackage(apPackage);
+    s_execInitPackage = false;
+}
+
+void Actor::SetPlayerRespawnMode(bool aSet) noexcept
+{
+    SetEssentialEx(aSet);
+    // Makes the player go in an unrecoverable bleedout state
+    SetNoBleedoutRecovery(aSet);
+
+    if (formID != 0x14)
+    {
+        auto pPlayerFaction = Cast<TESFaction>(TESForm::GetById(0xDB1));
+        SetFactionRank(pPlayerFaction, 1);
+    }
+}
+
+void Actor::SetEssentialEx(bool aSet) noexcept
+{
+    SetEssential(aSet);
+    TESNPC* pBase = Cast<TESNPC>(baseForm);
+    if (pBase)
+        pBase->actorData.SetEssential(aSet);
+}
+
+void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
+{
+    TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
+    POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
+    TiltedPhoques::ThisCall(s_setNoBleedoutRecovery, this, aSet);
+}
+
+void Actor::DispelAllSpells(bool aNow) noexcept
+{
+    magicTarget.DispelAllSpells(aNow);
+}
+
+bool Actor::IsInCombat() const noexcept
+{
+    PAPYRUS_FUNCTION(bool, Actor, IsInCombat);
+    return s_pIsInCombat(this);
+}
+
+Actor* Actor::GetCombatTarget() const noexcept
+{
+    PAPYRUS_FUNCTION(Actor*, Actor, GetCombatTarget);
+    return s_pGetCombatTarget(this);
+}
+
+// TODO: this is a really hacky solution.
+// The internal targeting system should be disabled instead.
+void Actor::StartCombatEx(Actor* apTarget) noexcept
+{
+    if (GetCombatTarget() != apTarget)
+    {
+        StopCombat();
+        StartCombat(apTarget);
+    }
+}
+
+void Actor::SetCombatTargetEx(Actor* apTarget) noexcept
+{
+    if (pCombatController)
+        pCombatController->SetTarget(apTarget);
+}
+
+void Actor::StartCombat(Actor* apTarget) noexcept
+{
+    PAPYRUS_FUNCTION(void, Actor, StartCombat, Actor*);
+    s_pStartCombat(this, apTarget);
+}
+
+void Actor::StopCombat() noexcept
+{
+    PAPYRUS_FUNCTION(void, Actor, StopCombat);
+    s_pStopCombat(this);
+}
+
+bool Actor::HasPerk(uint32_t aPerkFormId) const noexcept
+{
+    return GetPerkRank(aPerkFormId) != 0;
+}
+
+uint8_t Actor::GetPerkRank(uint32_t aPerkFormId) const noexcept
+{
+    BGSPerk* pPerk = Cast<BGSPerk>(TESForm::GetById(aPerkFormId));
+    if (!pPerk)
+        return 0;
+
+    TP_THIS_FUNCTION(TGetPerkRank, uint8_t, const Actor, BGSPerk*);
+    POINTER_SKYRIMSE(TGetPerkRank, getPerkRank, 37698);
+
+    return TiltedPhoques::ThisCall(getPerkRank, this, pPerk);
+}
 
 Actor* TP_MAKE_THISCALL(HookCharacterConstructor, Actor)
 {
@@ -479,13 +730,6 @@ void Actor::SetFactionRank(const TESFaction* apFaction, int8_t aRank) noexcept
     TiltedPhoques::ThisCall(s_setFactionRankInternal, this, apFaction, aRank);
 }
 
-void Actor::SetNoBleedoutRecovery(bool aSet) noexcept
-{
-    TP_THIS_FUNCTION(TSetNoBleedoutRecovery, void, Actor, bool);
-    POINTER_SKYRIMSE(TSetNoBleedoutRecovery, s_setNoBleedoutRecovery, 38533);
-    TiltedPhoques::ThisCall(s_setNoBleedoutRecovery, this, aSet);
-}
-
 void Actor::SetPlayerTeammate(bool aSet) noexcept
 {
     TP_THIS_FUNCTION(TSetPlayerTeammate, void, Actor, bool aSet, bool abCanDoFavor);
@@ -630,6 +874,26 @@ void Actor::FixVampireLordModel() noexcept
     //SendAnimationEvent(&weapEquip);
 
     g_forceAnimation = false;
+}
+
+char TP_MAKE_THISCALL(HookSetPosition, Actor, NiPoint3& aPosition)
+{
+    const auto pExtension = apThis ? apThis->GetExtension() : nullptr;
+    const auto bIsRemote = pExtension && pExtension->IsRemote();
+
+    if (bIsRemote && !ScopedReferencesOverride::IsOverriden())
+        return 1;
+
+    // Don't interfere with non actor references, or the player, or if we are calling our self
+    if (apThis->formType != Actor::Type || apThis == PlayerCharacter::Get() || ScopedReferencesOverride::IsOverriden())
+        return TiltedPhoques::ThisCall(RealSetPosition, apThis, aPosition);
+
+    ScopedReferencesOverride recursionGuard;
+
+    // It just works TM
+    apThis->SetPosition(aPosition, false);
+
+    return 1;
 }
 
 TP_THIS_FUNCTION(TForceState, void, Actor, const NiPoint3&, float, float, TESObjectCELL*, TESWorldSpace*, bool);
@@ -936,9 +1200,45 @@ void Actor::SpeakSound(const char* pFile)
     TiltedPhoques::ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
 }
 
+char TP_MAKE_THISCALL(HookActorProcess, Actor, float a2)
+{
+    // Don't process AI if we own the actor
+
+    if (apThis->GetExtension()->IsRemote())
+        return 0;
+
+    return TiltedPhoques::ThisCall(RealActorProcess, apThis, a2);
+}
+
+TP_THIS_FUNCTION(TAddDeathItems, void, Actor);
+static TAddDeathItems* RealAddDeathItems = nullptr;
+
+void TP_MAKE_THISCALL(HookAddDeathItems, Actor)
+{
+    if (apThis->GetExtension()->IsRemote())
+        return;
+
+    TiltedPhoques::ThisCall(RealAddDeathItems, apThis);
+}
+
+TP_THIS_FUNCTION(TIsFleeing, bool, Actor);
+static TIsFleeing* RealIsFleeing = nullptr;
+
+bool TP_MAKE_THISCALL(HookIsFleeing, Actor)
+{
+    // TODO: Player or RemotePlayer? Can players be in fleeing mode in skyrim?
+    // TODO: investigate why the flee flag is set at all on remote players sometimes.
+    if (apThis->GetExtension()->IsPlayer())
+        return false;
+    
+    return TiltedPhoques::ThisCall(RealIsFleeing, apThis);
+}
+
 static TiltedPhoques::Initializer s_actorHooks(
     []()
     {
+        POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 37356);
+        POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
         POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 40245);
         POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 40246);
         POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 37175);
@@ -956,7 +1256,11 @@ static TiltedPhoques::Initializer s_actorHooks(
         POINTER_SKYRIMSE(TInitiateMountPackage, s_initiateMountPackage, 37905);
         POINTER_SKYRIMSE(TUnequipObject, s_unequipObject, 37975);
         POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
+        POINTER_SKYRIMSE(TAddDeathItems, addDeathItems, 37198);
+        POINTER_SKYRIMSE(TIsFleeing, isFleeing, 37577);
 
+        RealActorProcess = s_actorProcess.Get();
+        RealSetPosition = s_setPosition.Get();
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
         RealCharacterConstructor2 = s_characterCtor2.Get();
@@ -973,7 +1277,11 @@ static TiltedPhoques::Initializer s_actorHooks(
         RealInitiateMountPackage = s_initiateMountPackage.Get();
         RealUnequipObject = s_unequipObject.Get();
         RealSpeakSoundFunction = s_speakSoundFunction.Get();
+        RealAddDeathItems = addDeathItems.Get();
+        RealIsFleeing = isFleeing.Get();
 
+        TP_HOOK(&RealActorProcess, HookActorProcess);
+        TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
         TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
         TP_HOOK(&RealForceState, HookForceState);
@@ -989,4 +1297,6 @@ static TiltedPhoques::Initializer s_actorHooks(
         TP_HOOK(&RealInitiateMountPackage, HookInitiateMountPackage);
         TP_HOOK(&RealUnequipObject, HookUnequipObject);
         TP_HOOK(&RealSpeakSoundFunction, HookSpeakSoundFunction);
+        TP_HOOK(&RealAddDeathItems, HookAddDeathItems);
+        TP_HOOK(&RealIsFleeing, HookIsFleeing);
     });

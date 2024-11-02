@@ -1,7 +1,5 @@
 #pragma once
 
-// TODO: ft
-
 #include <AI/AITimer.h>
 
 struct CombatController;

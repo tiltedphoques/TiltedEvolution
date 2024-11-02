@@ -36,6 +36,13 @@ static thread_local bool s_autoSucceedEffectCheck = false;
 static thread_local bool s_applyHealPerkBonus = false;
 static thread_local bool s_applyStaminaPerkBonus = false;
 
+void MagicTarget::DispelAllSpells(bool aNow) noexcept
+{
+    TP_THIS_FUNCTION(TDispelAllSpells, void, MagicTarget, bool aNow);
+    POINTER_SKYRIMSE(TDispelAllSpells, dispelAllSpells, 34512);
+    TiltedPhoques::ThisCall(dispelAllSpells, this, aNow);
+}
+
 bool MagicTarget::AddTarget(AddTargetData& arData, bool aApplyHealPerkBonus, bool aApplyStaminaPerkBonus) noexcept
 {
     s_autoSucceedEffectCheck = true;

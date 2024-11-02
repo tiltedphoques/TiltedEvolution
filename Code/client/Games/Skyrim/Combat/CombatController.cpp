@@ -1,8 +1,6 @@
 #include "CombatController.h"
 #include "CombatTargetSelector.h"
 
-// TODO: ft
-
 void ArrayQuickSortRecursiveCombatTargets(GameArray<CombatTargetSelector*>* apArray, uint32_t aiLowIndex,
                                           uint32_t aiHighIndex)
 {

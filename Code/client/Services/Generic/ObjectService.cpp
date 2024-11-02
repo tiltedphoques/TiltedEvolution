@@ -109,7 +109,6 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     }
 
     Vector<FormType> formTypes = {FormType::Container, FormType::Door};
-    // TODO: ft (verify)
     // Door seemed to be at the wrong form id (29, now 32), verify this.
     Vector<TESObjectREFR*> objects = pCell->GetRefsByFormTypes(formTypes);
 

@@ -251,7 +251,6 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     }
 }
 
-// TODO: ft (verify)
 // Doesn't seem to respawn quite yet
 void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
 {
