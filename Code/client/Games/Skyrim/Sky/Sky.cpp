@@ -85,7 +85,7 @@ void TP_MAKE_THISCALL(HookUpdateWeather, Sky)
     TiltedPhoques::ThisCall(RealUpdateWeather, apThis);
 }
 
-TiltedPhoques::Initializer s_referencesHooks(
+static TiltedPhoques::Initializer s_skyHooks(
     []()
     {
         POINTER_SKYRIMSE(TSetWeather, setWeather, 26241);
