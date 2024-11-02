@@ -37,9 +37,7 @@ end
 
 target("SkyrimServerRunner")
     set_basename("SkyrimTogetherServer")
-    add_defines(
-        "TARGET_ST",
-        "TARGET_PREFIX=\"st\"")
+    add_defines("TARGET_PREFIX=\"st\"")
     -- we want uniform names for both runner and dll under windows for
     -- scripting/ux reasons
     build_runner()
