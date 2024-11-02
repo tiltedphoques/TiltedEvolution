@@ -43,8 +43,6 @@ end
 
 target("SkyrimTogetherServer")
     set_basename("STServer")
-    add_defines(
-        "TARGET_ST",
-        "TARGET_PREFIX=\"st\"")
+    add_defines("TARGET_PREFIX=\"st\"")
     add_deps("SkyrimEncoding")
     build_server()

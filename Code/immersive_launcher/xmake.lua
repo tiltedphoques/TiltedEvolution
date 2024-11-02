@@ -71,9 +71,7 @@ end
 
 target("SkyrimImmersiveLauncher")
     set_basename("SkyrimTogether")
-    add_defines(
-        "TARGET_ST",
-        "TARGET_PREFIX=\"st\"")
+    add_defines("TARGET_PREFIX=\"st\"")
     add_deps("SkyrimTogetherClient")
     add_ldflags("/WHOLEARCHIVE:SkyrimTogetherClient", { force = true })
     build_launcher()
