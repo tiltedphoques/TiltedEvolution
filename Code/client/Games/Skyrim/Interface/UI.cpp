@@ -19,9 +19,7 @@ bool UI::GetMenuOpen(const BSFixedString& acName) const
         return false;
 
     TP_THIS_FUNCTION(TMenuSystem_IsOpen, bool, const UI, const BSFixedString&);
-
     POINTER_SKYRIMSE(TMenuSystem_IsOpen, s_isMenuOpen, 82074);
-    POINTER_FALLOUT4(TMenuSystem_IsOpen, s_isMenuOpen, 1065115);
 
     return TiltedPhoques::ThisCall(s_isMenuOpen.Get(), this, acName);
 }
