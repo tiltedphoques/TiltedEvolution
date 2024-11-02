@@ -24,16 +24,6 @@ struct ProjectileLaunchedEvent
     bool AutoAim;
     bool DeferInitialization;
     bool ForceConeOfFire;
-
-#if TP_FALLOUT4
-    float ConeOfFireRadiusMult;
-    bool Tracer;
-    bool IntentionalMiss;
-    bool Allow3D;
-    bool Penetrates;
-    bool IgnoreNearCollisions;
-#else
     bool UnkBool1;
     bool UnkBool2;
-#endif
 };

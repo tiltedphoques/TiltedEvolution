@@ -33,15 +33,10 @@ QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
     // A note about the Gameevents:
     // TESQuestStageItemDoneEvent gets fired to late, we instead use TESQuestStageEvent, because it responds immediately.
     // TESQuestInitEvent can be instead managed by start stop quest management.
-#if TP_FALLOUT
-    GetEventDispatcher_TESQuestStartStopEvent()->RegisterSink(this);
-    GetEventDispatcher_TESQuestStageEvent()->RegisterSink(this);
-#else
     // bind game event listeners
     auto* pEventList = EventDispatcherManager::Get();
     pEventList->questStartStopEvent.RegisterSink(this);
     pEventList->questStageEvent.RegisterSink(this);
-#endif
 }
 
 void QuestService::OnConnected(const ConnectedEvent&) noexcept
