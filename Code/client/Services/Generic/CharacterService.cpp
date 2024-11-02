@@ -1083,7 +1083,6 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
     {
         // TODO(cosideci): don't just take all actors (i.e. from other parties),
         // maybe check it server side, add a variable to the request.
-        // TODO: ft (verify)
         if (m_world.GetPartyService().IsLeader() && !pActor->IsTemporary() && !pActor->IsMount())
         {
             spdlog::info("Sending ownership claim for actor {:X} with server id {:X}", pActor->formID, pRemoteComponent->Id);
@@ -1293,7 +1292,6 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         if (Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId)))
         {
-            // TODO: ft (verify)
             if (!pActor->IsTemporary())
             {
                 auto& modSystem = m_world.GetModSystem();

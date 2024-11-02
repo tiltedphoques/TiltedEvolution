@@ -22,7 +22,6 @@ void SubtitleManager::ShowSubtitle(TESObjectREFR* apSpeaker, const char* apSubti
     TiltedPhoques::ThisCall(RealShowSubtitle, this, apSpeaker, apSubtitleText, aUnk1);
 }
 
-// TODO: ft (verify)
 void* SubtitleManager::HideSubtitle(TESObjectREFR* apSpeaker) noexcept
 {
     TP_THIS_FUNCTION(THideSubtitle, void*, SubtitleManager, TESObjectREFR* apSpeaker);
