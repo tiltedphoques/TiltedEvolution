@@ -61,13 +61,9 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     const auto deltaY = TiltedPhoques::DeltaAngle(rotA.y, rotB.y, true) * delta;
     const auto deltaZ = TiltedPhoques::DeltaAngle(rotA.z, rotB.z, true) * delta;
 
-#if TP_FALLOUT4
-    const auto finalX = 0.f;
-#else
     auto finalX = TiltedPhoques::Mod(rotA.x + deltaX, float(TiltedPhoques::Pi * 2));
     if (finalX > 0.f && finalX > float(TiltedPhoques::Pi / 2))
         finalX -= TiltedPhoques::Pi * 2;
-#endif
 
     const auto finalY = TiltedPhoques::Mod(rotA.y + deltaY, float(TiltedPhoques::Pi * 2));
     const auto finalZ = TiltedPhoques::Mod(rotA.z + deltaZ, float(TiltedPhoques::Pi * 2));

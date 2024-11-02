@@ -25,11 +25,6 @@
 #include <EquipManager.h>
 #include <Games/ActorExtension.h>
 #include <Forms/TESNPC.h>
-
-#if TP_FALLOUT4
-#include <Forms/BGSObjectInstance.h>
-#endif
-
 #include <DefaultObjectManager.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept

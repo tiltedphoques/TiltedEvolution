@@ -45,12 +45,6 @@ void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, A
 
     for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
     {
-#if TP_FALLOUT4
-        // These indices in the ActorValueInfo list are null
-        if (i == 23 || i == 48 || i == 70)
-            continue;
-#endif
-
         float value = apActor->GetActorValue(i);
         actorValuesComponent.CurrentActorValues.ActorValuesList.insert({i, value});
         float maxValue = apActor->GetActorPermanentValue(i);
@@ -132,11 +126,6 @@ void ActorValueService::BroadcastActorValues() noexcept
 
         for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
         {
-#if TP_FALLOUT4
-            // These indices in the ActorValueInfo list are null
-            if (i == 23 || i == 48 || i == 70)
-                continue;
-#endif
             float newValue = pActor->GetActorValue(i);
             float oldValue = actorValuesComponent.CurrentActorValues.ActorValuesList[i];
             if (newValue != oldValue)

@@ -269,14 +269,6 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
             {
                 const auto idx = pDescriptor->BooleanLookUpTable[i];
 
-#if TP_FALLOUT4
-                if (pExtendedActor->IsRemotePlayer())
-                {
-                    if (!AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx))
-                        continue;
-                }
-#endif
-
                 if (pVariableSet->size > idx)
                 {
                     pVariableSet->data[idx] = (aVariables.Booleans & (1ull << i)) != 0;
@@ -287,28 +279,12 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
             {
                 const auto idx = pDescriptor->FloatLookupTable[i];
 
-#if TP_FALLOUT4
-                if (pExtendedActor->IsRemotePlayer())
-                {
-                    if (!AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx))
-                        continue;
-                }
-#endif
-
                 *reinterpret_cast<float*>(&pVariableSet->data[idx]) = aVariables.Floats.size() > i ? aVariables.Floats[i] : 0.f;
             }
 
             for (size_t i = 0; i < pDescriptor->IntegerLookupTable.size(); ++i)
             {
                 const auto idx = pDescriptor->IntegerLookupTable[i];
-
-#if TP_FALLOUT4
-                if (pExtendedActor->IsRemotePlayer())
-                {
-                    if (!AnimationGraphDescriptor_Master_Behavior::TranslateThirdToFirstPerson(idx))
-                        continue;
-                }
-#endif
 
                 *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]) = aVariables.Integers.size() > i ? aVariables.Integers[i] : 0;
             }
@@ -339,11 +315,7 @@ TESWorldSpace* TESObjectREFR::GetWorldSpace() const noexcept
 
 ExtraDataList* TESObjectREFR::GetExtraDataList() noexcept
 {
-#if TP_FALLOUT4
-    return extraData;
-#else
     return &extraData;
-#endif
 }
 
 // Delete() should only be used on temporaries

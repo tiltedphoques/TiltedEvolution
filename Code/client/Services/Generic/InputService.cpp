@@ -406,12 +406,6 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
         spdlog::info("Input language changed, current ACP: {}", s_currentACP);
     }
 
-#if TP_FALLOUT
-    // Fallout specific code to disable input
-    if (isVisible)
-        return 1;
-#endif
-
     return 0;
 }
 

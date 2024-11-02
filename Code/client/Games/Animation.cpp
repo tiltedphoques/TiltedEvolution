@@ -59,12 +59,6 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
         return res;
     }
 
-#if TP_FALLOUT4
-    // Let the ActionInstantInitializeGraphToBaseState event go through
-    if (apAction->action->formID == 0x5704c)
-        return TiltedPhoques::ThisCall(RealPerformAction, apThis, apAction);
-#endif
-
     return 0;
 }
 
