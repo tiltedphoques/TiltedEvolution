@@ -35,14 +35,4 @@ struct BSExtraData
     virtual ExtraDataType GetType() const noexcept = 0;
 
     BSExtraData* next{};
-
-#if TP_FALLOUT4
-    uint16_t usFlags;
-    ExtraDataType type;
-#endif
 };
-
-#if TP_FALLOUT4
-static_assert(offsetof(BSExtraData, type) == 0x12);
-static_assert(sizeof(BSExtraData) == 0x18);
-#endif

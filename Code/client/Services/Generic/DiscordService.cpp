@@ -162,11 +162,7 @@ bool DiscordService::Init()
     DiscordCreateParams params{};
     DiscordCreateParamsSetDefault(&params); // initialize version fields
 
-#if TP_SKYRIM64
     params.client_id = 739600151277994076; //"Skyrim Together"
-#else
-    params.client_id = 739600293087674489; //"Fallout Together"
-#endif
 
     params.flags = DiscordCreateFlags_NoRequireDiscord;
     params.event_data = this; // this is our userpointer

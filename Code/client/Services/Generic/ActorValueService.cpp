@@ -45,12 +45,6 @@ void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, A
 
     for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
     {
-#if TP_FALLOUT4
-        // These indices in the ActorValueInfo list are null
-        if (i == 23 || i == 48 || i == 70)
-            continue;
-#endif
-
         float value = apActor->GetActorValue(i);
         actorValuesComponent.CurrentActorValues.ActorValuesList.insert({i, value});
         float maxValue = apActor->GetActorPermanentValue(i);
@@ -132,11 +126,6 @@ void ActorValueService::BroadcastActorValues() noexcept
 
         for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
         {
-#if TP_FALLOUT4
-            // These indices in the ActorValueInfo list are null
-            if (i == 23 || i == 48 || i == 70)
-                continue;
-#endif
             float newValue = pActor->GetActorValue(i);
             float oldValue = actorValuesComponent.CurrentActorValues.ActorValuesList[i];
             if (newValue != oldValue)
@@ -331,7 +320,6 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
 
     for (const auto& [key, value] : acMessage.Values)
     {
-#if TP_SKYRIM64
         // Syncing dragon souls triggers "Dragon soul collected" event
         if (key == ActorValueInfo::kDragonSouls || key == ActorValueInfo::kHealth)
             continue;
@@ -343,7 +331,6 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
             pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, key, value);
             continue;
         }
-#endif
         pActor->SetActorValue(key, value);
     }
 }
@@ -365,10 +352,8 @@ void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges&
 
     for (const auto& [key, value] : acMessage.Values)
     {
-#if TP_SKYRIM64
         if (key == ActorValueInfo::kDragonSouls)
             continue;
-#endif
 
         spdlog::debug("Actor max value update, server ID: {:X}, key: {}, value: {}", acMessage.Id, key, value);
 

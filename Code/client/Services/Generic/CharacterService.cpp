@@ -134,13 +134,11 @@ bool CharacterService::TakeOwnership(const uint32_t acFormId, const uint32_t acS
         return false;
     }
 
-#if TP_SKYRIM64
     if (pActor->IsPlayerSummon())
     {
         spdlog::error("Cannot take control over remote player summon, form id: {:X}, server id: {:X}", acFormId, acServerId);
         return false;
     }
-#endif
 
     pExtension->SetRemote(false);
 
@@ -458,13 +456,11 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     spdlog::info("Spawn Request Is summon {}", acMessage.IsPlayerSummon);
 
-#if TP_SKYRIM64
     if (acMessage.IsPlayerSummon)
     {
         // Prevents remote summons agroing other players.
         pActor->SetCommandingActor(PlayerCharacter::Get()->GetHandle());
     }
-#endif
 
     auto& remoteComponent = m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID);
 
@@ -694,7 +690,6 @@ void CharacterService::OnBeastFormChange(const BeastFormChangeEvent& acEvent) co
 
 void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
 {
-#if TP_SKYRIM64
     auto view = m_world.view<FormIdComponent>();
 
     const auto riderIt = std::find_if(std::begin(view), std::end(view), [id = acEvent.RiderID, view](auto entity) { return view.get<FormIdComponent>(entity).Id == id; });
@@ -739,12 +734,10 @@ void CharacterService::OnMountEvent(const MountEvent& acEvent) const noexcept
     request.RiderId = riderServerIdRes.value();
 
     m_transport.Send(request);
-#endif
 }
 
 void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcept
 {
-#if TP_SKYRIM64
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
 
     const auto riderIt = std::find_if(std::begin(remoteView), std::end(remoteView), [remoteView, Id = acMessage.RiderId](auto entity) { return remoteView.get<RemoteComponent>(entity).Id == Id; });
@@ -798,7 +791,6 @@ void CharacterService::OnNotifyMount(const NotifyMount& acMessage) const noexcep
     }
 
     pRider->InitiateMountPackage(pMount);
-#endif
 }
 
 void CharacterService::OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept
@@ -871,10 +863,7 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
     if (PlayerCharacter::LastUsedCombatSkill == -1)
         return;
 
-        // TODO: ft
-#if TP_SKYRIM64
     pPlayer->AddSkillExperience(PlayerCharacter::LastUsedCombatSkill, acMessage.Experience);
-#endif
 }
 
 void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
@@ -902,8 +891,6 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
     m_transport.Send(request);
 }
 
-// TODO: ft (verify)
-// deal with player voice lines in fallout 4
 void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept
 {
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
@@ -1096,7 +1083,6 @@ void CharacterService::ProcessNewEntity(entt::entity aEntity) const noexcept
     {
         // TODO(cosideci): don't just take all actors (i.e. from other parties),
         // maybe check it server side, add a variable to the request.
-        // TODO: ft (verify)
         if (m_world.GetPartyService().IsLeader() && !pActor->IsTemporary() && !pActor->IsMount())
         {
             spdlog::info("Sending ownership claim for actor {:X} with server id {:X}", pActor->formID, pRemoteComponent->Id);
@@ -1177,7 +1163,6 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
         pNpc->Serialize(&message.AppearanceBuffer);
     }
 
-#if TP_SKYRIM
     if (isPlayer)
     {
         auto& entries = message.FaceTints.Entries;
@@ -1196,7 +1181,6 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
                 entries[i].Name = tints[i]->texture->name.AsAscii();
         }
     }
-#endif
 
     if (isPlayer)
     {
@@ -1230,15 +1214,9 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.CurrentActorData = BuildActorData(pActor);
 
     message.FactionsContent = pActor->GetFactions();
-    // TODO: ft, fallout probably uses skycells for those choppers
-#if TP_SKYRIM64
     message.IsDragon = pActor->IsDragon();
-#endif
     message.IsMount = pActor->IsMount();
-
-#if TP_SKYRIM64
     message.IsPlayerSummon = pActor->GetCommandingActor() && pActor->GetCommandingActor()->formID == 0x14;
-#endif
 
     if (pNpc->IsTemporary())
         pNpc = pNpc->GetTemplateBase();
@@ -1314,7 +1292,6 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
 
         if (Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId)))
         {
-            // TODO: ft (verify)
             if (!pActor->IsTemporary())
             {
                 auto& modSystem = m_world.GetModSystem();
@@ -1529,10 +1506,8 @@ void CharacterService::RunRemoteUpdates() noexcept
         if (pActor->IsDead() != waitingFor3D.SpawnRequest.IsDead)
             waitingFor3D.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
 
-#if TP_SKYRIM64
         if (pActor->IsVampireLord())
             pActor->FixVampireLordModel();
-#endif
 
         toRemove.push_back(entity);
 

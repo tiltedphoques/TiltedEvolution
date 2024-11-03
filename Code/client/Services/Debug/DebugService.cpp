@@ -54,8 +54,6 @@
 #include <BSGraphics/BSGraphicsRenderer.h>
 #include <Interface/UI.h>
 
-// TODO: ft
-#if TP_SKYRIM64
 #include <Combat/CombatController.h>
 #include <Camera/PlayerCamera.h>
 #include <AI/Movement/PlayerControls.h>
@@ -64,7 +62,6 @@
 #include <DefaultObjectManager.h>
 #include <Misc/InventoryEntry.h>
 #include <Misc/MiddleProcess.h>
-#endif
 
 #include <imgui.h>
 #include <inttypes.h>
@@ -186,13 +183,6 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     else
         s_f6Pressed = false;
 
-#if 0
-    if (GetAsyncKeyState(VK_F10) & 0x8000)
-    {
-        UI::Get()->PrintActiveMenus();
-    }
-#endif
-
     if (GetAsyncKeyState(VK_F7))
     {
         if (!s_f7Pressed)
@@ -273,7 +263,6 @@ void DebugService::OnDraw() noexcept
     ImGui::BeginMainMenuBar();
     if (ImGui::BeginMenu("Helpers"))
     {
-#if TP_SKYRIM64
         if (ImGui::Button("Unstuck player"))
         {
             auto* pPlayer = PlayerCharacter::Get();
@@ -296,7 +285,6 @@ void DebugService::OnDraw() noexcept
                 }
             }
         }
-#endif
         ImGui::EndMenu();
     }
 #if (!IS_MASTER)
@@ -319,12 +307,10 @@ void DebugService::OnDraw() noexcept
             }
         }
 
-#if TP_SKYRIM64
         if (ImGui::Button("Close all menus"))
         {
             UI::Get()->CloseAllMenus();
         }
-#endif
 
         ImGui::EndMenu();
     }

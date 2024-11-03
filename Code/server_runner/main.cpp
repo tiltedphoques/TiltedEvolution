@@ -25,15 +25,7 @@
 
 namespace
 {
-constexpr char kLogFileName[] =
-#if TARGET_ST
-    "STServerOut.log"
-#elif TARGET_FT
-    "FTServerOut.log"
-#else
-    "TiltedGameServer.log"
-#endif
-    ;
+constexpr char kLogFileName[] = "STServerOut.log";
 // Its fine for us if several potential server instances read this, since its a tilted platform thing
 // and therefore not considered game specific.
 constexpr char kEULAName[] = "EULA.txt";

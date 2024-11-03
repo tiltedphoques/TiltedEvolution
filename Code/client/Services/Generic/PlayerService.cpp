@@ -65,16 +65,8 @@ void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
     TESGlobal* pKillMove = Cast<TESGlobal>(TESForm::GetById(0x100F19));
     pKillMove->f = 0.f;
 
-#if TP_SKYRIM64
     TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
     pWorldEncountersEnabled->f = 0.f;
-#elif TP_FALLOUT4
-    // Makes it so that VATS doesn't slow down time
-    float* vatsTargetingMult = Settings::GetVATSSelectTargetTimeMultiplier();
-    *vatsTargetingMult = 0.f;
-
-    // TODO(ft): disable world encounters
-#endif
 }
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
@@ -89,20 +81,10 @@ void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 
     // Restore to the default value (150 in skyrim, 175 in fallout 4)
     float* greetDistance = Settings::GetGreetDistance();
-#if TP_SKYRIM64
     *greetDistance = 150.f;
 
     TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
     pWorldEncountersEnabled->f = 1.f;
-#elif TP_FALLOUT4
-    *greetDistance = 175.f;
-
-    // Restore VATS slow time (default is 0.04)
-    float* vatsTargetingMult = Settings::GetVATSSelectTargetTimeMultiplier();
-    *vatsTargetingMult = 0.04f;
-
-    // TODO(ft): enable world encounters
-#endif
 }
 
 void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
@@ -194,32 +176,23 @@ void PlayerService::OnPlayerLevelEvent(const PlayerLevelEvent& acEvent) const no
 void PlayerService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
 {
     // TODO: this can be done a bit prettier
-#if TP_SKYRIM64
     if (acEvent.IsLeader)
     {
         TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
         pWorldEncountersEnabled->f = 1.f;
     }
-#elif TP_FALLOUT4
-    // TODO: ft
-#endif
 }
 
 void PlayerService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
 {
     // TODO: this can be done a bit prettier
-#if TP_SKYRIM64
     if (World::Get().GetTransport().IsConnected())
     {
         TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
         pWorldEncountersEnabled->f = 0.f;
     }
-#elif TP_FALLOUT4
-    // TODO: ft
-#endif
 }
 
-// TODO: ft (verify)
 void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 {
     if (!m_isDeathSystemEnabled)
@@ -230,11 +203,9 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer->actorState.IsBleedingOut())
     {
-#if TP_SKYRIM64
         m_cachedMainSpellId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
         m_cachedSecondarySpellId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;
         m_cachedPowerId = pPlayer->equippedShout ? pPlayer->equippedShout->formID : 0;
-#endif
 
         s_startTimer = false;
         return;
@@ -267,7 +238,6 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
 
         s_startTimer = false;
 
-#if TP_SKYRIM64
         auto* pEquipManager = EquipManager::Get();
         TESForm* pSpell = TESForm::GetById(m_cachedMainSpellId);
         if (pSpell)
@@ -278,11 +248,9 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
         pSpell = TESForm::GetById(m_cachedPowerId);
         if (pSpell)
             pEquipManager->EquipShout(pPlayer, pSpell);
-#endif
     }
 }
 
-// TODO: ft (verify)
 // Doesn't seem to respawn quite yet
 void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
 {
@@ -359,7 +327,6 @@ void PlayerService::RunLevelUpdates() const noexcept
 
 void PlayerService::RunBeastFormDetection() const noexcept
 {
-#if TP_SKYRIM64
     static uint32_t lastRaceFormID = 0;
     static std::chrono::steady_clock::time_point lastSendTimePoint;
     constexpr auto cDelayBetweenUpdates = 250ms;
@@ -381,7 +348,6 @@ void PlayerService::RunBeastFormDetection() const noexcept
         m_world.GetDispatcher().trigger(BeastFormChangeEvent());
 
     lastRaceFormID = pPlayer->race->formID;
-#endif
 }
 
 void PlayerService::ToggleDeathSystem(bool aSet) noexcept

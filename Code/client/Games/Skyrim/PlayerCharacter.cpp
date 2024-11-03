@@ -40,6 +40,21 @@ static TCalculateExperience* RealCalculateExperience = nullptr;
 static TSetWaypoint* RealSetWaypoint = nullptr;
 static TRemoveWaypoint* RealRemoveWaypoint = nullptr;
 
+PlayerCharacter* PlayerCharacter::Get() noexcept
+{
+    POINTER_SKYRIMSE(PlayerCharacter*, s_character, 401069);
+
+    return *s_character.Get();
+}
+
+const GameArray<TintMask*>& PlayerCharacter::GetTints() const noexcept
+{
+    if (overlayTints)
+        return *overlayTints;
+
+    return baseTints;
+}
+
 void PlayerCharacter::SetGodMode(bool aSet) noexcept
 {
     POINTER_SKYRIMSE(bool, bGodMode, 404238);
