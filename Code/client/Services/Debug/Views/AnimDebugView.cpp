@@ -25,6 +25,8 @@
 #include <structs/AnimationGraphDescriptorManager.h>
 #include <inttypes.h>
 
+#include <ModCompat/BehaviorVar.h>
+
 uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
 {
     auto hash = pManager->GetDescriptorKey();
@@ -80,8 +82,11 @@ void DebugService::DrawAnimDebugView()
         return;
     }
 
-    if (ImGui::Button("Show cached hash"))
+     if (ImGui::Button("Show cached hash"))
+    {
         spdlog::info("{}", pActor->GetExtension()->GraphDescriptorHash);
+        BehaviorVar::Get()->Debug();
+    }
 
     if (ImGui::Button("Clear all"))
     {
