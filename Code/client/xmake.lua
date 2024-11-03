@@ -3,7 +3,7 @@ local function build_client(name)
 target(name)
     set_kind("static")
     set_group("Client")
-    add_includedirs(".")
+    add_includedirs(".","../../Libraries/")
     set_pcxxheader("TiltedOnlinePCH.h")
 
     -- exclude game specifc stuff
