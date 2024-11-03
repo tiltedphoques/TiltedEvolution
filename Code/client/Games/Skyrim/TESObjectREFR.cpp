@@ -35,6 +35,8 @@
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/AnimationVariables.h>
 
+extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* pManager, Actor* pActor);
+
 TP_THIS_FUNCTION(TActivate, bool, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
 TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner);
 TP_THIS_FUNCTION(
@@ -180,6 +182,10 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
             auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
+            // Modded behavior check if descriptor wasn't found
+            if (!pDescriptor)
+                pDescriptor = BehaviorVarPatch(pManager, pActor);
+
             if (!pDescriptor)
                 return;
 
@@ -188,17 +194,16 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
             if (!pVariableSet)
                 return;
 
-            aVariables.Booleans = 0;
-
-            aVariables.Floats.resize(pDescriptor->FloatLookupTable.size());
-            aVariables.Integers.resize(pDescriptor->IntegerLookupTable.size());
+            aVariables.Booleans.assign(pDescriptor->BooleanLookUpTable.size(), false);
+            aVariables.Floats.assign(pDescriptor->FloatLookupTable.size(), 0.f);
+            aVariables.Integers.assign(pDescriptor->IntegerLookupTable.size(), 0);
 
             for (size_t i = 0; i < pDescriptor->BooleanLookUpTable.size(); ++i)
             {
                 const auto idx = pDescriptor->BooleanLookUpTable[i];
 
                 if (pVariableSet->data[idx] != 0)
-                    aVariables.Booleans |= (1ull << i);
+                    aVariables.Booleans[i] = true;
             }
 
             for (size_t i = 0; i < pDescriptor->FloatLookupTable.size(); ++i)
@@ -247,6 +252,10 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
 
             auto pDescriptor = AnimationGraphDescriptorManager::Get().GetDescriptor(pExtendedActor->GraphDescriptorHash);
 
+            // Modded behavior check if descriptor wasn't found
+            if (!pDescriptor)
+                pDescriptor = BehaviorVarPatch(pManager, pActor);
+
             if (!pDescriptor)
                 return;
 
@@ -261,7 +270,7 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
 
                 if (pVariableSet->size > idx)
                 {
-                    pVariableSet->data[idx] = (aVariables.Booleans & (1ull << i)) != 0;
+                    pVariableSet->data[idx] = aVariables.Booleans.size() > i ? aVariables.Booleans[i] : false;
                 }
             }
 
