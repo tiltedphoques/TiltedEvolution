@@ -33,10 +33,8 @@
 #include "BehaviorVar.h"
 #include "BehaviorVarsMap.h"
 
-#if TP_SKYRIM64
 #include <Camera/TESCamera.h> // Camera 1st person is only in Skyrim?
 #include <Camera/PlayerCamera.h>
-#endif
 
 #include <mutex>
 std::mutex mutex_lock;
@@ -326,7 +324,6 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
     auto hash = pExtendedActor->GraphDescriptorHash;
     const AnimationGraphDescriptor* pGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
 
-#if TP_SKYRIM64
     // If it is the player-character AND they are in 1st person, we don't have the data to mod them;
     // Use the base game animation graphs until a Master Behavior actor enters the room. Could be an NPC,
     // but will always happen no later than when the 2nd person joins the server and room.
@@ -336,7 +333,6 @@ const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apMa
         hash = AnimationGraphDescriptor_Master_Behavior::m_key;
         pGraph = AnimationGraphDescriptorManager::Get().GetDescriptor(hash);
     }
-#endif
 
     // If we found the descriptor we're done.
     if (pGraph)
