@@ -52,6 +52,8 @@
 #include <Forms/BGSOutfit.h>
 #include <Forms/TESObjectARMO.h>
 
+#include <ModCompat/BehaviorVar.h>
+
 #ifdef SAVE_STUFF
 
 #include <Games/Skyrim/SaveLoad.h>
@@ -646,7 +648,9 @@ void Actor::SetActorInventory(const Inventory& aInventory) noexcept
 {
     spdlog::info("Setting inventory for actor {:X}", formID);
 
-    UnEquipAll();
+    // The UnEquipAll() that used to be here is redundant,
+    // as RemoveAllItems() unequips every item if needed.
+    // Placing this UnEquipAll() here seems to trigger a Skyrim bug/race.
 
     SetInventory(aInventory);
     SetMagicEquipment(aInventory.CurrentMagicEquipment);
@@ -784,18 +788,8 @@ bool Actor::IsDead() const noexcept
 
 bool Actor::IsDragon() const noexcept
 {
-    // TODO: if anyone has a better way of doing this, please do tell.
-    BSAnimationGraphManager* pManager = nullptr;
-    animationGraphHolder.GetBSAnimationGraph(&pManager);
-
-    if (!pManager)
-        return false;
-
-    const auto* pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
-    if (!pGraph)
-        return false;
-
-    return AnimationGraphDescriptor_BHR_Master::m_key == pManager->GetDescriptorKey();
+    const ActorExtension* pExtension = const_cast<Actor*>(this)->GetExtension();
+    return BehaviorVar::IsDragon(pExtension->GraphDescriptorHash);
 }
 
 void Actor::Kill() noexcept

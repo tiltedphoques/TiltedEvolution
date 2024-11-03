@@ -22,6 +22,8 @@
 
 #include <Forms/TESObjectCELL.h>
 
+#include <ModCompat/BehaviorVar.h>
+
 int32_t PlayerCharacter::LastUsedCombatSkill = -1;
 
 TP_THIS_FUNCTION(TPickUpObject, char, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2);
@@ -177,7 +179,7 @@ void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool a
 {
     if (!aEntering)
     {
-        PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_Master_Behavior::m_key;
+        PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = BehaviorVar::GetHumanoidHash();
         World::Get().GetRunner().Trigger(BeastFormChangeEvent());
     }
 
