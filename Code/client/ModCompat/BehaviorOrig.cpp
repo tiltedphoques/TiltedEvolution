@@ -28,10 +28,6 @@ template <typename V> void GenerateFromEnum(uint64_t aKey)
     BehaviorVarsMap::getInstance().Register(sig);
 };
 
-#ifdef TP_SKYRIM
 #include "BehaviorOrig.Skyrim"
-#else
-#include "BehaviorOrig.Fallout4"
-#endif
 
 } // namespace BehaviorOrig
