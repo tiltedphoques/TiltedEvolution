@@ -975,7 +975,7 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
         std::optional<uint32_t> serverIdRes = Utils::GetServerId(entity);
         if (!serverIdRes.has_value())
         {
-            spdlog::error("{}: failed to find server id", __FUNCTION__);
+            spdlog::error(__FUNCTION__ ": failed to find server id for entity");
             continue;
         }
 
@@ -992,12 +992,19 @@ void CharacterService::OnNotifyRelinquishControl(const NotifyRelinquishControl& 
             }
 
             Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+            if (!pActor)
+            {
+                // Probably left the room and/or temporary.
+                spdlog::info(__FUNCTION__ ": no local Actor for serverId {:X} to relinquish", serverId);
+                continue;
+            }
+
             pActor->GetExtension()->SetRemote(true);
 
             InterpolationSystem::Setup(m_world, entity);
             AnimationSystem::Setup(m_world, entity);
 
-            spdlog::info("Relinquished control of actor {:X} with server id {:X}", pActor->formID, acMessage.ServerId);
+            spdlog::info(__FUNCTION__ ": relinquished control of actor {:X} with server id {:X}", pActor->formID, acMessage.ServerId);
 
             return;
         }
