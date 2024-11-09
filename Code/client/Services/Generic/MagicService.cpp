@@ -465,20 +465,37 @@ void MagicService::ApplyQueuedEffects() noexcept
 
 void MagicService::UpdateRevealOtherPlayersEffect() noexcept
 {
-    if (GetAsyncKeyState(VK_F4) & 0x01)
-        m_revealOtherPlayers = !m_revealOtherPlayers;
-
-    if (!m_revealOtherPlayers)
-        return;
-
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
+    constexpr auto cRevealDuration = 6s;
     constexpr auto cDelayBetweenUpdates = 2s;
 
+    // Effect's activation and lifecycle
+
+    static std::chrono::steady_clock::time_point revealStartTimePoint;
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+
+    if (GetAsyncKeyState(VK_F4) & 0x01 && !m_revealingOtherPlayers)
+    {
+        m_revealingOtherPlayers = true;
+        revealStartTimePoint = std::chrono::steady_clock::now();
+    }
+
+    if (!m_revealingOtherPlayers)
+        return;
+
     const auto now = std::chrono::steady_clock::now();
+
+    if (now - revealStartTimePoint > cRevealDuration)
+    {
+        m_revealingOtherPlayers = false;
+        return;
+    }
+
     if (now - lastSendTimePoint < cDelayBetweenUpdates)
         return;
 
     lastSendTimePoint = now;
+
+    // When active
 
     Mod* pSkyrimTogether = ModManager::Get()->GetByName("SkyrimTogether.esp");
     if (!pSkyrimTogether)
