@@ -80,6 +80,7 @@
     "ROOT": {
       "CONNECT": "Connexion",
       "DISCONNECT": "Déconnexion",
+      "REVEAL_PLAYERS": "Révéler des joueurs",
       "RECONNECT": "Reconnexion",
       "PLAYER_MANAGER": "Gestion des joueurs",
       "SETTINGS": "Paramètres",

@@ -79,6 +79,7 @@
     "ROOT": {
       "CONNECT": "Verbinden",
       "DISCONNECT": "Verbindung trennen",
+      "REVEAL_PLAYERS": "Spieler hervorheben",
       "RECONNECT": "Neuverbinden",
       "PLAYER_MANAGER": "Spielerverwaltung",
       "SETTINGS": "Einstellungen",
