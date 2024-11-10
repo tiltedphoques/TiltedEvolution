@@ -48,13 +48,24 @@
         >
           {{ 'COMPONENT.ROOT.PLAYER_MANAGER' | transloco }}
         </button>
-        <button 
-          data-style-ornament="inverted" 
-          (click)="revealPlayers()"
-          [disabled]="revealingInProgress$"
-          [class.reveal-disabled]="revealingInProgress$"
-        >
-          {{ 'COMPONENT.ROOT.REVEAL_PLAYERS' | transloco }}
+        <button data-style-ornament="inverted" (click)="revealPlayers()">
+          <!-- See note in 'root.component.scss' for explanation -->
+          <div style="position: relative;">
+            <span
+              class="cooldown-supporting-text-normal"
+              [class.cooldown-supporting-text-animating]="revealingInProgress$"
+            >
+              {{ 'COMPONENT.ROOT.REVEAL_PLAYERS' | transloco }}
+            </span>
+            <span 
+              style="position: absolute; left: 0; top: 0;"
+              class="text-cooldown-effect" 
+              [class.cooldown-active]="revealingInProgress$"
+              [style.--cooldown-duration]="revealingInProgress$ ? '6s' : '0.3s'"
+            >
+              {{ 'COMPONENT.ROOT.REVEAL_PLAYERS' | transloco }}
+            </span>
+          </div>
         </button>
       </ng-container>
       <button

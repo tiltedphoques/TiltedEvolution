@@ -132,6 +132,33 @@
   }
 }
 
-.reveal-disabled {
-  opacity: 0.25;
+// Note: due to how `-webkit-background-clip` renders clipped text (that's needed for 
+// the cooldown effect), we need to apply a few workarounds to make it look just right. I'm sorry!
+
+.cooldown-supporting-text-normal {
+  color: mod($-color-background, 0.8);
+  transition: color 0.3s linear;
+}
+
+.cooldown-supporting-text-animating {
+  color: mod($-color-background, 0.3);
+}
+
+.text-cooldown-effect {
+  --cooldown-duration: 6s;
+  background: linear-gradient(
+    to left, 
+    mod($-color-background, 0.3) 50%, 
+    mod($-color-background, 1) 50%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  transition: background-position var(--cooldown-duration) linear;
+  color: transparent;
+  background-size: 200%;
+  background-position: 0%;
+
+  &.cooldown-active {
+    background-position: 100%;
+  }
 }
