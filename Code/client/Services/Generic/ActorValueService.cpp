@@ -149,7 +149,7 @@ void ActorValueService::BroadcastActorValues() noexcept
             float oldMaxValue = actorValuesComponent.CurrentActorValues.ActorMaxValuesList[i];
             if (newMaxValue != oldMaxValue)
             {
-                requestValueChanges.Values.insert({i, newValue});
+                requestMaxValueChanges.Values.insert({i, newMaxValue});
                 actorValuesComponent.CurrentActorValues.ActorMaxValuesList[i] = newMaxValue;
             }
         }
