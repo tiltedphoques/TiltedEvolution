@@ -470,7 +470,7 @@ void MagicService::StartRevealingOtherPlayers() noexcept
 
 void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
 {
-    constexpr auto cRevealDuration = 6s;
+    constexpr auto cRevealDuration = 10s;
     constexpr auto cDelayBetweenUpdates = 2s;
 
     // Effect's activation and lifecycle
@@ -480,7 +480,7 @@ void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
 
     const bool shouldActivate = aForceTrigger || GetAsyncKeyState(VK_F4) & 0x01;
 
-    if (shouldActivate & 0x01 && !m_revealingOtherPlayers)
+    if (shouldActivate && !m_revealingOtherPlayers)
     {
         m_revealingOtherPlayers = true;
         revealStartTimePoint = std::chrono::steady_clock::now();

@@ -19,7 +19,7 @@ import { controlsAnimation } from './controls.animation';
 import { notificationsAnimation } from './notifications.animation';
 import { map } from 'rxjs/operators';
 
-const REVEAL_EFFECT_DURATION_MS = 6000 // todo: pass value from C++?
+const REVEAL_EFFECT_DURATION_MS = 10000 // todo: pass value from C++?
 
 @Component({
   selector: 'app-root',
