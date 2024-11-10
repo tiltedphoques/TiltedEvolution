@@ -463,7 +463,12 @@ void MagicService::ApplyQueuedEffects() noexcept
         m_queuedRemoteEffects.erase(serverId);
 }
 
-void MagicService::UpdateRevealOtherPlayersEffect() noexcept
+void MagicService::StartRevealingOtherPlayers() noexcept
+{
+    UpdateRevealOtherPlayersEffect(/*forceTrigger=*/true);
+}
+
+void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
 {
     constexpr auto cRevealDuration = 6s;
     constexpr auto cDelayBetweenUpdates = 2s;
@@ -473,7 +478,9 @@ void MagicService::UpdateRevealOtherPlayersEffect() noexcept
     static std::chrono::steady_clock::time_point revealStartTimePoint;
     static std::chrono::steady_clock::time_point lastSendTimePoint;
 
-    if (GetAsyncKeyState(VK_F4) & 0x01 && !m_revealingOtherPlayers)
+    const bool shouldActivate = aForceTrigger || GetAsyncKeyState(VK_F4) & 0x01;
+
+    if (shouldActivate & 0x01 && !m_revealingOtherPlayers)
     {
         m_revealingOtherPlayers = true;
         revealStartTimePoint = std::chrono::steady_clock::now();

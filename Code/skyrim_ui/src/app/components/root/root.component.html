@@ -48,6 +48,14 @@
         >
           {{ 'COMPONENT.ROOT.PLAYER_MANAGER' | transloco }}
         </button>
+        <button 
+          data-style-ornament="inverted" 
+          (click)="revealPlayers()"
+          [disabled]="revealingInProgress$"
+          [class.reveal-disabled]="revealingInProgress$"
+        >
+          {{ 'COMPONENT.ROOT.REVEAL_PLAYERS' | transloco }}
+        </button>
       </ng-container>
       <button
         data-style-ornament="inverted"

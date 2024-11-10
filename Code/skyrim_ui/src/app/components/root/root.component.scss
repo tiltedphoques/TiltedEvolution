@@ -62,7 +62,7 @@
   }
 
   > app-notifications {
-    width: 30vw;
+    width: 32vw;
     left: $-size-gap;
     bottom: $-size-gap;
     position: absolute;
@@ -76,7 +76,7 @@
 ::ng-deep {
   .app-root-popups {
     > app-popup > app-window {
-      max-width: 30vw;
+      max-width: 32vw;
       min-width: 20vw;
     }
 
@@ -98,9 +98,8 @@
   position: absolute;
   left: $-size-gap;
   display: flex;
-  align-items: center;
   flex-direction: column;
-  width: 30vw;
+  width: 32vw;
   bottom: $-size-gap;
 }
 
@@ -112,6 +111,7 @@
 .app-root-menu {
   display: flex;
   height: 4rem;
+  margin: 0 auto;
 
   > button {
     flex: 1 1 auto;
@@ -130,4 +130,8 @@
     margin: 0.1rem;
     flex: 1 1 auto;
   }
+}
+
+.reveal-disabled {
+  opacity: 0.25;
 }
