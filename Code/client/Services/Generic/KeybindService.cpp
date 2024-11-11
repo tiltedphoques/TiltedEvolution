@@ -60,8 +60,7 @@ void KeybindService::SetupConfig() noexcept
         }
     }
 
-    // doesnt print out some characters correctly
-    spdlog::info("UI Key: {} | Debug Key: {}", ConvertToString(m_uiKey.first).c_str(), ConvertToString(m_debugKey.first).c_str());
+    spdlog::info(L"UI Key: {} | Debug Key: {}", m_uiKey.first.c_str(), m_debugKey.first.c_str());
 }
 
 void KeybindService::InitializeKeys(bool aLoadDefaults) noexcept
@@ -111,10 +110,7 @@ bool KeybindService::SetDebugKey(const uint16_t& acVkKeyCode, const unsigned lon
 
         m_debugService.SetDebugKey(TiltedPhoques::MakeShared<Key>(m_debugKey));
 
-        if (!m_debugKeybindConfirmed && m_debugKey.second.vkKeyCode != KeyCodes::Error && m_debugKey.second.diKeyCode != KeyCodes::Error)
-        {
-            m_debugKeybindConfirmed = true;
-        }
+        m_debugKeybindConfirmed = m_debugKey.second.vkKeyCode != KeyCodes::Error && m_debugKey.second.diKeyCode != KeyCodes::Error;
     }
     else
     {
@@ -145,10 +141,7 @@ bool KeybindService::SetUIKey(const uint16_t& acVkKeyCode, const unsigned long& 
         m_inputService.SetUIKey(TiltedPhoques::MakeShared<Key>(m_uiKey));
         m_pInputHook->SetToggleKeys({m_uiKey.second.diKeyCode});
 
-        if (!m_uiKeybindConfirmed && m_uiKey.second.vkKeyCode != KeyCodes::Error && m_uiKey.second.diKeyCode != KeyCodes::Error)
-        {
-            m_uiKeybindConfirmed = true;
-        }
+        m_uiKeybindConfirmed = m_uiKey.second.vkKeyCode != KeyCodes::Error && m_uiKey.second.diKeyCode != KeyCodes::Error;
     }
     else
     {
@@ -230,14 +223,10 @@ void KeybindService::HandleKeybind(const uint16_t& acVkKeyCode, const unsigned l
 
     if (m_keyCode == KeyCodes::Error && !acLoadFromConfig)
     {
-        BYTE keyboardState[256]{};
-        // ensures windows input system is initialized/not considered "stale" before trying to get keyboard state
-        GetKeyState(0);
-        GetKeyboardState(keyboardState);
-
+        // TODO: this can still miss but is the lesser of two evils...
         for (uint16_t key = 256; key > 0; key--)
         {
-            if (keyboardState[key] & 0x80)
+            if (GetAsyncKeyState(key) & 0x8000)
             {
                 m_keyCode = key;
                 break;

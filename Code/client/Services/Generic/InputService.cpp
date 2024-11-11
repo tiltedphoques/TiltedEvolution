@@ -146,9 +146,11 @@ void ToggleUI(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noe
 
     const auto& debugService = World::Get().GetDebugService();
     const auto& isRebinding = debugService.IsRebinding();
-    const auto& isDebugKey = aKey == debugService.GetDebugKey().second.vkKeyCode;
 
-    if (aType != KEYEVENT_CHAR && (IsToggleKey(aKey) || (IsDisableKey(aKey) && active && isRebinding)))
+    const auto& isToggleKey = IsToggleKey(aKey);
+    const auto& textInputFocused = World::Get().GetKeybindService().GetTextInputFocus();
+
+    if (aType != KEYEVENT_CHAR && ((isToggleKey && !textInputFocused) || (IsDisableKey(aKey) && active && isRebinding)))
     {
         if (!overlay.GetInGame())
         {
@@ -163,8 +165,7 @@ void ToggleUI(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noe
 #endif
         }
     }
-    // If debug is visible, don't inject key
-    else if (active && (isDebugKey && !debugService.m_showDebugStuff))
+    else if ((active && !isToggleKey) || (isToggleKey && textInputFocused))
     {
         pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
     }

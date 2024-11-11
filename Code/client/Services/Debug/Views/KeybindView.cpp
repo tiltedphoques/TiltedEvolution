@@ -22,7 +22,7 @@ TiltedPhoques::String ConvertWstringToString(const TiltedPhoques::WString& acWid
 
 const TiltedPhoques::WString& BindKey(const TiltedPhoques::WString& acKeyName, bool& aBindActive, const bool& acDebugKey)
 {
-    auto& rebindService = World::Get().GetKeybindService();
+    auto& keybindService = World::Get().GetKeybindService();
     TiltedPhoques::WString keyName = acKeyName;
 
     ImGui::SameLine(0);
@@ -45,9 +45,9 @@ const TiltedPhoques::WString& BindKey(const TiltedPhoques::WString& acKeyName, b
             aBindActive = false;
 
             if (acDebugKey)
-                rebindService.BindDebugKey(key);
+                keybindService.BindDebugKey(key);
             else
-                rebindService.BindUIKey(key);
+                keybindService.BindUIKey(key);
 
             break;
         }

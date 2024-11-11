@@ -81,6 +81,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   public ngAfterViewInit(): void {
     setTimeout(() => {
       this.inputRef.nativeElement.focus();
+      this.client.textInputFocused(true);
     }, 100);
   }
 
@@ -127,6 +128,14 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
 
   public openServerList(): void {
     this.uiRepository.openView(View.SERVER_LIST);
+  }
+
+  public focus() : void {
+    this.client.textInputFocused(true);
+  }
+
+  public blur(): void {
+    this.client.textInputFocused(false);
   }
 
   @ViewChild('input')

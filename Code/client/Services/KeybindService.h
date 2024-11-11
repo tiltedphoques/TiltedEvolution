@@ -46,7 +46,7 @@ struct KeybindService
 {
     struct KeyCodes
     {
-        enum
+        enum : uint8_t
         {
             Error = 0
         };
@@ -91,7 +91,10 @@ struct KeybindService
 
     const Config& GetConfig() const noexcept { return m_config; }
 
-private:
+    bool GetTextInputFocus() const noexcept { return m_isTextInputFocused; }
+    void SetTextInputFocus(bool aTextInputFocused) noexcept { m_isTextInputFocused = aTextInputFocused; }
+
+  private:
     void OnDirectInputKeyPress(const unsigned long& acKeyCode) noexcept;
     void OnVirtualKeyKeyPress(const KeyPressEvent& acKeyCode) noexcept;
 
@@ -114,6 +117,8 @@ private:
     InputService& m_inputService;
     DebugService& m_debugService;
     TiltedPhoques::DInputHook* m_pInputHook;
+
+    bool m_isTextInputFocused{false};
 
     uint16_t m_keyCode{0};
 

@@ -27,6 +27,8 @@
     spellcheck="false"
     [(ngModel)]="message"
     (keydown.enter)="sendMessage()"
+    (focus)="focus()"
+    (blur)="blur()"
   />
   <button (click)="sendMessage()">
     {{ 'COMPONENT.CHAT.SEND' | transloco }}
