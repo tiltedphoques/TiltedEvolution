@@ -491,8 +491,11 @@ void MagicService::ApplyQueuedEffects() noexcept
 void MagicService::UpdateRevealOtherPlayersEffect() noexcept
 {
 #if TP_SKYRIM64
-    if (GetAsyncKeyState(VK_F4) & 0x01)
+    if (m_canRevealOtherPlayers)
+    {
+        m_canRevealOtherPlayers = false;
         m_revealOtherPlayers = !m_revealOtherPlayers;
+    }
 
     if (!m_revealOtherPlayers)
         return;

@@ -14,6 +14,7 @@ struct OverlayRenderHandler;
 struct InputService;
 struct DebugService;
 struct OverlayService;
+struct MagicService;
 
 struct KeyPressEvent;
 
@@ -33,6 +34,13 @@ namespace fs = std::filesystem;
             VK_F3, DIK_F3 \
         }                 \
     }
+#define DEFAULT_REVEAL_PLAYERS_KEY \
+    {                      \
+        L"F4",             \
+        {                  \
+            VK_F4, DIK_F4  \
+        }                  \
+    }
 
 /**
  * @brief Handles keybinds
@@ -44,6 +52,14 @@ namespace fs = std::filesystem;
  */
 struct KeybindService
 {
+    enum Keybind : uint8_t
+    {
+        None = 0,
+        UI,
+        Debug,
+        RevealPlayers
+    };
+
     struct KeyCodes
     {
         enum : uint8_t
@@ -78,13 +94,10 @@ struct KeybindService
         fs::path path{};
     };
 
-    KeybindService(entt::dispatcher& aDispatcher, InputService& aInputService, DebugService& aDebugService);
+    KeybindService(entt::dispatcher& aDispatcher, InputService& aInputService, DebugService& aDebugService, MagicService& aMagicService);
     ~KeybindService();
 
     TP_NOCOPYMOVE(KeybindService);
-
-    bool BindUIKey(const uint16_t& acKeyCode) noexcept;
-    bool BindDebugKey(const uint16_t& acKeyCode) noexcept;
 
     const Key& GetUIKey() const noexcept { return m_uiKey; }
     const Key& GetDebugKey() const noexcept { return m_debugKey; }
@@ -94,28 +107,44 @@ struct KeybindService
     bool GetTextInputFocus() const noexcept { return m_isTextInputFocused; }
     void SetTextInputFocus(bool aTextInputFocused) noexcept { m_isTextInputFocused = aTextInputFocused; }
 
+    bool BindKey(const Keybind& acKeyType, const uint16_t& acNewKeyCode) noexcept;
+    const Key& GetKey(const Keybind& acKeyType) const noexcept;
+
   private:
+    // Handles DirectInput-related keybind inputs
+    // Handling them elsewhere could cause missed keystate changes
     void OnDirectInputKeyPress(const unsigned long& acKeyCode) noexcept;
+    // Handles VirtualKey-related keybind inputs
+    // Handling them elsewhere could cause missed keystate changes
     void OnVirtualKeyKeyPress(const KeyPressEvent& acKeyCode) noexcept;
 
     Key MakeKey(const uint16_t& acKeyCode) noexcept;
 
+    bool SetKeyValues(Key& acKeyToChange, const Key& acKey) noexcept;
+    bool SetKey(const Keybind& acKeybind, const Key& acKey, const bool& acLoadFromConfig = false) noexcept;
+    bool HandleSetUI(const Key& acKey, const bool& acLoadFromConfig = false) noexcept;
+    bool HandleSetDebug(const Key& acKey, const bool& acLoadFromConfig = false) noexcept;
+    bool HandleSetRevealPlayers(const Key& acKey, const bool& acLoadFromConfig = false) noexcept;
+    bool HandleBind(const Keybind& acKeybind, const uint16_t& acNewKeyCode) noexcept;
+
     void InitializeKeys(bool aLoadDefaults) noexcept;
-    bool SetDebugKey(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, const TiltedPhoques::WString& acKeyName, const bool& acLoadFromConfig = false) noexcept;
-    bool SetUIKey(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, const TiltedPhoques::WString& acKeyName, const bool& acLoadFromConfig = false) noexcept;
     void HandleKeybind(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, const bool& acLoadFromConfig = false) noexcept;
+    bool DoKeysMatch(const Key& acLeftKey, const Key& acRightKey) const noexcept;
+
     bool CanToggleDebug(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode) const noexcept;
-    bool DoKeysMatch(const KeybindService::Key& acLeftKey, const KeybindService::Key& acRightKey) const noexcept;
+    bool CanRevealOtherPlayers(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode) const noexcept;
 
     static TiltedPhoques::WString ConvertToWString(const TiltedPhoques::String& acString) noexcept;
     static TiltedPhoques::String ConvertToString(const TiltedPhoques::WString& acString) noexcept;
     static uint16_t ResolveVkKeyModifier(const uint16_t& acKeyCode) noexcept;
 
     void SetupConfig() noexcept;
+    void CheckForDuplicates() noexcept;
 
     entt::dispatcher& m_dispatcher;
     InputService& m_inputService;
     DebugService& m_debugService;
+    MagicService& m_magicService;
     TiltedPhoques::DInputHook* m_pInputHook;
 
     bool m_isTextInputFocused{false};
@@ -124,6 +153,7 @@ struct KeybindService
 
     bool m_uiKeybindConfirmed{false};
     bool m_debugKeybindConfirmed{false};
+    bool m_revealPlayersKeybindConfirmed{false};
 
     size_t m_dikKeyPressConnection{0};
     entt::scoped_connection m_vkKeyPressConnection{};
@@ -134,6 +164,7 @@ struct KeybindService
     // or loaded from config
     Key m_uiKey{};
     Key m_debugKey{};
+    Key m_revealPlayersKey{};
 
     // Keys with custom names
     const TiltedPhoques::Map<Key::first_type, Key::second_type>& m_modifiedKeys{

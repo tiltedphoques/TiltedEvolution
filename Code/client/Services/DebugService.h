@@ -34,7 +34,7 @@ struct DebugService
 
     const KeybindService::Key& GetDebugKey() const noexcept { return m_debugKeybind; }
     void SetDebugKey(const TiltedPhoques::SharedPtr<KeybindService::Key>& acpKey) noexcept { m_debugKeybind = *acpKey; }
-    bool IsRebinding() const noexcept { return m_rebindUI || m_rebindDebug; }
+    bool IsRebinding() const noexcept { return m_rebindUI ^ m_rebindDebug ^ m_rebindRevealPlayers; }
     void DebugPressed() noexcept { m_debugKeyPressed = !m_debugKeyPressed; }
 
 protected:
@@ -92,6 +92,7 @@ private:
     bool m_debugKeyPressed{false};
     bool m_rebindUI{false};
     bool m_rebindDebug{false};
+    bool m_rebindRevealPlayers{false};
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;

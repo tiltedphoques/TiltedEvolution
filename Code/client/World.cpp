@@ -52,7 +52,7 @@ World::World()
     ctx().emplace<CombatService>(*this, m_transport, m_dispatcher);
     ctx().emplace<WeatherService>(*this, m_transport, m_dispatcher);
     ctx().emplace<MapService>(*this, m_dispatcher, m_transport);
-    ctx().emplace<KeybindService>(m_dispatcher, ctx().at<InputService>(), ctx().at<DebugService>());
+    ctx().emplace<KeybindService>(m_dispatcher, ctx().at<InputService>(), ctx().at<DebugService>(), ctx().at<MagicService>());
 }
 
 World::~World() = default;
