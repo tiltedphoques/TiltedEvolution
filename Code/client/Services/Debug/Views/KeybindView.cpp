@@ -78,7 +78,6 @@ const TiltedPhoques::WString& BindKey(const TiltedPhoques::WString& acKeyName, b
 
 void DebugService::DrawKeybindView()
 {
-#if TP_SKYRIM64
     auto& keybindService = World::Get().GetKeybindService();
 
     ImGui::SetNextWindowSize(ImVec2(350, 150), ImGuiCond_FirstUseEver);
@@ -136,5 +135,4 @@ void DebugService::DrawKeybindView()
     }
 
     ImGui::End();
-#endif
 }
