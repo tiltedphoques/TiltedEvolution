@@ -21,6 +21,6 @@ struct ActorExtension
     ActionEvent LatestAnimation{};
     size_t GraphDescriptorHash = 0;
 
-private:
+  private:
     uint32_t onlineFlags{0};
 };

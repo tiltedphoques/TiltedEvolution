@@ -25,6 +25,8 @@
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
 
+#include <ModCompat/BehaviorVar.h>  
+
 World::World()
     : m_runner(m_dispatcher)
     , m_transport(*this, m_dispatcher)
@@ -53,6 +55,7 @@ World::World()
     ctx().emplace<WeatherService>(*this, m_transport, m_dispatcher);
     ctx().emplace<MapService>(*this, m_dispatcher, m_transport);
     ctx().emplace<KeybindService>(m_dispatcher, ctx().at<InputService>(), ctx().at<DebugService>(), ctx().at<MagicService>());
+    BehaviorVar::Get()->Init();
 }
 
 World::~World() = default;

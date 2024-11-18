@@ -28,13 +28,6 @@
 
 #include <Games/TES.h>
 
-// TODO: these paths are inconsistent
-#if TP_FALLOUT4
-#include <Magic/EffectItem.h>
-#include <Magic/EffectSetting.h>
-#endif
-
-// TODO: ft
 MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
     , m_dispatcher(aDispatcher)
@@ -61,7 +54,6 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcept
 {
-#if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
@@ -121,12 +113,10 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
     spdlog::debug("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}, desired target: {:X}", request.CasterId, request.CastingSource, request.IsDualCasting, request.DesiredTarget);
 
     m_transport.Send(request);
-#endif
 }
 
 void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noexcept
 {
-#if TP_SKYRIM64
     using CS = MagicSystem::CastingSource;
 
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
@@ -218,12 +208,10 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
     pCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
 
     spdlog::debug("Successfully casted remote spell");
-#endif
 }
 
 void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const noexcept
 {
-#if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
@@ -247,12 +235,10 @@ void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const
     spdlog::debug("Sending out interrupt cast");
 
     m_transport.Send(request);
-#endif
 }
 
 void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) const noexcept
 {
-#if TP_SKYRIM64
     if (acMessage.CastingSource >= 4)
     {
         spdlog::warn("{}: could not find casting source {}", __FUNCTION__, acMessage.CastingSource);
@@ -285,16 +271,13 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
     pCaster->InterruptCast();
 
     spdlog::debug("Interrupt remote cast successful");
-#endif
 }
 
 void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 {
-#if 1
     if (!m_transport.IsConnected())
         return;
 
-#if TP_SKYRIM64
     // These effects are applied through spell cast sync
     if (SpellItem* pSpellItem = Cast<SpellItem>(TESForm::GetById(acEvent.SpellID)))
     {
@@ -303,7 +286,6 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
             return;
         }
     }
-#endif
 
     AddTargetRequest request{};
 
@@ -361,10 +343,8 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     m_transport.Send(request);
 
     spdlog::debug("Sending effect sync request");
-#endif
 }
 
-// todo: ft
 void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
@@ -408,20 +388,16 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     data.pSpell = pSpell;
     data.pEffectItem = pEffect;
     data.fMagnitude = acMessage.Magnitude;
-#if TP_SKYRIM64
     data.fUnkFloat1 = 1.0f;
-#endif
     data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
     data.bDualCast = acMessage.IsDualCasting;
 
-#if TP_SKYRIM64
     if (pEffect->IsWerewolfEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
 
     if (pEffect->IsVampireLordEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
 
-    // TODO: ft, check if this bug also occurs in fallout 4
     // This hack is here because slow time seems to be twice as slow when cast by an npc
     if (pEffect->IsSlowEffect())
         pActor = PlayerCharacter::Get();
@@ -431,7 +407,6 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     pActor->magicTarget.AddTarget(data, acMessage.ApplyHealPerkBonus, acMessage.ApplyStaminaPerkBonus);
 
     spdlog::debug("Applied remote magic effect");
-#endif
 }
 
 void MagicService::ApplyQueuedEffects() noexcept
@@ -490,7 +465,6 @@ void MagicService::ApplyQueuedEffects() noexcept
 
 void MagicService::UpdateRevealOtherPlayersEffect() noexcept
 {
-#if TP_SKYRIM64
     if (m_canRevealOtherPlayers)
     {
         m_canRevealOtherPlayers = false;
@@ -538,5 +512,4 @@ void MagicService::UpdateRevealOtherPlayersEffect() noexcept
 
         pRemotePlayer->magicTarget.AddTarget(data, false, false);
     }
-#endif
 }

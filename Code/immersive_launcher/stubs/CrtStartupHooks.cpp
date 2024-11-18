@@ -31,18 +31,6 @@ void WINAPI TP_RaiseException(DWORD dwExceptionCode, DWORD dwExceptionFlags, DWO
 
 void InstallStartHook()
 {
-#if defined(TARGET_FT)
-    // Fallout4 is linked against an old silly CRT, so we need to apply our init
-    // hooks differently
-    if (auto hCrt = GetModuleHandleW(L"MSVCR110.dll") /*Shut up the compiler*/)
-    {
-        Real_ismbbled = reinterpret_cast<decltype(Real_ismbbled)>(GetProcAddress(hCrt, "_ismbblead"));
-        TP_HOOK_IAT2("MSVCR110.dll", "_ismbblead", TP_ismbblead);
-    }
-#elif defined(TARGET_ST)
     TP_HOOK_IAT2("Kernel32.dll", "GetStartupInfoW", TP_GetStartupInfoW);
     TP_HOOK_IAT2("Kernel32.dll", "RaiseException", TP_RaiseException);
-#else
-#error Fix?
-#endif
 };

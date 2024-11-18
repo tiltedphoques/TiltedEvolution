@@ -31,17 +31,8 @@ void ProjectileLaunchRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     Serialization::WriteBool(aWriter, DeferInitialization);
     Serialization::WriteBool(aWriter, ForceConeOfFire);
 
-    // Skyrim
     Serialization::WriteBool(aWriter, UnkBool1);
     Serialization::WriteBool(aWriter, UnkBool2);
-
-    // Fallout 4
-    Serialization::WriteFloat(aWriter, ConeOfFireRadiusMult);
-    Serialization::WriteBool(aWriter, Tracer);
-    Serialization::WriteBool(aWriter, IntentionalMiss);
-    Serialization::WriteBool(aWriter, Allow3D);
-    Serialization::WriteBool(aWriter, Penetrates);
-    Serialization::WriteBool(aWriter, IgnoreNearCollisions);
 }
 
 void ProjectileLaunchRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -77,15 +68,6 @@ void ProjectileLaunchRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     DeferInitialization = Serialization::ReadBool(aReader);
     ForceConeOfFire = Serialization::ReadBool(aReader);
 
-    // Skyrim
     UnkBool1 = Serialization::ReadBool(aReader);
     UnkBool2 = Serialization::ReadBool(aReader);
-
-    // Fallout 4
-    ConeOfFireRadiusMult = Serialization::ReadFloat(aReader);
-    Tracer = Serialization::ReadBool(aReader);
-    IntentionalMiss = Serialization::ReadBool(aReader);
-    Allow3D = Serialization::ReadBool(aReader);
-    Penetrates = Serialization::ReadBool(aReader);
-    IgnoreNearCollisions = Serialization::ReadBool(aReader);
 }

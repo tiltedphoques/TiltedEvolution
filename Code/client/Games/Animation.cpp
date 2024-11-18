@@ -59,18 +59,11 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
         return res;
     }
 
-#if TP_FALLOUT4
-    // Let the ActionInstantInitializeGraphToBaseState event go through
-    if (apAction->action->formID == 0x5704c)
-        return TiltedPhoques::ThisCall(RealPerformAction, apThis, apAction);
-#endif
-
     return 0;
 }
 
 ActorMediator* ActorMediator::Get() noexcept
 {
-    POINTER_FALLOUT4(ActorMediator*, s_actorMediator, 1358859);
     POINTER_SKYRIMSE(ActorMediator*, s_actorMediator, 403567);
 
     return *(s_actorMediator.Get());
@@ -116,7 +109,6 @@ bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
     POINTER_SKYRIMSE(TAnimationStep, PerformComplexAction, 38953);
     POINTER_SKYRIMSE(void*, qword_142F271B8, 403566);
 
-    POINTER_FALLOUT4(TAnimationStep, PerformComplexAction, 1445653);
     uint8_t result = 0;
 
     auto pActor = static_cast<Actor*>(apAction->actor);
@@ -124,9 +116,7 @@ bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
     {
         result = TiltedPhoques::ThisCall(PerformComplexAction, this, apAction);
 
-#if TP_SKYRIM64
         ApplyAnimationVariables(*qword_142F271B8.Get(), apAction);
-#endif
     }
 
     return result;
@@ -175,7 +165,6 @@ BGSActionData::BGSActionData(uint32_t aParam1, Actor* apActor, BGSAction* apActi
 TESActionData::TESActionData(uint32_t aParam1, Actor* apActor, BGSAction* apAction, TESObjectREFR* apTarget)
     : BGSActionData(aParam1, apActor, apAction, apTarget)
 {
-    POINTER_FALLOUT4(void*, s_vtbl, 780201);
     POINTER_SKYRIMSE(void*, s_vtbl, 188603);
 
     someFlag = false;
@@ -192,7 +181,6 @@ TESActionData::~TESActionData()
 static TiltedPhoques::Initializer s_animationHook(
     []()
     {
-        POINTER_FALLOUT4(TPerformAction, performAction, 502377);
         POINTER_SKYRIMSE(TPerformAction, performAction, 38949);
 
         RealPerformAction = performAction.Get();

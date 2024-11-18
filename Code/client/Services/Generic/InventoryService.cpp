@@ -25,11 +25,6 @@
 #include <EquipManager.h>
 #include <Games/ActorExtension.h>
 #include <Forms/TESNPC.h>
-
-#if TP_FALLOUT4
-#include <Forms/BGSObjectInstance.h>
-#endif
-
 #include <DefaultObjectManager.h>
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
@@ -175,15 +170,12 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     uint32_t equipSlotId = modSystem.GetGameId(acMessage.EquipSlotId);
     TESForm* pEquipSlot = TESForm::GetById(equipSlotId);
 
-#if TP_SKYRIM64
     uint32_t slotId = 0;
     if (pEquipSlot == DefaultObjectManager::Get().rightEquipSlot)
         slotId = 1;
-#endif
 
     auto* pEquipManager = EquipManager::Get();
 
-#if TP_SKYRIM64
     if (acMessage.IsSpell)
     {
         if (acMessage.Unequip)
@@ -202,25 +194,17 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
 
         return;
     }
-#endif
 
     auto* pObject = Cast<TESBoundObject>(pItem);
 
     // TODO: ExtraData necessary? probably
     if (acMessage.Unequip)
     {
-#if TP_SKYRIM64
         pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
-#elif TP_FALLOUT4
-        // TODO: this is flawed, little control over slots and extra data
-        if (pObject)
-            pActor->UnequipItem(pObject);
-#endif
     }
     else
     {
         // Unequip all armor first, since the game won't auto unequip armor
-#if TP_SKYRIM64
         Inventory wornArmor{};
         if (pItem->formType == FormType::Armor)
         {
@@ -243,11 +227,6 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
             if (pArmor)
                 pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
         }
-#elif TP_FALLOUT4
-        // TODO(cosideci): same armor trick required for fallout 4?
-        BGSObjectInstance object(pObject, nullptr);
-        EquipManager::Get()->EquipObject(pActor, object, 0, acMessage.Count, nullptr, false, true, false, false, false);
-#endif
     }
 }
 
@@ -289,7 +268,6 @@ void InventoryService::RunWeaponStateUpdates() noexcept
 
 void InventoryService::RunNakedNPCBugChecks() noexcept
 {
-#if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
@@ -330,5 +308,4 @@ void InventoryService::RunNakedNPCBugChecks() noexcept
 
         pActor->ResetInventory(false);
     }
-#endif
 }

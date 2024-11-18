@@ -10,9 +10,6 @@ namespace
 constexpr char kSkyrimServerDSN[] = R"(https://6aff0a6955754bdebfffb064813b9042@o228105.ingest.sentry.io/6303666)";
 constexpr char kSkyrimClientDSN[] = R"(https://96c601d451c94b32adb826aa62c6d50f@o228105.ingest.sentry.io/6269770)";
 
-constexpr char kFalloutServerDSN[] = R"(https://2a3d561652734ca78e539c3fb5219a38@o228105.ingest.sentry.io/6303669)";
-constexpr char kFalloutClientDSN[] = R"(https://63886f8f9ef54328bc3373b07750a028@o228105.ingest.sentry.io/6273696)";
-
 spdlog::level::level_enum TranslateSentryLevel(sentry_level_t aSentryLevel)
 {
     using ll = spdlog::level::level_enum;
@@ -82,10 +79,7 @@ void InstallCrashHandler(bool aServer, bool aSkyrim)
     sentry_options_t* options = sentry_options_new();
 
     sentry_options_set_database_path(options, ".sentry-native");
-    if (aSkyrim)
-        sentry_options_set_dsn(options, aServer ? kSkyrimServerDSN : kSkyrimClientDSN);
-    else
-        sentry_options_set_dsn(options, aServer ? kFalloutServerDSN : kFalloutClientDSN);
+    sentry_options_set_dsn(options, aServer ? kSkyrimServerDSN : kSkyrimClientDSN);
 
     sentry_options_set_auto_session_tracking(options, false);
     sentry_options_set_symbolize_stacktraces(options, true);

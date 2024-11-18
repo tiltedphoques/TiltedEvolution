@@ -81,17 +81,8 @@ void CombatService::OnProjectileLaunchedEvent(const ProjectileLaunchedEvent& acE
     request.DeferInitialization = acEvent.DeferInitialization;
     request.ForceConeOfFire = acEvent.ForceConeOfFire;
 
-#if TP_SKYRIM64
     request.UnkBool1 = acEvent.UnkBool1;
     request.UnkBool2 = acEvent.UnkBool2;
-#else
-    request.ConeOfFireRadiusMult = acEvent.ConeOfFireRadiusMult;
-    request.Tracer = acEvent.Tracer;
-    request.IntentionalMiss = acEvent.IntentionalMiss;
-    request.Allow3D = acEvent.Allow3D;
-    request.Penetrates = acEvent.Penetrates;
-    request.IgnoreNearCollisions = acEvent.IgnoreNearCollisions;
-#endif
 
     m_transport.Send(request);
 }
@@ -111,11 +102,7 @@ void CombatService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMes
 
     FormIdComponent formIdComponent = remoteView.get<FormIdComponent>(*remoteIt);
 
-#if TP_SKYRIM64
     Projectile::LaunchData launchData{};
-#else
-    ProjectileLaunchData launchData{};
-#endif
 
     // Projectile::Launch relies on pParentCell being valid.
     // TODO: it's possible that more of these values must have a value, should probably check for that in the game code.
@@ -137,15 +124,8 @@ void CombatService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMes
     const uint32_t cProjectileBaseId = modSystem.GetGameId(acMessage.ProjectileBaseID);
     launchData.pProjectileBase = TESForm::GetById(cProjectileBaseId);
 
-#if TP_SKYRIM64
     const uint32_t cFromWeaponId = modSystem.GetGameId(acMessage.WeaponID);
     launchData.pFromWeapon = Cast<TESObjectWEAP>(TESForm::GetById(cFromWeaponId));
-#endif
-
-#if TP_FALLOUT4
-    Actor* pShooter = Cast<Actor>(launchData.pShooter);
-    pShooter->GetCurrentWeapon(&launchData.FromWeapon, 0);
-#endif
 
     const uint32_t cFromAmmoId = modSystem.GetGameId(acMessage.AmmoID);
     launchData.pFromAmmo = Cast<TESAmmo>(TESForm::GetById(cFromAmmoId));
@@ -172,19 +152,8 @@ void CombatService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMes
     // always use origin, or it'll recalculate it and it desyncs
     launchData.bUseOrigin = true;
 
-#if TP_SKYRIM64
     launchData.bUnkBool1 = acMessage.UnkBool1;
     launchData.bUnkBool2 = acMessage.UnkBool2;
-#else
-    launchData.eTargetLimb = -1;
-
-    launchData.fConeOfFireRadiusMult = acMessage.ConeOfFireRadiusMult;
-    launchData.bTracer = acMessage.Tracer;
-    launchData.bIntentionalMiss = acMessage.IntentionalMiss;
-    launchData.bAllow3D = acMessage.Allow3D;
-    launchData.bPenetrates = acMessage.Penetrates;
-    launchData.bIgnoreNearCollisions = acMessage.IgnoreNearCollisions;
-#endif
 
     BSPointerHandle<Projectile> result;
 

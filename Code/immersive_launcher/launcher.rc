@@ -31,8 +31,4 @@ END
 
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "resources/launcher.manifest"
 
-#if defined(TARGET_ST)
 102 ICON "resources/st.ico"
-#elif defined(TARGET_FT)
-102 ICON "resources/ft.ico"
-#endif

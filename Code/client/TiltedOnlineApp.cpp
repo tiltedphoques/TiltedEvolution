@@ -35,7 +35,7 @@ TiltedOnlineApp::TiltedOnlineApp()
     auto rotatingLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logPath / "tp_client.log", 1048576 * 5, 3);
     // rotatingLogger->set_level(spdlog::level::debug);
     auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    console->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
+    console->set_pattern("%^[%H:%M:%S.%e] [%l] [tid %t] %$ %v");
 
     auto logger = std::make_shared<spdlog::logger>("", spdlog::sinks_init_list{console, rotatingLogger});
     set_default_logger(logger);
@@ -46,7 +46,6 @@ TiltedOnlineApp::~TiltedOnlineApp() = default;
 void* TiltedOnlineApp::GetMainAddress() const
 {
     POINTER_SKYRIMSE(void, winMain, 36544);
-    POINTER_FALLOUT4(void, winMain, 668529);
 
     return winMain.GetPtr();
 }
@@ -59,6 +58,7 @@ bool TiltedOnlineApp::BeginMain()
 
     LoadScriptExender();
 
+    // TODO: Figure out a way to un-blacklist NvCamera64.dll (see DllBlocklist.cpp). Then this hack can be removed
     if (IsNvidiaOverlayLoaded())
         ApplyNvidiaFix();
 
@@ -78,13 +78,11 @@ void TiltedOnlineApp::Update()
 {
     // Every frame make sure we won't use preprocessed facegen
     POINTER_SKYRIMSE(uint32_t, bUseFaceGenPreprocessedHeads, 378620);
-    POINTER_FALLOUT4(uint32_t, bUseFaceGenPreprocessedHeads, 196397);
 
     *bUseFaceGenPreprocessedHeads = 0;
 
     // Make sure the window stays active
     POINTER_SKYRIMSE(uint32_t, bAlwaysActive, 380768);
-    POINTER_FALLOUT4(uint32_t, bAlwaysActive, 1420078);
 
     *bAlwaysActive = 1;
 
@@ -118,11 +116,11 @@ void TiltedOnlineApp::UninstallHooks()
 
 void TiltedOnlineApp::ApplyNvidiaFix() noexcept
 {
-    auto d3dFeatureLevel = D3D_FEATURE_LEVEL_11_0;
-    HRESULT hr = CreateEarlyDxDevice(m_pDevice, &d3dFeatureLevel);
+    auto d3dFeatureLevelOut = D3D_FEATURE_LEVEL_11_0;
+    HRESULT hr = CreateEarlyDxDevice(&m_pDevice, &d3dFeatureLevelOut);
     if (FAILED(hr))
         spdlog::error("D3D11CreateDevice failed. Detected an NVIDIA GPU, error code={0:x}", hr);
 
-    if (d3dFeatureLevel < D3D_FEATURE_LEVEL_11_0)
+    if (d3dFeatureLevelOut < D3D_FEATURE_LEVEL_11_0)
         spdlog::warn("Unexpected D3D11 feature level detected (< 11.0), may cause issues");
 }

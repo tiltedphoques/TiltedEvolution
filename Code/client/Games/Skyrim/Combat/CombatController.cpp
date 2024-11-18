@@ -1,8 +1,6 @@
 #include "CombatController.h"
 #include "CombatTargetSelector.h"
 
-// TODO: ft
-
 void ArrayQuickSortRecursiveCombatTargets(GameArray<CombatTargetSelector*>* apArray, uint32_t aiLowIndex,
                                           uint32_t aiHighIndex)
 {
@@ -71,24 +69,20 @@ void TP_MAKE_THISCALL(HookUpdateTarget, CombatController)
 
 void CombatController::SetTarget(Actor* apTarget)
 {
-#if TP_SKYRIM64
     TP_THIS_FUNCTION(TSetTarget, void, CombatController, Actor*);
     POINTER_SKYRIMSE(TSetTarget, setTarget, 33235);
     TiltedPhoques::ThisCall(setTarget, this, apTarget);
-#endif
 }
 
 static TiltedPhoques::Initializer s_combatControllerHooks(
     []()
     {
 #if 0
-    #if TP_SKYRIM64
         POINTER_SKYRIMSE(TUpdateTarget, s_updateTarget, 33236);
 
         RealUpdateTarget = s_updateTarget.Get();
 
         TP_HOOK(&RealUpdateTarget, HookUpdateTarget);
-    #endif
 #endif
     });
 

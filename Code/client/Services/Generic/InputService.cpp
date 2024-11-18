@@ -21,13 +21,7 @@ static UINT s_currentACP = CP_ACP;
 
 void ForceKillAllInput()
 {
-#if TP_SKYRIM
     MenuControls::GetInstance()->SetToggle(false);
-#else
-    // TODO! Crash the project so we notice
-    int* t = nullptr;
-    *t = 42;
-#endif
 }
 
 uint32_t GetCefModifiers(uint16_t aVirtualKey)
@@ -104,15 +98,10 @@ bool IsDisableKey(int aKey) noexcept
     return aKey == VK_ESCAPE;
 }
 
-#if TP_SKYRIM64
 void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
 {
-#if defined(TP_SKYRIM)
     TiltedPhoques::DInputHook::Get().SetEnabled(aActive);
     aOverlay.SetActive(aActive);
-#else
-    pRenderer->SetVisible(aActive);
-#endif
 
     // Ensures the game is actually loaded, in case the initial event was sent too early
     aOverlay.SetVersion(BUILD_COMMIT);
@@ -124,7 +113,6 @@ void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
     while (ShowCursor(FALSE) >= 0)
         ;
 }
-#endif
 
 void ToggleUI(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexcept
 {
@@ -158,11 +146,7 @@ void ToggleUI(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noe
         }
         else if (aType == KEYEVENT_KEYUP)
         {
-#if defined(TP_SKYRIM)
             SetUIActive(overlay, pRenderer, !active);
-#else
-            pRenderer->SetVisible(!active);
-#endif
         }
     }
     else if ((active && !isToggleKey) || (isToggleKey && textInputFocused))
@@ -250,32 +234,11 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
     if (!pRenderer)
         return;
 
-#if TP_SKYRIM64
     const auto active = overlay.GetActive();
 
     spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
 
     ToggleUI(aKey, aScanCode, aType);
-
-#else
-    const auto active = pRenderer->IsVisible();
-
-    if (aType == KEYEVENT_KEYDOWN && aKey == VK_RCONTROL)
-    {
-        pRenderer->SetVisible(!active);
-
-        if (active)
-            while (ShowCursor(FALSE) >= 0)
-                ;
-        else
-            while (ShowCursor(TRUE) <= 0)
-                ;
-    }
-    else if (active)
-    {
-        pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
-    }
-#endif
 }
 
 void ProcessMouseMove(uint16_t aX, uint16_t aY)
@@ -382,22 +345,12 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     auto& discord = World::Get().ctx().at<DiscordService>();
     discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
-#if TP_SKYRIM64
     const bool active = s_pOverlay->GetActive();
-#else
-    const bool active = pRenderer->IsVisible();
-#endif
     if (active)
     {
         auto& imgui = World::Get().ctx().at<ImguiService>();
         imgui.WndProcHandler(hwnd, uMsg, wParam, lParam);
     }
-
-#if TP_FALLOUT4
-    const bool isVisible = pRenderer->IsVisible();
-    POINTER_FALLOUT4(uint8_t, s_viewportLock, 1549778);
-    *s_viewportLock = isVisible ? 1 : 0;
-#endif
 
     POINT position;
 
@@ -482,12 +435,6 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
         s_currentACP = GetRealACP();
         spdlog::info("Input language changed, current ACP: {}", s_currentACP);
     }
-
-#if TP_FALLOUT
-    // Fallout specific code to disable input
-    if (isVisible)
-        return 1;
-#endif
 
     return 0;
 }
