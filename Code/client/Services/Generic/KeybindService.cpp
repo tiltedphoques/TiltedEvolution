@@ -118,15 +118,11 @@ const KeybindService::Key& KeybindService::GetKey(const Keybind& acKeyType) cons
 {
     switch (acKeyType)
     {
-    default:
-    case None:
-        break;
-    case UI:
-        return m_uiKey;
-    case Debug:
-        return m_debugKey;
-    case RevealPlayers:
-        return m_revealPlayersKey;
+    default: break;
+    case None: break;
+    case UI: return m_uiKey;
+    case Debug: return m_debugKey;
+    case RevealPlayers: return m_revealPlayersKey;
     }
 
     return Key{L"", {KeyCodes::Error, KeyCodes::Error}};
@@ -290,7 +286,7 @@ void KeybindService::OnVirtualKeyKeyPress(const KeyPressEvent& acEvent) noexcept
 {
     m_keyCode = acEvent.VirtualKey >= 0x10 && acEvent.VirtualKey <= 0x12 ? ResolveVkKeyModifier(acEvent.VirtualKey) : acEvent.VirtualKey;
 
-    if (!m_debugKeybindConfirmed || !m_uiKeybindConfirmed)
+    if (!m_debugKeybindConfirmed || !m_uiKeybindConfirmed || !m_revealPlayersKeybindConfirmed)
     {
         HandleKeybind(m_keyCode, KeyCodes::Error);
     }
@@ -352,27 +348,25 @@ void KeybindService::HandleKeybind(const uint16_t& acVkKeyCode, const unsigned l
         // UI key pressed
         if (DoKeysMatch(*pModKey, m_uiKey) && !m_uiKeybindConfirmed)
         {
-            //SetUIKey(m_keyCode, acDiKeyCode, pModKey->first, acLoadFromConfig);
             SetKey(Keybind::UI, Key{pModKey->first, {m_keyCode, acDiKeyCode}}, acLoadFromConfig);
         }
         // Debug key pressed
         else if (DoKeysMatch(*pModKey, m_debugKey) && !m_debugKeybindConfirmed)
         {
-            //SetDebugKey(m_keyCode, acDiKeyCode, pModKey->first);
             SetKey(Keybind::Debug, Key{pModKey->first, {m_keyCode, acDiKeyCode}});
         }
     }
-    // No custom key name, UI key was pressed
-    else if (DoKeysMatch(cKey, m_uiKey) && !m_uiKeybindConfirmed)
+    // No custom key name
+    else
     {
-        //SetUIKey(m_keyCode, acDiKeyCode, cKeyName, acLoadFromConfig);
-        SetKey(Keybind::UI, Key{cKeyName, {m_keyCode, acDiKeyCode}}, acLoadFromConfig);
-    }
-    // No custom key name, Debug key was pressed
-    else if (DoKeysMatch(cKey, m_debugKey) && !m_debugKeybindConfirmed)
-    {
-        //SetDebugKey(m_keyCode, acDiKeyCode, cKeyName);
-        SetKey(Keybind::Debug, Key{cKeyName, {m_keyCode, acDiKeyCode}});
+        if (DoKeysMatch(cKey, m_uiKey) && !m_uiKeybindConfirmed)
+        {
+            SetKey(Keybind::UI, Key{cKeyName, {m_keyCode, acDiKeyCode}}, acLoadFromConfig);
+        }
+        else if (DoKeysMatch(cKey, m_debugKey) && !m_debugKeybindConfirmed)
+        {
+            SetKey(Keybind::Debug, Key{cKeyName, {m_keyCode, acDiKeyCode}});
+        }
     }
 }
 
