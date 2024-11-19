@@ -250,7 +250,7 @@ struct Actor : TESObjectREFR
     void StopCombat() noexcept;
     bool PlayIdle(TESIdleForm* apIdle) noexcept;
     void FixVampireLordModel() noexcept;
-    void RemoveSpell(MagicItem* apSpell) noexcept;
+    bool RemoveSpell(MagicItem* apSpell) noexcept;
 
     enum ActorFlags
     {

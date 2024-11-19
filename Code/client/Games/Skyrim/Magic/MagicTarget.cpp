@@ -17,8 +17,6 @@
 
 #include <Effects/ActiveEffect.h>
 
-#include <Events/RemoveSpellEvent.h>
-
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
 TP_THIS_FUNCTION(TRemoveSpell, bool, Actor, MagicItem* apSpell);
 TP_THIS_FUNCTION(TCheckAddEffectTargetData, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
@@ -185,26 +183,6 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
     }
 }
 
-// Designed to run when we hook removespell (AddressLib ID is 38717)
-// Sends a message to the server to remove the spell from this player on other clients
-bool TP_MAKE_THISCALL(HookRemoveSpell, Actor, MagicItem* apSpell)
-{   
-    bool result = TiltedPhoques::ThisCall(RealRemoveSpell, apThis, apSpell);
-    if (apThis->GetExtension()->IsLocalPlayer() && result)
-    {
-        // Log spell info
-        //spdlog::info("Removing spell {}, ID: {} from local player", apSpell->GetName() , apSpell->formID);
-        RemoveSpellEvent removalEvent;
-
-        removalEvent.TargetId = apThis->formID;
-        removalEvent.SpellId = apSpell->formID;
-        World::Get().GetRunner().Trigger(removalEvent);
-    }
-
-    return result;
-}
-
-
 bool TP_MAKE_THISCALL(HookCheckAddEffectTargetData, MagicTarget::AddTargetData, void* arArgs, float afResistance)
 {
     if (s_autoSucceedEffectCheck)
@@ -267,7 +245,6 @@ static TiltedPhoques::Initializer s_magicTargetHooks([]() {
     RealGetPerkRank = getPerkRank.Get();
 
     TP_HOOK(&RealAddTarget, HookAddTarget);
-    TP_HOOK(&RealRemoveSpell, HookRemoveSpell);
     TP_HOOK(&RealCheckAddEffectTargetData, HookCheckAddEffectTargetData);
     TP_HOOK(&RealFindTargets, HookFindTargets);
     TP_HOOK(&RealAdjustForPerks, HookAdjustForPerks);
