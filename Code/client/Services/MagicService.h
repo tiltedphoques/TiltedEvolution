@@ -33,6 +33,12 @@ struct MagicService
 
     TP_NOCOPYMOVE(MagicService);
 
+    /**
+     * @brief Starts revealing remote players for a few seconds
+     * @see UpdateRevealOtherPlayersEffect
+     */
+    void StartRevealingOtherPlayers() noexcept;
+
 protected:
     /**
      * @brief Checks to apply queued effects on each frame.
@@ -75,7 +81,7 @@ private:
     /**
      * Apply the "reveal players" effect on remote players.
      */
-    void UpdateRevealOtherPlayersEffect() noexcept;
+    void UpdateRevealOtherPlayersEffect(bool aForceTrigger = false) noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
@@ -88,7 +94,7 @@ private:
     Map<uint32_t, AddTargetRequest> m_queuedEffects;
     Map<uint32_t, NotifyAddTarget> m_queuedRemoteEffects;
 
-    bool m_revealOtherPlayers = false;
+    bool m_revealingOtherPlayers = false;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;

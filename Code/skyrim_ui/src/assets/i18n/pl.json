@@ -80,6 +80,7 @@
     "ROOT": {
       "CONNECT": "Połącz",
       "DISCONNECT": "Odłącz",
+      "REVEAL_PLAYERS": "Podświetl Graczy",
       "RECONNECT": "Odłącz się i połącz z powrotem",
       "PLAYER_MANAGER": "Menedżer Graczy",
       "SETTINGS": "Ustawienia",
