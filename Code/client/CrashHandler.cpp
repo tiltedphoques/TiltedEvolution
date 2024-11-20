@@ -1,3 +1,4 @@
+#include <BranchInfo.h>
 #include "CrashHandler.h"
 #include <DbgHelp.h>
 #include <Windows.h>
