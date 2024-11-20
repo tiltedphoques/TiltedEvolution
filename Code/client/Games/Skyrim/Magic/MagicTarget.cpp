@@ -18,7 +18,6 @@
 #include <Effects/ActiveEffect.h>
 
 TP_THIS_FUNCTION(TAddTarget, bool, MagicTarget, MagicTarget::AddTargetData& arData);
-TP_THIS_FUNCTION(TRemoveSpell, bool, Actor, MagicItem* apSpell);
 TP_THIS_FUNCTION(TCheckAddEffectTargetData, bool, MagicTarget::AddTargetData, void* arArgs, float afResistance);
 TP_THIS_FUNCTION(TFindTargets, bool, MagicCaster, float afEffectivenessMult, int32_t* aruiTargetCount,
                  TESBoundObject* apSource, char abLoadCast, char abAdjust);
@@ -27,7 +26,6 @@ TP_THIS_FUNCTION(THasPerk, bool, Actor, TESForm* apPerk, void* apUnk1, double* a
 TP_THIS_FUNCTION(TGetPerkRank, uint8_t, Actor, TESForm* apPerk);
 
 static TAddTarget* RealAddTarget = nullptr;
-static TRemoveSpell* RealRemoveSpell = nullptr;
 static TCheckAddEffectTargetData* RealCheckAddEffectTargetData = nullptr;
 static TFindTargets* RealFindTargets = nullptr;
 static TAdjustForPerks* RealAdjustForPerks = nullptr;
@@ -229,7 +227,6 @@ uint8_t TP_MAKE_THISCALL(HookGetPerkRank, Actor, TESForm* apPerk)
 
 static TiltedPhoques::Initializer s_magicTargetHooks([]() {
     POINTER_SKYRIMSE(TAddTarget, addTarget, 34526);
-    POINTER_SKYRIMSE(TRemoveSpell, removeSpell, 38717);
     POINTER_SKYRIMSE(TCheckAddEffectTargetData, checkAddEffectTargetData, 34525);
     POINTER_SKYRIMSE(TFindTargets, findTargets, 34410);
     POINTER_SKYRIMSE(TAdjustForPerks, adjustForPerks, 34053);
@@ -237,7 +234,6 @@ static TiltedPhoques::Initializer s_magicTargetHooks([]() {
     POINTER_SKYRIMSE(TGetPerkRank, getPerkRank, 37698);
 
     RealAddTarget = addTarget.Get();
-    RealRemoveSpell = removeSpell.Get();
     RealCheckAddEffectTargetData = checkAddEffectTargetData.Get();
     RealFindTargets = findTargets.Get();
     RealAdjustForPerks = adjustForPerks.Get();

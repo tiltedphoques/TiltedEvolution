@@ -360,7 +360,7 @@ bool Actor::RemoveSpell(MagicItem* apSpell) noexcept
     if (!apSpell)
     {
         spdlog::error(__FUNCTION__ ": apSpell is null");
-        return FALSE;
+        return false;
     }
     // spdlog::info(__FUNCTION__ ": removing: {} from actor: {}", apSpell->formID, formID);
     return TiltedPhoques::ThisCall(RealRemoveSpell, this, apSpell);
@@ -388,9 +388,8 @@ bool TP_MAKE_THISCALL(HookRemoveSpell, Actor, MagicItem* apSpell)
     bool result = TiltedPhoques::ThisCall(RealRemoveSpell, apThis, apSpell);
     if (apThis->GetExtension()->IsLocalPlayer() && result)
     {
-        // Log spell info
-        // spdlog::info("Removing spell {}, ID: {} from local player", apSpell->GetName() , apSpell->formID);
-        RemoveSpellEvent removalEvent;
+        //spdlog::info(__FUNCTION__ ": spell: {}, ID: {} from local player", apSpell->GetName() , apSpell->formID);
+       RemoveSpellEvent removalEvent;
 
         removalEvent.TargetId = apThis->formID;
         removalEvent.SpellId = apSpell->formID;

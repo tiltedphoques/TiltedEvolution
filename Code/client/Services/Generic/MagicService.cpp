@@ -447,7 +447,7 @@ void MagicService::OnRemoveSpellEvent(const RemoveSpellEvent& acEvent) noexcept
 
     request.TargetId = serverIdRes.value();
 
-    //spdlog::info("Requesting remove spell with base id {:X} from actor with server id {:X}", request.SpellId.BaseId, request.TargetId);
+    //spdlog::info(__FUNCTION__ ": requesting remove spell with base id {:X} from actor with server id {:X}", request.SpellId.BaseId, request.TargetId);
 
     m_transport.Send(request);
 }
@@ -479,7 +479,7 @@ void MagicService::OnNotifyRemoveSpell(const NotifyRemoveSpell& acMessage) noexc
     }
 
     // Remove the spell from the actor
-    //spdlog::info("Removing spell with form id {:X} from actor with form id {:X}", cSpellId, targetFormId);
+    //spdlog::info(__FUNCTION__ ": removing spell with form id {:X} from actor with form id {:X}", cSpellId, targetFormId);
     pActor->RemoveSpell(pSpell);
 }
 
