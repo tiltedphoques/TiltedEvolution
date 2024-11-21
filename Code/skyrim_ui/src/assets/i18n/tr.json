@@ -3,7 +3,7 @@
     "CHAT": {
       "SEND": "Gönder",
       "MESSAGE": "Mesaj",
-      "MESSAGE_TOO_LONG": "{{chatMessageLengthLimit}} harften daha uzun bir mesaj gönderemezsin."
+      "MESSAGE_TOO_LONG": "{{chatMessageLengthLimit}} harften daha uzun bir mesaj gönderemezsin.",
       "SET_TIME_ARGUMENT_COUNT": "Yanlış argümanlar, kullanımı: /settime SS DD, örnek: /settime 15 32.",
       "SET_TIME_INVALID_ARGUMENTS": "Saat 0 ile 23 ve dakika 0 ile 59 arasında olmalıdır."
     },
@@ -150,7 +150,7 @@
     },
     "COMMANDS": {
       "AVAILABLE_COMMANDS": "Mevcut chat komutları: {{cmds}}",
-      "COMMAND_NOT_FOUND": "'{{cmd}}' geçerli bir komut değil."
+      "COMMAND_NOT_FOUND": "'{{cmd}}' geçerli bir komut değil.",
       "NOT_ADMIN": "Bu komutu kullanmak için Admin olmanız gerek."
     },
     "GROUP": {
@@ -168,7 +168,7 @@
         "CLIENT_MODS_DISALLOWED": "Bu sunucu {{mods}} modlarını kabul etmiyor. Katılmak için lütfen siliniz.",
         "WRONG_PASSWORD": "Girdiğiniz parola yanlış.",
         "NO_REASON": "Sunucu sebep vermeden bağlantıyı reddetti.",
-        "SERVER_FULL": "Sunucu Dolu."
+        "SERVER_FULL": "Sunucu Dolu.",
         "BAD_UGRIDSTOLOAD": "Görünüşe göre Skyrim.ini dosyanız 'uGridsToLoad' için varsayılan değerde değil. BU ÇOK KÖTÜ BİR FİKİR, ve muhtemelen modu bozar. Lütfen bu ayarı varsayılana çekiniz (5), ya da Skyrim.ini dosyasını silip Skyrim'ı vanilla olarak başlatıp yenisini oluşturun. 'uExterior Cell Buffer' ve 'uInterior Cell Buffer' ayarları varsayılan olarak kalmalı. Bunu nasıl yapacağınızı bilmiyorsanız, Lütfen wiki sayfamıza bakın veya Discord sunucusu/Reddit üzerinden yardım isteyiniz.",
         "NON_DEFAULT_INSTALL": "Görünüşe göre yüklemeniz tamamen vanilla değil, örneğin, Creation Club içeriği (Anniversary Güncellemesi ya da diğer türlüsü) ya da diğer modlar.\nModlar ile oynamanızı ÖNERMİYORUZ.\nBu modları silip deaktif etmenizi öneriyoruz (talimatlar wiki sayfasında bulunabilir).\n\nEn iyi deneyim için, bu mod listesine sahip olmanız gerek:<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp</strong>"
       }

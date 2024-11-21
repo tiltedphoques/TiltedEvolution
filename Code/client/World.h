@@ -6,6 +6,7 @@
 #include <Services/CharacterService.h>
 #include <Services/OverlayService.h>
 #include <Services/CharacterService.h>
+#include <Services/MagicService.h>
 #include <Services/DebugService.h>
 #include "Services/InputService.h"
 #include "Services/KeybindService.h"
@@ -37,6 +38,8 @@ struct World : entt::registry
     const InputService& GetInputService() const noexcept { return ctx().at<const InputService>(); }
     KeybindService& GetKeybindService() noexcept { return ctx().at<KeybindService>(); }
     const KeybindService& GetKeybindService() const noexcept { return ctx().at<const KeybindService>(); }
+    MagicService& GetMagicService() noexcept { return ctx().at<MagicService>(); }
+    const MagicService& GetMagicService() const noexcept { return ctx().at<const MagicService>(); }
 
     auto& GetDispatcher() noexcept { return m_dispatcher; }
 

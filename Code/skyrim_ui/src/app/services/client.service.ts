@@ -210,6 +210,13 @@ export class ClientService implements OnDestroy {
   }
 
   /**
+   * Reveal players in the immediate area (lighting them up with a visual effect).
+   */
+  public revealPlayers(): void {
+    skyrimtogether.revealPlayers();
+  }
+
+  /**
    * Launch a party.
    */
   public launchParty(): void {

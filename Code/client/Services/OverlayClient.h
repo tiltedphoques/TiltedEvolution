@@ -24,11 +24,13 @@ struct OverlayClient : TiltedPhoques::OverlayClient
 private:
     void ProcessConnectMessage(CefRefPtr<CefListValue> aEventArgs);
     void ProcessDisconnectMessage();
+    void ProcessRevealPlayersMessage();
     void ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs);
     void ProcessSetTimeCommand(CefRefPtr<CefListValue> aEventArgs);
     void ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs);
     void ProcessToggleDebugUI();
     void ProcessIsTextInputFocused(CefRefPtr<CefListValue> aEventArgs);
+    void SetUIVisible(bool aVisible) noexcept;
 
     TransportService& m_transport;
 };

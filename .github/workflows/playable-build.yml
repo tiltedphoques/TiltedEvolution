@@ -1,0 +1,90 @@
+name: Playable Skyrim Together Build
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every Friday at 1:00 p.m. UTC
+    - cron: '0 13 * * 5'
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest]
+        arch: [x64]
+        mode: [release]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # We need full history in order to create a build version string (BuildInfo.h)
+          fetch-depth: 0
+
+      - name: Checkout submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --force --recursive --depth=1
+
+      # Install xmake
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: 2.9.5
+
+      - name: Configure xmake and install dependencies
+        run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes -vD
+
+      # Build the game
+      - name: Build with xmake
+        run: xmake -y
+
+      # Create distrib
+      - name: Output STR binaries via xmake
+        run: xmake install -o distrib
+
+      # Building the Together UI
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/iron
+          cache-dependency-path: Code/skyrim_ui/pnpm-lock.yaml
+          cache: 'pnpm'
+
+      - name: Build the UI
+        run: |
+          pnpm --prefix Code/skyrim_ui/ install
+          pnpm --prefix Code/skyrim_ui/ deploy:production
+
+      # Package everything, organize directories
+
+      - name: Package binaries and assets
+        run: |
+          mkdir -p str-build/SkyrimTogetherReborn
+          mv build/windows/${{ matrix.arch }}/${{ matrix.mode }}/* str-build/SkyrimTogetherReborn
+          cp -Force -Recurse distrib/bin/* str-build/SkyrimTogetherReborn
+          cp -r Code/skyrim_ui/dist/UI str-build/SkyrimTogetherReborn
+          cp -r GameFiles/Skyrim/* str-build/
+
+      - name: Remove unnecessary build files
+        run: rm str-build/SkyrimTogetherReborn/*.pdb, str-build/SkyrimTogetherReborn/*.lib
+
+      # Upload artifact
+
+      - name: Store short commit hash
+        run: echo "SHORT_SHA=$("${{ github.sha }}".SubString(0, 8))" >> $env:GITHUB_ENV
+
+      - name: Upload playable build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Skyrim Together Build (${{ env.SHORT_SHA }})
+          path: str-build/

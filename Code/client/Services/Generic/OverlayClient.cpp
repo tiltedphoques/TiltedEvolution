@@ -1,6 +1,7 @@
 #include <TiltedOnlinePCH.h>
 
 #include <OverlayRenderHandler.hpp>
+#include <DInputHook.hpp>
 
 #include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
@@ -44,6 +45,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessConnectMessage(eventArgs);
         else if (eventName == "disconnect")
             ProcessDisconnectMessage();
+        else if (eventName == "revealPlayers")
+            ProcessRevealPlayersMessage();
         else if (eventName == "sendMessage")
             ProcessChatMessage(eventArgs);
         else if (eventName == "setTime")
@@ -107,6 +110,12 @@ void OverlayClient::ProcessDisconnectMessage()
     World::Get().GetRunner().Queue([]() { World::Get().GetTransport().Close(); });
 }
 
+void OverlayClient::ProcessRevealPlayersMessage()
+{
+    SetUIVisible(false);
+    World::Get().GetMagicService().StartRevealingOtherPlayers();
+}
+
 void OverlayClient::ProcessChatMessage(CefRefPtr<CefListValue> aEventArgs)
 {
     std::string contents = aEventArgs->GetString(1).ToString();
@@ -147,4 +156,15 @@ void OverlayClient::ProcessIsTextInputFocused(CefRefPtr<CefListValue> aEventArgs
 {
     World::Get().GetKeybindService().SetTextInputFocus(aEventArgs->GetBool(0));
     spdlog::debug("{} : [{}]", __FUNCTION__, aEventArgs->GetBool(0));
+}
+
+void OverlayClient::SetUIVisible(bool aVisible) noexcept
+{
+    auto pRenderer = GetOverlayRenderHandler();
+    if (!pRenderer)
+        return;
+
+    TiltedPhoques::DInputHook::Get().SetEnabled(aVisible);
+    World::Get().GetOverlayService().SetActive(aVisible);
+    pRenderer->SetCursorVisible(aVisible);
 }

@@ -36,6 +36,12 @@ struct MagicService
     bool GetCanRevealOtherPlayers() const noexcept { return m_canRevealOtherPlayers; }
     void RevealOtherPlayers(const bool& acRevealOtherPlayers) noexcept { m_canRevealOtherPlayers = acRevealOtherPlayers; };
 
+    /**
+     * @brief Starts revealing remote players for a few seconds
+     * @see UpdateRevealOtherPlayersEffect
+     */
+    void StartRevealingOtherPlayers() noexcept;
+
 protected:
     /**
      * @brief Checks to apply queued effects on each frame.
@@ -78,7 +84,7 @@ private:
     /**
      * Apply the "reveal players" effect on remote players.
      */
-    void UpdateRevealOtherPlayersEffect() noexcept;
+    void UpdateRevealOtherPlayersEffect(bool aForceTrigger = false) noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
@@ -93,6 +99,7 @@ private:
 
     bool m_revealOtherPlayers = false;
     bool m_canRevealOtherPlayers = false;
+    bool m_revealingOtherPlayers = false;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;
