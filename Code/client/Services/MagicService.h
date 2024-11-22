@@ -34,7 +34,8 @@ struct MagicService
     TP_NOCOPYMOVE(MagicService);
 
     bool GetCanRevealOtherPlayers() const noexcept { return m_canRevealOtherPlayers; }
-    void RevealOtherPlayers(const bool& acRevealOtherPlayers) noexcept { m_canRevealOtherPlayers = acRevealOtherPlayers; };
+    void RevealOtherPlayers(const bool& acRevealOtherPlayers) noexcept { m_canRevealOtherPlayers = acRevealOtherPlayers; }
+    void RevealKeybindPressed() noexcept;
 
     /**
      * @brief Starts revealing remote players for a few seconds
@@ -97,9 +98,9 @@ private:
     Map<uint32_t, AddTargetRequest> m_queuedEffects;
     Map<uint32_t, NotifyAddTarget> m_queuedRemoteEffects;
 
-    bool m_revealOtherPlayers = false;
     bool m_canRevealOtherPlayers = false;
     bool m_revealingOtherPlayers = false;
+    bool m_revealKeybindPressed = false;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;

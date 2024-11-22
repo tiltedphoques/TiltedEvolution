@@ -295,11 +295,17 @@ void KeybindService::OnVirtualKeyKeyPress(const KeyPressEvent& acEvent) noexcept
     {
         m_debugService.DebugPressed();
     }
+    else if (CanRevealOtherPlayers(m_keyCode, KeyCodes::Error))
+    {
+        m_magicService.RevealKeybindPressed();
+        //const auto& canRevealOtherPlayers = m_magicService.GetCanRevealOtherPlayers();
+        //m_magicService.RevealOtherPlayers(!canRevealOtherPlayers);
+    }
 }
 
 void KeybindService::OnDirectInputKeyPress(const unsigned long& acKeyCode) noexcept
 {
-    if (!m_uiKeybindConfirmed || !m_debugKeybindConfirmed)
+    if (!m_uiKeybindConfirmed || !m_debugKeybindConfirmed || !m_revealPlayersKeybindConfirmed)
     {
         HandleKeybind(KeyCodes::Error, acKeyCode);
     }
@@ -311,8 +317,9 @@ void KeybindService::OnDirectInputKeyPress(const unsigned long& acKeyCode) noexc
     }
     else if (CanRevealOtherPlayers(KeyCodes::Error, acKeyCode))
     {
-        const auto& canRevealOtherPlayers = m_magicService.GetCanRevealOtherPlayers();
-        m_magicService.RevealOtherPlayers(!canRevealOtherPlayers);
+        m_magicService.RevealKeybindPressed();
+        //const auto& canRevealOtherPlayers = m_magicService.GetCanRevealOtherPlayers();
+        //m_magicService.RevealOtherPlayers(!canRevealOtherPlayers);
     }
 }
 
