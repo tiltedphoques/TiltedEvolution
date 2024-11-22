@@ -17,6 +17,7 @@
 #include <Events/MountEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Events/HitEvent.h>
+#include <Events/RemoveSpellEvent.h>
 
 #include <Games/TES.h>
 #include <World.h>
@@ -103,6 +104,7 @@ void Actor::Save_Reversed(const uint32_t aChangeFlags, Buffer::Writer& aWriter)
 
 #endif
 
+TP_THIS_FUNCTION(TRemoveSpell, bool, Actor, MagicItem*);
 TP_THIS_FUNCTION(TCharacterConstructor, Actor*, Actor);
 TP_THIS_FUNCTION(TCharacterConstructor2, Actor*, Actor, uint8_t aUnk);
 TP_THIS_FUNCTION(TCharacterDestructor, Actor*, Actor);
@@ -119,6 +121,7 @@ TCharacterConstructor* RealCharacterConstructor;
 TCharacterConstructor2* RealCharacterConstructor2;
 TCharacterDestructor* RealCharacterDestructor;
 
+static TRemoveSpell* RealRemoveSpell = nullptr;
 static TAddInventoryItem* RealAddInventoryItem = nullptr;
 static TPickUpObject* RealPickUpObject = nullptr;
 static TDropObject* RealDropObject = nullptr;
@@ -352,6 +355,17 @@ void Actor::StopCombat() noexcept
     s_pStopCombat(this);
 }
 
+bool Actor::RemoveSpell(MagicItem* apSpell) noexcept
+{
+    if (!apSpell)
+    {
+        spdlog::error(__FUNCTION__ ": apSpell is null");
+        return false;
+    }
+    // spdlog::info(__FUNCTION__ ": removing: {} from actor: {}", apSpell->formID, formID);
+    return TiltedPhoques::ThisCall(RealRemoveSpell, this, apSpell);
+}
+
 bool Actor::HasPerk(uint32_t aPerkFormId) const noexcept
 {
     return GetPerkRank(aPerkFormId) != 0;
@@ -367,6 +381,22 @@ uint8_t Actor::GetPerkRank(uint32_t aPerkFormId) const noexcept
     POINTER_SKYRIMSE(TGetPerkRank, getPerkRank, 37698);
 
     return TiltedPhoques::ThisCall(getPerkRank, this, pPerk);
+}
+
+bool TP_MAKE_THISCALL(HookRemoveSpell, Actor, MagicItem* apSpell)
+{
+    bool result = TiltedPhoques::ThisCall(RealRemoveSpell, apThis, apSpell);
+    if (apThis->GetExtension()->IsLocalPlayer() && result)
+    {
+        //spdlog::info(__FUNCTION__ ": spell: {}, ID: {} from local player", apSpell->GetName() , apSpell->formID);
+       RemoveSpellEvent removalEvent;
+
+        removalEvent.TargetId = apThis->formID;
+        removalEvent.SpellId = apSpell->formID;
+        World::Get().GetRunner().Trigger(removalEvent);
+    }
+
+    return result;
 }
 
 Actor* TP_MAKE_THISCALL(HookCharacterConstructor, Actor)
@@ -1233,6 +1263,7 @@ static TiltedPhoques::Initializer s_actorHooks(
     {
         POINTER_SKYRIMSE(TActorProcess, s_actorProcess, 37356);
         POINTER_SKYRIMSE(TSetPosition, s_setPosition, 19790);
+        POINTER_SKYRIMSE(TRemoveSpell, s_removeSpell, 38717);
         POINTER_SKYRIMSE(TCharacterConstructor, s_characterCtor, 40245);
         POINTER_SKYRIMSE(TCharacterConstructor2, s_characterCtor2, 40246);
         POINTER_SKYRIMSE(TCharacterDestructor, s_characterDtor, 37175);
@@ -1255,6 +1286,7 @@ static TiltedPhoques::Initializer s_actorHooks(
 
         RealActorProcess = s_actorProcess.Get();
         RealSetPosition = s_setPosition.Get();
+        RealRemoveSpell = s_removeSpell.Get();
         FUNC_GetActorLocation = s_GetActorLocation.Get();
         RealCharacterConstructor = s_characterCtor.Get();
         RealCharacterConstructor2 = s_characterCtor2.Get();
@@ -1276,6 +1308,7 @@ static TiltedPhoques::Initializer s_actorHooks(
 
         TP_HOOK(&RealActorProcess, HookActorProcess);
         TP_HOOK(&RealSetPosition, HookSetPosition);
+        TP_HOOK(&RealRemoveSpell, HookRemoveSpell);
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
         TP_HOOK(&RealCharacterConstructor2, HookCharacterConstructor2);
         TP_HOOK(&RealForceState, HookForceState);
