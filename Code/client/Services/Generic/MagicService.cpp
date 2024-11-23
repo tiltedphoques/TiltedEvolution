@@ -539,7 +539,11 @@ void MagicService::ApplyQueuedEffects() noexcept
 
 void MagicService::StartRevealingOtherPlayers() noexcept
 {
-    UpdateRevealOtherPlayersEffect(/*forceTrigger=*/true);
+    if (m_canRevealOtherPlayers)
+    {
+        m_canRevealOtherPlayers = false;
+        UpdateRevealOtherPlayersEffect(/*forceTrigger=*/true);
+    }
 }
 
 void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
@@ -552,7 +556,7 @@ void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
     static std::chrono::steady_clock::time_point revealStartTimePoint;
     static std::chrono::steady_clock::time_point lastSendTimePoint;
 
-    const bool shouldActivate = aForceTrigger || GetAsyncKeyState(VK_F4) & 0x01;
+    const bool shouldActivate = aForceTrigger || m_revealKeybindPressed;
 
     if (shouldActivate && !m_revealingOtherPlayers)
     {
@@ -607,4 +611,14 @@ void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
 
         pRemotePlayer->magicTarget.AddTarget(data, false, false);
     }
+}
+
+void MagicService::RevealKeybindPressed() noexcept
+{
+    m_revealKeybindPressed = !m_revealKeybindPressed;
+    m_canRevealOtherPlayers = m_revealKeybindPressed;
+
+    UpdateRevealOtherPlayersEffect(m_revealKeybindPressed);
+
+    m_revealKeybindPressed = !m_revealKeybindPressed;
 }
