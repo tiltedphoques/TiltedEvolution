@@ -1,0 +1,12 @@
+MaxSpeedPenalty
+DodgeSpeed
+IFrameR
+IFrameS
+distance
+dagger
+unarmed
+shield
+onehanded
+twohanded
+InvincibleFrameR
+InvincibleFrameS

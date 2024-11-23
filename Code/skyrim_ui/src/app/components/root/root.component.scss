@@ -62,7 +62,7 @@
   }
 
   > app-notifications {
-    width: 30vw;
+    width: 32vw;
     left: $-size-gap;
     bottom: $-size-gap;
     position: absolute;
@@ -76,7 +76,7 @@
 ::ng-deep {
   .app-root-popups {
     > app-popup > app-window {
-      max-width: 30vw;
+      max-width: 32vw;
       min-width: 20vw;
     }
 
@@ -98,9 +98,8 @@
   position: absolute;
   left: $-size-gap;
   display: flex;
-  align-items: center;
   flex-direction: column;
-  width: 30vw;
+  width: 32vw;
   bottom: $-size-gap;
 }
 
@@ -112,6 +111,7 @@
 .app-root-menu {
   display: flex;
   height: 4rem;
+  margin: 0 auto;
 
   > button {
     flex: 1 1 auto;
@@ -129,5 +129,36 @@
   > app-chat {
     margin: 0.1rem;
     flex: 1 1 auto;
+  }
+}
+
+// Note: due to how `-webkit-background-clip` renders clipped text (that's needed for 
+// the cooldown effect), we need to apply a few workarounds to make it look just right. I'm sorry!
+
+.cooldown-supporting-text-normal {
+  color: mod($-color-background, 0.8);
+  transition: color 0.3s linear;
+}
+
+.cooldown-supporting-text-animating {
+  color: mod($-color-background, 0.3);
+}
+
+.text-cooldown-effect {
+  --cooldown-duration: 10s;
+  background: linear-gradient(
+    to left, 
+    mod($-color-background, 0.3) 50%, 
+    mod($-color-background, 1) 50%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  transition: background-position var(--cooldown-duration) linear;
+  color: transparent;
+  background-size: 200%;
+  background-position: 0%;
+
+  &.cooldown-active {
+    background-position: 100%;
   }
 }

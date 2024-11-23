@@ -22,6 +22,8 @@
 
 #include <Forms/TESObjectCELL.h>
 
+#include <ModCompat/BehaviorVar.h>
+
 int32_t PlayerCharacter::LastUsedCombatSkill = -1;
 
 TP_THIS_FUNCTION(TPickUpObject, char, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2);
@@ -37,6 +39,21 @@ static TAddSkillExperience* RealAddSkillExperience = nullptr;
 static TCalculateExperience* RealCalculateExperience = nullptr;
 static TSetWaypoint* RealSetWaypoint = nullptr;
 static TRemoveWaypoint* RealRemoveWaypoint = nullptr;
+
+PlayerCharacter* PlayerCharacter::Get() noexcept
+{
+    POINTER_SKYRIMSE(PlayerCharacter*, s_character, 401069);
+
+    return *s_character.Get();
+}
+
+const GameArray<TintMask*>& PlayerCharacter::GetTints() const noexcept
+{
+    if (overlayTints)
+        return *overlayTints;
+
+    return baseTints;
+}
 
 void PlayerCharacter::SetGodMode(bool aSet) noexcept
 {
@@ -162,7 +179,7 @@ void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool a
 {
     if (!aEntering)
     {
-        PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_Master_Behavior::m_key;
+        PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = BehaviorVar::GetHumanoidHash();
         World::Get().GetRunner().Trigger(BeastFormChangeEvent());
     }
 

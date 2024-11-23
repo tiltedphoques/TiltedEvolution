@@ -80,6 +80,7 @@
     "ROOT": {
       "CONNECT": "Conectar",
       "DISCONNECT": "Desconectar",
+      "REVEAL_PLAYERS": "Revelar jugadores",
       "RECONNECT": "Reconectar",
       "PLAYER_MANAGER": "Gestionar jugadores",
       "SETTINGS": "Parámetros",
@@ -160,7 +161,7 @@
         "CLIENT_MODS_DISALLOWED": "Este servidor no permite {{mods}}. Por favor, elimínalos para poder unirte.",
         "WRONG_PASSWORD": "La contraseña que has introducido es incorrecta.",
         "NO_REASON": "El servidor ha rechazado la conexión sin razón.",
-        "SERVER_FULL": "El servidor está lleno."
+        "SERVER_FULL": "El servidor está lleno.",
         "BAD_UGRIDSTOLOAD": "Parece que su Skyrim.ini tiene un valor no predeterminado para 'uGridsToLoad'. ESTA ES UNA MUY MALA IDEA y lo más probable es que rompa el mod. Por favor, restaurar esta configuración a su valor predeterminado (5) , o elimine el Skyrim.ini e lanzar Skyrim Vanilla una vez para generar un nuevo archivo. Las configuraciones 'uExterior Cell Buffer' y 'uInterior Cell Buffer' también deben dejarse en la configuración predeterminada. Si no sabe cómo hacerlo. , consulte nuestra wiki o solicite ayuda en nuestro servidor de Discord/subreddit.",
         "NON_DEFAULT_INSTALL": "Parece que tu instalación no es puramente básica, en ejemplo, tiene contenido del Creation Club (De aniversario o no) o otras modificaciones.\nNO recomendamos jugar con modificaciones.\nRecomendamos que desinstales y deshabilites estas modificaciones (las instrucciones se pueden encontrar en la wiki).\n\nPara la mejor experiencia, debe tener la siguiente lista de mods:<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp</strong>"
       }

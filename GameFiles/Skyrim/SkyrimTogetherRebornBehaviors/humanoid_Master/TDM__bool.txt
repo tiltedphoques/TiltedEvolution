@@ -1,0 +1,7 @@
+tdmHeadtrackingBoth
+tdmHeadtrackingBehavior 
+tdmHeadtrackingSKSE
+TDM_Dodge
+TDM_TargetLock
+tdmHeadtrackingBehavior
+360HorseGen

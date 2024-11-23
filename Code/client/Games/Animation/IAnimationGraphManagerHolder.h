@@ -9,11 +9,6 @@ struct IAnimationGraphManagerHolder
 
     virtual bool SendAnimationEvent(BSFixedString* apAnimEvent);
 
-#if TP_FALLOUT4
-    virtual void sub_2a();
-    virtual void sub_2c();
-#endif
-
     virtual bool GetBSAnimationGraph(BSAnimationGraphManager** aPtr) const;
     virtual uint32_t sub_3();
     virtual uint32_t sub_4();
@@ -28,10 +23,6 @@ struct IAnimationGraphManagerHolder
     virtual uint32_t sub_D();
     virtual uint32_t sub_E();
     virtual uint32_t sub_F();
-
-#if TP_FALLOUT4
-    virtual uint32_t sub_12();
-#endif
 
     virtual bool GetVariableFloat(BSFixedString* apVariable, float* apReturn);
     virtual bool GetVariableInt(BSFixedString* apVariable, uint32_t* apReturn);

@@ -81,6 +81,7 @@
     "ROOT": {
       "CONNECT": "Connect",
       "DISCONNECT": "Disconnect",
+      "REVEAL_PLAYERS": "Reveal Players",
       "RECONNECT": "Reconnect",
       "PLAYER_MANAGER": "Player Manager",
       "SETTINGS": "Settings",

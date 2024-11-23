@@ -118,16 +118,12 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
         m_leaderPlayerId = acPartyInfo.LeaderPlayerId;
         m_partyMembers = acPartyInfo.PlayerIds;
 
-#if TP_SKYRIM64
         // TODO: this can be done a bit prettier
         if (m_isLeader)
         {
             TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
             pWorldEncountersEnabled->f = 1.f;
         }
-#elif TP_FALLOUT4
-        // TODO: ft
-#endif
 
         auto pArguments = CefListValue::Create();
 

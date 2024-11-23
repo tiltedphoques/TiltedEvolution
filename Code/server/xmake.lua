@@ -43,18 +43,6 @@ end
 
 target("SkyrimTogetherServer")
     set_basename("STServer")
-    add_defines(
-        "TARGET_ST",
-        "TP_SKYRIM=1",
-        "TARGET_PREFIX=\"st\"")
+    add_defines("TARGET_PREFIX=\"st\"")
     add_deps("SkyrimEncoding")
-    build_server()
-
-target("FalloutTogetherServer")
-    set_basename("FTServer")
-    add_defines(
-        "TARGET_FT",
-        "TP_FALLOUT=1",
-        "TARGET_PREFIX=\"ft\"")
-    add_deps("FalloutEncoding")
     build_server()

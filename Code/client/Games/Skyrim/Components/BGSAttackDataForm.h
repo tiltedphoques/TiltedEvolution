@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Components/BaseFormComponent.h>
+#include <Games/Skyrim/NetImmerse/NiPointer.h>
 
 struct BGSAttackDataMap : NiRefObject
 {
@@ -8,5 +9,5 @@ struct BGSAttackDataMap : NiRefObject
 
 struct BGSAttackDataForm : BaseFormComponent
 {
-    BGSAttackDataMap* attackDataMap;
+    NiPointer<BGSAttackDataMap> attackDataMap;
 };

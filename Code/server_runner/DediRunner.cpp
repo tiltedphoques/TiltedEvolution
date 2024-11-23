@@ -9,15 +9,7 @@
 
 namespace
 {
-constexpr char kSettingsFileName[] =
-#if TARGET_ST
-    "STServer.ini"
-#elif TARGET_FT
-    "FTServer.ini"
-#else
-    "Server.ini"
-#endif
-    ;
+constexpr char kSettingsFileName[] = "STServer.ini";
 
 DediRunner* s_pRunner{nullptr};
 } // namespace

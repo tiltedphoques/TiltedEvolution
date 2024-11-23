@@ -13,7 +13,6 @@ struct GameHeap
     static GameHeap* Get()
     {
         POINTER_SKYRIMSE(GameHeap, s_gameHeap, 400188);
-        POINTER_FALLOUT4(GameHeap, s_gameHeap, 42694);
 
         return s_gameHeap.Get();
     }
@@ -60,20 +59,12 @@ void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignme
 
 void* Memory::Allocate(const size_t aSize) noexcept
 {
-#if TP_FALLOUT4
-    return TiltedPhoques::ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0x10, true);
-#else
     return TiltedPhoques::ThisCall(HookFormAllocate, GameHeap::Get(), aSize, 0, false);
-#endif
 }
 
 void Memory::Free(void* apData) noexcept
 {
-#if TP_FALLOUT4
-    TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, true);
-#else
     TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, false);
-#endif
 }
 
 size_t Hook_msize(void* apData)
@@ -110,15 +101,12 @@ static TiltedPhoques::Initializer s_memoryHooks(
     []()
     {
         POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
-        POINTER_FALLOUT4(TFormAllocate, s_formAllocate, 652768);
 
         POINTER_SKYRIMSE(TFormFree, s_formFree, 68117);
-        POINTER_FALLOUT4(TFormFree, s_formFree, 1582182);
 
         RealFormAllocate = s_formAllocate.Get();
         RealFormFree = s_formFree.Get();
 
-#if TP_PLATFORM_64
         using T_msize = decltype(&Hook_msize);
         using Tfree = decltype(&Hookfree);
         using Tcalloc = decltype(&Hookcalloc);
@@ -132,11 +120,7 @@ static TiltedPhoques::Initializer s_memoryHooks(
         T_aligned_malloc Real_aligned_malloc = nullptr;
         T_aligned_free Real_aligned_free = nullptr;
 
-#if TP_FALLOUT4
-        const char* cModuleName = "MSVCR110.dll";
-#else
         const char* cModuleName = "api-ms-win-crt-heap-l1-1-0.dll";
-#endif
 
         TP_HOOK_IAT(_msize, cModuleName);
         TP_HOOK_IAT(free, cModuleName);
@@ -144,7 +128,6 @@ static TiltedPhoques::Initializer s_memoryHooks(
         TP_HOOK_IAT(malloc, cModuleName);
         TP_HOOK_IAT(_aligned_malloc, cModuleName);
         TP_HOOK_IAT(_aligned_free, cModuleName);
-#endif
 
         TP_HOOK(&RealFormAllocate, HookFormAllocate);
     });

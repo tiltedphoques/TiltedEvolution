@@ -19,6 +19,8 @@ import { controlsAnimation } from './controls.animation';
 import { notificationsAnimation } from './notifications.animation';
 import { map } from 'rxjs/operators';
 
+const REVEAL_EFFECT_DURATION_MS = 10000 // todo: pass value from C++?
+
 @Component({
   selector: 'app-root',
   templateUrl: './root.component.html',
@@ -41,8 +43,8 @@ export class RootComponent implements OnInit {
   menuOpen$ = this.client.openingMenuChange.asObservable();
   inGame$ = this.client.inGameStateChange.asObservable();
   active$ = this.client.activationStateChange.asObservable();
-  connectionInProgress$ =
-    this.client.isConnectionInProgressChange.asObservable();
+  connectionInProgress$ = this.client.isConnectionInProgressChange.asObservable();
+  revealingInProgress$ = false;
 
   @ViewChild('chat') private chatComp!: ChatComponent;
   @ViewChild(GroupComponent) private groupComponent: GroupComponent;
@@ -121,5 +123,16 @@ export class RootComponent implements OnInit {
 
   public reconnect(): void {
     this.client.reconnect();
+  }
+
+  public revealPlayers(): void {
+    if (this.revealingInProgress$)
+      return;
+
+    this.revealingInProgress$ = true;
+    setTimeout(() => { this.revealingInProgress$ = false }, REVEAL_EFFECT_DURATION_MS);
+
+    this.sound.play(Sound.Focus);
+    this.client.revealPlayers();
   }
 }

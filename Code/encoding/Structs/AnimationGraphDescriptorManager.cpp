@@ -28,3 +28,10 @@ void AnimationGraphDescriptorManager::Register(uint64_t aKey, AnimationGraphDesc
 
     m_descriptors[aKey] = std::move(aAnimationGraphDescriptor);
 }
+
+const TiltedPhoques::Map<uint64_t, AnimationGraphDescriptor>& AnimationGraphDescriptorManager::GetDescriptors()
+    const noexcept
+{
+    return m_descriptors;
+}
+
