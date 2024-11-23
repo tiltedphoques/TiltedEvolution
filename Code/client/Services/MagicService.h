@@ -4,6 +4,7 @@
 #include <Events/EventDispatcher.h>
 #include <Messages/AddTargetRequest.h>
 #include <Messages/NotifyAddTarget.h>
+#include <Messages/NotifyRemoveSpell.h>
 
 struct World;
 struct TransportService;
@@ -12,6 +13,7 @@ struct UpdateEvent;
 struct SpellCastEvent;
 struct InterruptCastEvent;
 struct AddTargetEvent;
+struct RemoveSpellEvent;
 
 struct NotifySpellCast;
 struct NotifyInterruptCast;
@@ -72,6 +74,14 @@ protected:
      * @brief Applies a magic effect based on a server message.
      */
     void OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept;
+    /**
+     * @brief Sends a message to remove a spell from a player.
+     */
+    void OnRemoveSpellEvent(const RemoveSpellEvent& acEvent) noexcept;
+    /*
+     * @brief Handles removal of a spell
+     */
+    void OnNotifyRemoveSpell(const NotifyRemoveSpell& acMessage) noexcept;
 
 private:
     /**
@@ -109,4 +119,6 @@ private:
     entt::scoped_connection m_notifyInterruptCastConnection;
     entt::scoped_connection m_addTargetEventConnection;
     entt::scoped_connection m_notifyAddTargetConnection;
+    entt::scoped_connection m_removeSpellEventConnection;
+    entt::scoped_connection m_notifyRemoveSpell;
 };
