@@ -38,6 +38,10 @@ COPY --from=intermediate /home/builder/str/package/bin/SkyrimTogetherServer /hom
 
 COPY --from=intermediate /home/builder/libstdc++.so.6 /home/server/libstdc++.so.6
 
+RUN apt update && apt install -y libcurl4 \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 WORKDIR /home/server
 ENTRYPOINT ["./SkyrimTogetherServer"]
 
