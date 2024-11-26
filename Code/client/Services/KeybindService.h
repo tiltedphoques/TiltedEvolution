@@ -46,18 +46,19 @@ namespace fs = std::filesystem;
  * @brief Handles keybinds
  *
  * @details Loads a config during construction. The key will not actually be set until it is pressed or loaded from config.
- * This is due to needing separate VirtualKey and DirectInput keycodes that can only be determined after being pressed. This service
- * needs to stay connected to DInputHook OnKeyPress Signal due to handling UI toggling (sometimes misses otherwise)
+ * This is due to needing separate VirtualKey and DirectInput keycodes that can only be determined after being pressed. This should only handle
+ * keybind-related functionalities.
  * Does not currently support mouse buttons.
  */
 struct KeybindService
 {
     enum Keybind : uint8_t
     {
-        None = 0,
-        UI,
-        Debug,
-        RevealPlayers
+        None = 1 << 0,
+        UI = 1 << 1,
+        Debug = 1 << 2,
+        RevealPlayers = 1 << 3,
+        All = UI | Debug | RevealPlayers
     };
 
     struct KeyCodes
@@ -99,9 +100,6 @@ struct KeybindService
 
     TP_NOCOPYMOVE(KeybindService);
 
-    const Key& GetUIKey() const noexcept { return m_uiKey; }
-    const Key& GetDebugKey() const noexcept { return m_debugKey; }
-
     const Config& GetConfig() const noexcept { return m_config; }
 
     bool GetTextInputFocus() const noexcept { return m_isTextInputFocused; }
@@ -109,6 +107,8 @@ struct KeybindService
 
     bool BindKey(const Keybind& acKeyType, const uint16_t& acNewKeyCode) noexcept;
     const Key& GetKey(const Keybind& acKeyType) const noexcept;
+
+    void ResetKeybinds(const Keybind& acKeyType) noexcept;
 
   private:
     // Handles DirectInput-related keybind inputs
@@ -121,14 +121,14 @@ struct KeybindService
     Key MakeKey(const uint16_t& acKeyCode) noexcept;
 
     bool SetKeyValues(Key& acKeyToChange, const Key& acKey) noexcept;
-    bool SetKey(const Keybind& acKeybind, const Key& acKey, const bool& acLoadFromConfig = false) noexcept;
-    bool HandleSetUI(const Key& acKey, const bool& acLoadFromConfig = false) noexcept;
-    bool HandleSetDebug(const Key& acKey, const bool& acLoadFromConfig = false) noexcept;
-    bool HandleSetRevealPlayers(const Key& acKey, const bool& acLoadFromConfig = false) noexcept;
+    bool SetKey(const Keybind& acKeybind, const Key& acKey, bool acLoadFromConfig = false) noexcept;
+    bool HandleSetUI(const Key& acKey, bool acLoadFromConfig = false) noexcept;
+    bool HandleSetDebug(const Key& acKey, bool acLoadFromConfig = false) noexcept;
+    bool HandleSetRevealPlayers(const Key& acKey, bool acLoadFromConfig = false) noexcept;
     bool HandleBind(const Keybind& acKeybind, const uint16_t& acNewKeyCode) noexcept;
 
     void InitializeKeys(bool aLoadDefaults) noexcept;
-    void HandleKeybind(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, const bool& acLoadFromConfig = false) noexcept;
+    void HandleKeybind(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, bool acLoadFromConfig = false) noexcept;
     bool DoKeysMatch(const Key& acLeftKey, const Key& acRightKey) const noexcept;
 
     bool CanToggleDebug(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode) const noexcept;
@@ -166,8 +166,7 @@ struct KeybindService
     Key m_debugKey{};
     Key m_revealPlayersKey{};
 
-    // Keys with custom names
-    const TiltedPhoques::Map<Key::first_type, Key::second_type>& m_modifiedKeys{
+    const TiltedPhoques::Map<Key::first_type, Key::second_type>& m_customKeyNames{
         {L"Backspace", {VK_BACK, DIK_BACK}},
         {L"Tab", {VK_TAB, DIK_TAB}},
         {L"Enter", {VK_RETURN, DIK_RETURN}},

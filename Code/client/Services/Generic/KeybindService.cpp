@@ -128,7 +128,7 @@ const KeybindService::Key& KeybindService::GetKey(const Keybind& acKeyType) cons
     return Key{L"", {KeyCodes::Error, KeyCodes::Error}};
 }
 
-bool KeybindService::SetKey(const Keybind& acKeyType, const Key& acKey, const bool& acLoadFromConfig) noexcept
+bool KeybindService::SetKey(const Keybind& acKeyType, const Key& acKey, bool acLoadFromConfig) noexcept
 {
     switch (acKeyType)
     {
@@ -165,7 +165,7 @@ bool KeybindService::SetKeyValues(Key& acKeyToChange, const Key& acKey) noexcept
     return false;
 }
 
-bool KeybindService::HandleSetUI(const Key& acKey, const bool& acLoadFromConfig) noexcept
+bool KeybindService::HandleSetUI(const Key& acKey, bool acLoadFromConfig) noexcept
 {
     if (SetKeyValues(m_uiKey, acKey))
     {
@@ -195,7 +195,7 @@ bool KeybindService::HandleSetUI(const Key& acKey, const bool& acLoadFromConfig)
     return true;
 }
 
-bool KeybindService::HandleSetDebug(const Key& acKey, const bool& acLoadFromConfig) noexcept
+bool KeybindService::HandleSetDebug(const Key& acKey, bool acLoadFromConfig) noexcept
 {
     if (SetKeyValues(m_debugKey, acKey))
     {
@@ -216,11 +216,10 @@ bool KeybindService::HandleSetDebug(const Key& acKey, const bool& acLoadFromConf
     return true;
 }
 
-bool KeybindService::HandleSetRevealPlayers(const Key& acKey, const bool& acLoadFromConfig) noexcept
+bool KeybindService::HandleSetRevealPlayers(const Key& acKey, bool acLoadFromConfig) noexcept
 {
     if (SetKeyValues(m_revealPlayersKey, acKey))
     {
-        // do reveal player stuff here?
     }
     else
     {
@@ -298,8 +297,6 @@ void KeybindService::OnVirtualKeyKeyPress(const KeyPressEvent& acEvent) noexcept
     else if (CanRevealOtherPlayers(m_keyCode, KeyCodes::Error))
     {
         m_magicService.RevealKeybindPressed();
-        //const auto& canRevealOtherPlayers = m_magicService.GetCanRevealOtherPlayers();
-        //m_magicService.RevealOtherPlayers(!canRevealOtherPlayers);
     }
 }
 
@@ -318,12 +315,10 @@ void KeybindService::OnDirectInputKeyPress(const unsigned long& acKeyCode) noexc
     else if (CanRevealOtherPlayers(KeyCodes::Error, acKeyCode))
     {
         m_magicService.RevealKeybindPressed();
-        //const auto& canRevealOtherPlayers = m_magicService.GetCanRevealOtherPlayers();
-        //m_magicService.RevealOtherPlayers(!canRevealOtherPlayers);
     }
 }
 
-void KeybindService::HandleKeybind(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, const bool& acLoadFromConfig) noexcept
+void KeybindService::HandleKeybind(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode, bool acLoadFromConfig) noexcept
 {
     m_keyCode = acVkKeyCode;
 
@@ -345,10 +340,10 @@ void KeybindService::HandleKeybind(const uint16_t& acVkKeyCode, const unsigned l
 
     const TiltedPhoques::WString& cKeyName = {static_cast<wchar_t>(toupper(keyChar))};
     const KeybindService::Key& cKey = {cKeyName, {acVkKeyCode, acDiKeyCode}};
-    auto pModKey = std::ranges::find_if(m_modifiedKeys, [&](const KeybindService::Key& acKey) { return acKey.second.vkKeyCode == m_keyCode || acKey.second.diKeyCode == acDiKeyCode; });
+    auto pModKey = std::ranges::find_if(m_customKeyNames, [&](const KeybindService::Key& acKey) { return acKey.second.vkKeyCode == m_keyCode || acKey.second.diKeyCode == acDiKeyCode; });
 
     // Key has custom name
-    if (pModKey != m_modifiedKeys.end())
+    if (pModKey != m_customKeyNames.end())
     {
         m_keyCode = pModKey->second.vkKeyCode;
 
@@ -382,15 +377,12 @@ KeybindService::Key KeybindService::MakeKey(const uint16_t& acVkKeyCode) noexcep
     m_keyCode = acVkKeyCode;
 
     TiltedPhoques::WString newName = {static_cast<wchar_t>(MapVirtualKeyW(acVkKeyCode, MAPVK_VK_TO_CHAR))};
-    auto pModKey = std::ranges::find_if(m_modifiedKeys, [&](const KeybindService::Key& acKey) { return acKey.second.vkKeyCode == m_keyCode; });
+    auto pModKey = std::ranges::find_if(m_customKeyNames, [&](const KeybindService::Key& acKey) { return acKey.second.vkKeyCode == m_keyCode; });
 
-    if (pModKey != m_modifiedKeys.end())
+    if (pModKey != m_customKeyNames.end())
     {
-        if (pModKey != m_modifiedKeys.end())
-        {
-            newName = pModKey->first;
-            m_keyCode = pModKey->second.vkKeyCode;
-        }
+        newName = pModKey->first;
+        m_keyCode = pModKey->second.vkKeyCode;
     }
 
     return Key{newName, {m_keyCode, KeyCodes::Error}};
@@ -471,6 +463,18 @@ uint16_t KeybindService::ResolveVkKeyModifier(const uint16_t& acKeyCode) noexcep
             return VK_RMENU;
     default: return acKeyCode;
     }
+}
+
+void KeybindService::ResetKeybinds(const Keybind& acKeyType) noexcept
+{
+    if (acKeyType & Keybind::UI)
+        m_uiKey = DEFAULT_UI_KEY;
+
+    if (acKeyType & Keybind::Debug)
+        m_debugKey = DEFAULT_DEBUG_KEY;
+
+    if (acKeyType & Keybind::RevealPlayers)
+        m_revealPlayersKey = DEFAULT_REVEAL_PLAYERS_KEY;
 }
 
 bool KeybindService::Config::Create() noexcept

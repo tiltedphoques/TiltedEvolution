@@ -138,7 +138,7 @@ void ToggleUI(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noe
     const auto& isToggleKey = IsToggleKey(aKey);
     const auto& textInputFocused = World::Get().GetKeybindService().GetTextInputFocus();
 
-    if (aType != KEYEVENT_CHAR && ((isToggleKey && !textInputFocused) || (IsDisableKey(aKey) && active && isRebinding)))
+    if (aType != KEYEVENT_CHAR && ((isToggleKey && !textInputFocused) || (IsDisableKey(aKey) && (active || isRebinding))))
     {
         if (!overlay.GetInGame())
         {

@@ -539,11 +539,7 @@ void MagicService::ApplyQueuedEffects() noexcept
 
 void MagicService::StartRevealingOtherPlayers() noexcept
 {
-    if (m_canRevealOtherPlayers)
-    {
-        m_canRevealOtherPlayers = false;
-        UpdateRevealOtherPlayersEffect(/*forceTrigger=*/true);
-    }
+    UpdateRevealOtherPlayersEffect(/*forceTrigger=*/true);
 }
 
 void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
@@ -616,7 +612,6 @@ void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
 void MagicService::RevealKeybindPressed() noexcept
 {
     m_revealKeybindPressed = !m_revealKeybindPressed;
-    m_canRevealOtherPlayers = m_revealKeybindPressed;
 
     UpdateRevealOtherPlayersEffect(m_revealKeybindPressed);
 
