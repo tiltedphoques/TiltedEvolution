@@ -155,10 +155,12 @@ export class ChatComponent implements AfterViewChecked {
 
   public focus(): void {
     this.focusMessage();
+    this.clientService.textInputFocused(true);
   }
 
   public blur(): void {
     this.inputRef.nativeElement.blur();
+    this.clientService.textInputFocused(false);
   }
 
   private focusMessage(): void {
