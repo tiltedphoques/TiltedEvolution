@@ -432,6 +432,14 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
         }
         ProcessKeyboard(virtualKey, scancode, KEYEVENT_CHAR, false, false);
     }
+    // If the player tabs out/in with UI visible, this WndProc doesn't run during mouse or keyboard events.
+    // When player tabs in, force the UI state
+    else if (uMsg == WM_SETFOCUS && s_pOverlay->GetActive())
+    {
+        TiltedPhoques::DInputHook::Get().SetEnabled(true);
+        s_pOverlay->SetActive(true);
+        pRenderer->SetCursorVisible(true);
+    }
     else if (uMsg == WM_INPUTLANGCHANGE)
     {
         s_currentACP = GetRealACP();

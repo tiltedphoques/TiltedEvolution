@@ -223,9 +223,10 @@ int main(int argc, char** argv)
     }
     */
 
-    ScopedCrashHandler _(true, true);
+    //ScopedCrashHandler _(true, true);
 
-    RegisterQuitHandler();
+    // Note(Vince): This started crashing on 1.7+ lets disable it for now.
+    // RegisterQuitHandler(); 
 
     // Keep stack free.
     const auto cpRunner{std::make_unique<DediRunner>(argc, argv)};
@@ -233,6 +234,7 @@ int main(int argc, char** argv)
     {
         cpRunner->StartTerminalIO();
     }
+
     cpRunner->RunGSThread();
 
     return 0;
