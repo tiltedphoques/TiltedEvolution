@@ -220,6 +220,7 @@ bool KeybindService::HandleSetRevealPlayers(const Key& acKey, bool acLoadFromCon
 {
     if (SetKeyValues(m_revealPlayersKey, acKey))
     {
+        m_revealPlayersKeybindConfirmed = m_revealPlayersKey.second.vkKeyCode != KeyCodes::Error && m_revealPlayersKey.second.diKeyCode != KeyCodes::Error;
     }
     else
     {
@@ -265,8 +266,8 @@ bool KeybindService::HandleBind(const Keybind& acKeyType, const uint16_t& acNewK
 
     switch (acKeyType)
     {
-    case None:
-        break;
+    default: break;
+    case None: break;
     case UI:
         m_uiKey = cKey;
         break;
@@ -276,6 +277,8 @@ bool KeybindService::HandleBind(const Keybind& acKeyType, const uint16_t& acNewK
     case RevealPlayers:
         m_revealPlayersKey = cKey;
         break;
+    case All:
+        return false;
     }
 
     return SetKey(acKeyType, cKey);
@@ -357,6 +360,11 @@ void KeybindService::HandleKeybind(const uint16_t& acVkKeyCode, const unsigned l
         {
             SetKey(Keybind::Debug, Key{pModKey->first, {m_keyCode, acDiKeyCode}});
         }
+        // Reveal Players key pressed
+        else if (DoKeysMatch(*pModKey, m_revealPlayersKey) && !m_revealPlayersKeybindConfirmed)
+        {
+            SetKey(Keybind::RevealPlayers, Key{pModKey->first, {m_keyCode, acDiKeyCode}});
+        }
     }
     // No custom key name
     else
@@ -368,6 +376,10 @@ void KeybindService::HandleKeybind(const uint16_t& acVkKeyCode, const unsigned l
         else if (DoKeysMatch(cKey, m_debugKey) && !m_debugKeybindConfirmed)
         {
             SetKey(Keybind::Debug, Key{cKeyName, {m_keyCode, acDiKeyCode}});
+        }
+        else if (DoKeysMatch(cKey, m_revealPlayersKey) && !m_revealPlayersKeybindConfirmed)
+        {
+            SetKey(Keybind::RevealPlayers, Key{cKeyName, {m_keyCode, acDiKeyCode}});
         }
     }
 }
@@ -468,13 +480,38 @@ uint16_t KeybindService::ResolveVkKeyModifier(const uint16_t& acKeyCode) noexcep
 void KeybindService::ResetKeybinds(const Keybind& acKeyType) noexcept
 {
     if (acKeyType & Keybind::UI)
+    {
+
         m_uiKey = DEFAULT_UI_KEY;
+        m_inputService.SetUIKey(TiltedPhoques::MakeShared<Key>(m_uiKey));
+        m_pInputHook->Get().SetToggleKeys({m_uiKey.second.diKeyCode});
+
+        m_config.SetKey(L"sUiKey", L"F2");
+        m_config.SetKeyCodes(L"ui", {VK_F2, DIK_F2});
+
+        m_uiKeybindConfirmed = true;
+    }
 
     if (acKeyType & Keybind::Debug)
+    {
         m_debugKey = DEFAULT_DEBUG_KEY;
+        m_debugService.SetDebugKey(TiltedPhoques::MakeShared<Key>(m_debugKey));
+
+        m_config.SetKey(L"sDebugKey", L"F3");
+        m_config.SetKeyCodes(L"debug", {VK_F3, DIK_F3});
+
+        m_debugKeybindConfirmed = true;
+    }
 
     if (acKeyType & Keybind::RevealPlayers)
+    {
         m_revealPlayersKey = DEFAULT_REVEAL_PLAYERS_KEY;
+
+        m_config.SetKey(L"sRevealPlayersKey", L"F4");
+        m_config.SetKeyCodes(L"reveal", {VK_F4, DIK_F4});
+
+        m_revealPlayersKeybindConfirmed = true;
+    }
 }
 
 bool KeybindService::Config::Create() noexcept

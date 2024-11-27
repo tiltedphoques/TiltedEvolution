@@ -323,7 +323,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Show keybinds menu", nullptr, &g_enableKeybindWindow);
         if (ImGui::Button("Reset all binds to default"))
         {
-            World::Get().GetKeybindService().ResetKeybinds(KeybindService::Keybind::All);
+            m_world.GetKeybindService().ResetKeybinds(KeybindService::Keybind::All);
         }
 
         ImGui::EndMenu();

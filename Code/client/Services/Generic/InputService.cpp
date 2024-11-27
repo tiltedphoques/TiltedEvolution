@@ -136,15 +136,17 @@ void ToggleUI(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noe
     const auto& isRebinding = debugService.IsRebinding();
 
     const auto& isToggleKey = IsToggleKey(aKey);
+    const auto& isDisableKey = IsDisableKey(aKey);
+
     const auto& textInputFocused = World::Get().GetKeybindService().GetTextInputFocus();
 
-    if (aType != KEYEVENT_CHAR && ((isToggleKey && !textInputFocused) || (IsDisableKey(aKey) && (active || isRebinding))))
+    if (aType != KEYEVENT_CHAR && ((isToggleKey && !textInputFocused) || (isDisableKey && active)))
     {
         if (!overlay.GetInGame())
         {
             TiltedPhoques::DInputHook::Get().SetEnabled(false);
         }
-        else if (aType == KEYEVENT_KEYUP)
+        else if ((aType == KEYEVENT_KEYUP && !isDisableKey) || (isDisableKey && !isRebinding && aType == KEYEVENT_KEYDOWN))
         {
             SetUIActive(overlay, pRenderer, !active);
         }

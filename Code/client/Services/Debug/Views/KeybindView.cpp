@@ -89,6 +89,8 @@ void DebugService::DrawKeybindView()
     if (ImGui::Button("Show/Hide STR UI", ImVec2(200, 30)) || m_rebindUI)
     {
         m_rebindUI = true;
+        m_rebindDebug = false;
+        m_rebindRevealPlayers = false;
 
         uiKeyName = BindKey(uiKeyName, m_rebindUI, KeybindService::Keybind::UI);
     }
@@ -105,6 +107,8 @@ void DebugService::DrawKeybindView()
     if (ImGui::Button("Show/Hide Debug UI", ImVec2(200, 30)) || m_rebindDebug)
     {
         m_rebindDebug = true;
+        m_rebindUI = false;
+        m_rebindRevealPlayers = false;
 
         debugKeyName = BindKey(debugKeyName, m_rebindDebug, KeybindService::Keybind::Debug);
     }
@@ -121,6 +125,8 @@ void DebugService::DrawKeybindView()
     if (ImGui::Button("Reveal Players", ImVec2(200, 30)) || m_rebindRevealPlayers)
     {
         m_rebindRevealPlayers = true;
+        m_rebindUI = false;
+        m_rebindDebug = false;
 
         debugKeyName = BindKey(debugKeyName, m_rebindRevealPlayers, KeybindService::Keybind::RevealPlayers);
     }
