@@ -428,9 +428,7 @@ void MagicService::OnRemoveSpellEvent(const RemoveSpellEvent& acEvent) noexcept
     }
 
     auto view = m_world.view<FormIdComponent>();
-    const auto it = std::find_if(std::begin(view), std::end(view), [id = acEvent.TargetId, view](auto entity) {
-        return view.get<FormIdComponent>(entity).Id == id;
-    });
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acEvent.TargetId, view](auto entity) { return view.get<FormIdComponent>(entity).Id == id; });
 
     if (it == std::end(view))
     {
@@ -447,7 +445,7 @@ void MagicService::OnRemoveSpellEvent(const RemoveSpellEvent& acEvent) noexcept
 
     request.TargetId = serverIdRes.value();
 
-    //spdlog::info(__FUNCTION__ ": requesting remove spell with base id {:X} from actor with server id {:X}", request.SpellId.BaseId, request.TargetId);
+    // spdlog::info(__FUNCTION__ ": requesting remove spell with base id {:X} from actor with server id {:X}", request.SpellId.BaseId, request.TargetId);
 
     m_transport.Send(request);
 }
@@ -466,8 +464,7 @@ void MagicService::OnNotifyRemoveSpell(const NotifyRemoveSpell& acMessage) noexc
     const uint32_t cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
     if (cSpellId == 0)
     {
-        spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
-                      acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
+        spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__, acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
         return;
     }
 
@@ -479,7 +476,7 @@ void MagicService::OnNotifyRemoveSpell(const NotifyRemoveSpell& acMessage) noexc
     }
 
     // Remove the spell from the actor
-    //spdlog::info(__FUNCTION__ ": removing spell with form id {:X} from actor with form id {:X}", cSpellId, targetFormId);
+    // spdlog::info(__FUNCTION__ ": removing spell with form id {:X} from actor with form id {:X}", cSpellId, targetFormId);
     pActor->RemoveSpell(pSpell);
 }
 

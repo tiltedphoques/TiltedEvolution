@@ -25,7 +25,7 @@
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
 
-#include <ModCompat/BehaviorVar.h>  
+#include <ModCompat/BehaviorVar.h>
 
 World::World()
     : m_runner(m_dispatcher)

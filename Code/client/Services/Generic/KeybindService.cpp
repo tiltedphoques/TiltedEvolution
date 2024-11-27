@@ -133,15 +133,10 @@ bool KeybindService::SetKey(const Keybind& acKeyType, const Key& acKey, bool acL
     switch (acKeyType)
     {
     default:
-    case None:
-        spdlog::warn("{} Invalid key type", __FUNCTION__);
-        return false; 
-    case UI:
-        return HandleSetUI(acKey, acLoadFromConfig);
-    case Debug:
-        return HandleSetDebug(acKey, acLoadFromConfig);
-    case RevealPlayers:
-        return HandleSetRevealPlayers(acKey, acLoadFromConfig);
+    case None: spdlog::warn("{} Invalid key type", __FUNCTION__); return false;
+    case UI: return HandleSetUI(acKey, acLoadFromConfig);
+    case Debug: return HandleSetDebug(acKey, acLoadFromConfig);
+    case RevealPlayers: return HandleSetRevealPlayers(acKey, acLoadFromConfig);
     }
 }
 
@@ -172,8 +167,7 @@ bool KeybindService::HandleSetUI(const Key& acKey, bool acLoadFromConfig) noexce
         m_inputService.SetUIKey(TiltedPhoques::MakeShared<Key>(m_uiKey));
         m_pInputHook->SetToggleKeys({m_uiKey.second.diKeyCode});
 
-        m_uiKeybindConfirmed =
-            m_uiKey.second.vkKeyCode != KeyCodes::Error && m_uiKey.second.diKeyCode != KeyCodes::Error;
+        m_uiKeybindConfirmed = m_uiKey.second.vkKeyCode != KeyCodes::Error && m_uiKey.second.diKeyCode != KeyCodes::Error;
     }
     else
     {
@@ -186,8 +180,7 @@ bool KeybindService::HandleSetUI(const Key& acKey, bool acLoadFromConfig) noexce
     if (!acLoadFromConfig)
     {
         m_pInputHook->SetEnabled(true);
-        m_inputService.Toggle(m_uiKey.second.vkKeyCode, MapVirtualKey(m_uiKey.second.vkKeyCode, MAPVK_VK_TO_VSC),
-                              KEYEVENT_CHAR);
+        m_inputService.Toggle(m_uiKey.second.vkKeyCode, MapVirtualKey(m_uiKey.second.vkKeyCode, MAPVK_VK_TO_VSC), KEYEVENT_CHAR);
 
         return m_config.SetKey(L"sUiKey", m_uiKey.first.c_str()) && m_config.SetKeyCodes(L"ui", m_uiKey.second);
     }
@@ -237,23 +230,16 @@ bool KeybindService::HandleSetRevealPlayers(const Key& acKey, bool acLoadFromCon
 
 bool KeybindService::BindKey(const Keybind& acKeyType, const uint16_t& acNewKeyCode) noexcept
 {
-    if (acNewKeyCode == m_debugKey.second.vkKeyCode || acNewKeyCode == m_uiKey.second.vkKeyCode ||
-        acNewKeyCode == m_revealPlayersKeybindConfirmed || acKeyType == Keybind::None)
+    if (acNewKeyCode == m_debugKey.second.vkKeyCode || acNewKeyCode == m_uiKey.second.vkKeyCode || acNewKeyCode == m_revealPlayersKeybindConfirmed || acKeyType == Keybind::None)
         return false;
 
     const auto& boundKey = HandleBind(acKeyType, acNewKeyCode);
 
     switch (acKeyType)
     {
-    case UI:
-        m_uiKeybindConfirmed = !boundKey;
-        break;
-    case Debug:
-        m_debugKeybindConfirmed = !boundKey;
-        break;
-    case RevealPlayers:
-        m_revealPlayersKeybindConfirmed = !boundKey;
-        break;
+    case UI: m_uiKeybindConfirmed = !boundKey; break;
+    case Debug: m_debugKeybindConfirmed = !boundKey; break;
+    case RevealPlayers: m_revealPlayersKeybindConfirmed = !boundKey; break;
     default: break;
     }
 
@@ -268,17 +254,10 @@ bool KeybindService::HandleBind(const Keybind& acKeyType, const uint16_t& acNewK
     {
     default: break;
     case None: break;
-    case UI:
-        m_uiKey = cKey;
-        break;
-    case Debug:
-        m_debugKey = cKey;
-        break;
-    case RevealPlayers:
-        m_revealPlayersKey = cKey;
-        break;
-    case All:
-        return false;
+    case UI: m_uiKey = cKey; break;
+    case Debug: m_debugKey = cKey; break;
+    case RevealPlayers: m_revealPlayersKey = cKey; break;
+    case All: return false;
     }
 
     return SetKey(acKeyType, cKey);
@@ -402,14 +381,12 @@ KeybindService::Key KeybindService::MakeKey(const uint16_t& acVkKeyCode) noexcep
 
 bool KeybindService::CanToggleDebug(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode) const noexcept
 {
-    return !m_isTextInputFocused && ((acVkKeyCode != KeyCodes::Error && acVkKeyCode == m_debugKey.second.vkKeyCode) || 
-        (acDiKeyCode != KeyCodes::Error && acDiKeyCode == m_debugKey.second.diKeyCode));
+    return !m_isTextInputFocused && ((acVkKeyCode != KeyCodes::Error && acVkKeyCode == m_debugKey.second.vkKeyCode) || (acDiKeyCode != KeyCodes::Error && acDiKeyCode == m_debugKey.second.diKeyCode));
 }
 
 bool KeybindService::CanRevealOtherPlayers(const uint16_t& acVkKeyCode, const unsigned long& acDiKeyCode) const noexcept
 {
-    return !m_isTextInputFocused && ((acVkKeyCode != KeyCodes::Error && acVkKeyCode == m_revealPlayersKey.second.vkKeyCode) ||
-                                     (acDiKeyCode != KeyCodes::Error && acDiKeyCode == m_revealPlayersKey.second.diKeyCode));
+    return !m_isTextInputFocused && ((acVkKeyCode != KeyCodes::Error && acVkKeyCode == m_revealPlayersKey.second.vkKeyCode) || (acDiKeyCode != KeyCodes::Error && acDiKeyCode == m_revealPlayersKey.second.diKeyCode));
 }
 
 bool KeybindService::DoKeysMatch(const KeybindService::Key& acLeftKey, const KeybindService::Key& acRightKey) const noexcept

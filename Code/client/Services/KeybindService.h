@@ -35,11 +35,11 @@ namespace fs = std::filesystem;
         }                 \
     }
 #define DEFAULT_REVEAL_PLAYERS_KEY \
-    {                      \
-        L"F4",             \
-        {                  \
-            VK_F4, DIK_F4  \
-        }                  \
+    {                              \
+        L"F4",                     \
+        {                          \
+            VK_F4, DIK_F4          \
+        }                          \
     }
 
 /**
@@ -110,7 +110,7 @@ struct KeybindService
 
     void ResetKeybinds(const Keybind& acKeyType) noexcept;
 
-  private:
+private:
     // Handles DirectInput-related keybind inputs
     // Handling them elsewhere could cause missed keystate changes
     void OnDirectInputKeyPress(const unsigned long& acKeyCode) noexcept;
