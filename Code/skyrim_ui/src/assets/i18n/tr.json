@@ -81,6 +81,7 @@
     "ROOT": {
       "CONNECT": "Bağlan",
       "DISCONNECT": "Bağlantıyı Kopar",
+      "REVEAL_PLAYERS": "Oyuncuları Göster",
       "RECONNECT": "Geri Bağlan",
       "PLAYER_MANAGER": "Oyuncu Yöneticisi",
       "SETTINGS": "Ayarlar",
