@@ -23,7 +23,8 @@ Faction Property PlayerFaction Auto
 Faction Property CWSonsFaction Auto
 Faction Property CWImperialFaction Auto
 
-Int Property CurrentPetCount = 0 Auto Hidden ;Current count of pets, this is manipulated by pet ESPs/ESLs using the functions below
+; Setting start CurrentPetCount over the Max so the player cannot dismiss 2 pets and recruit new ones while online. Hypothetically.
+Int Property CurrentPetCount = 4 Auto Hidden ;Current count of pets, this is manipulated by pet ESPs/ESLs using the functions below
 
 Event OnInit()
 	debug.trace("Setting pet and player relationship to ally")

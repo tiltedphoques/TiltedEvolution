@@ -30,7 +30,8 @@ Function FollowPlayer(Bool snapIntoInteraction = False)
 	If(PetFramework_ParentQuest.HasMaxPets())
 		PetFramework_PetMaxReachedMessage.Show()
 	Else
-	
+		PetFramework_PetDismissMessage.Show()
+		return ; STR players ignore the pets.
 		debug.trace("Pet Framework: " + PetRefAlias.GetActorReference() + " setting to following player")
 		debug.trace("Pet Framework: " + PetRefAlias.GetActorReference() + " PetFollowingFactionRank: " + PetRefAlias.GetActorReference().GetFactionRank(PetFramework_PetFollowingFaction))
 
