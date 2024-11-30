@@ -364,6 +364,11 @@ interface SkyrimTogether {
   disconnect(): void;
 
   /**
+   * Reveal other players in the immediate area.
+   */
+  revealPlayers(): void;
+
+  /**
    * Send message to server.
    */
   sendMessage(type: number, message: string): void;

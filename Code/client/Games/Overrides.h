@@ -45,6 +45,7 @@ struct SpellCast
 };
 } // namespace details
 
+using ScopedReferencesOverride = ScopedOverride<TESObjectREFR>;
 using ScopedEquipOverride = ScopedOverride<details::Equip>;
 using ScopedUnequipOverride = ScopedOverride<details::Unequip>;
 using ScopedSaveLoadOverride = ScopedOverride<details::SaveLoad>;

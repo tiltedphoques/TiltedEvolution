@@ -1,8 +1,6 @@
 #include <TiltedOnlinePCH.h>
 #include "TiltedOnlineApp.h"
 
-#if TP_SKYRIM64
-
 extern std::unique_ptr<TiltedOnlineApp> g_appInstance;
 
 #include <GameVM.h>
@@ -60,4 +58,3 @@ static TiltedPhoques::Initializer s_mainHooks(
         TP_HOOK(&VMDestructor, HookVMDestructor);
     });
 
-#endif

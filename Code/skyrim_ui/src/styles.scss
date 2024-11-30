@@ -134,6 +134,7 @@ button {
   &[data-style-ornament] {
     display: flex;
     align-items: center;
+    padding: 0.3rem;
 
     &::before,
     &::after {

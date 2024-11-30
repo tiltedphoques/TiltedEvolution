@@ -23,13 +23,14 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 add_vectorexts("neon")
 
 -- build configurations
-add_rules("mode.debug", "mode.releasedbg")
+add_rules("mode.debug", "mode.releasedbg", "mode.release")
 
 if has_config("unitybuild") then
     add_rules("c.unity_build")
     add_rules("c++.unity_build", {batchsize = 12})
 end
 
+-- direct dependencies version pinning 
 add_requires(
     "entt v3.10.0", 
     "recastnavigation v1.6.0", 
@@ -41,7 +42,23 @@ add_requires(
     "mem 1.0.0", 
     "glm 0.9.9+8", 
     "sentry-native 0.7.1", 
-    "zlib v1.3.1")
+    "zlib v1.3.1"
+)
+if is_plat("windows") then
+    add_requires(
+        "discord 3.2.1", 
+        "imgui v1.89.7"
+    )
+end
+
+-- dependencies' dependencies version pinning
+add_requireconfs("*.mimalloc", { version = "2.1.7", override = true })
+add_requireconfs("*.cmake", { version = "3.30.2", override = true })
+add_requireconfs("*.openssl", { version = "1.1.1-w", override = true })
+add_requireconfs("*.zlib", { version = "v1.3.1", override = true })
+if is_plat("linux") then
+    add_requireconfs("*.libcurl", { version = "8.7.1", override = true })
+end
 
 add_requireconfs("cpp-httplib", {configs = {ssl = true}})
 add_requireconfs("sentry-native", { configs = { backend = "crashpad" } })
@@ -51,13 +68,6 @@ add_requireconfs("magnum-integration",  { configs = { imgui = true }})
 add_requireconfs("magnum-integration.magnum",  { configs = { sdl2 = true }})
 add_requireconfs("magnum-integration.imgui", { override = true })
 --]]
-
-if is_plat("windows") then
-    add_requires(
-        "discord 3.2.1", 
-        "imgui v1.89.7"
-    )
-end
 
 before_build(function (target)
     import("modules.version")

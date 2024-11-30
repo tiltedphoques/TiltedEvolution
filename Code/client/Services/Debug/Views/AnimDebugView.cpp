@@ -3,14 +3,12 @@
 #include <EquipManager.h>
 #include <services/DebugService.h>
 
-#if (TP_SKYRIM64)
 #include <Games/Skyrim/Forms/TESForm.h>
 #include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
 #include <Games/Skyrim/DefaultObjectManager.h>
 #include <Games/Skyrim/Forms/TESAmmo.h>
 #include <Games/Skyrim/Misc/InventoryEntry.h>
 #include <Games/Skyrim/Misc/MiddleProcess.h>
-#endif
 
 #include <Games/ActorExtension.h>
 
@@ -24,6 +22,8 @@
 
 #include <structs/AnimationGraphDescriptorManager.h>
 #include <inttypes.h>
+
+#include <ModCompat/BehaviorVar.h>
 
 uint64_t DisplayGraphDescriptorKey(BSAnimationGraphManager* pManager) noexcept
 {
@@ -80,8 +80,11 @@ void DebugService::DrawAnimDebugView()
         return;
     }
 
-    if (ImGui::Button("Show cached hash"))
+     if (ImGui::Button("Show cached hash"))
+    {
         spdlog::info("{}", pActor->GetExtension()->GraphDescriptorHash);
+        BehaviorVar::Get()->Debug();
+    }
 
     if (ImGui::Button("Clear all"))
     {

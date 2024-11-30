@@ -3,11 +3,7 @@
 #include <BranchInfo.h>
 #include <d3d11.h>
 
-#if (!IS_MASTER)
 #include "CrashHandler.h"
-#else
-#include <crash_handler/CrashHandler.h>
-#endif
 
 struct TiltedOnlineApp final : App
 {
@@ -37,10 +33,6 @@ protected:
 
 private:
     void ApplyNvidiaFix() noexcept;
-#if (!IS_MASTER)
     CrashHandler m_crashHandler;
-#else
-    //ScopedCrashHandler m_crashHandler;
-#endif
     ID3D11Device* m_pDevice = nullptr;
 };

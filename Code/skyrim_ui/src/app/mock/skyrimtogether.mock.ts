@@ -105,6 +105,14 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     throw new Error('NOT YET IMPLEMENTED');
   }
 
+  revealPlayers(): void {
+    this.sendMessage(MessageTypes.SYSTEM_MESSAGE, "Revealing players...");
+  }
+
+  setTime(hours: number, minutes: number): void {
+    this.sendMessage(MessageTypes.SYSTEM_MESSAGE, `Setting time to "${hours}:${minutes}"!`);
+  }
+
   sendMessage(type: MessageTypes, message: string): void {
     if (this.connected) {
       this.emit('message', type, message, this.playerName);

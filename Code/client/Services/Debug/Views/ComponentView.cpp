@@ -5,7 +5,6 @@
 #include <inttypes.h>
 #include <services/DebugService.h>
 
-#if (TP_SKYRIM64)
 #include <BSGraphics/BSGraphicsRenderer.h>
 #include <Camera/PlayerCamera.h>
 #include <Games/Skyrim/Forms/TESForm.h>
@@ -13,13 +12,6 @@
 #include <Games/Skyrim/NetImmerse/NiCamera.h>
 #include <Games/Skyrim/TESObjectREFR.h>
 #include <NetImmerse/NiCamera.h>
-#else
-#include <Games/Fallout4/Forms/TESForm.h>
-#endif
-
-// TODO: ft
-
-#if (TP_SKYRIM64)
 
 namespace
 {
@@ -188,9 +180,3 @@ void DebugService::DrawComponentDebugView()
         }
     }
 }
-
-#else
-void DebugService::DrawComponentDebugView()
-{
-}
-#endif

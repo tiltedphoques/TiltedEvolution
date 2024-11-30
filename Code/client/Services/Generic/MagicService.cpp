@@ -6,6 +6,9 @@
 #include <Events/SpellCastEvent.h>
 #include <Events/InterruptCastEvent.h>
 #include <Events/AddTargetEvent.h>
+#include <Events/RemoveSpellEvent.h>
+
+#include <Messages/RemoveSpellRequest.h>
 
 #include <Messages/SpellCastRequest.h>
 #include <Messages/InterruptCastRequest.h>
@@ -28,13 +31,6 @@
 
 #include <Games/TES.h>
 
-// TODO: these paths are inconsistent
-#if TP_FALLOUT4
-#include <Magic/EffectItem.h>
-#include <Magic/EffectSetting.h>
-#endif
-
-// TODO: ft
 MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
     , m_dispatcher(aDispatcher)
@@ -47,6 +43,8 @@ MagicService::MagicService(World& aWorld, entt::dispatcher& aDispatcher, Transpo
     m_notifyInterruptCastConnection = m_dispatcher.sink<NotifyInterruptCast>().connect<&MagicService::OnNotifyInterruptCast>(this);
     m_addTargetEventConnection = m_dispatcher.sink<AddTargetEvent>().connect<&MagicService::OnAddTargetEvent>(this);
     m_notifyAddTargetConnection = m_dispatcher.sink<NotifyAddTarget>().connect<&MagicService::OnNotifyAddTarget>(this);
+    m_removeSpellEventConnection = m_dispatcher.sink<RemoveSpellEvent>().connect<&MagicService::OnRemoveSpellEvent>(this);
+    m_notifyRemoveSpell = m_dispatcher.sink<NotifyRemoveSpell>().connect<&MagicService::OnNotifyRemoveSpell>(this);
 }
 
 void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
@@ -61,7 +59,6 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
 
 void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcept
 {
-#if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
@@ -121,12 +118,10 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
     spdlog::debug("Spell cast event sent, ID: {:X}, Source: {}, IsDualCasting: {}, desired target: {:X}", request.CasterId, request.CastingSource, request.IsDualCasting, request.DesiredTarget);
 
     m_transport.Send(request);
-#endif
 }
 
 void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noexcept
 {
-#if TP_SKYRIM64
     using CS = MagicSystem::CastingSource;
 
     auto remoteView = m_world.view<RemoteComponent, FormIdComponent>();
@@ -218,12 +213,10 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
     pCaster->CastSpellImmediate(pSpell, false, pDesiredTarget, 1.0f, false, 0.0f);
 
     spdlog::debug("Successfully casted remote spell");
-#endif
 }
 
 void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const noexcept
 {
-#if TP_SKYRIM64
     if (!m_transport.IsConnected())
         return;
 
@@ -247,12 +240,10 @@ void MagicService::OnInterruptCastEvent(const InterruptCastEvent& acEvent) const
     spdlog::debug("Sending out interrupt cast");
 
     m_transport.Send(request);
-#endif
 }
 
 void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) const noexcept
 {
-#if TP_SKYRIM64
     if (acMessage.CastingSource >= 4)
     {
         spdlog::warn("{}: could not find casting source {}", __FUNCTION__, acMessage.CastingSource);
@@ -285,16 +276,13 @@ void MagicService::OnNotifyInterruptCast(const NotifyInterruptCast& acMessage) c
     pCaster->InterruptCast();
 
     spdlog::debug("Interrupt remote cast successful");
-#endif
 }
 
 void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 {
-#if 1
     if (!m_transport.IsConnected())
         return;
 
-#if TP_SKYRIM64
     // These effects are applied through spell cast sync
     if (SpellItem* pSpellItem = Cast<SpellItem>(TESForm::GetById(acEvent.SpellID)))
     {
@@ -303,7 +291,6 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
             return;
         }
     }
-#endif
 
     AddTargetRequest request{};
 
@@ -361,10 +348,8 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     m_transport.Send(request);
 
     spdlog::debug("Sending effect sync request");
-#endif
 }
 
-// todo: ft
 void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
@@ -408,20 +393,16 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     data.pSpell = pSpell;
     data.pEffectItem = pEffect;
     data.fMagnitude = acMessage.Magnitude;
-#if TP_SKYRIM64
     data.fUnkFloat1 = 1.0f;
-#endif
     data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
     data.bDualCast = acMessage.IsDualCasting;
 
-#if TP_SKYRIM64
     if (pEffect->IsWerewolfEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
 
     if (pEffect->IsVampireLordEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
 
-    // TODO: ft, check if this bug also occurs in fallout 4
     // This hack is here because slow time seems to be twice as slow when cast by an npc
     if (pEffect->IsSlowEffect())
         pActor = PlayerCharacter::Get();
@@ -431,7 +412,75 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     pActor->magicTarget.AddTarget(data, acMessage.ApplyHealPerkBonus, acMessage.ApplyStaminaPerkBonus);
 
     spdlog::debug("Applied remote magic effect");
-#endif
+}
+
+void MagicService::OnRemoveSpellEvent(const RemoveSpellEvent& acEvent) noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    RemoveSpellRequest request{};
+
+    if (!m_world.GetModSystem().GetServerModId(acEvent.SpellId, request.SpellId.ModId, request.SpellId.BaseId))
+    {
+        spdlog::error("{}: Could not find spell with form {:X}", __FUNCTION__, acEvent.SpellId);
+        return;
+    }
+
+    auto view = m_world.view<FormIdComponent>();
+    const auto it = std::find_if(std::begin(view), std::end(view), [id = acEvent.TargetId, view](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == id;
+    });
+
+    if (it == std::end(view))
+    {
+        spdlog::warn("Form id not found for magic remove target, form id: {:X}", acEvent.TargetId);
+        return;
+    }
+
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
+    if (!serverIdRes.has_value())
+    {
+        spdlog::warn("Server id not found for magic remove target, form id: {:X}", acEvent.TargetId);
+        return;
+    }
+
+    request.TargetId = serverIdRes.value();
+
+    //spdlog::info(__FUNCTION__ ": requesting remove spell with base id {:X} from actor with server id {:X}", request.SpellId.BaseId, request.TargetId);
+
+    m_transport.Send(request);
+}
+
+void MagicService::OnNotifyRemoveSpell(const NotifyRemoveSpell& acMessage) noexcept
+{
+    uint32_t targetFormId = acMessage.TargetId;
+
+    Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
+    if (!pActor)
+    {
+        spdlog::warn(__FUNCTION__ ": could not find actor server id {:X}", acMessage.TargetId);
+        return;
+    }
+
+    const uint32_t cSpellId = World::Get().GetModSystem().GetGameId(acMessage.SpellId);
+    if (cSpellId == 0)
+    {
+        spdlog::error("{}: failed to retrieve spell id, GameId base: {:X}, mod: {:X}", __FUNCTION__,
+                      acMessage.SpellId.BaseId, acMessage.SpellId.ModId);
+        return;
+    }
+
+    MagicItem* pSpell = Cast<MagicItem>(TESForm::GetById(cSpellId));
+    if (!pSpell)
+    {
+        spdlog::error("{}: Failed to retrieve spell by id {:X}", __FUNCTION__, cSpellId);
+        return;
+    }
+
+    // Remove the spell from the actor
+    //spdlog::info(__FUNCTION__ ": removing spell with form id {:X} from actor with form id {:X}", cSpellId, targetFormId);
+    pActor->RemoveSpell(pSpell);
 }
 
 void MagicService::ApplyQueuedEffects() noexcept
@@ -488,23 +537,46 @@ void MagicService::ApplyQueuedEffects() noexcept
         m_queuedRemoteEffects.erase(serverId);
 }
 
-void MagicService::UpdateRevealOtherPlayersEffect() noexcept
+void MagicService::StartRevealingOtherPlayers() noexcept
 {
-#if TP_SKYRIM64
-    if (GetAsyncKeyState(VK_F4) & 0x01)
-        m_revealOtherPlayers = !m_revealOtherPlayers;
+    UpdateRevealOtherPlayersEffect(/*forceTrigger=*/true);
+}
 
-    if (!m_revealOtherPlayers)
-        return;
-
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
+void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
+{
+    constexpr auto cRevealDuration = 10s;
     constexpr auto cDelayBetweenUpdates = 2s;
 
+    // Effect's activation and lifecycle
+
+    static std::chrono::steady_clock::time_point revealStartTimePoint;
+    static std::chrono::steady_clock::time_point lastSendTimePoint;
+
+    const bool shouldActivate = aForceTrigger || GetAsyncKeyState(VK_F4) & 0x01;
+
+    if (shouldActivate && !m_revealingOtherPlayers)
+    {
+        m_revealingOtherPlayers = true;
+        revealStartTimePoint = std::chrono::steady_clock::now();
+    }
+
+    if (!m_revealingOtherPlayers)
+        return;
+
     const auto now = std::chrono::steady_clock::now();
+
+    if (now - revealStartTimePoint > cRevealDuration)
+    {
+        m_revealingOtherPlayers = false;
+        return;
+    }
+
     if (now - lastSendTimePoint < cDelayBetweenUpdates)
         return;
 
     lastSendTimePoint = now;
+
+    // When active
 
     Mod* pSkyrimTogether = ModManager::Get()->GetByName("SkyrimTogether.esp");
     if (!pSkyrimTogether)
@@ -535,5 +607,4 @@ void MagicService::UpdateRevealOtherPlayersEffect() noexcept
 
         pRemotePlayer->magicTarget.AddTarget(data, false, false);
     }
-#endif
 }

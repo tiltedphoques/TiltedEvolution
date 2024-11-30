@@ -4,14 +4,6 @@
 #define NOMINMAX
 #endif
 
-#ifdef TP_SKYRIM
-#define SKYRIM 1
-#define FALLOUT4 0
-#else
-#define SKYRIM 0
-#define FALLOUT4 1
-#endif
-
 #include <cstdint>
 #include <TiltedCore/Platform.hpp>
 #include <TiltedCore/StackAllocator.hpp>

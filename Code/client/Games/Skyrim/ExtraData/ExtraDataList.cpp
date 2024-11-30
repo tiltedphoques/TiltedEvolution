@@ -40,11 +40,7 @@ BSExtraData* ExtraDataList::GetByType(ExtraDataType aType) const
     }
 
     auto pEntry = data;
-#if TP_SKYRIM
     while (pEntry != nullptr && pEntry->GetType() != aType)
-#else
-    while (pEntry != nullptr && pEntry->type != aType)
-#endif
     {
         pEntry = pEntry->next;
     }

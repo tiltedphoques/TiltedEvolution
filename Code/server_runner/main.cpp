@@ -25,15 +25,7 @@
 
 namespace
 {
-constexpr char kLogFileName[] =
-#if TARGET_ST
-    "STServerOut.log"
-#elif TARGET_FT
-    "FTServerOut.log"
-#else
-    "TiltedGameServer.log"
-#endif
-    ;
+constexpr char kLogFileName[] = "STServerOut.log";
 // Its fine for us if several potential server instances read this, since its a tilted platform thing
 // and therefore not considered game specific.
 constexpr char kEULAName[] = "EULA.txt";
@@ -73,7 +65,7 @@ struct LogInstance
 
         auto fileOut = std::make_shared<sinks::rotating_file_sink_mt>(std::string("logs/") + kLogFileName, kLogFileSizeCap, 3);
         auto serverOut = std::make_shared<sinks::stdout_color_sink_mt>();
-        serverOut->set_pattern("%^[%H:%M:%S] [%l]%$ %v");
+        serverOut->set_pattern("%^[%H:%M:%S.%e] [%l] [tid %t] %$ %v");
         auto globalOut = std::make_shared<logger>("", sinks_init_list{serverOut, fileOut});
         globalOut->set_level(level::from_str(sLogLevel.value()));
 
@@ -231,9 +223,10 @@ int main(int argc, char** argv)
     }
     */
 
-    ScopedCrashHandler _(true, true);
+    //ScopedCrashHandler _(true, true);
 
-    RegisterQuitHandler();
+    // Note(Vince): This started crashing on 1.7+ lets disable it for now.
+    // RegisterQuitHandler(); 
 
     // Keep stack free.
     const auto cpRunner{std::make_unique<DediRunner>(argc, argv)};
@@ -241,6 +234,7 @@ int main(int argc, char** argv)
     {
         cpRunner->StartTerminalIO();
     }
+
     cpRunner->RunGSThread();
 
     return 0;

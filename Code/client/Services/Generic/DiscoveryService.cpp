@@ -27,11 +27,7 @@ DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher)
     m_preUpdateConnection = m_dispatcher.sink<PreUpdateEvent>().connect<&DiscoveryService::OnUpdate>(this);
     m_connectedConnection = m_dispatcher.sink<ConnectedEvent>().connect<&DiscoveryService::OnConnected>(this);
 
-#if TP_SKYRIM64
     EventDispatcherManager::Get()->loadGameEvent.RegisterSink(this);
-#else
-    GetEventDispatcher_TESLoadGameEvent()->RegisterSink(this);
-#endif
 }
 
 void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
@@ -86,14 +82,9 @@ void DiscoveryService::VisitExteriorCell(bool aForceTrigger) noexcept
             return;
         }
 
-        // TODO: ft
-#if TP_SKYRIM64
         TESObjectCELL* pCell = pPlayer->GetParentCellEx();
         if (!pCell)
             pCell = ModManager::Get()->GetCellFromCoordinates(gameCurrentGrid.X, gameCurrentGrid.Y, pWorldSpace, false);
-#else
-        TESObjectCELL* pCell = pPlayer->parentCell;
-#endif
 
         if (!m_world.GetModSystem().GetServerModId(pCell->formID, cellChangeEvent.CellId))
         {
@@ -170,14 +161,9 @@ void DiscoveryService::DetectGridCellChange(TESWorldSpace* aWorldSpace, bool aNe
         }
     }
 
-    // TODO: ft
-#if TP_SKYRIM64
     TESObjectCELL* pCell = PlayerCharacter::Get()->GetParentCellEx();
     if (!pCell)
         pCell = ModManager::Get()->GetCellFromCoordinates(pTES->currentGridX, pTES->currentGridY, aWorldSpace, false);
-#else
-    TESObjectCELL* pCell = PlayerCharacter::Get()->parentCell;
-#endif
 
     if (!m_world.GetModSystem().GetServerModId(pCell->formID, changeEvent.PlayerCell))
     {

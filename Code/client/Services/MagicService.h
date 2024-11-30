@@ -4,6 +4,7 @@
 #include <Events/EventDispatcher.h>
 #include <Messages/AddTargetRequest.h>
 #include <Messages/NotifyAddTarget.h>
+#include <Messages/NotifyRemoveSpell.h>
 
 struct World;
 struct TransportService;
@@ -12,6 +13,7 @@ struct UpdateEvent;
 struct SpellCastEvent;
 struct InterruptCastEvent;
 struct AddTargetEvent;
+struct RemoveSpellEvent;
 
 struct NotifySpellCast;
 struct NotifyInterruptCast;
@@ -32,6 +34,12 @@ struct MagicService
     ~MagicService() noexcept = default;
 
     TP_NOCOPYMOVE(MagicService);
+
+    /**
+     * @brief Starts revealing remote players for a few seconds
+     * @see UpdateRevealOtherPlayersEffect
+     */
+    void StartRevealingOtherPlayers() noexcept;
 
 protected:
     /**
@@ -62,6 +70,14 @@ protected:
      * @brief Applies a magic effect based on a server message.
      */
     void OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept;
+    /**
+     * @brief Sends a message to remove a spell from a player.
+     */
+    void OnRemoveSpellEvent(const RemoveSpellEvent& acEvent) noexcept;
+    /*
+     * @brief Handles removal of a spell
+     */
+    void OnNotifyRemoveSpell(const NotifyRemoveSpell& acMessage) noexcept;
 
 private:
     /**
@@ -75,7 +91,7 @@ private:
     /**
      * Apply the "reveal players" effect on remote players.
      */
-    void UpdateRevealOtherPlayersEffect() noexcept;
+    void UpdateRevealOtherPlayersEffect(bool aForceTrigger = false) noexcept;
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
@@ -88,7 +104,7 @@ private:
     Map<uint32_t, AddTargetRequest> m_queuedEffects;
     Map<uint32_t, NotifyAddTarget> m_queuedRemoteEffects;
 
-    bool m_revealOtherPlayers = false;
+    bool m_revealingOtherPlayers = false;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;
@@ -97,4 +113,6 @@ private:
     entt::scoped_connection m_notifyInterruptCastConnection;
     entt::scoped_connection m_addTargetEventConnection;
     entt::scoped_connection m_notifyAddTargetConnection;
+    entt::scoped_connection m_removeSpellEventConnection;
+    entt::scoped_connection m_notifyRemoveSpell;
 };
