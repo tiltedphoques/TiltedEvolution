@@ -25,6 +25,7 @@ static constexpr TargetConfig CurrentTarget{
     L"Skyrim Special Edition", 
     489830, 0x40000000, 35410264};
 #define TARGET_NAME L"SkyrimSE"
+#define TARGET_NAME_A "SkyrimSE"
 #define PRODUCT_NAME L"Skyrim Together"
 #define SHORT_NAME L"Skyrim Special Edition"
 

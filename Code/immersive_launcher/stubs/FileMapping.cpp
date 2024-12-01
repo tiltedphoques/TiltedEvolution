@@ -26,7 +26,7 @@ std::wstring s_OverridePath;
 DWORD(WINAPI* RealGetModuleFileNameW)(HMODULE, LPWSTR, DWORD) = nullptr;
 DWORD(WINAPI* RealGetModuleFileNameA)(HMODULE, LPSTR, DWORD) = nullptr;
 HMODULE(WINAPI* RealGetModuleHandleW)(LPCWSTR) = nullptr;
-HMODULE(WINAPI* RealGetModuleHandleA)(LPSTR) = nullptr;
+HMODULE(WINAPI* RealGetModuleHandleA)(LPCSTR) = nullptr;
 NTSTATUS(WINAPI* RealLdrLoadDll)(const wchar_t*, uint32_t*, UNICODE_STRING*, HANDLE*) = nullptr;
 NTSTATUS(WINAPI* RealLdrGetDllHandle)(PWSTR, PULONG, PUNICODE_STRING, PVOID*) = nullptr;
 NTSTATUS(WINAPI* RealLdrGetDllFullName)(HMODULE, PUNICODE_STRING) = nullptr;
@@ -85,6 +85,28 @@ bool IsLocalModulePath(HMODULE aHmod)
 
     // does the file exist in the ST dir?
     return buf.find(s_OverridePath) != std::wstring::npos;
+}
+
+// some mods do GetModuleHandle("SkyrimSE.exe") for some reason instead of GetModuleHandle(nullptr)
+HMODULE WINAPI TP_GetModuleHandleW(LPCWSTR lpModuleName)
+{
+    constexpr auto pTarget = TARGET_NAME L".exe";
+    auto targetSize = std::wcslen(pTarget);
+
+    if (lpModuleName && std::wcsncmp(pTarget, lpModuleName, targetSize) == 0)
+        lpModuleName = nullptr;
+    return RealGetModuleHandleW(lpModuleName);
+}
+
+// some mods do GetModuleHandle("SkyrimSE.exe") for some reason instead of GetModuleHandle(nullptr)
+HMODULE WINAPI TP_GetModuleHandleA(LPCSTR lpModuleName)
+{
+    constexpr auto pTarget = TARGET_NAME_A ".exe";
+    constexpr auto targetSize = sizeof(TARGET_NAME_A ".exe");
+
+    if (lpModuleName && std::strncmp(pTarget, lpModuleName, targetSize) == 0)
+        lpModuleName = nullptr;
+    return RealGetModuleHandleA(lpModuleName);
 }
 
 // some mods do GetModuleHandle("SkyrimSE.exe") for some reason instead of GetModuleHandle(nullptr)
@@ -300,6 +322,12 @@ void CoreStubsInit()
     // TODO(Vince): we need some check if usvfs already fucked with this?
     // MH_CreateHookApi(L"ntdll.dll", "LdrGetDllFullName", &TP_LdrGetDllFullName, (void**)&RealLdrGetDllFullName);
     VALIDATE(MH_CreateHookApi(L"ntdll.dll", "LdrLoadDll", &TP_LdrLoadDll, (void**)&RealLdrLoadDll));
+
+    // Starting with Windows 11 24H2 the call stack has changed and GetModuleHandle() no longer
+    // downcalls to LdrGetDllHandleEx, so we have to hook this too.
+    VALIDATE(MH_CreateHookApi(L"kernel32.dll", "GetModuleHandleW", &TP_GetModuleHandleW, (void**)&RealGetModuleHandleW));
+    VALIDATE(MH_CreateHookApi(L"kernel32.dll", "GetModuleHandleA", &TP_GetModuleHandleA, (void**)&RealGetModuleHandleA));
+
     VALIDATE(MH_EnableHook(nullptr));
 }
 
