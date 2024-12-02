@@ -1,5 +1,7 @@
 #pragma once
 
+#include "KeybindService.h"
+
 #include <Actor.h>
 
 struct World;
@@ -29,6 +31,11 @@ struct DebugService
     void OnMoveActor(const MoveActorEvent&) noexcept;
 
     void SetDebugId(const uint32_t aFormId) noexcept;
+
+    const KeybindService::Key& GetDebugKey() const noexcept { return m_debugKeybind; }
+    void SetDebugKey(const TiltedPhoques::SharedPtr<KeybindService::Key>& acpKey) noexcept { m_debugKeybind = *acpKey; }
+    bool IsRebinding() const noexcept { return m_rebindUI || m_rebindDebug || m_rebindRevealPlayers; }
+    void DebugPressed() noexcept { m_debugKeyPressed = !m_debugKeyPressed; }
 
 protected:
     void OnDraw() noexcept;
@@ -60,6 +67,7 @@ private:
     void DrawCombatView();
     void DrawCalendarView();
     void DrawDragonSpawnerView();
+    void DrawKeybindView();
 
 public:
     bool m_showDebugStuff = false;
@@ -79,6 +87,12 @@ private:
     uint32_t SubActorID = 0;
     String SubtitleText = "";
     uint32_t TopicID = 0;
+
+    KeybindService::Key m_debugKeybind{};
+    bool m_debugKeyPressed{false};
+    bool m_rebindUI{false};
+    bool m_rebindDebug{false};
+    bool m_rebindRevealPlayers{false};
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_drawImGuiConnection;

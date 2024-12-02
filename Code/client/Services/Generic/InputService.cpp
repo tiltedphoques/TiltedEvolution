@@ -8,12 +8,13 @@
 #include <DInputHook.hpp>
 #include <WindowsHook.hpp>
 
-#include <include/internal/cef_types.h>
 #include <Services/ImguiService.h>
 #include <Services/DiscordService.h>
 #include <World.h>
 
 #include "Games/Skyrim/Interface/MenuControls.h"
+
+#include "Events/KeyPressEvent.h"
 
 static OverlayService* s_pOverlay = nullptr;
 static UINT s_currentACP = CP_ACP;
@@ -89,7 +90,7 @@ uint32_t GetCefModifiers(uint16_t aVirtualKey)
 // remember to update this when updating toggle keys
 bool IsToggleKey(int aKey) noexcept
 {
-    return aKey == VK_RCONTROL || aKey == VK_F2;
+    return aKey == World::Get().GetInputService().GetUIKey().second.vkKeyCode;
 }
 
 bool IsDisableKey(int aKey) noexcept
@@ -113,10 +114,58 @@ void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
         ;
 }
 
+void ToggleUI(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexcept
+{
+    auto& overlay = *s_pOverlay;
+
+    const auto pApp = overlay.GetOverlayApp();
+    if (!pApp)
+        return;
+
+    const auto pClient = pApp->GetClient();
+    if (!pClient)
+        return;
+
+    const auto pRenderer = pClient->GetOverlayRenderHandler();
+    if (!pRenderer)
+        return;
+
+    const auto active = overlay.GetActive();
+
+    const auto& debugService = World::Get().GetDebugService();
+    const auto& isRebinding = debugService.IsRebinding();
+
+    const auto& isToggleKey = IsToggleKey(aKey);
+    const auto& isDisableKey = IsDisableKey(aKey);
+
+    const auto& textInputFocused = World::Get().GetKeybindService().GetTextInputFocus();
+
+    if (aType != KEYEVENT_CHAR && ((isToggleKey && !textInputFocused) || (isDisableKey && active)))
+    {
+        if (!overlay.GetInGame())
+        {
+            TiltedPhoques::DInputHook::Get().SetEnabled(false);
+        }
+        else if ((aType == KEYEVENT_KEYUP && !isDisableKey) || (isDisableKey && !isRebinding && aType == KEYEVENT_KEYDOWN))
+        {
+            SetUIActive(overlay, pRenderer, !active);
+        }
+    }
+    else if ((active && !isToggleKey) || (isToggleKey && textInputFocused))
+    {
+        pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
+    }
+}
+
 void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType, bool aE0, bool aE1)
 {
     if (aType != KEYEVENT_CHAR)
     {
+        if (aType == KEYEVENT_KEYDOWN)
+        {
+            World::Get().GetDispatcher().trigger(KeyPressEvent{aKey});
+        }
+
         if (!aKey || aKey == 255)
         {
             return;
@@ -191,21 +240,7 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 
     spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
 
-    if (aType != KEYEVENT_CHAR && (IsToggleKey(aKey) || (IsDisableKey(aKey) && active)))
-    {
-        if (!overlay.GetInGame())
-        {
-            TiltedPhoques::DInputHook::Get().SetEnabled(false);
-        }
-        else if (aType == KEYEVENT_KEYUP)
-        {
-            SetUIActive(overlay, pRenderer, !active);
-        }
-    }
-    else if (active)
-    {
-        pApp->InjectKey(aType, GetCefModifiers(aKey), aKey, aScanCode);
-    }
+    ToggleUI(aKey, aScanCode, aType);
 }
 
 void ProcessMouseMove(uint16_t aX, uint16_t aY)
@@ -291,10 +326,7 @@ UINT GetRealACP()
     // Call the GetLocaleInfo function to retrieve the default ANSI code page
     // associated with that language ID.
     UINT acp = CP_ACP;
-    GetLocaleInfo(MAKELCID(langID, SORT_DEFAULT),
-        LOCALE_IDEFAULTANSICODEPAGE | LOCALE_RETURN_NUMBER,
-        (LPTSTR) &acp,
-        sizeof(acp) / sizeof(TCHAR));
+    GetLocaleInfo(MAKELCID(langID, SORT_DEFAULT), LOCALE_IDEFAULTANSICODEPAGE | LOCALE_RETURN_NUMBER, (LPTSTR)&acp, sizeof(acp) / sizeof(TCHAR));
     return acp;
 }
 
@@ -417,10 +449,23 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     return 0;
 }
 
+bool InputService::SetUIKey(const TiltedPhoques::SharedPtr<KeybindService::Key>& acpKey) noexcept
+{
+    m_pUiKey = *acpKey;
+    return true;
+}
+
+void InputService::Toggle(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType) noexcept
+{
+    ToggleUI(aKey, aScanCode, aType);
+}
+
 InputService::InputService(OverlayService& aOverlay) noexcept
 {
     s_pOverlay = &aOverlay;
     s_currentACP = GetRealACP();
+
+    m_pUiKey = {};
 }
 
 InputService::~InputService() noexcept

@@ -40,6 +40,7 @@ struct MagicService
      * @see UpdateRevealOtherPlayersEffect
      */
     void StartRevealingOtherPlayers() noexcept;
+    void RevealKeybindPressed() noexcept;
 
 protected:
     /**
@@ -105,6 +106,7 @@ private:
     Map<uint32_t, NotifyAddTarget> m_queuedRemoteEffects;
 
     bool m_revealingOtherPlayers = false;
+    bool m_revealKeybindPressed = false;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;
