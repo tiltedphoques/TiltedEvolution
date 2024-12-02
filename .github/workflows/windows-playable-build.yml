@@ -32,6 +32,11 @@ jobs:
           git submodule sync --recursive
           git submodule update --init --force --recursive --depth=1
 
+      - name: Checkout master on tag push
+        if: github.ref_type == 'tag'
+        # Checkout only if the tag was pushed to master
+        run: (git rev-parse HEAD) -eq (git rev-parse origin/master) -and (git checkout master)
+
       - name: Cache xmake dependencies
         uses: actions/cache@v4
         with:
