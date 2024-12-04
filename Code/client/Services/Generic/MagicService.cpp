@@ -314,7 +314,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     if (it == std::end(view))
     {
         spdlog::warn("Form id not found for magic add target, form id: {:X}", acEvent.TargetID);
-        m_queuedEffects[acEvent.TargetID] = std::pair<int, AddTargetRequest>(0, request);
+        m_queuedEffects[acEvent.TargetID] = std::pair(0, request);
         return;
     }
 
@@ -322,7 +322,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     if (!serverIdRes.has_value())
     {
         spdlog::warn("Server id not found for magic add target, form id: {:X}", acEvent.TargetID);
-        m_queuedEffects[acEvent.TargetID] = std::pair<int, AddTargetRequest>(0, request);
+        m_queuedEffects[acEvent.TargetID] = std::pair(0, request);
         return;
     }
 
@@ -333,7 +333,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     if (casterIt == std::end(view))
     {
         spdlog::warn("Form id not found for magic add target, form id: {:X}", acEvent.CasterID);
-        m_queuedEffects[acEvent.TargetID] = std::pair<int, AddTargetRequest>(0, request);
+        m_queuedEffects[acEvent.TargetID] = std::pair(0, request);
         return;
     }
 
@@ -356,7 +356,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     if (!pActor)
     {
         spdlog::warn(__FUNCTION__ ": could not find actor server id {:X}", acMessage.TargetId);
-        m_queuedRemoteEffects[acMessage.TargetId] = std::pair<int, NotifyAddTarget>(0, acMessage);
+        m_queuedRemoteEffects[acMessage.TargetId] = std::pair(0, acMessage);
         return;
     }
 
