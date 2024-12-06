@@ -46,4 +46,4 @@ information for the creatures supported by STR.
 
 # ~~TODO~~
 * No longer TODOs, thanks to the dev team for accepting the contribution. It will be much easier to maintain this support now.
-* Use of the fork on Github is no longer necessary, animation support is in the offiical build. I may still publish [compiled versions of the fork](https://github.com/rfortier/TiltedEvolution-rwf/releases) to preview new features and bugfixes. These versions *may* work with the public servers, it depends on how invasive the change is.
+* Use of the fork on Github is no longer necessary, animation support is in the official build. I may still publish [compiled versions of the fork](https://github.com/rfortier/TiltedEvolution-rwf/releases) to preview new features and bugfixes. These versions *may* work with the public servers, it depends on how invasive the change is.
