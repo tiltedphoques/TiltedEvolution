@@ -628,8 +628,14 @@ void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
 
 void Actor::ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept
 {
-    const float current = GetActorValue(aId);
-    actorValueOwner.ForceCurrent(aMode, aId, aValue - current);
+    float initialValue = aMode == ActorValueOwner::ForceMode::PERMANENT 
+                         ? GetActorPermanentValue(aId)
+                         : GetActorValue(aId);
+
+    if (aValue == initialValue)
+        return;
+
+    actorValueOwner.ForceCurrent(aMode, aId, aValue - initialValue);
 }
 
 Inventory Actor::GetActorInventory() const noexcept
@@ -716,16 +722,10 @@ void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
 {
     for (auto& value : acActorValues.ActorMaxValuesList)
-    {
-        float current = actorValueOwner.GetValue(value.first);
-        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::PERMANENT, value.first, value.second - current);
-    }
+        ForceActorValue(ActorValueOwner::ForceMode::PERMANENT, value.first, value.second);
 
     for (auto& value : acActorValues.ActorValuesList)
-    {
-        float current = actorValueOwner.GetValue(value.first);
-        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, value.first, value.second - current);
-    }
+        ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, value.first, value.second);
 }
 
 void Actor::SetFactions(const Factions& acFactions) noexcept
