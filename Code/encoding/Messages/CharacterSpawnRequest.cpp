@@ -12,7 +12,17 @@ void CharacterSpawnRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
     Serialization::WriteString(aWriter, AppearanceBuffer);
     InventoryContent.Serialize(aWriter);
     FactionsContent.Serialize(aWriter);
+
+    // Actions
     LatestAction.GenerateDifferential(ActionEvent{}, aWriter);
+    aWriter.WriteBits(ActionsReplayCache.size() & 0xFF, 8);
+    ActionEvent lastSerialized{};
+    for (int i = 0; i < ActionsReplayCache.size(); ++i)
+    {
+        ActionsReplayCache[i].GenerateDifferential(lastSerialized, aWriter);
+        lastSerialized = ActionsReplayCache[i];
+    }
+
     FaceTints.Serialize(aWriter);
     InitialActorValues.Serialize(aWriter);
     Serialization::WriteVarInt(aWriter, PlayerId);
@@ -44,9 +54,15 @@ void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
     FactionsContent = {};
     FactionsContent.Deserialize(aReader);
 
+    // Actions
     LatestAction = ActionEvent{};
     LatestAction.ApplyDifferential(aReader);
-
+    uint64_t replayActionsCount = 0;
+    aReader.ReadBits(replayActionsCount, 8);
+    ActionsReplayCache.resize(replayActionsCount);
+    for (ActionEvent& replayAction : ActionsReplayCache)
+        replayAction.ApplyDifferential(aReader);
+    
     FaceTints.Deserialize(aReader);
     InitialActorValues.Deserialize(aReader);
     PlayerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;

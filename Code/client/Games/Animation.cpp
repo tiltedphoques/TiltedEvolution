@@ -112,7 +112,7 @@ bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
     uint8_t result = 0;
 
     auto pActor = static_cast<Actor*>(apAction->actor);
-    if (!pActor || pActor->animationGraphHolder.IsReady())
+    if (pActor && pActor->animationGraphHolder.IsReady())
     {
         result = TiltedPhoques::ThisCall(PerformComplexAction, this, apAction);
 

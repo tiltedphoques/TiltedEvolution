@@ -12,6 +12,7 @@
 #include <Events/OwnershipTransferEvent.h>
 
 #include <Game/OwnerView.h>
+#include <Game/AnimationEventLists.h>
 
 #include <Messages/AssignCharacterRequest.h>
 #include <Messages/AssignCharacterResponse.h>
@@ -120,7 +121,7 @@ void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, Charact
     }
 
     const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
-    apSpawnRequest->LatestAction = animationComponent.CurrentAction;
+    apSpawnRequest->ActionsReplayCache = animationComponent.ActionsReplayCache;
 }
 
 void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
@@ -780,6 +781,77 @@ void CharacterService::ProcessFactionsChanges() const noexcept
     }
 }
 
+static bool IsStartAction(const ActionEvent& acAction) noexcept
+{
+    return AnimationEventLists::g_actionsStart.contains(acAction.EventName);
+}
+
+static bool IsExitAction(const ActionEvent& acAction) noexcept
+{
+    return AnimationEventLists::g_actionsExit.contains(acAction.EventName);
+}
+
+static bool ShouldSkipIntermediateAction(const ActionEvent& acAction) noexcept
+{
+    return AnimationEventLists::g_actionsSkipIntermediate.contains(acAction.EventName);
+}
+
+// Either 1) action chain (aka replay cache) will start with an Exit action, 
+// 2) chain will start with a valid Start action, 3) chain will remain unchanged
+static void DropAllBeforeRelevantAction(Vector<ActionEvent>& aActions) noexcept
+{
+    bool startActionFound = false;
+    int dropAllUpToIndex = -1;
+
+    for (int i = aActions.size() - 1; i >= 0; --i)
+    {
+        const auto& action = aActions[i];
+
+        if (IsStartAction(action))
+            startActionFound = true;
+
+        // Terminate when an "exit" action is found
+        if (IsExitAction(action))
+        {
+            dropAllUpToIndex = i;
+            break;
+        }
+
+        if (!startActionFound)
+            continue;
+
+        if (ShouldSkipIntermediateAction(action))
+            continue;
+        if (!IsStartAction(action))
+        {
+            dropAllUpToIndex = i + 1;
+            break;
+        }
+    }
+
+    if (dropAllUpToIndex == -1)
+        return;
+
+    aActions.erase(aActions.begin(), aActions.begin() + dropAllUpToIndex);
+}
+
+static void UpdateActionsReplayCache(Vector<ActionEvent>& aReplayCache, const Vector<ActionEvent>& acRecentActions)
+{
+    for (const auto& action : acRecentActions)
+    {
+        if (AnimationEventLists::g_actionsIgnore.contains(action.EventName))
+            continue;
+        aReplayCache.push_back(action);
+    }
+
+    constexpr int kReplayCacheMaxSize = 32;
+
+    if (aReplayCache.size() > kReplayCacheMaxSize)
+        aReplayCache.erase(aReplayCache.begin(), aReplayCache.end() - kReplayCacheMaxSize);
+
+    DropAllBeforeRelevantAction(aReplayCache);
+}
+
 void CharacterService::ProcessMovementChanges() const noexcept
 {
     static std::chrono::steady_clock::time_point lastSendTimePoint;
@@ -838,14 +910,15 @@ void CharacterService::ProcessMovementChanges() const noexcept
         }
     }
 
-    m_world.view<AnimationComponent>().each(
-        [](AnimationComponent& animationComponent)
+    m_world.view<AnimationComponent>().each([](AnimationComponent& animationComponent) {
+        if (!animationComponent.Actions.empty())
         {
-            if (!animationComponent.Actions.empty())
-                animationComponent.LastSerializedAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
+            animationComponent.LastSerializedAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
+            UpdateActionsReplayCache(animationComponent.ActionsReplayCache, animationComponent.Actions);
+        }
 
-            animationComponent.Actions.clear();
-        });
+        animationComponent.Actions.clear();
+    });
 
     m_world.view<MovementComponent>().each([](MovementComponent& movementComponent) { movementComponent.Sent = true; });
 

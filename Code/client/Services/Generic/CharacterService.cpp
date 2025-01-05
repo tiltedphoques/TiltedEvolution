@@ -335,8 +335,11 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
         pActor->GetExtension()->SetRemote(true);
 
-        InterpolationSystem::Setup(m_world, cEntity);
-        AnimationSystem::Setup(m_world, cEntity);
+        // TODO: `AnimationSystem::Setup` erases my actions replay cache, gotta figure out why 
+        // these two lines were added in the first place
+
+        //InterpolationSystem::Setup(m_world, cEntity);
+        //AnimationSystem::Setup(m_world, cEntity);
 
         pActor->SetActorValues(acMessage.AllActorValues);
         pActor->SetActorInventory(acMessage.CurrentInventory);
@@ -400,11 +403,12 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         auto waitingView = m_world.view<FormIdComponent, WaitingForAssignmentComponent>();
         const auto waitingItor = std::find_if(std::begin(waitingView), std::end(waitingView), [waitingView, cActorId](auto entity) { return waitingView.get<FormIdComponent>(entity).Id == cActorId; });
 
-        if (waitingItor != std::end(waitingView))
-        {
-            spdlog::info("Character with form id {:X} already has a spawn request in progress.", cActorId);
-            return;
-        }
+        // TODO: Sometimes actors have "a spawn request in progress" when they shouldn't, debug this..
+        //if (waitingItor != std::end(waitingView))
+        //{
+        //    spdlog::info("Character with form id {:X} already has a spawn request in progress.", cActorId);
+        //    return;
+        //}
 
         auto* const pForm = TESForm::GetById(cActorId);
         pActor = Cast<Actor>(pForm);
@@ -472,7 +476,13 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     m_world.emplace_or_replace<WaitingFor3D>(*entity, acMessage);
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(*entity);
-    remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
+
+    for (const ActionEvent& action : acMessage.ActionsReplayCache)
+    {
+        if (action.EventName.empty()) // TODO: skip empties for now. figure out why an empty event is present after deserialization
+            continue;
+        remoteAnimationComponent.TimePoints.push_back(action);
+    }
 }
 
 void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessage) noexcept
