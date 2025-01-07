@@ -241,8 +241,7 @@ void ResourceCollection::CollectResources()
     m_resourcePath = std::filesystem::current_path() / kResourceFolderName;
     if (!std::filesystem::exists(m_resourcePath))
     {
-        spdlog::info("Resource folder {} does not exist", m_resourcePath.string());
-        return;
+        std::filesystem::create_directory(m_resourcePath);
     }
 
     TiltedPhoques::Vector<std::filesystem::path> manifestCanidates;
