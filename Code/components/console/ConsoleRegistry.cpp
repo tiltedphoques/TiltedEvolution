@@ -190,15 +190,8 @@ CommandBase* ConsoleRegistry::FindCommand(const char* acName)
             TiltedPhoques::String findName(acName);
             TiltedPhoques::String settingName(apCommand->m_name);
 
-            for (char& c : findName)
-            {
-                c = std::tolower(static_cast<unsigned char>(c));
-            }
-
-            for (char& c : settingName)
-            {
-                c = std::tolower(static_cast<unsigned char>(c));
-            }
+            std::transform(findName.begin(), findName.end(), findName.begin(), [](unsigned char c) { return std::tolower(c); });
+            std::transform(settingName.begin(), settingName.end(), settingName.begin(), [](unsigned char c) { return std::tolower(c); });
 
             return std::strcmp(settingName.c_str(), findName.c_str()) == 0;
         });
@@ -217,15 +210,8 @@ SettingBase* ConsoleRegistry::FindSetting(const char* acName)
             TiltedPhoques::String findName(acName);
             TiltedPhoques::String settingName(apSetting->name);
 
-            for (char& c : findName)
-            {
-                c = std::tolower(static_cast<unsigned char>(c));
-            }
-
-            for (char& c : settingName)
-            {
-                c = std::tolower(static_cast<unsigned char>(c));
-            }
+            std::transform(findName.begin(), findName.end(), findName.begin(), [](unsigned char c) { return std::tolower(c); });
+            std::transform(settingName.begin(), settingName.end(), settingName.begin(), [](unsigned char c) { return std::tolower(c); });
 
             return std::strcmp(settingName.c_str(), findName.c_str()) == 0;
         });
