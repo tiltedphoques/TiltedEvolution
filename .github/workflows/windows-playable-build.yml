@@ -90,8 +90,12 @@ jobs:
           cp -r Code/skyrim_ui/dist/UI str-build/SkyrimTogetherReborn
           cp -r GameFiles/Skyrim/* str-build/
 
-      - name: Remove unnecessary build files
-        run: rm str-build/SkyrimTogetherReborn/*.pdb, str-build/SkyrimTogetherReborn/*.lib
+      - name: Remove unnecessary build files, keep .pdb
+        run: |
+          mkdir str-pdb
+          mv str-build/SkyrimTogetherReborn/SkyrimTogether.pdb, str-build/SkyrimTogetherReborn/SkyrimTogetherServer.pdb str-pdb
+          rm str-build/SkyrimTogetherReborn/*.pdb, str-build/SkyrimTogetherReborn/*.lib, str-build/SkyrimTogetherReborn/*.exp
+          rm str-build/SkyrimTogetherReborn/*Tests.exe
 
       # Upload artifact
 
@@ -103,3 +107,9 @@ jobs:
         with:
           name: Skyrim Together Build (${{ env.STR_VERSION }})
           path: str-build/
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: Debug Symbols (${{ env.STR_VERSION }})
+          path: str-pdb/
