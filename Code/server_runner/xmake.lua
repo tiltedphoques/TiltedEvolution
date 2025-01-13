@@ -12,6 +12,7 @@ local function build_runner()
 
     set_kind("binary")
     set_group("Server")
+    set_symbols("debug", "hidden")
     add_includedirs(
         ".",
         "../",
