@@ -52,7 +52,12 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
 
         // Save for later
         if (res)
+        {
             pExtension->LatestAnimation = action;
+            
+            if(apAction->action->formID == 0x132AF)
+                pExtension->LatestWeapEquipAnimation = action;
+        }
 
         World::Get().GetRunner().Trigger(action);
 

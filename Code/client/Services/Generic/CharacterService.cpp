@@ -323,9 +323,15 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         spdlog::info("Received local actor, form id: {:X}", pActor->formID);
 
         m_world.emplace_or_replace<LocalComponent>(cEntity, acMessage.ServerId);
-        m_world.emplace_or_replace<LocalAnimationComponent>(cEntity);
+        auto& localAnimationComponent = m_world.emplace_or_replace<LocalAnimationComponent>(cEntity);
 
         pActor->GetExtension()->SetRemote(false);
+
+        if(pActor->GetExtension()->LatestWeapEquipAnimation.ActionId != 0)
+        {
+            localAnimationComponent.Append(pActor->GetExtension()->LatestWeapEquipAnimation);
+            pActor->GetExtension()->LatestWeapEquipAnimation = ActionEvent();
+        }
     }
     else
     {
