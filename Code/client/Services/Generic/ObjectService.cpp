@@ -67,9 +67,12 @@ bool ShouldSyncObject(const TESObjectREFR* apObject) noexcept
 
     switch (apObject->formID)
     {
-        // Don't sync the chest in the "Diplomatic Immunity" quest
-    case 0x39CF1: return false;
-    default: return true;
+    case 0x39CF1: // Don't sync the chest in the "Diplomatic Immunity" quest
+        return false;
+    case 0x3EF03: // ...as well as in the "No One Escapes Cidhna Mine" quest
+        return false;
+    default:
+        return true;
     }
 }
 
