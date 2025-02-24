@@ -54,7 +54,7 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
 {
-    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsLeader())
+    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsInParty())
         return BSTEventResult::kOk;
 
     spdlog::info("Quest start/stop event: {:X}", apEvent->formId);
@@ -86,7 +86,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
 
 BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const EventDispatcher<TESQuestStageEvent>*)
 {
-    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsLeader())
+    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsInParty())
         return BSTEventResult::kOk;
 
     spdlog::info("Quest stage event: {:X}, stage: {}", apEvent->formId, apEvent->stageId);
