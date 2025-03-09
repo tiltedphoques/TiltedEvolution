@@ -19,6 +19,8 @@ jobs:
         arch: [x64]
         mode: [release]
 
+    if: ${{ github.repository_owner == 'tiltedphoques' || github.event_name != 'schedule' }} # Disable cron runs in forks
+
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -47,7 +49,7 @@ jobs:
       - name: Setup xmake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: 2.9.5
+          xmake-version: 2.9.8
           actions-cache-folder: '.xmake-cache' # This doesn't cache dependencies, only xmake itself
           actions-cache-key: ${{ matrix.os }}
 
