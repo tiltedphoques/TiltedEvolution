@@ -19,6 +19,8 @@ jobs:
         arch: [x64]
         mode: [release]
 
+    if: ${{ github.repository_owner == 'tiltedphoques' || github.event_name != 'schedule' }} # Disable cron runs in forks
+
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -32,6 +34,11 @@ jobs:
           git submodule sync --recursive
           git submodule update --init --force --recursive --depth=1
 
+      - name: Checkout master on tag push
+        if: github.ref_type == 'tag'
+        # Checkout only if the tag was pushed to master
+        run: (git rev-parse HEAD) -eq (git rev-parse origin/master) -and (git checkout master)
+
       - name: Cache xmake dependencies
         uses: actions/cache@v4
         with:
@@ -42,7 +49,7 @@ jobs:
       - name: Setup xmake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: 2.9.5
+          xmake-version: 2.9.8
           actions-cache-folder: '.xmake-cache' # This doesn't cache dependencies, only xmake itself
           actions-cache-key: ${{ matrix.os }}
 
@@ -85,8 +92,12 @@ jobs:
           cp -r Code/skyrim_ui/dist/UI str-build/SkyrimTogetherReborn
           cp -r GameFiles/Skyrim/* str-build/
 
-      - name: Remove unnecessary build files
-        run: rm str-build/SkyrimTogetherReborn/*.pdb, str-build/SkyrimTogetherReborn/*.lib
+      - name: Remove unnecessary build files, keep .pdb
+        run: |
+          mkdir str-pdb
+          mv str-build/SkyrimTogetherReborn/SkyrimTogether.pdb, str-build/SkyrimTogetherReborn/SkyrimTogetherServer.pdb str-pdb
+          rm str-build/SkyrimTogetherReborn/*.pdb, str-build/SkyrimTogetherReborn/*.lib, str-build/SkyrimTogetherReborn/*.exp
+          rm str-build/SkyrimTogetherReborn/*Tests.exe
 
       # Upload artifact
 
@@ -98,3 +109,9 @@ jobs:
         with:
           name: Skyrim Together Build (${{ env.STR_VERSION }})
           path: str-build/
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: Debug Symbols (${{ env.STR_VERSION }})
+          path: str-pdb/
