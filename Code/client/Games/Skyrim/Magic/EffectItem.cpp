@@ -36,6 +36,12 @@ bool EffectItem::IsVampireLordEffect() const noexcept
 bool EffectItem::IsNightVisionEffect() const noexcept
 {
     BGSKeyword* pMagicNightEye = Cast<BGSKeyword>(TESForm::GetById(0xad7c6));
-    return pEffectSetting->keywordForm.Contains(pMagicNightEye);
+    bool truth = pEffectSetting->keywordForm.count > 0;
+    if (truth)
+         truth = pEffectSetting->keywordForm.Contains(pMagicNightEye);
+    else
+        spdlog::debug(__FUNCTION__ ": correcting BGSKeywordForm::Contains() bug for zero-keyword {:x}, {}",
+                     pEffectSetting->formID, pEffectSetting->fullName.value.AsAscii());
+    return truth;
 }
 

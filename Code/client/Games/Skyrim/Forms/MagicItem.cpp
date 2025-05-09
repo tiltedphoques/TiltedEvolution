@@ -3,19 +3,36 @@
 bool MagicItem::IsWardSpell() const noexcept
 {
     BGSKeyword* pMagicWard = Cast<BGSKeyword>(TESForm::GetById(0x1ea69));
-    return keyword.Contains(pMagicWard);
+    bool truth = keyword.count > 0;
+    if (!truth)
+        spdlog::debug(__FUNCTION__ ": correcting BGSKeywordForm::Contains() bug for zero-keyword {:x}, {}", this->formID, this->fullName.value.AsAscii());
+    else
+        truth=keyword.Contains(pMagicWard);
+    return truth;
 }
 
 bool MagicItem::IsInvisibilitySpell() const noexcept
 {
     BGSKeyword* pMagicInvisibility = Cast<BGSKeyword>(TESForm::GetById(0x1ea6f));
-    return keyword.Contains(pMagicInvisibility);
+    bool truth = keyword.count > 0;
+    if (truth)
+        truth = keyword.Contains(pMagicInvisibility);
+    else
+        spdlog::debug(__FUNCTION__ ": correcting BGSKeywordForm::Contains() bug for zero-keyword {:x}, {}", this->formID,
+                     this->fullName.value.AsAscii());
+    return truth;
 }
 
 bool MagicItem::IsHealingSpell() const noexcept
 {
     BGSKeyword* pMagicRestoreHealth = Cast<BGSKeyword>(TESForm::GetById(0x1ceb0));
-    return keyword.Contains(pMagicRestoreHealth);
+    bool truth = keyword.count > 0;
+    if (truth)
+        truth = keyword.Contains(pMagicRestoreHealth);
+    else
+        spdlog::debug(__FUNCTION__ ": correcting BGSKeywordForm::Contains() bug for zero-keyword {:x}, {}", this->formID,
+                     this->fullName.value.AsAscii());
+    return truth;
 }
 
 bool MagicItem::IsBuffSpell() const noexcept
