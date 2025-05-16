@@ -1038,12 +1038,12 @@ void TP_MAKE_THISCALL(HookRotateZ, TESObjectREFR, float aAngle)
 
 void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
 {
-    const auto* pLock = apThis->GetLock();
-    uint8_t lockLevel = pLock->lockLevel;
-
-    World::Get().GetRunner().Trigger(LockChangeEvent(apThis->formID, pLock->flags, lockLevel));
-
     TiltedPhoques::ThisCall(RealLockChange, apThis);
+    const auto* pLock = apThis->GetLock();
+    if(pLock)
+        World::Get().GetRunner().Trigger(LockChangeEvent(apThis->formID, pLock->IsLocked(), pLock->lockLevel));
+    else
+        World::Get().GetRunner().Trigger(LockChangeEvent(apThis->formID, false, 0));
 }
 
 static TiltedPhoques::Initializer s_objectReferencesHooks(
