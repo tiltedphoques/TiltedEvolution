@@ -683,12 +683,8 @@ void Actor::SetActorInventory(const Inventory& acInventory) noexcept
     // Placing this UnEquipAll() here seems to trigger a Skyrim bug/race.
 
     Inventory currentInventory = GetActorInventory();
-    bool isQuestNpc = false;
 
-    if (!this->GetExtension()->IsPlayer())
-        isQuestNpc = currentInventory.ContainsQuestItems();
-
-    if (isQuestNpc)
+    if (!this->GetExtension()->IsPlayer() && currentInventory.ContainsQuestItems())
         SetInventoryRetainingQuestItems(currentInventory, acInventory);
     else
         SetInventory(acInventory);
