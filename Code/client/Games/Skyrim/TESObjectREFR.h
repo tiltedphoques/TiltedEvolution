@@ -179,7 +179,7 @@ struct TESObjectREFR : TESForm
     uint32_t GetAnimationVariableInt(BSFixedString* apVariableName) noexcept;
 
     void RemoveAllItems() noexcept;
-    Vector<uint32_t> RemoveNoQuestItems(Inventory& aCurrentInventory) noexcept;
+    Vector<uint32_t> RemoveNonQuestItems(Inventory& aCurrentInventory) noexcept;
     void Delete() const noexcept;
     void Disable() const noexcept;
     void Enable() const noexcept;
@@ -208,7 +208,7 @@ struct TESObjectREFR : TESForm
     bool IsItemInInventory(uint32_t aFormID) const noexcept;
 
     void SetInventory(const Inventory& acContainer) noexcept;
-    void SetInitQuestInventory(Inventory& aCurrentInventory, const Inventory& acSourceInventory) noexcept;
+    void SetInventoryRetainingQuestItems(Inventory& aCurrentInventory, const Inventory& acSourceInventory) noexcept;
     void AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSettingInventory = false) noexcept;
     void UpdateItemList(TESForm* pUnkForm) noexcept;
 

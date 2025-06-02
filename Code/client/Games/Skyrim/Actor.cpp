@@ -686,19 +686,10 @@ void Actor::SetActorInventory(const Inventory& acInventory) noexcept
     bool isQuestNpc = false;
 
     if (!this->GetExtension()->IsPlayer())
-    {
-        for (const auto& entry : currentInventory.Entries)
-        {
-            if (entry.IsQuestItem)
-            {
-                isQuestNpc = true;
-                break;
-            }
-        }
-    }
+        isQuestNpc = currentInventory.ContainsQuestItems();
 
     if (isQuestNpc)
-        SetInitQuestInventory(currentInventory, acInventory);
+        SetInventoryRetainingQuestItems(currentInventory, acInventory);
     else
         SetInventory(acInventory);
 
