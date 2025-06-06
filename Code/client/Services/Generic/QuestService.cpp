@@ -168,12 +168,34 @@ bool QuestService::StopQuest(uint32_t aformId)
     return false;
 }
 
+
+static const std::unordered_set<uint32_t> nonSyncableQuestIds = {
+    0x2BA16,  // Werewolf transformation quest
+    0x20071D0,  // Vampire transformation quest
+    0x3AC44,  // Unknown internal quest
+    0xFE014801,  // Unknown internal quest
+    0xF2593   // Skill experience quest
+};
+
 bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
 {
-    // non story quests are "blocked" and not synced
-    auto& stages = apQuest->stages;
-    return apQuest->type == TESQuest::Type::None // internal event
-           || apQuest->type == TESQuest::Type::Miscellaneous || stages.Empty();
+    // Internal quest IDs: Werewolf transformation quest: 0x2BA16, Vampire transformation quest: 0x20071D0,
+    // Unknown internal quests causing excessive logging: 0x3AC44, 0xFE014801, 0xF2593
+
+    const auto& stages = apQuest->stages;
+
+    if (nonSyncableQuestIds.find(apQuest->formID) != nonSyncableQuestIds.end())
+    {
+        // For specific internal quests, check if they should be blocked from syncing based on their type or empty stages.
+        return apQuest->type == TESQuest::Type::None // Internal event
+               || apQuest->type == TESQuest::Type::Miscellaneous
+               || stages.Empty();
+    }
+    else
+    {
+        // For other quests, only block from syncing if they have no stages.
+        return stages.Empty();
+    }
 }
 
 void QuestService::DebugDumpQuests()
