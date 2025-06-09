@@ -63,9 +63,22 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
     {
         if (IsNonSyncableQuest(pQuest))
             return BSTEventResult::kOk;
-
+     
+        if (pQuest->type == TESQuest::Type::None || pQuest->type == TESQuest::Type::Miscellaneous)
+        {
+            // Perhaps redundant, but necessary. We need the logging and
+            // the lambda coming up is queued and runs later
+            GameId Id;
+            auto& modSys = m_world.GetModSystem();
+            if (modSys.GetServerModId(pQuest->formID, Id))
+                spdlog::info(__FUNCTION__ ": queuing type none/misc quest gameId {:X} questStage {} questStatus {} questType {} formId {:X} name {}",
+                             Id.LogFormat(),  pQuest->currentStage, pQuest->IsStopped() ? RequestQuestUpdate::Stopped : RequestQuestUpdate::Started,
+                             static_cast<std::underlying_type_t<TESQuest::Type>>(pQuest->type), 
+                             pQuest->formID, pQuest->fullName.value.AsAscii());
+        }
+        
         m_world.GetRunner().Queue(
-            [&, formId = pQuest->formID, stageId = pQuest->currentStage, stopped = pQuest->IsStopped()]()
+            [&, formId = pQuest->formID, stageId = pQuest->currentStage, stopped = pQuest->IsStopped(), type = pQuest->type]()
             {
                 GameId Id;
                 auto& modSys = m_world.GetModSystem();
@@ -75,6 +88,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
                     update.Id = Id;
                     update.Stage = stageId;
                     update.Status = stopped ? RequestQuestUpdate::Stopped : RequestQuestUpdate::Started;
+                    update.ClientQuestType = static_cast<std::underlying_type_t<TESQuest::Type>>(type); 
 
                     m_world.GetTransport().Send(update);
                 }
@@ -97,8 +111,22 @@ BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const Ev
         if (IsNonSyncableQuest(pQuest))
             return BSTEventResult::kOk;
 
+        if (pQuest->type == TESQuest::Type::None || pQuest->type == TESQuest::Type::Miscellaneous)
+        {
+            // Perhaps redundant, but necessary. We need the logging and
+            // the lambda coming up is queued and runs later
+            GameId Id;
+            auto& modSys = m_world.GetModSystem();
+            if (modSys.GetServerModId(pQuest->formID, Id))
+                spdlog::info(__FUNCTION__ ": queuing type none/misc quest gameId {:X} questStage {} questStatus {} questType {} formId {:X} name {}",
+                             Id.LogFormat(), pQuest->currentStage,
+                             RequestQuestUpdate::StageUpdate,
+                             static_cast<std::underlying_type_t<TESQuest::Type>>(pQuest->type),
+                             pQuest->formID, pQuest->fullName.value.AsAscii());
+        }
+
         m_world.GetRunner().Queue(
-            [&, formId = apEvent->formId, stageId = apEvent->stageId]()
+            [&, formId = apEvent->formId, stageId = apEvent->stageId, type = pQuest->type]()
             {
                 GameId Id;
                 auto& modSys = m_world.GetModSystem();
@@ -108,6 +136,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const Ev
                     update.Id = Id;
                     update.Stage = stageId;
                     update.Status = RequestQuestUpdate::StageUpdate;
+                    update.ClientQuestType = static_cast<std::underlying_type_t<TESQuest::Type>>(type);
 
                     m_world.GetTransport().Send(update);
                 }
@@ -127,6 +156,11 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
         spdlog::error("Failed to find quest, base id: {:X}, mod id: {:X}", aUpdate.Id.BaseId, aUpdate.Id.ModId);
         return;
     }
+
+    if (pQuest->type == TESQuest::Type::None || pQuest->type == TESQuest::Type::Miscellaneous)
+        spdlog::info(__FUNCTION__ ": receiving type none/misc quest update gameId {:X} questStage {} questStatus {} questType {} formId {:X} name {}",
+                     aUpdate.Id.LogFormat(), aUpdate.Stage, aUpdate.Status,
+                     aUpdate.ClientQuestType, formId, pQuest->fullName.value.AsAscii());
 
     bool bResult = false;
     switch (aUpdate.Status)
