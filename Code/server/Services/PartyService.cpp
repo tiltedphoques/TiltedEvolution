@@ -19,6 +19,7 @@
 #include <Messages/PartyKickRequest.h>
 #include <Messages/NotifyPlayerJoined.h>
 
+#include <Setting.h>
 namespace
 {
 Console::Setting bAutoPartyJoin{"Gameplay:bAutoPartyJoin", "Join parties automatically, as long as there is only one party in the server", true};
@@ -149,7 +150,7 @@ void PartyService::OnPartyChangeLeader(const PacketEvent<PartyChangeLeaderReques
 
     if (!pNewLeader)
     {
-        spdlog::error("[PartyService]: Player {} does not exist¨. Cannot change paty leader", message.PartyMemberPlayerId);
+        spdlog::error("[PartyService]: Player {} does not exist. Cannot change party leader", message.PartyMemberPlayerId);
         return;
     }
 
