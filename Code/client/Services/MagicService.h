@@ -101,8 +101,8 @@ private:
      * @brief The queued magic effects.
      * @see ApplyQueuedEffects
      */
-    Map<uint32_t, std::pair<int, AddTargetRequest>> m_queuedEffects;
-    Map<uint32_t, std::pair<int, NotifyAddTarget>> m_queuedRemoteEffects;
+    Map<uint32_t, AddTargetRequest> m_queuedEffects;
+    Map<uint32_t, NotifyAddTarget> m_queuedRemoteEffects;
 
     bool m_revealingOtherPlayers = false;
 
