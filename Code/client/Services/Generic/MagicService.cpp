@@ -314,7 +314,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     if (it == std::end(view))
     {
         spdlog::warn("Form id not found for magic add target, form id: {:X}", acEvent.TargetID);
-        m_queuedEffects[acEvent.TargetID] = request;
+        m_queuedEffects[acEvent.TargetID] = std::pair(0, request);
         return;
     }
 
@@ -322,7 +322,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     if (!serverIdRes.has_value())
     {
         spdlog::warn("Server id not found for magic add target, form id: {:X}", acEvent.TargetID);
-        m_queuedEffects[acEvent.TargetID] = request;
+        m_queuedEffects[acEvent.TargetID] = std::pair(0, request);
         return;
     }
 
@@ -333,7 +333,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     if (casterIt == std::end(view))
     {
         spdlog::warn("Form id not found for magic add target, form id: {:X}", acEvent.CasterID);
-        m_queuedEffects[acEvent.TargetID] = request;
+        m_queuedEffects[acEvent.TargetID] = std::pair(0, request);
         return;
     }
 
@@ -356,7 +356,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     if (!pActor)
     {
         spdlog::warn(__FUNCTION__ ": could not find actor server id {:X}", acMessage.TargetId);
-        m_queuedRemoteEffects[acMessage.TargetId] = acMessage;
+        m_queuedRemoteEffects[acMessage.TargetId] = std::pair(0, acMessage);
         return;
     }
 
@@ -496,10 +496,19 @@ void MagicService::ApplyQueuedEffects() noexcept
 
     Vector<uint32_t> markedForRemoval{};
 
-    for (auto [formId, request] : m_queuedEffects)
+    for (auto [targetId, attemptsRequestPair] : m_queuedEffects)
     {
+        // Target might never be found, it may be both created and destroyed while we are between polls.
+        // Why is Map().second so stubbornly const? Doesn't work even with iterator, and it should, so this hack.
+        if (++(m_queuedEffects[targetId].first) >= 5)
+        {
+            spdlog::warn(__FUNCTION__ ": cancelling queued magic effect after repeated failure to find targetId {:X}", targetId);
+            markedForRemoval.push_back(targetId);
+            continue;
+        }
+
         auto view = m_world.view<FormIdComponent>();
-        const auto it = std::find_if(std::begin(view), std::end(view), [id = formId, view](auto entity) { return view.get<FormIdComponent>(entity).Id == id; });
+        const auto it = std::find_if(std::begin(view), std::end(view), [id = targetId, view](auto entity) { return view.get<FormIdComponent>(entity).Id == id; });
 
         if (it == std::end(view))
             continue;
@@ -510,25 +519,35 @@ void MagicService::ApplyQueuedEffects() noexcept
         if (!serverIdRes.has_value())
             continue;
 
-        request.TargetId = serverIdRes.value();
+        attemptsRequestPair.second.TargetId = serverIdRes.value();
 
-        m_transport.Send(request);
+        m_transport.Send(attemptsRequestPair.second);
 
-        markedForRemoval.push_back(formId);
+        markedForRemoval.push_back(targetId);
     }
 
-    for (uint32_t formId : markedForRemoval)
-        m_queuedEffects.erase(formId);
+    for (uint32_t targetId : markedForRemoval)
+        m_queuedEffects.erase(targetId);
 
     markedForRemoval.clear();
 
-    for (const auto& [serverId, notify] : m_queuedRemoteEffects)
+    for (auto [serverId, attemptsRequestPair] : m_queuedRemoteEffects)
     {
+        if (++(m_queuedRemoteEffects[serverId].first) >= 5)
+        {
+            spdlog::warn(__FUNCTION__ ": cancelling queued magic effect after repeated failure to find Actor for serverId {:X}", serverId);
+            markedForRemoval.push_back(serverId);
+            continue;
+        }
+
         Actor* pActor = Utils::GetByServerId<Actor>(serverId);
         if (!pActor)
+        {
+            spdlog::warn(__FUNCTION__ ": could not find actor for server id {:X}", serverId);
             continue;
+        }
 
-        OnNotifyAddTarget(notify);
+        OnNotifyAddTarget(attemptsRequestPair.second);
 
         markedForRemoval.push_back(serverId);
     }
