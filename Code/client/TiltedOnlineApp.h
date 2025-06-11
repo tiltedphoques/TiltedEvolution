@@ -1,6 +1,6 @@
 #pragma once
 
-#include <BranchInfo.h>
+
 #include <d3d11.h>
 
 #include "CrashHandler.h"
