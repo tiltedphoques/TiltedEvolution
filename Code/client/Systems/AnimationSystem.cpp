@@ -28,6 +28,13 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
     const auto it = std::begin(actions);
     if (it != std::end(actions) && it->Tick <= aTick)
     {
+        // Check if animation graph is ready before attempting to play animations
+        if (!apActor->animationGraphHolder.IsReady())
+        {
+            // Animation graph not ready, keep the action in queue and try again later
+            return;
+        }
+
         const auto& first = *it;
 
         const auto actionId = first.ActionId;
