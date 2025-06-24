@@ -440,7 +440,10 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     spdlog::info("CharacterSpawnRequest, server id: {:X}, form id: {:X}", acMessage.ServerId, pActor->formID);
 
     if (pActor->IsDisabled())
-        pActor->Enable();
+    {
+        spdlog::warn("Disabled actor is being re-enabled: {:X}", pActor->formID);
+        pActor->EnableImpl();
+    }
 
     pActor->GetExtension()->SetRemote(true);
 
