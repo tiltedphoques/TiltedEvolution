@@ -753,7 +753,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
         auto& ownerComponent = characterView.get<OwnerComponent>(entity);
 
         // If we have nothing new to send skip this
-        if (characterComponent.IsDirtyFactions())
+        if (!characterComponent.IsDirtyFactions())
             continue;
 
         for (auto pPlayer : m_world.GetPlayerManager())
