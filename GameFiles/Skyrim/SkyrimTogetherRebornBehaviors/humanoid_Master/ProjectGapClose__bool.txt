@@ -1,0 +1,4 @@
+bPGC_IsInCombat
+bPGC_SprintAttack_Complete
+bPGC_IsSprint_attacking
+bPGC_Update

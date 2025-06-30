@@ -1,0 +1,17 @@
+bXingInquistor
+bUseAltGrip
+bUseAltMag
+bInquisitor
+bInqRecovery
+bWarLockOpen
+bCanWarLock
+bUseWLMag
+bDualCastPerk
+bWarlockDual
+bInWLWard
+bInWLAimCon
+bInWLTelek
+bInWLLevi
+bInWLSelfCon
+bCDWarLock
+bInWLShd
