@@ -44,6 +44,27 @@ template <class T> struct GameArray
 
     Iterator end() { return Iterator(&data[length]); }
 
+    struct ConstIterator
+    {
+        ConstIterator(const T* apEntry)
+            : m_pEntry(apEntry)
+        {}
+        ConstIterator operator++()
+        {
+            ++m_pEntry;
+            return *this;
+        }
+        bool operator!=(const ConstIterator& acRhs) const { return m_pEntry != acRhs.m_pEntry; }
+        const T& operator*() const { return *m_pEntry; }
+        
+    private:
+        const T* m_pEntry;
+    };
+
+    ConstIterator begin() const { return ConstIterator(&data[0]); }
+
+    ConstIterator end() const { return ConstIterator(&data[length]); }
+
     inline bool Empty() const noexcept { return length == 0; }
 };
 
