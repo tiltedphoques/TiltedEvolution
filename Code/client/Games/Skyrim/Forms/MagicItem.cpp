@@ -20,11 +20,23 @@ bool MagicItem::IsWardSpell() const noexcept
 
 bool MagicItem::IsInvisibilitySpell() const noexcept
 {
+    // PR #796 and the "SkyPatcher Keyword Framework" mod both hoist
+    // some keywords from the effects up to the spell, because some 
+    // spell records are buggy; this fixes things like syncing more ward spells.
+    // But note sometimes that breaks other things. This is the first one found,
+    // Bow of Shadows Invisibility (formID 0xFE003805), which doesn't have an 
+    // Invisibility keyword. Apparently deliberately, it isn't really a spell but a 
+    // condition (readying the bow) that triggers an effect. If it is treated as a 
+    // spell, syncing doesn't work. There may be others, if so, there will be a 
+    // more general fix.
+    if (formID == 0xfe003805)
+        return false;
+
     BGSKeyword* pMagicInvisibility = Cast<BGSKeyword>(TESForm::GetById(0x1ea6f));
 
     if (keyword.count > 0 && keyword.Contains(pMagicInvisibility))
         return true;
-    
+
     for (const EffectItem* pEffect : listOfEffects)
     {
         if (pEffect->pEffectSetting && pEffect->pEffectSetting->keywordForm.count > 0 &&
