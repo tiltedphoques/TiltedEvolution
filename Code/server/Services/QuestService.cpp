@@ -45,7 +45,8 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     {
         if (!bEnableMiscQuestSync)
             return;
-        spdlog::info(__FUNCTION__ ": syncing type none/misc quest to party, gameId {:X} questStage {} questStatus {} questType {}", notify.Id.LogFormat(), notify.Stage, notify.Status, notify.ClientQuestType);
+        spdlog::info("{}: syncing type none/misc quest to party, gameId {:X} questStage {} questStatus {} questType {}",
+                     __FUNCTION__, notify.Id.LogFormat(), notify.Stage, notify.Status, notify.ClientQuestType);
     }
 
     if (message.Status == RequestQuestUpdate::Started || message.Status == RequestQuestUpdate::StageUpdate)
