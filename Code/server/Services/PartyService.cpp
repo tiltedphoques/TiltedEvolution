@@ -1,23 +1,23 @@
-#include <Services/PartyService.h>
 #include <Components.h>
 #include <GameServer.h>
+#include <Services/PartyService.h>
 
 #include <Events/PlayerJoinEvent.h>
 #include <Events/PlayerLeaveEvent.h>
 #include <Events/UpdateEvent.h>
 
-#include <Messages/NotifyPlayerList.h>
 #include <Messages/NotifyPartyInfo.h>
 #include <Messages/NotifyPartyInvite.h>
-#include <Messages/PartyInviteRequest.h>
-#include <Messages/PartyAcceptInviteRequest.h>
-#include <Messages/PartyLeaveRequest.h>
 #include <Messages/NotifyPartyJoined.h>
 #include <Messages/NotifyPartyLeft.h>
-#include <Messages/PartyCreateRequest.h>
-#include <Messages/PartyChangeLeaderRequest.h>
-#include <Messages/PartyKickRequest.h>
 #include <Messages/NotifyPlayerJoined.h>
+#include <Messages/NotifyPlayerList.h>
+#include <Messages/PartyAcceptInviteRequest.h>
+#include <Messages/PartyChangeLeaderRequest.h>
+#include <Messages/PartyCreateRequest.h>
+#include <Messages/PartyInviteRequest.h>
+#include <Messages/PartyKickRequest.h>
+#include <Messages/PartyLeaveRequest.h>
 
 namespace
 {
@@ -149,7 +149,7 @@ void PartyService::OnPartyChangeLeader(const PacketEvent<PartyChangeLeaderReques
 
     if (!pNewLeader)
     {
-        spdlog::error("[PartyService]: Player {} does not exist¨. Cannot change paty leader", message.PartyMemberPlayerId);
+        spdlog::error("[PartyService]: Player {} does not existï¿½. Cannot change paty leader", message.PartyMemberPlayerId);
         return;
     }
 
