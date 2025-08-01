@@ -129,7 +129,7 @@ struct MagicService
 
         bool Expired() const noexcept { return std::chrono::steady_clock::now() > m_expiration; }
         static spdlog::level::level_enum m_logLevel; // Initializer at file end, non-const so debugger can change.
-        template <typename... Args> static inline void spdlog(spdlog::format_string_t<Args...> aFmt, Args&&... args)
+        template <typename... Args> static inline void Spdlog(spdlog::format_string_t<Args...> aFmt, Args&&... args)
         {
             spdlog::log(m_logLevel, aFmt, std::forward<Args>(args)...);
         }
@@ -143,12 +143,12 @@ struct MagicService
     {
       public:
         MagicAddTargetEventQueue() = default;
-        MagicAddTargetEventQueue(const AddTargetEvent& aTarget) : m_TargetEvent(aTarget) {};
+        MagicAddTargetEventQueue(const AddTargetEvent& aTarget) : m_AddTargetEvent(aTarget) {};
         ~MagicAddTargetEventQueue() noexcept = default;
-        const AddTargetEvent& Target() const noexcept           { return m_TargetEvent; }
+        const AddTargetEvent& Target() const noexcept           { return m_AddTargetEvent; }
 
       private:
-        AddTargetEvent m_TargetEvent;
+        AddTargetEvent m_AddTargetEvent;
     };
 
     class MagicNotifyAddTargetQueue : public MagicQueue

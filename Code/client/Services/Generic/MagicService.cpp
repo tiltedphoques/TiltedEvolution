@@ -315,7 +315,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
     if (it == std::end(view))
     {
-        MagicQueue::spdlog("{}: server entity for target formID not found, formID: {:X}, queueing", __FUNCTION__, acEvent.TargetID);
+        MagicQueue::Spdlog("{}: server entity for target formID not found, formID: {:X}, queueing", __FUNCTION__, acEvent.TargetID);
         m_queuedEffects.push(MagicAddTargetEventQueue(acEvent));
         return;
     }
@@ -323,7 +323,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
     std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
     if (!serverIdRes.has_value())
     {
-        MagicQueue::spdlog("{}: server ID for target formID not found, formID: {:X}, queueing", __FUNCTION__, acEvent.TargetID);
+        MagicQueue::Spdlog("{}: server ID for target formID not found, formID: {:X}, queueing", __FUNCTION__, acEvent.TargetID);
         m_queuedEffects.push(MagicAddTargetEventQueue(acEvent));
         return;
     }
@@ -336,7 +336,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
 
         if (casterIt == std::end(view))
         {
-            MagicQueue::spdlog("{}: server entity for caster formID not found, formID: {:X}, queueing", __FUNCTION__, acEvent.CasterID);
+            MagicQueue::Spdlog("{}: server entity for caster formID not found, formID: {:X}, queueing", __FUNCTION__, acEvent.CasterID);
             m_queuedEffects.push(MagicAddTargetEventQueue(acEvent));  
             return;
         }
@@ -344,7 +344,7 @@ void MagicService::OnAddTargetEvent(const AddTargetEvent& acEvent) noexcept
         serverIdRes = Utils::GetServerId(*casterIt);
         if (!serverIdRes.has_value())
         {
-            MagicQueue::spdlog("{}: server ID for caster formID not found, formID: {:X}, queueing", __FUNCTION__, acEvent.CasterID);
+            MagicQueue::Spdlog("{}: server ID for caster formID not found, formID: {:X}, queueing", __FUNCTION__, acEvent.CasterID);
             m_queuedEffects.push(MagicAddTargetEventQueue(acEvent));
             return;
         }
@@ -394,7 +394,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.TargetId);
     if (!pActor)
     {
-        MagicQueue::spdlog("{}: could not find targeted Actor for serverID {:X}, queueing", __FUNCTION__, acMessage.TargetId);
+        MagicQueue::Spdlog("{}: could not find targeted Actor for serverID {:X}, queueing", __FUNCTION__, acMessage.TargetId);
         m_queuedRemoteEffects.push(acMessage);
         return;
     }
@@ -403,7 +403,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     acMessage.CasterId && (pCaster = Utils::GetByServerId<Actor>(acMessage.CasterId));
     if (acMessage.CasterId && !pCaster)
     {
-        MagicQueue::spdlog("{}: could not find caster Actor for serverID {:X}, queueing", __FUNCTION__, acMessage.CasterId);
+        MagicQueue::Spdlog("{}: could not find caster Actor for serverID {:X}, queueing", __FUNCTION__, acMessage.CasterId);
         m_queuedRemoteEffects.push(acMessage);
         return;
     }
@@ -522,7 +522,7 @@ void MagicService::ApplyQueuedEffects() noexcept
 
         // Check for and skip expired (timed out) events, that Actor isn't likely to exist anymore.
         if (m_queuedEffects.front().Expired())
-            MagicQueue::spdlog("{}: removing expired AddTargetEvent from queue: caster {}({:X}), spell {:X}, effect {:X}, target {}({:X})",
+            MagicQueue::Spdlog("{}: removing expired AddTargetEvent from queue: caster {}({:X}), spell {:X}, effect {:X}, target {}({:X})",
                                __FUNCTION__, pCasterName, target.CasterID, target.SpellID, target.EffectID, pTargetName, target.TargetID);
         else
         {
@@ -568,7 +568,7 @@ void MagicService::ApplyQueuedEffects() noexcept
             }
 
             // At this point, it will succeed or fail, but not queue another one ad infinitum
-            MagicQueue::spdlog("{}: retrying AddTargetEvent for caster {}({:X}), spell {:X}, effect {:X}, target {}({:X})", 
+            MagicQueue::Spdlog("{}: retrying AddTargetEvent for caster {}({:X}), spell {:X}, effect {:X}, target {}({:X})", 
                                __FUNCTION__, pCasterName, target.CasterID, target.SpellID, target.EffectID, pTargetName, target.TargetID);
             OnAddTargetEvent(target);        
         }
@@ -585,7 +585,7 @@ void MagicService::ApplyQueuedEffects() noexcept
         auto pCasterName = !pCaster ? "" : pCaster->baseForm->GetName(); 
 
         if (m_queuedRemoteEffects.front().Expired())
-            MagicQueue::spdlog("{}: removing expired NotifyAddTarget event from queue: caster {}({:X}), spell {:X}, effect {:X}, target {}({:X})",
+            MagicQueue::Spdlog("{}: removing expired NotifyAddTarget event from queue: caster {}({:X}), spell {:X}, effect {:X}, target {}({:X})",
                                __FUNCTION__, pCasterName, target.CasterId, target.SpellId, target.EffectId, pTargetName, target.TargetId);
         else
         {
@@ -603,7 +603,7 @@ void MagicService::ApplyQueuedEffects() noexcept
                 break; 
             }
 
-            MagicQueue::spdlog("{}: retrying NotifyAddTarget for caster {}({:X}), spell {:X}, effect {:X}, target {}({:X})",
+            MagicQueue::Spdlog("{}: retrying NotifyAddTarget for caster {}({:X}), spell {:X}, effect {:X}, target {}({:X})",
                                __FUNCTION__, pCasterName, target.CasterId, target.SpellId, target.EffectId, pTargetName,target.TargetId);
             OnNotifyAddTarget(target);
         }
