@@ -685,11 +685,17 @@ void CharacterService::OnBeastFormChange(const BeastFormChangeEvent& acEvent) co
 
     Actor* pActor = Utils::GetByServerId<Actor>(serverId);
     if (!pActor)
+    {
+        spdlog::warn(__FUNCTION__ ": could not find actor for server id {:X}", serverId);
         return;
+    }
 
     TESNPC* pNpc = Cast<TESNPC>(pActor->baseForm);
     if (!pNpc)
+    {
+        spdlog::warn(__FUNCTION__ ": could not find actor baseform for server id {:X}", serverId);
         return;
+    }
 
     pNpc->Serialize(&request.AppearanceBuffer);
     request.ChangeFlags = pNpc->GetChangeFlags();
