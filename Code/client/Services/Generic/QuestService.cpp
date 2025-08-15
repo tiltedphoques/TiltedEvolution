@@ -71,10 +71,12 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
             GameId Id;
             auto& modSys = m_world.GetModSystem();
             if (modSys.GetServerModId(pQuest->formID, Id))
+            {
                 spdlog::info(__FUNCTION__ ": queuing type none/misc quest gameId {:X} questStage {} questStatus {} questType {} formId {:X} name {}",
                              Id.LogFormat(),  pQuest->currentStage, pQuest->IsStopped() ? RequestQuestUpdate::Stopped : RequestQuestUpdate::Started,
                              static_cast<std::underlying_type_t<TESQuest::Type>>(pQuest->type), 
                              pQuest->formID, pQuest->fullName.value.AsAscii());
+            }
         }
         
         m_world.GetRunner().Queue(
@@ -118,11 +120,13 @@ BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const Ev
             GameId Id;
             auto& modSys = m_world.GetModSystem();
             if (modSys.GetServerModId(pQuest->formID, Id))
+            {
                 spdlog::info(__FUNCTION__ ": queuing type none/misc quest gameId {:X} questStage {} questStatus {} questType {} formId {:X} name {}",
                              Id.LogFormat(), pQuest->currentStage,
                              RequestQuestUpdate::StageUpdate,
                              static_cast<std::underlying_type_t<TESQuest::Type>>(pQuest->type),
                              pQuest->formID, pQuest->fullName.value.AsAscii());
+            }
         }
 
         m_world.GetRunner().Queue(
@@ -158,9 +162,11 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
     }
 
     if (pQuest->type == TESQuest::Type::None || pQuest->type == TESQuest::Type::Miscellaneous)
+    {
         spdlog::info(__FUNCTION__ ": receiving type none/misc quest update gameId {:X} questStage {} questStatus {} questType {} formId {:X} name {}",
                      aUpdate.Id.LogFormat(), aUpdate.Stage, aUpdate.Status,
                      aUpdate.ClientQuestType, formId, pQuest->fullName.value.AsAscii());
+    }
 
     bool bResult = false;
     switch (aUpdate.Status)
@@ -203,7 +209,7 @@ bool QuestService::StopQuest(uint32_t aformId)
 }
 
 
-static const std::unordered_set<uint32_t> nonSyncableQuestIds = {
+static const TiltedPhoques::Vector<uint32_t> nonSyncableQuestIds = {
     0x2BA16,  // Werewolf transformation quest
     0x20071D0,  // Vampire transformation quest
     0x3AC44,  // Unknown internal quest
@@ -218,7 +224,7 @@ bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
 
     const auto& stages = apQuest->stages;
 
-    if (nonSyncableQuestIds.find(apQuest->formID) != nonSyncableQuestIds.end())
+    if (std::find(nonSyncableQuestIds.begin(), nonSyncableQuestIds.end(), apQuest->formID) != nonSyncableQuestIds.end())
     {
         // For specific internal quests, check if they should be blocked from syncing based on their type or empty stages.
         return apQuest->type == TESQuest::Type::None // Internal event
