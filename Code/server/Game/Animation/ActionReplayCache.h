@@ -27,5 +27,5 @@ private:
     void TruncateReplayChain() noexcept;
     static bool IsStartAction(const ActionEvent& acAction) noexcept;
     static bool IsExitAction(const ActionEvent& acAction) noexcept;
-    static bool ShouldSkipIntermediateAction(const ActionEvent& acAction) noexcept;
+    static bool ShouldIgnoreAction(const ActionEvent& acAction) noexcept;
 };

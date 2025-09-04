@@ -801,7 +801,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
     const auto characterView = m_world.view<CharacterComponent, CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>();
 
     TiltedPhoques::Map<Player*, ServerReferencesMoveRequest> messages;
-    
+
     for (auto pPlayer : m_world.GetPlayerManager())
     {
         auto& message = messages[pPlayer];

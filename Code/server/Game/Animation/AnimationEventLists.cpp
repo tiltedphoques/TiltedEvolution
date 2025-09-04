@@ -4,9 +4,7 @@
 /* The lists here might not contain all relevant animation events, so extend as necessary
 */
 
-
-// TODO: Is the "skip intermediate" set really needed?
-
+#if 0
 const Set<String> AnimationEventLists::g_actionsStart = {
     {"moveStart"},
     {"bowAttackStart"},
@@ -127,11 +125,14 @@ const Set<String> AnimationEventLists::g_actionsStart = {
     {"IdleWoodPickUpEnter"},
     {"IdleWoodPickUpEnterInstant"},
 };
+#endif
 
 const Set<String> AnimationEventLists::g_actionsExit = {
     {"IdleForceDefaultState"}, // Belongs here too
     {"BleedOutEarlyExit"},
     {"HorseExit"},
+    {"IdleStop"},
+    {"IdleStopInstant"},
     {"IdleChairExitToStand"},
     {"IdleChairFrontExit"},
     {"idleChairLeftExit"},
@@ -160,29 +161,10 @@ const Set<String> AnimationEventLists::g_actionsExit = {
     {"IdleChairCHILDRightExit"},
 };
 
-// Commented out because of potential conflicts with other animation mods and I'm not sure if this is needed
-//const Set<String> AnimationEventLists::g_actionsSkipIntermediate = {
-//    {"attackStart"},
-//    {"moveStop"},
-//    {"WeapEquip"},
-//    {"SprintStart"},
-//    {"SprintStop"},
-//    //{"CyclicFreeze"},
-//    //{"CyclicCrossBlend"},
-//    {"IdleStop"},
-//    {"IdleStopInstant"},
-//    {"IdleHDLeft"},
-//    {"IdleHDLeftAngry"},
-//    {"IdleHDRight"},
-//    {"IdleHDRightAngry"},
-//    {"MotionDrivenIdle"},
-//    {"torchUnequip"},
-//};
-
 const Set<String> AnimationEventLists::g_actionsIgnore = {
     // Animation events with empty names don't carry anything useful besides 
-    // various animvars updates and state changes to the running animations.
-    // Ignored because there is too many of them on each frame
+    // various animvars updates and state changes to the currently running animations.
+    // Ignored because they spam too much
     {""},
     {"TurnLeft"},
     {"TurnRight"},
@@ -219,12 +201,12 @@ const Set<String> AnimationEventLists::g_actionsIgnore = {
     {"JumpLandSoft"},
     {"JumpSoftEnd"},
     {"JumpStandingStart"},
+    // Weapon drawing is handled separately in CharacterService
+    {"WeapEquip"},
+    {"WeapSoloEquip"},
+    {"WeapForceEquip"},
     // There's an elusive bug on the client where it would spam "Unequip"
     // and "combatStanceStop" a lot after changing cells
     {"Unequip"},
     {"combatStanceStop"},
-    // Weapon drawing is handled separately
-    {"WeapEquip"},
-    {"WeapSoloEquip"},
-    {"WeapForceEquip"},
 };

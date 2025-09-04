@@ -103,7 +103,9 @@ void DebugService::DrawComponentDebugView()
 
             if (auto* pComponent = m_world.try_get<ReplayedActionsDebugComponent>(entity))
             {
-                if (ImGui::CollapsingHeader("List of Replayed Actions"))
+                const size_t total = pComponent->ActionsReceivedForReplay.size();
+                const auto header = fmt::format("List of Replayed Actions ({})", total);
+                if (ImGui::CollapsingHeader(header.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
                 {
                     if (ImGui::IsItemHovered())
                     {
