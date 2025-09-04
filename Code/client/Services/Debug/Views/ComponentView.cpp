@@ -101,6 +101,25 @@ void DebugService::DrawComponentDebugView()
             ImGui::SetNextWindowPos(screenPos);
             ImGui::Begin("Component debug");
 
+            if (auto* pComponent = m_world.try_get<ReplayedActionsDebugComponent>(entity))
+            {
+                if (ImGui::CollapsingHeader("List of Replayed Actions"))
+                {
+                    if (ImGui::IsItemHovered())
+                    {
+                        ImGui::SetTooltip("Actions that were run (replayed) after this remote Actor received spawn data from the server");
+                    }
+                    String replayedActionsText;
+                    for (size_t i = 0; i < pComponent->ActionsReceivedForReplay.size(); ++i)
+                    {
+                        if (i > 0)
+                            replayedActionsText += ", ";
+                        replayedActionsText += pComponent->ActionsReceivedForReplay[i].EventName;
+                    }
+                    ImGui::TextWrapped((replayedActionsText + '.').c_str());
+                }
+            }
+
             if (auto serverIdRes = Utils::GetServerId(entity))
             {
                 ImGui::InputScalar("Server ID", ImGuiDataType_U32, &(*serverIdRes), 0, 0, "%" PRIx32, ImGuiInputTextFlags_CharsHexadecimal);

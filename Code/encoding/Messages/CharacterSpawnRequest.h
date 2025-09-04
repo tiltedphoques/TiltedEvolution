@@ -41,7 +41,7 @@ struct CharacterSpawnRequest final : ServerMessage
     String AppearanceBuffer{};
     Inventory InventoryContent{};
     Factions FactionsContent{};
-    ActionEvent LatestAction{};
+    Vector<ActionEvent> ActionsToReplay;
     Tints FaceTints{};
     ActorValues InitialActorValues{};
     uint32_t PlayerId{};

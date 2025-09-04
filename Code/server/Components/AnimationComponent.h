@@ -4,11 +4,12 @@
 #error Include Components.h instead
 #endif
 
+#include <Game/Animation/ActionReplayCache.h>
 #include <Structs/ActionEvent.h>
 
 struct AnimationComponent
 {
     Vector<ActionEvent> Actions;
     ActionEvent CurrentAction;
-    ActionEvent LastSerializedAction;
+    ActionReplayCache ActionsToReplayOnSpawn;
 };

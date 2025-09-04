@@ -10,6 +10,15 @@ void AssignCharacterResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     WorldSpaceId.Serialize(aWriter);
     AllActorValues.Serialize(aWriter);
     CurrentInventory.Serialize(aWriter);
+
+    // TODO: Maybe just the EventNames is enough? Why send whole ActionEvents?
+    aWriter.WriteBits(ActionsToReplay.size() & 0xFF, 8);
+    ActionEvent latestSerializedAction{};
+    for (int i = 0; i < ActionsToReplay.size(); ++i)
+    {
+        ActionsToReplay[i].GenerateDifferential(latestSerializedAction, aWriter);
+        latestSerializedAction = ActionsToReplay[i];
+    }
     Serialization::WriteBool(aWriter, Owner);
     Serialization::WriteBool(aWriter, IsDead);
     Serialization::WriteBool(aWriter, IsWeaponDrawn);
@@ -25,6 +34,13 @@ void AssignCharacterResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     WorldSpaceId.Deserialize(aReader);
     AllActorValues.Deserialize(aReader);
     CurrentInventory.Deserialize(aReader);
+
+    uint64_t actionsToReplayCount = 0;
+    aReader.ReadBits(actionsToReplayCount, 8);
+    ActionsToReplay.resize(actionsToReplayCount);
+    for (ActionEvent& replayAction : ActionsToReplay)
+        replayAction.ApplyDifferential(aReader);
+
     Owner = Serialization::ReadBool(aReader);
     IsDead = Serialization::ReadBool(aReader);
     IsWeaponDrawn = Serialization::ReadBool(aReader);

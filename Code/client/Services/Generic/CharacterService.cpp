@@ -13,6 +13,7 @@
 #include <Forms/TESNPC.h>
 #include <Forms/TESQuest.h>
 
+#include <BranchInfo.h>
 #include <Components.h>
 
 #include <Systems/InterpolationSystem.h>
@@ -297,6 +298,9 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     const auto cEntity = *itor;
 
     m_world.remove<WaitingForAssignmentComponent>(cEntity);
+#if (!IS_MASTER)
+    m_world.remove<ReplayedActionsDebugComponent>(cEntity);
+#endif
 
     const auto formIdComponent = m_world.try_get<FormIdComponent>(cEntity);
     if (!formIdComponent)
@@ -343,6 +347,11 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
         InterpolationSystem::Setup(m_world, cEntity);
         AnimationSystem::Setup(m_world, cEntity);
+        AnimationSystem::AddActions(m_world.get<RemoteAnimationComponent>(cEntity), acMessage.ActionsToReplay);
+
+#if (!IS_MASTER)
+        m_world.emplace_or_replace<ReplayedActionsDebugComponent>(cEntity, acMessage.ActionsToReplay);
+#endif
 
         pActor->SetActorValues(acMessage.AllActorValues);
         pActor->SetActorInventory(acMessage.CurrentInventory);
@@ -481,7 +490,13 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     m_world.emplace_or_replace<WaitingFor3D>(*entity, acMessage);
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(*entity);
-    remoteAnimationComponent.TimePoints.push_back(acMessage.LatestAction);
+
+    AnimationSystem::AddActions(remoteAnimationComponent, acMessage.ActionsToReplay);
+
+#if (!IS_MASTER)
+    // Debugging purposes
+    m_world.emplace_or_replace<ReplayedActionsDebugComponent>(*entity, acMessage.ActionsToReplay);
+#endif
 }
 
 void CharacterService::OnRemoteSpawnDataReceived(const NotifySpawnData& acMessage) noexcept
@@ -1520,9 +1535,14 @@ void CharacterService::RunRemoteUpdates() noexcept
         if (!pActor || !pActor->GetNiNode())
             continue;
 
+        // By now, the actor has materialized in the world and is ready for further setup
+
         pActor->SetActorInventory(waitingFor3D.SpawnRequest.InventoryContent);
         pActor->SetFactions(waitingFor3D.SpawnRequest.FactionsContent);
-        pActor->LoadAnimationVariables(waitingFor3D.SpawnRequest.LatestAction.Variables);
+
+        if (!waitingFor3D.SpawnRequest.ActionsToReplay.empty())
+            pActor->LoadAnimationVariables(waitingFor3D.SpawnRequest.ActionsToReplay[0].Variables);
+
         m_weaponDrawUpdates[pActor->formID] = {waitingFor3D.SpawnRequest.IsWeaponDrawn};
 
         if (pActor->IsDead() != waitingFor3D.SpawnRequest.IsDead)

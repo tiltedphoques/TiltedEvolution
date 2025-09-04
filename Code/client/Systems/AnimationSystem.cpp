@@ -73,6 +73,11 @@ void AnimationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept
         aWorld.remove<RemoteAnimationComponent>(aEntity);
 }
 
+void AnimationSystem::AddActions(RemoteAnimationComponent& aAnimationComponent, const Vector<ActionEvent>& acActions) noexcept
+{
+    aAnimationComponent.TimePoints.insert(aAnimationComponent.TimePoints.end(), acActions.begin(), acActions.end());
+}
+
 void AnimationSystem::AddAction(RemoteAnimationComponent& aAnimationComponent, const std::string& acActionDiff) noexcept
 {
     auto itor = std::begin(aAnimationComponent.TimePoints);

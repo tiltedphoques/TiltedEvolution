@@ -17,6 +17,11 @@
 TP_THIS_FUNCTION(TPerformAction, uint8_t, ActorMediator, TESActionData* apAction);
 static TPerformAction* RealPerformAction;
 
+namespace ActionFormId
+{
+static constexpr uint32_t kActionDraw = 0x132AF;
+}
+
 // TODO: make scoped override
 thread_local bool g_forceAnimation = false;
 
@@ -55,7 +60,7 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
         {
             pExtension->LatestAnimation = action;
             
-            if(apAction->action->formID == 0x132AF)
+            if (apAction->action->formID == ActionFormId::kActionDraw)
                 pExtension->LatestWeapEquipAnimation = action;
         }
 
@@ -117,7 +122,7 @@ bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
     uint8_t result = 0;
 
     auto pActor = static_cast<Actor*>(apAction->actor);
-    if (!pActor || pActor->animationGraphHolder.IsReady())
+    if (pActor && pActor->animationGraphHolder.IsReady())
     {
         result = TiltedPhoques::ThisCall(PerformComplexAction, this, apAction);
 

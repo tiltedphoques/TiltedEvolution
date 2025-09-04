@@ -2,6 +2,7 @@
 
 #include "Message.h"
 #include <Structs/Mods.h>
+#include <Structs/ActionEvent.h>
 #include <Structs/ActorValues.h>
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/GameId.h>
@@ -24,6 +25,7 @@ struct AssignCharacterResponse final : ServerMessage
         return GetOpcode() == achRhs.GetOpcode() && Cookie == achRhs.Cookie && ServerId == achRhs.ServerId && PlayerId == achRhs.PlayerId && Position == achRhs.Position && CellId == achRhs.CellId && WorldSpaceId == achRhs.WorldSpaceId && AllActorValues == achRhs.AllActorValues &&
                CurrentInventory == achRhs.CurrentInventory && Owner == achRhs.Owner && IsDead == achRhs.IsDead && IsWeaponDrawn == achRhs.IsWeaponDrawn;
     }
+    // ^ I think we don't need to == ActionsToReplay
 
     uint32_t Cookie{};
     uint32_t ServerId{};
@@ -33,6 +35,7 @@ struct AssignCharacterResponse final : ServerMessage
     GameId WorldSpaceId{};
     ActorValues AllActorValues{};
     Inventory CurrentInventory{};
+    Vector<ActionEvent> ActionsToReplay;
     bool Owner{false};
     bool IsDead{};
     bool IsWeaponDrawn{};
