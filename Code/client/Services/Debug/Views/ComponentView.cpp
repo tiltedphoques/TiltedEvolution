@@ -37,14 +37,14 @@ static __declspec(noinline) bool DrawInWorldSpace(TESObjectREFR* apRefr, ImVec2&
 {
     // Attach at the head ish.
     auto pos = apRefr->position;
-    pos.z -= apRefr->GetHeight();
+    pos.z += apRefr->GetHeight();
 
     NiPoint3 screenPoint{};
     HUDMenuUtils::WorldPtToScreenPt3(pos, screenPoint);
     // Calculate window collision bounds.
     auto* pViewport = BSGraphics::GetMainWindow();
 
-    // translate to screen
+    // Translate to screen
     const ImVec2 screenPos = ImVec2{
         (pViewport->uiWindowWidth * screenPoint.x),
         (pViewport->uiWindowHeight * (1.0f - screenPoint.y)),

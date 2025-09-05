@@ -9,6 +9,7 @@
 #include <Games/Misc/Lock.h>
 #include <Games/Magic/MagicSystem.h>
 #include <Magic/MagicCaster.h>
+#include <Magic/MagicTarget.h>
 #include <Structs/Inventory.h>
 #include <ExtraData/ExtraDataList.h>
 
@@ -62,8 +63,6 @@ struct TESObjectREFR : TESForm
     static void GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept;
     static ExtraDataList* GetExtraDataFromItem(const Inventory::Entry& arEntry) noexcept;
 
-    virtual void sub_39();
-    virtual void sub_3A();
     virtual void sub_3B();
     virtual void sub_3C();
     virtual void sub_3D();
@@ -98,7 +97,7 @@ struct TESObjectREFR : TESForm
     virtual void AddObjectToContainer(TESBoundObject* apObj, ExtraDataList* aspExtra, int32_t aicount, TESObjectREFR* apOldContainer);
     virtual void sub_5B();
     virtual MagicCaster* GetMagicCaster(MagicSystem::CastingSource aeSource);
-    virtual void sub_5D();
+    virtual MagicTarget* GetMagicTarget();
     virtual void sub_5E();
     virtual void sub_5F();
     virtual void sub_60();
@@ -120,9 +119,9 @@ struct TESObjectREFR : TESForm
     virtual NiNode* GetNiNode();
     virtual void sub_71();
     virtual void sub_72();
-    virtual void sub_73();
     virtual NiPoint3 GetBoundMin();
     virtual NiPoint3 GetBoundMax();
+    virtual void sub_75();
     virtual void sub_76();
     virtual void sub_77();
     virtual void sub_78();
