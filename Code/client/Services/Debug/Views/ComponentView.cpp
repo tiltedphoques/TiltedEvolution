@@ -103,23 +103,7 @@ void DebugService::DrawComponentDebugView()
 
             if (auto* pComponent = m_world.try_get<ReplayedActionsDebugComponent>(entity))
             {
-                const size_t total = pComponent->ActionsReceivedForReplay.size();
-                const auto header = fmt::format("List of Replayed Actions ({})", total);
-                if (ImGui::CollapsingHeader(header.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
-                {
-                    if (ImGui::IsItemHovered())
-                    {
-                        ImGui::SetTooltip("Actions that were run (replayed) after this remote Actor received spawn data from the server");
-                    }
-                    String replayedActionsText;
-                    for (size_t i = 0; i < pComponent->ActionsReceivedForReplay.size(); ++i)
-                    {
-                        if (i > 0)
-                            replayedActionsText += ", ";
-                        replayedActionsText += pComponent->ActionsReceivedForReplay[i].EventName;
-                    }
-                    ImGui::TextWrapped((replayedActionsText + '.').c_str());
-                }
+                DisplayListOfReplayedActions(*pComponent, m_world.try_get<RemoteAnimationComponent>(entity));
             }
 
             if (auto serverIdRes = Utils::GetServerId(entity))
@@ -182,6 +166,39 @@ void DebugService::DrawComponentDebugView()
             }
 
             ImGui::End();
+        }
+    }
+}
+
+void DebugService::DisplayListOfReplayedActions(const ReplayedActionsDebugComponent& aDebugComponent,
+                                                RemoteAnimationComponent* apAnimationComponent) const noexcept
+{
+    const size_t total = aDebugComponent.ActionsReceivedForReplay.size();
+    const auto header = fmt::format("List of Replayed Actions ({})", total);
+
+    if (ImGui::CollapsingHeader(header.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        String replayedActionsText;
+        for (size_t i = 0; i < total; ++i)
+        {
+            if (i > 0)
+                replayedActionsText += ", ";
+            replayedActionsText += aDebugComponent.ActionsReceivedForReplay[i].EventName;
+        }
+        total == 0 ? replayedActionsText = "<None>" : replayedActionsText += '.';
+        ImGui::TextWrapped(replayedActionsText.c_str());
+
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Actions that were run (replayed) after this remote Actor received\n"
+                              "spawn data from the server. Right click to replay again.");
+        }
+        if (ImGui::IsItemClicked(1) && apAnimationComponent && total > 0)
+        {
+            for (const auto& action : aDebugComponent.ActionsReceivedForReplay)
+            {
+                apAnimationComponent->TimePoints.push_back(action);
+            }
         }
     }
 }
