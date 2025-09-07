@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <Structs/ActionEvent.h>
 
 //
@@ -16,16 +17,13 @@ struct ActionReplayCache
     Vector<ActionEvent> Actions;
 
     /**
-     * @brief Appends actions and truncates the replay chain immediately after. 
-     * Either: 1) action chain (aka replay cache) will start with an Exit action,
-     * 2) chain will start with a valid Start action,
-     * 3) chain will remain unchanged.
+     * @brief Appends actions and refines (optimizes) the replay chain immediately after
      */
     void AppendAll(const Vector<ActionEvent>& acActions) noexcept;
 
 private:
-    void TruncateReplayChain() noexcept;
-    static bool IsStartAction(const ActionEvent& acAction) noexcept;
+    void RefineReplayChain() noexcept;
     static bool IsExitAction(const ActionEvent& acAction) noexcept;
     static bool ShouldIgnoreAction(const ActionEvent& acAction) noexcept;
+    static std::optional<String> FindInstantCounterpartForAction(const String& acAction) noexcept;
 };
