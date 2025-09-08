@@ -1,26 +1,10 @@
-#include "AnimationEventLists.h"
+﻿#include "AnimationEventLists.h"
 
 /*
 /* The lists in this file might not contain all relevant animation events, so extend as necessary
 */
 
-const Map<String, String> AnimationEventLists::g_actionsStart = {
-    // General actions
-    {"moveStart", ""},
-    {"bowAttackStart", ""},
-    {"blockStart", ""},
-    {"staggerStart", ""},
-    {"staggerIdleStart", ""},
-    {"shoutStart", ""},
-    {"SwimStart", ""},
-    {"SprintStart", ""},
-    {"SneakStart", ""},
-    {"torchEquip", ""},
-    {"blockHitStart", ""},
-    {"bleedOutStart", ""},
-    {"blockAnticipateStart", ""},
-    {"HorseEnterSwim", ""}, // TODO: HorseEnterInstant?
-    {"MountedSwimStart", ""},
+const Map<String, String> AnimationEventLists::g_actionsIdle = {
     // Idle animations that have Instant counterparts
     {"HorseEnter", "HorseEnterInstant"}, // TODO: Check manually
     {"IdleAlchemyEnter", "IdleAlchemyEnterInstant"},
@@ -142,6 +126,25 @@ const Set<String> AnimationEventLists::g_actionsExit = {
     {"IdleChairCHILDRightExit"},
 };
 
+// unused
+const Set<String> AnimationEventLists::g_actionsCommon = {
+    {"moveStart", ""},
+    {"bowAttackStart", ""},
+    {"blockStart", ""},
+    {"staggerStart", ""},
+    {"staggerIdleStart", ""},
+    {"shoutStart", ""},
+    {"SwimStart", ""},
+    {"SprintStart", ""},
+    {"SneakStart", ""},
+    {"torchEquip", ""},
+    {"blockHitStart", ""},
+    {"bleedOutStart", ""},
+    {"blockAnticipateStart", ""},
+    {"HorseEnterSwim", ""}, // TODO: HorseEnterInstant?
+    {"MountedSwimStart", ""},
+};
+
 const Set<String> AnimationEventLists::g_actionsIgnore = {
     // Animation events with empty names don't carry anything useful besides 
     // various animvars updates and state changes to the currently running animations.
@@ -182,6 +185,9 @@ const Set<String> AnimationEventLists::g_actionsIgnore = {
     {"JumpLandSoft"},
     {"JumpSoftEnd"},
     {"JumpStandingStart"},
+    // Useless idles, sometimes spam
+    {"IdleChairVar1"},
+    {"idleChairVar2"},
     // Weapon drawing is handled separately in CharacterService
     {"WeapEquip"},
     {"WeapSoloEquip"},

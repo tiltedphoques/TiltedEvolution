@@ -68,8 +68,8 @@ bool ActionReplayCache::ShouldIgnoreAction(const ActionEvent& acAction) noexcept
 
 std::optional<String> ActionReplayCache::FindInstantCounterpartForAction(const String& acAction) noexcept
 {
-    auto it = AnimationEventLists::g_actionsStart.find(acAction);
-    if (it != AnimationEventLists::g_actionsStart.end())
+    auto it = AnimationEventLists::g_actionsIdle.find(acAction);
+    if (it != AnimationEventLists::g_actionsIdle.end())
     {
         auto& [_, instantAnimationName] = *it;
         if (!instantAnimationName.empty())
