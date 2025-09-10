@@ -1,4 +1,4 @@
-#include "Forms/TESObjectCELL.h"
+﻿#include "Forms/TESObjectCELL.h"
 #include "Forms/TESWorldSpace.h"
 #include "Services/PapyrusService.h"
 #include <Services/PartyService.h>
@@ -347,7 +347,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
         InterpolationSystem::Setup(m_world, cEntity);
         AnimationSystem::Setup(m_world, cEntity);
-        AnimationSystem::AddActions(m_world.get<RemoteAnimationComponent>(cEntity), acMessage.ActionsToReplay);
+        AnimationSystem::AddActionsForReplay(m_world.get<RemoteAnimationComponent>(cEntity), acMessage.ActionsToReplay);
 
 #if (!IS_MASTER)
         m_world.emplace_or_replace<ReplayedActionsDebugComponent>(cEntity, acMessage.ActionsToReplay);
@@ -491,7 +491,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     auto& remoteAnimationComponent = m_world.get<RemoteAnimationComponent>(*entity);
 
-    AnimationSystem::AddActions(remoteAnimationComponent, acMessage.ActionsToReplay);
+    AnimationSystem::AddActionsForReplay(remoteAnimationComponent, acMessage.ActionsToReplay);
 
 #if (!IS_MASTER)
     // Debugging purposes

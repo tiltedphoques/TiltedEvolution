@@ -1,4 +1,4 @@
-#include <TiltedOnlinePCH.h>
+﻿#include <TiltedOnlinePCH.h>
 
 #include <Systems/AnimationSystem.h>
 
@@ -19,6 +19,8 @@
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
 
+static const String kIdleForceDefaultState = "IdleForceDefaultState";
+
 extern thread_local const char* g_animErrorCode;
 
 void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationComponent& aAnimationComponent, const uint64_t aTick) noexcept
@@ -36,6 +38,17 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
         }
 
         const auto& first = *it;
+
+        // TODO: Find a better solution. Delays are bad
+        if (first.EventName == kIdleForceDefaultState && aAnimationComponent.ReplayCount > 0)
+        {
+            for (ActionEvent& act : aAnimationComponent.TimePoints)
+            {
+                if (act.EventName == kIdleForceDefaultState)
+                    continue;
+                act.Tick = aTick + 500; // Shift by 500ms
+            }
+        }
 
         const auto actionId = first.ActionId;
         const auto targetId = first.TargetId;
@@ -58,6 +71,11 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
 
         const auto result = ActorMediator::Get()->ForceAction(&actionData);
 
+        if (aAnimationComponent.ReplayCount > 0)
+        {
+            aAnimationComponent.ReplayCount--;
+        }
+
         actions.pop_front();
     }
 }
@@ -73,9 +91,10 @@ void AnimationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept
         aWorld.remove<RemoteAnimationComponent>(aEntity);
 }
 
-void AnimationSystem::AddActions(RemoteAnimationComponent& aAnimationComponent, const Vector<ActionEvent>& acActions) noexcept
+void AnimationSystem::AddActionsForReplay(RemoteAnimationComponent& aAnimationComponent, const Vector<ActionEvent>& acActions) noexcept
 {
     aAnimationComponent.TimePoints.insert(aAnimationComponent.TimePoints.end(), acActions.begin(), acActions.end());
+    aAnimationComponent.ReplayCount = acActions.size();
 }
 
 void AnimationSystem::AddAction(RemoteAnimationComponent& aAnimationComponent, const std::string& acActionDiff) noexcept

@@ -1,9 +1,10 @@
-
+﻿
 #include <Components.h>
 #include <World.h>
 #include <imgui.h>
 #include <inttypes.h>
-#include <services/DebugService.h>
+#include <Services/DebugService.h>
+#include <Systems/AnimationSystem.h>
 
 #include <BSGraphics/BSGraphicsRenderer.h>
 #include <Camera/PlayerCamera.h>
@@ -161,8 +162,6 @@ void DebugService::DrawComponentDebugView()
                 {
                     ImGui::Text("EventName: %s\nTargetEventName: %s\nState1: %u\nState2: %u", pComponent->LastRanAction.EventName.c_str(), pComponent->LastRanAction.TargetEventName.c_str(), pComponent->LastRanAction.State1, pComponent->LastRanAction.State2);
                 }
-                // ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 30.f, screenPos,
-                //                                         ImColor::ImColor(255.f, 0.f, 0.f), buf);
             }
 
             ImGui::End();
@@ -195,10 +194,7 @@ void DebugService::DisplayListOfReplayedActions(const ReplayedActionsDebugCompon
         }
         if (ImGui::IsItemClicked(1) && apAnimationComponent && total > 0)
         {
-            for (const auto& action : aDebugComponent.ActionsReceivedForReplay)
-            {
-                apAnimationComponent->TimePoints.push_back(action);
-            }
+            AnimationSystem::AddActionsForReplay(*apAnimationComponent, aDebugComponent.ActionsReceivedForReplay);
         }
     }
 }
