@@ -10,12 +10,7 @@ void AssignCharacterResponse::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     WorldSpaceId.Serialize(aWriter);
     AllActorValues.Serialize(aWriter);
     CurrentInventory.Serialize(aWriter);
-
-    aWriter.WriteBits(ActionsToReplay.size() & 0xFF, 8);
-    for (size_t i = 0; i < ActionsToReplay.size(); ++i)
-    {
-        ActionsToReplay[i].GenerateDifferential(ActionEvent{}, aWriter);
-    }
+    ActionsToReplay.Serialize(aWriter);
     Serialization::WriteBool(aWriter, Owner);
     Serialization::WriteBool(aWriter, IsDead);
     Serialization::WriteBool(aWriter, IsWeaponDrawn);
@@ -31,14 +26,7 @@ void AssignCharacterResponse::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     WorldSpaceId.Deserialize(aReader);
     AllActorValues.Deserialize(aReader);
     CurrentInventory.Deserialize(aReader);
-
-    uint64_t actionsToReplayCount = 0;
-    aReader.ReadBits(actionsToReplayCount, 8);
-    ActionsToReplay.resize(actionsToReplayCount);
-    for (ActionEvent& replayAction : ActionsToReplay)
-    {
-        replayAction.ApplyDifferential(aReader);
-    }
+    ActionsToReplay.Deserialize(aReader);
     Owner = Serialization::ReadBool(aReader);
     IsDead = Serialization::ReadBool(aReader);
     IsWeaponDrawn = Serialization::ReadBool(aReader);

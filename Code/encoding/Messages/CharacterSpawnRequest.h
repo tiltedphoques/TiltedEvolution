@@ -3,6 +3,7 @@
 #include "Message.h"
 #include <Structs/GameId.h>
 #include <Structs/ActionEvent.h>
+#include <Structs/ActionReplayChain.h>
 #include <Structs/Tints.h>
 #include <Structs/Inventory.h>
 #include <Structs/Factions.h>
@@ -27,7 +28,7 @@ struct CharacterSpawnRequest final : ServerMessage
     bool operator==(const CharacterSpawnRequest& acRhs) const noexcept
     {
         return ServerId == acRhs.ServerId && FormId == acRhs.FormId && BaseId == acRhs.BaseId && CellId == acRhs.CellId && Position == acRhs.Position && Rotation == acRhs.Rotation && ChangeFlags == acRhs.ChangeFlags && AppearanceBuffer == acRhs.AppearanceBuffer &&
-               InventoryContent == acRhs.InventoryContent && FactionsContent == acRhs.FactionsContent && FaceTints == acRhs.FaceTints && PlayerId == acRhs.PlayerId && IsDead == acRhs.IsDead && IsPlayer == acRhs.IsPlayer && IsWeaponDrawn == acRhs.IsWeaponDrawn &&
+               InventoryContent == acRhs.InventoryContent && FactionsContent == acRhs.FactionsContent && ActionsToReplay == ActionsToReplay && FaceTints == acRhs.FaceTints && PlayerId == acRhs.PlayerId && IsDead == acRhs.IsDead && IsPlayer == acRhs.IsPlayer && IsWeaponDrawn == acRhs.IsWeaponDrawn &&
                IsPlayerSummon == acRhs.IsPlayerSummon && GetOpcode() == acRhs.GetOpcode();
     }
 
@@ -41,7 +42,7 @@ struct CharacterSpawnRequest final : ServerMessage
     String AppearanceBuffer{};
     Inventory InventoryContent{};
     Factions FactionsContent{};
-    Vector<ActionEvent> ActionsToReplay;
+    ActionReplayChain ActionsToReplay;
     Tints FaceTints{};
     ActorValues InitialActorValues{};
     uint32_t PlayerId{};

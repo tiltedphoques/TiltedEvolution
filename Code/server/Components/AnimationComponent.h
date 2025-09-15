@@ -11,5 +11,5 @@ struct AnimationComponent
 {
     Vector<ActionEvent> Actions;
     ActionEvent CurrentAction;
-    ActionReplayCache ActionsToReplayOnSpawn;
+    ActionReplayCache ActionsReplayCache;
 };

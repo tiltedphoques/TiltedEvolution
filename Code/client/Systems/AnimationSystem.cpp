@@ -1,4 +1,4 @@
-﻿#include <TiltedOnlinePCH.h>
+#include <TiltedOnlinePCH.h>
 
 #include <Systems/AnimationSystem.h>
 
@@ -37,18 +37,13 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
             return;
         }
 
-        const auto& first = *it;
-
-        // TODO: Find a better solution. Delays are bad
-        if (first.EventName == kIdleForceDefaultState && aAnimationComponent.ReplayCount > 0)
+        if (aAnimationComponent.ReplayCount > 0 && aAnimationComponent.ResetAnimationGraphForReplay)
         {
-            for (ActionEvent& act : aAnimationComponent.TimePoints)
-            {
-                if (act.EventName == kIdleForceDefaultState)
-                    continue;
-                act.Tick = aTick + 500; // Shift by 500ms
-            }
+            apActor->animationGraphHolder.RevertAnimationGraphManager();
+            aAnimationComponent.ResetAnimationGraphForReplay = false;
         }
+
+        const auto& first = *it;
 
         const auto actionId = first.ActionId;
         const auto targetId = first.TargetId;
@@ -72,9 +67,7 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
         const auto result = ActorMediator::Get()->ForceAction(&actionData);
 
         if (aAnimationComponent.ReplayCount > 0)
-        {
             aAnimationComponent.ReplayCount--;
-        }
 
         actions.pop_front();
     }
@@ -91,10 +84,13 @@ void AnimationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept
         aWorld.remove<RemoteAnimationComponent>(aEntity);
 }
 
-void AnimationSystem::AddActionsForReplay(RemoteAnimationComponent& aAnimationComponent, const Vector<ActionEvent>& acActions) noexcept
+void AnimationSystem::AddActionsForReplay(RemoteAnimationComponent& aAnimationComponent,
+                                          const ActionReplayChain& acReplay) noexcept
 {
-    aAnimationComponent.TimePoints.insert(aAnimationComponent.TimePoints.end(), acActions.begin(), acActions.end());
-    aAnimationComponent.ReplayCount = acActions.size();
+    aAnimationComponent.TimePoints.insert(aAnimationComponent.TimePoints.end(), acReplay.Actions.begin(),
+                                          acReplay.Actions.end());
+    aAnimationComponent.ReplayCount = acReplay.Actions.size();
+    aAnimationComponent.ResetAnimationGraphForReplay = acReplay.ResetAnimationGraph;
 }
 
 void AnimationSystem::AddAction(RemoteAnimationComponent& aAnimationComponent, const std::string& acActionDiff) noexcept

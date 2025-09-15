@@ -4,7 +4,7 @@
 #error Include Components.h instead
 #endif
 
-#include <Structs/ActionEvent.h>
+#include <Structs/ActionReplayChain.h>
 
 /**
  * @brief Used for in-game animation debugging purposes. Makes it easier
@@ -14,5 +14,5 @@
  */
 struct ReplayedActionsDebugComponent
 {
-    Vector<ActionEvent> ActionsReceivedForReplay;
+    ActionReplayChain ActionsReceivedForReplay;
 };

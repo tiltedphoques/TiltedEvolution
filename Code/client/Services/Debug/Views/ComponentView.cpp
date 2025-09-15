@@ -1,4 +1,3 @@
-﻿
 #include <Components.h>
 #include <World.h>
 #include <imgui.h>
@@ -172,17 +171,20 @@ void DebugService::DrawComponentDebugView()
 void DebugService::DisplayListOfReplayedActions(const ReplayedActionsDebugComponent& aDebugComponent,
                                                 RemoteAnimationComponent* apAnimationComponent) const noexcept
 {
-    const size_t total = aDebugComponent.ActionsReceivedForReplay.size();
+    const size_t total = aDebugComponent.ActionsReceivedForReplay.Actions.size();
     const auto header = fmt::format("List of Replayed Actions ({})", total);
 
     if (ImGui::CollapsingHeader(header.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
     {
         String replayedActionsText;
+        if (aDebugComponent.ActionsReceivedForReplay.ResetAnimationGraph)
+            replayedActionsText += "<Animation graph reset>, ";
+
         for (size_t i = 0; i < total; ++i)
         {
             if (i > 0)
                 replayedActionsText += ", ";
-            replayedActionsText += aDebugComponent.ActionsReceivedForReplay[i].EventName;
+            replayedActionsText += aDebugComponent.ActionsReceivedForReplay.Actions[i].EventName;
         }
         total == 0 ? replayedActionsText = "<None>" : replayedActionsText += '.';
         ImGui::TextWrapped(replayedActionsText.c_str());

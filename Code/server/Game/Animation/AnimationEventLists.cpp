@@ -1,4 +1,4 @@
-﻿#include "AnimationEventLists.h"
+#include "AnimationEventLists.h"
 
 /*
 /* The lists in this file might not contain all relevant animation events, so extend as necessary
@@ -197,5 +197,3 @@ const Set<String> AnimationEventLists::g_actionsIgnore = {
     {"Unequip"},
     {"combatStanceStop"},
 };
-
-const String AnimationEventLists::kIdleForceDefaultState = "IdleForceDefaultState";

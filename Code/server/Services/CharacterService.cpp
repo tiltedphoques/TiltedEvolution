@@ -121,7 +121,7 @@ void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, Charact
     }
 
     const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
-    apSpawnRequest->ActionsToReplay = animationComponent.ActionsToReplayOnSpawn.Actions;
+    apSpawnRequest->ActionsToReplay = animationComponent.ActionsReplayCache.GetReplayChain();
 }
 
 void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
@@ -241,7 +241,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
             if (auto* pAnimationComponent = m_world.try_get<AnimationComponent>(*itor))
             {
-                response.ActionsToReplay = pAnimationComponent->ActionsToReplayOnSpawn.Actions;
+                response.ActionsToReplay = pAnimationComponent->ActionsReplayCache.GetReplayChain();
             }
 
             acMessage.pPlayer->Send(response);
@@ -435,7 +435,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
             animationComponent.Actions.push_back(animationComponent.CurrentAction);
         }
 
-        animationComponent.ActionsToReplayOnSpawn.AppendAll(update.ActionEvents);
+        animationComponent.ActionsReplayCache.AppendAll(update.ActionEvents);
 
         movementComponent.Sent = false;
     }

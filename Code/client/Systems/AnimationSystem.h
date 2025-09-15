@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <Components.h>
 
@@ -37,9 +37,9 @@ struct AnimationSystem
     /**
      * @brief Adds multiple actions to be replayed.
      * @param aAnimationComponent The animation component attached to the actor in question.
-     * @param acActions The list of actions.
+     * @param acReplay The replay data.
      */
-    static void AddActionsForReplay(RemoteAnimationComponent& aAnimationComponent, const Vector<ActionEvent>& acActions) noexcept;
+    static void AddActionsForReplay(RemoteAnimationComponent& aAnimationComponent, const ActionReplayChain& acReplay) noexcept;
     /**
      * @brief Adds an action (animation) to be processed.
      * @param aAnimationComponent The animation component attached to the actor in question.

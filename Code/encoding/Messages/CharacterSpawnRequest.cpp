@@ -12,13 +12,7 @@ void CharacterSpawnRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
     Serialization::WriteString(aWriter, AppearanceBuffer);
     InventoryContent.Serialize(aWriter);
     FactionsContent.Serialize(aWriter);
-
-    // TODO: Maybe just the EventNames is enough? Why send whole ActionEvents?
-    aWriter.WriteBits(ActionsToReplay.size() & 0xFF, 8);
-    for (size_t i = 0; i < ActionsToReplay.size(); ++i)
-    {
-        ActionsToReplay[i].GenerateDifferential(ActionEvent{}, aWriter);
-    }
+    ActionsToReplay.Serialize(aWriter);
     FaceTints.Serialize(aWriter);
     InitialActorValues.Serialize(aWriter);
     Serialization::WriteVarInt(aWriter, PlayerId);
@@ -50,13 +44,9 @@ void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
     FactionsContent = {};
     FactionsContent.Deserialize(aReader);
 
-    uint64_t actionsToReplayCount = 0;
-    aReader.ReadBits(actionsToReplayCount, 8);
-    ActionsToReplay.resize(actionsToReplayCount);
-    for (ActionEvent& replayAction : ActionsToReplay)
-    {
-        replayAction.ApplyDifferential(aReader);
-    }
+    ActionsToReplay = {};
+    ActionsToReplay.Deserialize(aReader);
+
     FaceTints.Deserialize(aReader);
     InitialActorValues.Deserialize(aReader);
     PlayerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;

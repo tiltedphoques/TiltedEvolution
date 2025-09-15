@@ -2,49 +2,53 @@
 #include <Game/Animation/AnimationEventLists.h>
 #include <optional>
 
+ActionReplayChain ActionReplayCache::GetReplayChain() const noexcept
+{
+    ActionReplayChain chain;
+    chain.Actions = m_actions;
+    chain.ResetAnimationGraph = m_isGraphResetNeeded;
+    return chain;
+}
+
 void ActionReplayCache::AppendAll(const Vector<ActionEvent>& acActions) noexcept
 {
     for (const auto& action : acActions)
     {
         if (ShouldIgnoreAction(action))
             continue;
-        Actions.push_back(action);
+        m_actions.push_back(action);
     }
 
-    if (Actions.size() > kReplayCacheMaxSize)
-        Actions.erase(Actions.begin(), Actions.end() - kReplayCacheMaxSize);
+    if (m_actions.size() > kReplayCacheMaxSize)
+        m_actions.erase(m_actions.begin(), m_actions.end() - kReplayCacheMaxSize);
 
-    RefineReplayChain();
+    RefineReplayCache();
 }
 
-void ActionReplayCache::RefineReplayChain() noexcept
+void ActionReplayCache::RefineReplayCache() noexcept
 {
-    int dropAllUpToIndex = -1;
+	m_isGraphResetNeeded = false;
 
-    for (int i = Actions.size() - 1; i >= 0; --i)
+    int32_t dropAllUpToIndex = -1;
+
+    for (int32_t i = m_actions.size() - 1; i >= 0; --i)
     {
-        ActionEvent& action = Actions[i];
+        ActionEvent& action = m_actions[i];
 
         // Instant counterparts of actions are highly preferred for animation replay
         if (std::optional<String> instantAnimName = FindInstantCounterpartForAction(action.EventName))
         {
             action.EventName = *instantAnimName;
             action.TargetEventName = *instantAnimName;
-            // TODO: Reverse engineer PerformComplexAction (client code), because I'm not sure if these can be set to 0
             action.ActionId = 0;
             action.IdleId = 0;
         }
 
         if (IsExitAction(action))
         {
-            // Replace this exit action with "IdleForceDefaultState" because
-            // the actor has likely returned to its root/normal state
-            action.EventName = AnimationEventLists::kIdleForceDefaultState;
-            action.TargetEventName = AnimationEventLists::kIdleForceDefaultState;
-            action.ActionId = 0;
-            action.IdleId = 0;
-
-            // Break when an "exit" action is found and start the chain from there
+            // An "exit" action is found, meaning the actor has likely returned to its root/normal 
+			// state, and the clients should reset the animation state before running replay
+			m_isGraphResetNeeded = true;
             dropAllUpToIndex = i;
             break;
         }
@@ -53,7 +57,7 @@ void ActionReplayCache::RefineReplayChain() noexcept
     if (dropAllUpToIndex == -1)
         return;
 
-    Actions.erase(Actions.begin(), Actions.begin() + dropAllUpToIndex);
+    m_actions.erase(m_actions.begin(), m_actions.begin() + dropAllUpToIndex);
 }
 
 bool ActionReplayCache::IsExitAction(const ActionEvent& acAction) noexcept

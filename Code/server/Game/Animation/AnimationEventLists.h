@@ -11,6 +11,4 @@ extern const Set<String> g_actionsExit;
 extern const Set<String> g_actionsCommon;
 
 extern const Set<String> g_actionsIgnore;
-
-extern const String kIdleForceDefaultState;
 } // namespace

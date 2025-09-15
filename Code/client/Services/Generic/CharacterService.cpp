@@ -1,4 +1,4 @@
-﻿#include "Forms/TESObjectCELL.h"
+#include "Forms/TESObjectCELL.h"
 #include "Forms/TESWorldSpace.h"
 #include "Services/PapyrusService.h"
 #include <Services/PartyService.h>
@@ -494,7 +494,6 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
     AnimationSystem::AddActionsForReplay(remoteAnimationComponent, acMessage.ActionsToReplay);
 
 #if (!IS_MASTER)
-    // Debugging purposes
     m_world.emplace_or_replace<ReplayedActionsDebugComponent>(*entity, acMessage.ActionsToReplay);
 #endif
 }
@@ -1540,8 +1539,10 @@ void CharacterService::RunRemoteUpdates() noexcept
         pActor->SetActorInventory(waitingFor3D.SpawnRequest.InventoryContent);
         pActor->SetFactions(waitingFor3D.SpawnRequest.FactionsContent);
 
-        if (!waitingFor3D.SpawnRequest.ActionsToReplay.empty())
-            pActor->LoadAnimationVariables(waitingFor3D.SpawnRequest.ActionsToReplay[0].Variables);
+        if (!waitingFor3D.SpawnRequest.ActionsToReplay.Actions.empty())
+        {
+            pActor->LoadAnimationVariables(waitingFor3D.SpawnRequest.ActionsToReplay.Actions[0].Variables);
+        }
 
         m_weaponDrawUpdates[pActor->formID] = {waitingFor3D.SpawnRequest.IsWeaponDrawn};
 
