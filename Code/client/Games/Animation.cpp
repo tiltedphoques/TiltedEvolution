@@ -1,4 +1,4 @@
-#include <TiltedOnlinePCH.h>
+﻿#include <TiltedOnlinePCH.h>
 
 #include <Games/References.h>
 
@@ -122,7 +122,7 @@ bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
     uint8_t result = 0;
 
     auto pActor = static_cast<Actor*>(apAction->actor);
-    if (pActor && pActor->animationGraphHolder.IsReady())
+    if (pActor)
     {
         result = TiltedPhoques::ThisCall(PerformComplexAction, this, apAction);
 
