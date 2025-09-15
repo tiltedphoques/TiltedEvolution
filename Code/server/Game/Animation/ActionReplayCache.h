@@ -18,8 +18,8 @@ struct ActionReplayCache
 
     const Vector<ActionEvent>& GetActions() const noexcept { return m_actions; };
 
-	/// Whether clients should reset the animation graph of the Actor before replaying
-	bool IsGraphResetNeeded() const noexcept { return m_isGraphResetNeeded; };
+    /// Whether clients should reset the animation graph of the Actor before replaying
+    bool IsGraphResetNeeded() const noexcept { return m_isGraphResetNeeded; };
 
     /// Appends actions and refines (optimizes) the replay cache immediately after
     void AppendAll(const Vector<ActionEvent>& acActions) noexcept;

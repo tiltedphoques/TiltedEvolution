@@ -27,7 +27,7 @@ void ActionReplayCache::AppendAll(const Vector<ActionEvent>& acActions) noexcept
 
 void ActionReplayCache::RefineReplayCache() noexcept
 {
-	m_isGraphResetNeeded = false;
+    m_isGraphResetNeeded = false;
 
     int32_t dropAllUpToIndex = -1;
 
@@ -46,9 +46,9 @@ void ActionReplayCache::RefineReplayCache() noexcept
 
         if (IsExitAction(action))
         {
-            // An "exit" action is found, meaning the actor has likely returned to its root/normal 
-			// state, and the clients should reset the animation state before running replay
-			m_isGraphResetNeeded = true;
+            // An "exit" action is found, meaning the actor has likely returned to its root/normal
+            // state, and the clients should reset the animation state before running replay
+            m_isGraphResetNeeded = true;
             dropAllUpToIndex = i;
             break;
         }
@@ -62,7 +62,17 @@ void ActionReplayCache::RefineReplayCache() noexcept
 
 bool ActionReplayCache::IsExitAction(const ActionEvent& acAction) noexcept
 {
-    return AnimationEventLists::g_actionsExit.contains(acAction.EventName);
+    if (AnimationEventLists::g_actionsExitSpecial.contains(acAction.EventName))
+        return true;
+
+    // Otherwise check string suffix
+    const String& originalName = acAction.EventName;
+    String lowercaseName{acAction.EventName};
+    std::transform(originalName.begin(), originalName.end(), lowercaseName.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+
+    return lowercaseName.starts_with("idle") &&
+           (lowercaseName.ends_with("exit") || lowercaseName.ends_with("exitstart"));
 }
 
 bool ActionReplayCache::ShouldIgnoreAction(const ActionEvent& acAction) noexcept
@@ -72,8 +82,8 @@ bool ActionReplayCache::ShouldIgnoreAction(const ActionEvent& acAction) noexcept
 
 std::optional<String> ActionReplayCache::FindInstantCounterpartForAction(const String& acAction) noexcept
 {
-    auto it = AnimationEventLists::g_actionsIdle.find(acAction);
-    if (it != AnimationEventLists::g_actionsIdle.end())
+    auto it = AnimationEventLists::g_actionsIdleToInstant.find(acAction);
+    if (it != AnimationEventLists::g_actionsIdleToInstant.end())
     {
         auto& [_, instantAnimationName] = *it;
         if (!instantAnimationName.empty())
