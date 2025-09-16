@@ -10,26 +10,27 @@
 // let's do simple action replays until better days.
 //
 
-struct ActionReplayCache
+class ActionReplayCache
 {
+public:
+    ActionReplayCache() = default;
+    ~ActionReplayCache() = default;
+
     static constexpr uint32_t kReplayCacheMaxSize = 32;
 
-    ActionReplayChain GetReplayChain() const noexcept;
+    ActionReplayChain FormRefinedReplayChain() noexcept;
+
+    /// Appends actions to the replay cache
+    void AppendAll(const Vector<ActionEvent>& acActions) noexcept;
 
     const Vector<ActionEvent>& GetActions() const noexcept { return m_actions; };
 
-    /// Whether clients should reset the animation graph of the Actor before replaying
-    bool IsGraphResetNeeded() const noexcept { return m_isGraphResetNeeded; };
-
-    /// Appends actions and refines (optimizes) the replay cache immediately after
-    void AppendAll(const Vector<ActionEvent>& acActions) noexcept;
-
 private:
-    void RefineReplayCache() noexcept;
+    // Returns true if clients should reset the animation graph of the Actor before replaying
+    bool RefineReplayCache() noexcept;
     static bool IsExitAction(const ActionEvent& acAction) noexcept;
     static bool ShouldIgnoreAction(const ActionEvent& acAction) noexcept;
     static std::optional<String> FindInstantCounterpartForAction(const String& acAction) noexcept;
 
     Vector<ActionEvent> m_actions{};
-    bool m_isGraphResetNeeded{false};
 };

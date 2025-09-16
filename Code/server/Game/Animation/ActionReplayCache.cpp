@@ -2,11 +2,16 @@
 #include <Game/Animation/AnimationEventLists.h>
 #include <optional>
 
-ActionReplayChain ActionReplayCache::GetReplayChain() const noexcept
+ActionReplayChain ActionReplayCache::FormRefinedReplayChain() noexcept
 {
+    const bool shouldResetAnimGraph = RefineReplayCache();
+
     ActionReplayChain chain;
-    chain.Actions = m_actions;
-    chain.ResetAnimationGraph = m_isGraphResetNeeded;
+    chain.ResetAnimationGraph = shouldResetAnimGraph;
+    chain.Actions = (shouldResetAnimGraph && !m_actions.empty())
+        ? Vector<ActionEvent>{m_actions.begin() + 1, m_actions.end()} // Drop the exit action
+        : m_actions;
+
     return chain;
 }
 
@@ -21,14 +26,10 @@ void ActionReplayCache::AppendAll(const Vector<ActionEvent>& acActions) noexcept
 
     if (m_actions.size() > kReplayCacheMaxSize)
         m_actions.erase(m_actions.begin(), m_actions.end() - kReplayCacheMaxSize);
-
-    RefineReplayCache();
 }
 
-void ActionReplayCache::RefineReplayCache() noexcept
+bool ActionReplayCache::RefineReplayCache() noexcept
 {
-    m_isGraphResetNeeded = false;
-
     int32_t dropAllUpToIndex = -1;
 
     for (int32_t i = m_actions.size() - 1; i >= 0; --i)
@@ -48,16 +49,16 @@ void ActionReplayCache::RefineReplayCache() noexcept
         {
             // An "exit" action is found, meaning the actor has likely returned to its root/normal
             // state, and the clients should reset the animation state before running replay
-            m_isGraphResetNeeded = true;
             dropAllUpToIndex = i;
             break;
         }
     }
 
     if (dropAllUpToIndex == -1)
-        return;
+        return false;
 
     m_actions.erase(m_actions.begin(), m_actions.begin() + dropAllUpToIndex);
+    return true;
 }
 
 bool ActionReplayCache::IsExitAction(const ActionEvent& acAction) noexcept

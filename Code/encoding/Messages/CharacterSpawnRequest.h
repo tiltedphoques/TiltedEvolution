@@ -27,8 +27,12 @@ struct CharacterSpawnRequest final : ServerMessage
 
     bool operator==(const CharacterSpawnRequest& acRhs) const noexcept
     {
-        return ServerId == acRhs.ServerId && FormId == acRhs.FormId && BaseId == acRhs.BaseId && CellId == acRhs.CellId && Position == acRhs.Position && Rotation == acRhs.Rotation && ChangeFlags == acRhs.ChangeFlags && AppearanceBuffer == acRhs.AppearanceBuffer &&
-               InventoryContent == acRhs.InventoryContent && FactionsContent == acRhs.FactionsContent && ActionsToReplay == ActionsToReplay && FaceTints == acRhs.FaceTints && PlayerId == acRhs.PlayerId && IsDead == acRhs.IsDead && IsPlayer == acRhs.IsPlayer && IsWeaponDrawn == acRhs.IsWeaponDrawn &&
+        return ServerId == acRhs.ServerId && FormId == acRhs.FormId && BaseId == acRhs.BaseId &&
+               CellId == acRhs.CellId && Position == acRhs.Position && Rotation == acRhs.Rotation &&
+               ChangeFlags == acRhs.ChangeFlags && AppearanceBuffer == acRhs.AppearanceBuffer &&
+               InventoryContent == acRhs.InventoryContent && FactionsContent == acRhs.FactionsContent &&
+               ActionsToReplay == acRhs.ActionsToReplay && FaceTints == acRhs.FaceTints && PlayerId == acRhs.PlayerId &&
+               IsDead == acRhs.IsDead && IsPlayer == acRhs.IsPlayer && IsWeaponDrawn == acRhs.IsWeaponDrawn &&
                IsPlayerSummon == acRhs.IsPlayerSummon && GetOpcode() == acRhs.GetOpcode();
     }
 

@@ -34,7 +34,6 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
             // Animation graph not ready, keep the action in queue and try again later
             return;
         }
-
         if (aAnimationComponent.ReplayCount > 0 && aAnimationComponent.ResetAnimationGraphForReplay)
         {
             apActor->animationGraphHolder.RevertAnimationGraphManager();

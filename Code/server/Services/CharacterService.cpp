@@ -120,8 +120,8 @@ void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, Charact
         apSpawnRequest->CellId = pCellIdComponent->Cell;
     }
 
-    const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
-    apSpawnRequest->ActionsToReplay = animationComponent.ActionsReplayCache.GetReplayChain();
+    auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
+    apSpawnRequest->ActionsToReplay = animationComponent.ActionsReplayCache.FormRefinedReplayChain();
 }
 
 void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
@@ -241,7 +241,7 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
 
             if (auto* pAnimationComponent = m_world.try_get<AnimationComponent>(*itor))
             {
-                response.ActionsToReplay = pAnimationComponent->ActionsReplayCache.GetReplayChain();
+                response.ActionsToReplay = pAnimationComponent->ActionsReplayCache.FormRefinedReplayChain();
             }
 
             acMessage.pPlayer->Send(response);
@@ -621,7 +621,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     movementComponent.Rotation = {message.Rotation.x, 0.f, message.Rotation.y};
     movementComponent.Sent = false;
 
-    auto& animationComponent = m_world.emplace<AnimationComponent>(cEntity);
+    m_world.emplace<AnimationComponent>(cEntity);
 
     // If this is a player character store a ref and trigger an event
     if (isPlayer)
@@ -847,6 +847,7 @@ void CharacterService::ProcessMovementChanges() const noexcept
 
     m_world.view<AnimationComponent>().each([](AnimationComponent& animationComponent)
     {
+        // Remove actions we've sent
         animationComponent.Actions.clear();
     });
 

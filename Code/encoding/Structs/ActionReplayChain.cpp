@@ -15,8 +15,6 @@ bool ActionReplayChain::operator!=(const ActionReplayChain& acRhs) const noexcep
 void ActionReplayChain::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteBool(aWriter, ResetAnimationGraph);
-
-    // TODO: Maybe just the EventNames is enough? Why send whole ActionEvents?
     aWriter.WriteBits(Actions.size() & 0xFF, 8);
     for (size_t i = 0; i < Actions.size(); ++i)
     {
@@ -27,7 +25,6 @@ void ActionReplayChain::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const 
 void ActionReplayChain::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
     ResetAnimationGraph = Serialization::ReadBool(aReader);
-
     uint64_t actionsCount = 0;
     aReader.ReadBits(actionsCount, 8);
     Actions.resize(actionsCount);
