@@ -3,9 +3,10 @@
 // This makes sure we can't include components any other way than by including this file
 #define TP_INTERNAL_COMPONENTS_GUARD
 
-#include <Components/ReplayedActionsDebugComponent.h>
 #include <Components/LocalAnimationComponent.h>
 #include <Components/RemoteAnimationComponent.h>
+#include <Components/EarlyAnimationBufferComponent.h>
+#include <Components/ReplayedActionsDebugComponent.h>
 #include <Components/FormIdComponent.h>
 #include <Components/InterpolationComponent.h>
 #include <Components/WaitingForAssignmentComponent.h>

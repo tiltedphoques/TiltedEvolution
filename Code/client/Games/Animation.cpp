@@ -1,4 +1,4 @@
-﻿#include <TiltedOnlinePCH.h>
+#include <TiltedOnlinePCH.h>
 
 #include <Games/References.h>
 
@@ -16,11 +16,6 @@
 
 TP_THIS_FUNCTION(TPerformAction, uint8_t, ActorMediator, TESActionData* apAction);
 static TPerformAction* RealPerformAction;
-
-namespace ActionFormId
-{
-static constexpr uint32_t kActionDraw = 0x132AF;
-}
 
 // TODO: make scoped override
 thread_local bool g_forceAnimation = false;
@@ -59,9 +54,6 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
         if (res)
         {
             pExtension->LatestAnimation = action;
-            
-            if (apAction->action->formID == ActionFormId::kActionDraw)
-                pExtension->LatestWeapEquipAnimation = action;
         }
 
         World::Get().GetRunner().Trigger(action);

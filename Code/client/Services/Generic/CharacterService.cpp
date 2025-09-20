@@ -200,6 +200,7 @@ void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
         entity = m_world.create();
 
     m_world.emplace_or_replace<FormIdComponent>(entity, acEvent.FormId);
+    m_world.emplace_or_replace<EarlyAnimationBufferComponent>(entity);
 
     ProcessNewEntity(entity);
 }
@@ -219,6 +220,8 @@ void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept
 
     auto& formIdComponent = view.get<FormIdComponent>(cId);
     CancelServerAssignment(*entityIt, formIdComponent.Id);
+
+    m_world.remove<EarlyAnimationBufferComponent>(cId);
 
     if (m_world.all_of<FormIdComponent>(cId))
         m_world.remove<FormIdComponent>(cId);
@@ -331,11 +334,14 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
         pActor->GetExtension()->SetRemote(false);
 
-        if(pActor->GetExtension()->LatestWeapEquipAnimation.ActionId != 0)
+        if (auto* pEarlyAnimComponent = m_world.try_get<EarlyAnimationBufferComponent>(cEntity))
         {
-            localAnimationComponent.Append(pActor->GetExtension()->LatestWeapEquipAnimation);
-            pActor->GetExtension()->LatestWeapEquipAnimation = ActionEvent();
+            for (const auto& action : pEarlyAnimComponent->Actions)
+            {
+                localAnimationComponent.Append(action);
+            }
         }
+        m_world.remove<EarlyAnimationBufferComponent>(cEntity);
     }
     else
     {
@@ -345,6 +351,7 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
 
         pActor->GetExtension()->SetRemote(true);
 
+        m_world.remove<EarlyAnimationBufferComponent>(cEntity);
         InterpolationSystem::Setup(m_world, cEntity);
         AnimationSystem::Setup(m_world, cEntity);
         AnimationSystem::AddActionsForReplay(m_world.get<RemoteAnimationComponent>(cEntity), acMessage.ActionsToReplay);
@@ -575,7 +582,6 @@ void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest
 void CharacterService::OnActionEvent(const ActionEvent& acActionEvent) const noexcept
 {
     auto view = m_world.view<LocalAnimationComponent, FormIdComponent>();
-
     const auto itor = std::find_if(std::begin(view), std::end(view), [id = acActionEvent.ActorId, view](entt::entity entity) { return view.get<FormIdComponent>(entity).Id == id; });
 
     if (itor != std::end(view))
@@ -583,6 +589,18 @@ void CharacterService::OnActionEvent(const ActionEvent& acActionEvent) const noe
         auto& localComponent = view.get<LocalAnimationComponent>(*itor);
 
         localComponent.Append(acActionEvent);
+    }
+    else if (m_transport.IsOnline())
+    {
+        // A `LocalAnimationComponent` is not attached yet, but the actor already exists and is running animations
+
+        auto view = m_world.view<FormIdComponent, EarlyAnimationBufferComponent>();
+        const auto itor = std::find_if(std::begin(view), std::end(view), [id = acActionEvent.ActorId, view](entt::entity entity) { return view.get<FormIdComponent>(entity).Id == id; });
+
+        if (itor != std::end(view))
+        {
+            view.get<EarlyAnimationBufferComponent>(*itor).Actions.push_back(acActionEvent);
+        }
     }
 }
 
@@ -666,6 +684,8 @@ void CharacterService::OnNotifyRespawn(const NotifyRespawn& acMessage) const noe
 
     auto& formIdComponent = view.get<FormIdComponent>(cId);
     CancelServerAssignment(*entityIt, formIdComponent.Id);
+
+    m_world.remove<EarlyAnimationBufferComponent>(cId);
 
     if (m_world.all_of<FormIdComponent>(cId))
         m_world.remove<FormIdComponent>(cId);

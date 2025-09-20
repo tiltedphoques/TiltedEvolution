@@ -66,6 +66,7 @@ const Map<String, String> AnimationEventLists::g_actionsIdleToInstant = {
     {"IdleTableEnterPlayer", "IdleTableEnterInstant"},
     {"IdleTanningEnter", "IdleTanningEnterInstant"},
     {"IdleWallLeanStart", "IdleWallLeanEnterInstant"},
+    {"IdleWallSoldierEnter", "IdleWallSoldierEnterInstant"},
     {"IdleWoodChopStart", "IdleWoodChopEnterInstant"},
     {"IdleWoodPickUpEnter", "IdleWoodPickUpEnterInstant"},
     // ...there is probably more
@@ -180,8 +181,7 @@ const Set<String> AnimationEventLists::g_actionsIgnore = {
     {"WeapForceEquip"},
     {"WeapEquip_Out"},
     {"WeapUnEquip"},
-    // There's an elusive bug on the client where it would spam "Unequip"
-    // and "combatStanceStop" a lot after changing cells
+    // https://github.com/tiltedphoques/TiltedEvolution/issues/810
     {"Unequip"},
     {"combatStanceStop"},
 };

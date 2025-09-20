@@ -19,7 +19,6 @@ struct ActorExtension
     void SetPlayer(bool aSet) noexcept;
 
     ActionEvent LatestAnimation{};
-    ActionEvent LatestWeapEquipAnimation{};
     size_t GraphDescriptorHash = 0;
 
   private:
