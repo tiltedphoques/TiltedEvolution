@@ -37,50 +37,34 @@ static __declspec(noinline) bool DrawInWorldSpace(TESObjectREFR* apRefr, ImVec2&
 {
     // Attach at the head ish.
     auto pos = apRefr->position;
-    pos.z -= apRefr->GetHeight();
+    pos.z += apRefr->GetHeight();
 
     NiPoint3 screenPoint{};
     HUDMenuUtils::WorldPtToScreenPt3(pos, screenPoint);
     // Calculate window collision bounds.
     auto* pViewport = BSGraphics::GetMainWindow();
-    const NiRect<float> bounds = {
-        static_cast<float>(pViewport->iWindowX),
-        static_cast<float>(pViewport->iWindowX + pViewport->uiWindowWidth),
-        static_cast<float>(pViewport->iWindowY),
-        static_cast<float>(pViewport->iWindowY + pViewport->uiWindowHeight),
-    };
 
-    // translate to screen
+    // Translate to screen
     const ImVec2 screenPos = ImVec2{
-        (pViewport->uiWindowWidth * screenPoint.x) + bounds.left,
-        (pViewport->uiWindowHeight * (1.0f - screenPoint.y)) + bounds.top,
+        (pViewport->uiWindowWidth * screenPoint.x),
+        (pViewport->uiWindowHeight * (1.0f - screenPoint.y)),
     };
 
-    // implements HUDMarkerData::CalculateFloatingMarkerPositionAndVisiblity from FO4
-    auto IsVisible = [](const ImVec2& aVec2, const NiRect<float>& aScreenBounds, const float zCoordGame)
-    {
-        if (aVec2.x >= aScreenBounds.left && aVec2.x <= aScreenBounds.right)
-        {
-            if (aVec2.y >= aScreenBounds.top &&
-                aVec2.y <= aScreenBounds.bottom
-                /*Not too sure about the Z coord check*/
-                && zCoordGame >= 0)
-                return true;
-        }
-        return false;
+    const ImVec2 windowSize = {
+        static_cast<float>(pViewport->uiWindowWidth),
+        static_cast<float>(pViewport->uiWindowHeight),
     };
 
-    // Obviously it would be much smarter to attach the player name tag to the head bone,
-    // because the player animation also influences the pos for example when jumping,
-    // but the bounding box is fixed.
-    // and offset it slightly above.
-    // But this is just a demo...
-    if (IsVisible(screenPos, bounds, screenPoint.z))
+    auto IsVisible = [](const ImVec2& acVec2, const ImVec2& acScreenSize, float z) {
+        return (acVec2.x > 0 && acVec2.x <= acScreenSize.x) &&
+               (acVec2.y > 0 && acVec2.y <= acScreenSize.y) && z >= 0;
+    };
+
+    if (IsVisible(screenPos, windowSize, screenPoint.z))
     {
         outViewPos = screenPos;
         return true;
     }
-
     outViewPos = {};
     return false;
 }
