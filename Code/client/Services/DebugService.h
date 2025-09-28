@@ -30,6 +30,8 @@ struct DebugService
 
     void SetDebugId(const uint32_t aFormId) noexcept;
 
+    static void ArrangeGameWindows(HWND aThisWindow) noexcept;
+
 protected:
     void OnDraw() noexcept;
 

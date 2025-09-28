@@ -2,6 +2,7 @@
 
 #include <Systems/RenderSystemD3D11.h>
 
+#include <Services/DebugService.h>
 #include <Services/OverlayService.h>
 #include <Services/ImguiService.h>
 
@@ -52,6 +53,7 @@ void RenderSystemD3D11::OnDeviceCreation(IDXGISwapChain* apSwapChain)
 
     m_imguiService.Create(this, GetWindow());
     m_overlay.Create(this);
+    DebugService::ArrangeGameWindows(GetWindow());
 }
 
 void RenderSystemD3D11::OnRender()
