@@ -126,6 +126,7 @@ const Set<String> AnimationEventLists::g_actionsExitSpecial = {
     {"TrapExitStart"},
     {"VehicleExit"},
     {"WebIdleExit"},
+    {"GetUpBegin"}, // Not an "Exit" action per se, but belongs here as it makes the actor return to its initial anim state
     // ...others are checked in `IsExitAction()` using ends_with
 };
 
