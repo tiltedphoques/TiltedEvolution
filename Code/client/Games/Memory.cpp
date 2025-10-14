@@ -132,4 +132,34 @@ static TiltedPhoques::Initializer s_memoryHooks(
         TP_HOOK(&RealFormAllocate, HookFormAllocate);
     });
 
+using T_initterm_e = decltype(&_initterm_e);
+T_initterm_e Real_initterm_e = nullptr;
+
+// If EngineFixes loaded, and it changed our FormAllocate hook, 
+// reset it. Our hook works just fine chaining to theirs.
+int __cdecl Hook_initterm_e(_PIFV* pFirst, _PIFV* pLast)
+{
+    // We want to run last, so pre-chain.
+    auto retval = Real_initterm_e(pFirst, pLast); 
+    
+    // Check if anyone messed with our modified form-allocator hook.
+    POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
+    auto CurrentRealFormAllocate = s_formAllocate.Get();
+    HMODULE h = GetModuleHandleW(L"EngineFixes.dll"); // Debug
+    if (h && CurrentRealFormAllocate != RealFormAllocate)
+    {
+        uintptr_t efAllocateAddress = *reinterpret_cast<uintptr_t*>((reinterpret_cast<uint8_t*>(*CurrentRealFormAllocate) + 6));
+        auto pEngineFixesAllocate = reinterpret_cast<decltype(&HookFormAllocate)>(efAllocateAddress);
+        RealFormAllocate = pEngineFixesAllocate;
+
+        TP_HOOK_IMMEDIATE(&RealFormAllocate, HookFormAllocate);
+    }
+
+    return retval;
+}
+
+void HookFormAllocateSentinelInit()
+{
+    TP_HOOK_IAT(_initterm_e, "api-ms-win-crt-runtime-l1-1-0.dll");
+}
 #pragma optimize("", on)

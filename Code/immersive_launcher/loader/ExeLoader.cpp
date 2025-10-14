@@ -327,7 +327,11 @@ bool ExeLoader::Load(const uint8_t* apProgramBuffer)
     sourceNtHeader->OptionalHeader.CheckSum = sourceChecksum;
     sourceNtHeader->FileHeader.TimeDateStamp = sourceTimestamp;
     sourceNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG] = sourceDebugDir;
-
     m_pBinary = nullptr;
+
+    // Set a hook to check if anything loaded messes with critical hooks.
+    extern void HookFormAllocateSentinelInit();
+    HookFormAllocateSentinelInit();
+
     return true;
 }

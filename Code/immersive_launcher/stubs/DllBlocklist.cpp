@@ -80,37 +80,13 @@ const DllGreyEntry kDllGreyList[] =
         "(^\\s*MaxStdio\\s*=\\s*)([0-9]+)\n$018192\n" // Only huge builds need this many files, but make EF match what STR sets.
     },
     {
-        L"EngineFixes.dll", L"Data\\SKSE\\Plugins\\EngineFixes.toml",
+        L"EngineFixes.dll", 
+        L"Data\\SKSE\\Plugins\\EngineFixes.toml",
         "^bVerboseLogging\\s*=",        // Matches EngineFixes Release 7.x series.
-        "# SKYRIM TOGETHER REBORN marker for EngineFixes required compatibility settings v2, DO NOT CHANGE THIS LINE",
-
-        L"For EngineFixes v7 to work with Skyrim Together Reborn, some settings are required:\n"
-        "\tbOverrideMemoryManager = false\n"
-        "\tbOverrideScrapHeap = false\n"
-        "\tbMaxStdIO = true\n\n"
-
-        "OK:\tMakes the changes for you\n"
-        "Cancel:\tEngineFixes will not load\n\n"
-
-        "If later you get the (harmless) SrtCrashFix64 popup, manually make this EngineFixes configuration change to suppress it:\n"
-        "\tbAnimationLoadSignedCrash = false",
-
-        "# SKYRIM TOGETHER REBORN marker for EngineFixes required compatibility settings v2, DO NOT CHANGE THIS LINE\n"
-        "# For EngineFixes to work with Skyrim Together Reborn, some settings are required:\n"
-        "#    bOverrideMemoryManager = false\n"
-        "#    bOverrideScrapHeap = false\n"
-        "#    bMaxStdIO = true\n\n"
-        "#\n"
-
-        "# If you get a SrtCrashFix64 popup, it is because you've loaded a mod like Animation Limit Crash Fixe SSE\n"
-        "# that is doing the same thing as EngineFixes. Manually set\n"
-        "#    AnimationLoadSignedCrash = false\n"
-        "# to eliminate the annoying popup.\n\n",
-
-        "(^\\s*bOverrideMemoryManager\\s*=\\s*)(true ?|false)\n$1false\n"
-        "(^\\s*bOverrideScrapHeap\\s*=\\s*)(true ?|false)\n$1false\n"
-        "(^\\s*bMaxStdIO\\s*=\\s*)(true ?|false)\n$1true \n" // Only huge builds need this many files, but make EF match
-                                                             // what STR sets.
+        "",                             // No sig regex
+        L"",                            // No prompt
+        "",                             // No sig to insert
+        nullptr                         // We need to check for EF7 vs. EF6, but don't need any changes for EF7.
     }
 };
 
@@ -169,6 +145,9 @@ GreyListDisposition IsConfigOK(const std::filesystem::path& aPath, const DllGrey
         // Iterate over each line of the config file
         //     Iterate over each replacer, possibly changing the line
         //     Output upddated line to new config
+        if (!aEntry.m_replacers)
+            return kGreyListAccept; // Must be good if nothing to change.
+
         std::string line;
         std::stringstream replacers(aEntry.m_replacers);
 
