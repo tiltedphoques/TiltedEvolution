@@ -185,7 +185,14 @@ void ObjectService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessa
         }
 
         if (pObject->baseForm->formType == FormType::Container)
-            pObject->SetInventory(objectData.CurrentInventory);
+        {
+            Inventory currentInventory = pObject->GetInventory();
+
+            if (currentInventory.ContainsQuestItems())
+                pObject->SetInventoryRetainingQuestItems(currentInventory, objectData.CurrentInventory);
+            else
+                pObject->SetInventory(objectData.CurrentInventory);
+        }
     }
 }
 

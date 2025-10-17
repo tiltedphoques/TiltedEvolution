@@ -781,6 +781,56 @@ void TESObjectREFR::SetInventory(const Inventory& aInventory) noexcept
     }
 }
 
+Vector<uint32_t> TESObjectREFR::RemoveNonQuestItems(Inventory& aCurrentInventory) noexcept
+{
+    ScopedEquipOverride equipOverride_;
+
+    Vector<uint32_t> questEntries{};
+
+    auto& modSystem = World::Get().GetModSystem();
+
+    for (auto& entry : aCurrentInventory.Entries)
+    {
+        if (entry.IsQuestItem)
+        {
+            uint32_t gameId = modSystem.GetGameId(entry.BaseId);
+            questEntries.emplace_back(gameId);
+            continue;
+        }
+
+        if (entry.Count <= 0)
+            continue;
+
+        entry.Count = -entry.Count;
+        AddOrRemoveItem(entry, true);
+    }
+
+    return questEntries;
+}
+
+void TESObjectREFR::SetInventoryRetainingQuestItems(Inventory& aCurrentInventory, const Inventory& acSourceInventory) noexcept
+{
+    spdlog::debug("Setting inventory for {:X}", formID);
+
+    ScopedInventoryOverride _;
+
+    // Remove all non-quest items first
+    Vector<uint32_t> questItemIds = RemoveNonQuestItems(aCurrentInventory);
+    auto& modSystem = World::Get().GetModSystem();
+
+    for (const auto& entry : acSourceInventory.Entries)
+    {
+        uint32_t gameId = modSystem.GetGameId(entry.BaseId);
+
+        // If the item is not in the list of quest items, add it
+        if (std::find(questItemIds.begin(), questItemIds.end(), gameId) == questItemIds.end())
+        {
+            if (entry.Count != 0)
+                AddOrRemoveItem(entry, true);
+        }
+    }
+}
+
 void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSettingInventory) noexcept
 {
     ModSystem& modSystem = World::Get().GetModSystem();
