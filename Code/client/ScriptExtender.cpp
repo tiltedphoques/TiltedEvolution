@@ -141,13 +141,6 @@ void LoadScriptExender()
                 "logs from the "
                 "Script Extender and its loaded mods.",
                 skseVersion);
-            auto hModule = LoadLibraryW((gameDir / L"Data\\SKSE\\Plugins\\EngineFixes.dll").c_str());
-            if (hModule != NULL)
-            {
-                auto* pStartEngineFixes = reinterpret_cast<void (*)()>(GetProcAddress(hModule, "Initialize"));
-                if (pStartEngineFixes)
-                    (*pStartEngineFixes)();
-            }
             pStartSKSE();
             spdlog::info("SKSE is active");
         }

@@ -302,18 +302,20 @@ bool ExeLoader::Load(const uint8_t* apProgramBuffer)
     auto sourceDebugDir = sourceNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG];
 
     LoadSections(ntHeader);
+
+    // skse64_plugin_preloader (proxy d3dx9_42_dll and others?) may hook
+    // _initterm_e during LoadImports(), so we have to ensure that IAT entry exists.
+    // The simplest way to make sure all SkyrimSE IAT entries exist when mods expect 
+    // them to is to switch to those headers earlier than we used to
+    DWORD oldProtect;
+    VirtualProtect(sourceNtHeader, 0x1000, PAGE_EXECUTE_READWRITE, &oldProtect);
+    sourceNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT] = ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+
     LoadImports(ntHeader);
 #if defined(_M_AMD64)
     LoadExceptionTable(ntHeader);
     LoadTLS(ntHeader, sourceNtHeader);
 #endif
-
-    // copy over the offset to the new imports directory
-    DWORD oldProtect;
-    VirtualProtect(sourceNtHeader, 0x1000, PAGE_EXECUTE_READWRITE, &oldProtect);
-
-    // re-target the import directory to the target's; ours isn't needed anymore.
-    sourceNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT] = ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
 
     const size_t ntCompleteHeaderSize = sizeof(IMAGE_NT_HEADERS) + (ntHeader->FileHeader.NumberOfSections * (sizeof(IMAGE_SECTION_HEADER)));
 
