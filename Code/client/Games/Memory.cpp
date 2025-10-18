@@ -67,6 +67,35 @@ void Memory::Free(void* apData) noexcept
     TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, false);
 }
 
+bool Memory::IsFormAllocateReplacedByEF() noexcept
+{
+    POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
+    TFormAllocate* pFormAllocate = s_formAllocate.Get();
+
+    // 6-byte sequence of 'FF 25 00 00 00 00' comes before the virtual address we're after; so, +6
+    auto possibleEfAllocAddr = *reinterpret_cast<uintptr_t*>(reinterpret_cast<uint8_t*>(*pFormAllocate) + 6);
+
+    MEMORY_BASIC_INFORMATION mbi;
+    if (VirtualQuery((void*)possibleEfAllocAddr, &mbi, sizeof(mbi)) != 0) 
+    {
+        return mbi.AllocationBase == GetModuleHandleW(L"EngineFixes.dll");
+    }
+    return false;
+}
+
+bool Memory::RehookMemoryFunctions() noexcept
+{
+    POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
+    TFormAllocate* pFormAllocate = s_formAllocate.Get();
+
+    uintptr_t efAllocAddr = *reinterpret_cast<uintptr_t*>(reinterpret_cast<uint8_t*>(*pFormAllocate) + 6);
+    auto pEngineFixesAllocate = reinterpret_cast<decltype(&HookFormAllocate)>(efAllocAddr);
+
+    RealFormAllocate = pEngineFixesAllocate;
+    TP_HOOK_IMMEDIATE(&RealFormAllocate, HookFormAllocate);
+    return true; // TODO when to return false?
+}
+
 size_t Hook_msize(void* apData)
 {
     return mi_malloc_size(apData);
@@ -137,23 +166,15 @@ T_initterm_e Real_initterm_e = nullptr;
 
 // If EngineFixes loaded, and it changed our FormAllocate hook, 
 // reset it. Our hook works just fine chaining to theirs.
-int __cdecl Hook_initterm_e(_PIFV* pFirst, _PIFV* pLast)
+int __cdecl Hook_initterm_e(_PIFV* apFirst, _PIFV* apLast)
 {
     // We want to run last, so pre-chain.
-    auto retval = Real_initterm_e(pFirst, pLast); 
+    auto retval = Real_initterm_e(apFirst, apLast); 
     
-    // Check if anyone messed with our modified form-allocator hook.
-    POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
-    auto CurrentRealFormAllocate = s_formAllocate.Get();
-    HMODULE h = GetModuleHandleW(L"EngineFixes.dll"); // Debug
-    if (h && CurrentRealFormAllocate != RealFormAllocate)
-    {
-        uintptr_t efAllocateAddress = *reinterpret_cast<uintptr_t*>((reinterpret_cast<uint8_t*>(*CurrentRealFormAllocate) + 6));
-        auto pEngineFixesAllocate = reinterpret_cast<decltype(&HookFormAllocate)>(efAllocateAddress);
-        RealFormAllocate = pEngineFixesAllocate;
-
-        TP_HOOK_IMMEDIATE(&RealFormAllocate, HookFormAllocate);
-    }
+    // Check if anyone messed with STR's moddified allocator hook,
+    // which changes the size of some allocations.
+    if (GetModuleHandleW(L"EngineFixes.dll") && Memory::IsFormAllocateReplacedByEF())
+        Memory::RehookMemoryFunctions();
 
     return retval;
 }
