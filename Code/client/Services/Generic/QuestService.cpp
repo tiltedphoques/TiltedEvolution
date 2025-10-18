@@ -208,34 +208,21 @@ bool QuestService::StopQuest(uint32_t aformId)
     return false;
 }
 
-
-static const TiltedPhoques::Vector<uint32_t> nonSyncableQuestIds = {
-    0x2BA16,  // Werewolf transformation quest
-    0x20071D0,  // Vampire transformation quest
-    0x3AC44,  // Unknown internal quest
-    0xFE014801,  // Unknown internal quest
-    0xF2593   // Skill experience quest
+static constexpr std::array<uint32_t, 4> kNonSyncableQuestIds = {
+    0x2BA16,   // Werewolf transformation quest
+    0x20071D0, // Vampire transformation quest
+    0x3AC44,   // MS13BleakFallsBarrowLeverScene
+    // 0xFE014801,  // Unknown dynamic ID, kept as note, maybe lookup correct ID this game?
+    0xF2593 // Skill experience quest
 };
 
 bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
 {
-    // Internal quest IDs: Werewolf transformation quest: 0x2BA16, Vampire transformation quest: 0x20071D0,
-    // Unknown internal quests causing excessive logging: 0x3AC44, 0xFE014801, 0xF2593
-
-    const auto& stages = apQuest->stages;
-
-    if (std::find(nonSyncableQuestIds.begin(), nonSyncableQuestIds.end(), apQuest->formID) != nonSyncableQuestIds.end())
-    {
-        // For specific internal quests, check if they should be blocked from syncing based on their type or empty stages.
-        return apQuest->type == TESQuest::Type::None // Internal event
-               || apQuest->type == TESQuest::Type::Miscellaneous
-               || stages.Empty();
-    }
-    else
-    {
-        // For other quests, only block from syncing if they have no stages.
-        return stages.Empty();
-    }
+    // Quests with no quest stages are never synced. Most TESQues::Type:: quests should
+    // be synced, including Type::None and Type::Miscellaneous, but there are a few
+    // known exceptions that should be excluded that are in the table.
+    return    apQuest->stages.Empty() 
+           || std::find(kNonSyncableQuestIds.begin(), kNonSyncableQuestIds.end(), apQuest->formID) != kNonSyncableQuestIds.end();
 }
 
 void QuestService::DebugDumpQuests()

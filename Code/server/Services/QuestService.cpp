@@ -29,10 +29,6 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     auto& questComponent = pPlayer->GetQuestLogComponent();
     auto& entries = questComponent.QuestContent.Entries;
 
-    const auto& partyComponent = acMessage.pPlayer->GetParty();
-    if (!partyComponent.JoinedPartyId.has_value())
-        return;
-
     auto questIt = std::find_if(entries.begin(), entries.end(), [&message](const auto& e) { return e.Id == message.Id; });
 
     NotifyQuestUpdate notify{};
@@ -93,6 +89,10 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
 
         notify.Status = NotifyQuestUpdate::Stopped;
     }
+
+    const auto& partyComponent = acMessage.pPlayer->GetParty();
+    if (!partyComponent.JoinedPartyId.has_value())
+        return;
 
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
 }
