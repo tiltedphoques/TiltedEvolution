@@ -419,7 +419,7 @@ void DebugService::ArrangeGameWindows(HWND aThisWindow) noexcept
     if (!shouldArrangeWindows)
         return; // Too little room for that
 
-    SetWindowPos(GetConsoleWindow(), nullptr, 0, gameWindowHeight, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
+    SetWindowPos(GetConsoleWindow(), nullptr, 0, gameWindowHeight, 0, 0, SWP_NOSIZE);
 
     CreateMutexA(0, FALSE, "SkyrimTogetherWindowMutex");
     if (GetLastError() == ERROR_ALREADY_EXISTS)
