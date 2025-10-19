@@ -1,12 +1,14 @@
 #pragma once
 
-using TiltedPhoques::Set, TiltedPhoques::String;
+#include <string_view>
+
+using TiltedPhoques::Set;
 
 namespace AnimationEventLists
 {
-extern const Map<String, String> g_actionsIdleToInstant;
+extern const Map<std::string_view, std::string_view> kIdleToInstant;
 
-extern const Set<String> g_actionsExitSpecial;
+extern const Set<std::string_view> kExitSpecial;
 
-extern const Set<String> g_actionsIgnore;
+extern const Set<std::string_view> kIgnore;
 } // namespace

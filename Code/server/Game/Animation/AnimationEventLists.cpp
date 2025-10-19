@@ -4,7 +4,7 @@
 /* The lists in this file might not contain all relevant animation events, so extend as necessary
 */
 
-const Map<String, String> AnimationEventLists::g_actionsIdleToInstant = {
+const Map<std::string_view, std::string_view> AnimationEventLists::kIdleToInstant = {
     // Idle animations that have instant counterparts
     {"HorseEnter", "HorseEnterInstant"},
     {"IdleAlchemyEnter", "IdleAlchemyEnterInstant"},
@@ -94,7 +94,7 @@ const Map<String, String> AnimationEventLists::g_actionsIdleToInstant = {
     {"IdleWarmHands", ""},
 };
 
-const Set<String> AnimationEventLists::g_actionsExitSpecial = {
+const Set<std::string_view> AnimationEventLists::kExitSpecial = {
     {"IdleForceDefaultState"},
     {"IdleReturnToDefault"},
     {"ReturnDefaultState"},
@@ -126,12 +126,13 @@ const Set<String> AnimationEventLists::g_actionsExitSpecial = {
     {"TrapExitStart"},
     {"VehicleExit"},
     {"WebIdleExit"},
-    {"GetUpBegin"}, // Not an "Exit" action per se, but belongs here as it makes the actor return to its initial anim state
+    {"GetUpBegin"}, // Not an "Exit" action per se, but belongs here as it makes the actor return to its initial anim
+                    // state
     // ...others are checked in `IsExitAction()` using ends_with
 };
 
-const Set<String> AnimationEventLists::g_actionsIgnore = {
-    // Animation events with empty names don't carry anything useful besides 
+const Set<std::string_view> AnimationEventLists::kIgnore = {
+    // Animation events with empty names don't carry anything useful besides
     // various animvars updates and state changes to the currently running animations.
     // Ignored because they spam too much
     {""},

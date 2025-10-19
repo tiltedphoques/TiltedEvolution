@@ -37,10 +37,10 @@ bool ActionReplayCache::RefineReplayCache() noexcept
         ActionEvent& action = m_actions[i];
 
         // Instant counterparts of actions are highly preferred for animation replay
-        if (std::optional<String> instantAnimName = FindInstantCounterpartForAction(action.EventName))
+        if (auto instantAnimName = FindInstantCounterpartForAction(action.EventName))
         {
-            action.EventName = *instantAnimName;
-            action.TargetEventName = *instantAnimName;
+            action.EventName = String{*instantAnimName};
+            action.TargetEventName = String{*instantAnimName};
             action.ActionId = 0;
             action.IdleId = 0;
         }
@@ -63,10 +63,10 @@ bool ActionReplayCache::RefineReplayCache() noexcept
 
 bool ActionReplayCache::IsExitAction(const ActionEvent& acAction) noexcept
 {
-    if (AnimationEventLists::g_actionsExitSpecial.contains(acAction.EventName))
+    if (AnimationEventLists::kExitSpecial.contains(acAction.EventName))
         return true;
 
-    // Otherwise check string suffix
+    // Not found in special exit actions, let's check the suffix
     const String& originalName = acAction.EventName;
     String lowercaseName{acAction.EventName};
     std::transform(originalName.begin(), originalName.end(), lowercaseName.begin(),
@@ -78,19 +78,19 @@ bool ActionReplayCache::IsExitAction(const ActionEvent& acAction) noexcept
 
 bool ActionReplayCache::ShouldIgnoreAction(const ActionEvent& acAction) noexcept
 {
-    return AnimationEventLists::g_actionsIgnore.contains(acAction.EventName);
+    return AnimationEventLists::kIgnore.contains(acAction.EventName);
 }
 
-std::optional<String> ActionReplayCache::FindInstantCounterpartForAction(const String& acAction) noexcept
+std::optional<std::string_view> ActionReplayCache::FindInstantCounterpartForAction(std::string_view aAction) noexcept
 {
-    auto it = AnimationEventLists::g_actionsIdleToInstant.find(acAction);
-    if (it != AnimationEventLists::g_actionsIdleToInstant.end())
+    auto it = AnimationEventLists::kIdleToInstant.find(aAction);
+    if (it == AnimationEventLists::kIdleToInstant.end())
+        return std::nullopt;
+
+    auto& [_, instantAnimationName] = *it;
+    if (!instantAnimationName.empty())
     {
-        auto& [_, instantAnimationName] = *it;
-        if (!instantAnimationName.empty())
-        {
-            return {instantAnimationName};
-        }
+        return {instantAnimationName};
     }
     return std::nullopt;
 }

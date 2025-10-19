@@ -30,7 +30,7 @@ private:
     bool RefineReplayCache() noexcept;
     static bool IsExitAction(const ActionEvent& acAction) noexcept;
     static bool ShouldIgnoreAction(const ActionEvent& acAction) noexcept;
-    static std::optional<String> FindInstantCounterpartForAction(const String& acAction) noexcept;
+    static std::optional<std::string_view> FindInstantCounterpartForAction(std::string_view aAction) noexcept;
 
     Vector<ActionEvent> m_actions{};
 };
