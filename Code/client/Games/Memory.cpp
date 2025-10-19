@@ -67,33 +67,37 @@ void Memory::Free(void* apData) noexcept
     TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, false);
 }
 
-bool Memory::IsFormAllocateReplacedByEF() noexcept
+static bool IsFormAllocateReplacedByEF(TFormAllocate** appOutEngineFixesAlloc) noexcept
 {
     POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
     TFormAllocate* pFormAllocate = s_formAllocate.Get();
 
-    // 6-byte sequence of 'FF 25 00 00 00 00' comes before the virtual address we're after; so, +6
-    auto possibleEfAllocAddr = *reinterpret_cast<uintptr_t*>(reinterpret_cast<uint8_t*>(*pFormAllocate) + 6);
+    auto opcodeBytes = reinterpret_cast<uint16_t*>(*pFormAllocate);
+    uint8_t shift = 0;
+
+    if (*opcodeBytes == 0x25FF) // 'jmp' opcode 'FF 25' and the 4-byte displacement bytes come before the virtual address we're after
+        shift = 6;
+    else if (*opcodeBytes == 0xB848) // 'mov' opcode '48 B8' comes before the virtual address we're after
+        shift = 2;
+
+    auto possibleEfAllocAddress = *reinterpret_cast<uintptr_t*>(reinterpret_cast<uint8_t*>(*pFormAllocate) + shift);
 
     MEMORY_BASIC_INFORMATION mbi;
-    if (VirtualQuery((void*)possibleEfAllocAddr, &mbi, sizeof(mbi)) != 0) 
+    if (VirtualQuery((void*)possibleEfAllocAddress, &mbi, sizeof(mbi)) != 0)
     {
-        return mbi.AllocationBase == GetModuleHandleW(L"EngineFixes.dll");
+        if (mbi.AllocationBase == GetModuleHandleW(L"EngineFixes.dll"))
+        {
+            *appOutEngineFixesAlloc = reinterpret_cast<TFormAllocate*>(possibleEfAllocAddress);
+            return true;
+        }
     }
     return false;
 }
 
-bool Memory::RehookMemoryFunctions() noexcept
+static void RehookFormAllocate(TFormAllocate* apEngineFixesAllocate) noexcept
 {
-    POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
-    TFormAllocate* pFormAllocate = s_formAllocate.Get();
-
-    uintptr_t efAllocAddr = *reinterpret_cast<uintptr_t*>(reinterpret_cast<uint8_t*>(*pFormAllocate) + 6);
-    auto pEngineFixesAllocate = reinterpret_cast<decltype(&HookFormAllocate)>(efAllocAddr);
-
-    RealFormAllocate = pEngineFixesAllocate;
+    RealFormAllocate = apEngineFixesAllocate;
     TP_HOOK_IMMEDIATE(&RealFormAllocate, HookFormAllocate);
-    return true; // TODO when to return false?
 }
 
 size_t Hook_msize(void* apData)
@@ -171,10 +175,10 @@ int __cdecl Hook_initterm_e(_PIFV* apFirst, _PIFV* apLast)
     // We want to run last, so pre-chain.
     auto retval = Real_initterm_e(apFirst, apLast); 
     
-    // Check if anyone messed with STR's moddified allocator hook,
-    // which changes the size of some allocations.
-    if (GetModuleHandleW(L"EngineFixes.dll") && Memory::IsFormAllocateReplacedByEF())
-        Memory::RehookMemoryFunctions();
+    // Check if EngineFixes messed with STR's modified alloc hook; if it did, treat EF as truth and rehook
+    TFormAllocate* pEngineFixesAllocate = nullptr;
+    if (GetModuleHandleW(L"EngineFixes.dll") && IsFormAllocateReplacedByEF(&pEngineFixesAllocate))
+        RehookFormAllocate(pEngineFixesAllocate);
 
     return retval;
 }

@@ -5,9 +5,6 @@ struct Memory
     [[nodiscard]] static void* Allocate(size_t aSize) noexcept;
     static void Free(void* apData) noexcept;
 
-    static bool IsFormAllocateReplacedByEF() noexcept;
-    static bool RehookMemoryFunctions() noexcept;
-
     template <class T> static T* Allocate() noexcept
     {
         auto pMemory = static_cast<T*>(Allocate(sizeof(T)));
