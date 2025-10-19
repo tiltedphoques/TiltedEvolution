@@ -34,6 +34,7 @@ struct DllGreyEntry
 {
     const wchar_t* m_dllName;           // The name of the DLL to check.
     const wchar_t* m_configLocation;    // The relative path of the config file (from the game dir)
+    const char*    m_configValidator;   // Regex to check if config is sane. Helps distinguish multiple releases of same dll.
     const char*    m_sigRegex;          // If this pattern is found in the config, comments were already added.
     const wchar_t* m_prompt;            // The MessageBox prompt asking for permission to fix.
     const char*    m_sigToInsert;       // This is added at the top of the rewritten config. It can/should say more than just the pattern match signature.
@@ -46,36 +47,46 @@ struct DllGreyEntry
 const DllGreyEntry kDllGreyList[] = 
 {
     {
-        L"EngineFixes.dll",
+        L"EngineFixes.dll", 
         L"Data\\SKSE\\Plugins\\EngineFixes.toml",
-         "# SKYRIM TOGETHER REBORN marker for EngineFixes required compatibility settings v2, DO NOT CHANGE THIS LINE",
- 
+        "^VerboseLogging\\s*=",         // Matches EngineFixes Release 6.x series.
+        "# SKYRIM TOGETHER REBORN marker for EngineFixes required compatibility settings v2, DO NOT CHANGE THIS LINE",
+
         L"For EngineFixes to work with Skyrim Together Reborn, some settings are required:\n"
-            "\tMemoryManager = false\n"
-            "\tScaleformAllocator = false\n"
-            "\tMaxStdio = 8192\n\n"
+        "\tMemoryManager = false\n"
+        "\tScaleformAllocator = false\n"
+        "\tMaxStdio = 8192\n\n"
 
-         "OK:\tMakes the changes for you\n"
-         "Cancel:\tEngineFixes will not load\n\n"
+        "OK:\tMakes the changes for you\n"
+        "Cancel:\tEngineFixes will not load\n\n"
 
-         "If later you get the (harmless) SrtCrashFix64 popup, manually make this EngineFixes configuration change to suppress it:\n"     
-            "\tAnimationLoadSignedCrash = false",
+        "If later you get the (harmless) SrtCrashFix64 popup, manually make this EngineFixes configuration change to suppress it:\n"
+        "\tAnimationLoadSignedCrash = false",
 
-         "# SKYRIM TOGETHER REBORN marker for EngineFixes required compatibility settings v2, DO NOT CHANGE THIS LINE\n"
-         "# For EngineFixes to work with Skyrim Together Reborn, some settings are required:\n"
-         "#    MemoryManager = false\n"
-         "#    ScaleformAllocator = false\n"
-         "#    MaxStdio = 8192\n"
-         "#\n"
+        "# SKYRIM TOGETHER REBORN marker for EngineFixes required compatibility settings v2, DO NOT CHANGE THIS LINE\n"
+        "# For EngineFixes to work with Skyrim Together Reborn, some settings are required:\n"
+        "#    MemoryManager = false\n"
+        "#    ScaleformAllocator = false\n"
+        "#    MaxStdio = 8192\n"
+        "#\n"
 
-         "# If you get a SrtCrashFix64 popup, it is because you've loaded a mod like Animation Limit Crash Fixe SSE\n"
-         "# that is doing the same thing as EngineFixes. Manually set\n"
-         "#    AnimationLoadSignedCrash = false\n"
-         "# to eliminate the annoying popup.\n\n",
-    
-         "(^\\s*MemoryManager\\s*=\\s*)(true ?|false)\n$1false\n"
-         "(^\\s*ScaleformAllocator\\s*=\\s*)(true ?|false)\n$1false\n"
-         "(^\\s*MaxStdio\\s*=\\s*)([0-9]+)\n$018192\n"       // Only huge builds need this many files, but make EF match what STR sets.
+        "# If you get a SrtCrashFix64 popup, it is because you've loaded a mod like Animation Limit Crash Fixe SSE\n"
+        "# that is doing the same thing as EngineFixes. Manually set\n"
+        "#    AnimationLoadSignedCrash = false\n"
+        "# to eliminate the annoying popup.\n\n",
+
+        "(^\\s*MemoryManager\\s*=\\s*)(true ?|false)\n$1false\n"
+        "(^\\s*ScaleformAllocator\\s*=\\s*)(true ?|false)\n$1false\n"
+        "(^\\s*MaxStdio\\s*=\\s*)([0-9]+)\n$018192\n" // Only huge builds need this many files, but make EF match what STR sets.
+    },
+    {
+        L"EngineFixes.dll", 
+        L"Data\\SKSE\\Plugins\\EngineFixes.toml",
+        "^bVerboseLogging\\s*=",        // Matches EngineFixes Release 7.x series.
+        "",                             // No sig regex
+        L"",                            // No prompt
+        "",                             // No sig to insert
+        nullptr                         // We need to check for EF7 vs. EF6, but don't need any changes for EF7.
     }
 };
 
@@ -111,20 +122,32 @@ GreyListDisposition IsConfigOK(const std::filesystem::path& aPath, const DllGrey
         Die(msg.c_str(), true);
         return kGreyListAbort;
     }
+
     // Rewind config stream and prepare to generate newConfig;
     configStream.clear(); // Clear any EOF flags
     configStream.seekg(0, std::ios::beg);
     std::string newConfig;   
 
-    // std::regex throws exceeptions
     try
-    {
+    {   // std::regex constructors can throw exceptions, so must be used inside try/catch
+        // subblock to throw away the temps
+        {
+            const std::regex validatorRegex(aEntry.m_configValidator, std::regex_constants::icase);
+            const std::string configStr = configStream.str();
+            std::smatch vmatch;
+            if (!std::regex_search(configStr.begin(), configStr.end(), vmatch, validatorRegex))
+                return kGreyListAbort;
+        }
+
         // This has to be done inside the try/catch, but will be used outside at the end.
         signatureRegex = std::regex(aEntry.m_sigRegex, std::regex_constants::icase);
 
         // Iterate over each line of the config file
         //     Iterate over each replacer, possibly changing the line
         //     Output upddated line to new config
+        if (!aEntry.m_replacers)
+            return kGreyListAccept; // Must be good if nothing to change.
+
         std::string line;
         std::stringstream replacers(aEntry.m_replacers);
 
@@ -207,7 +230,11 @@ enum GreyListDisposition IsDllGreyListBlocked(const std::wstring_view aDllName)
         if (std::wcscmp(aDllName.data(), greyListEntry.m_dllName) == 0)
         {
             // DLL name matches, read in entire config file.
-            return IsConfigOK(gamePath, greyListEntry);
+            // Might be multiple configs for differing versions, 
+            // so only exit iteration early if config accepted.
+            retval = IsConfigOK(gamePath, greyListEntry);
+            if (retval == kGreyListAccept)
+                break;
         }
     }
     return retval;
