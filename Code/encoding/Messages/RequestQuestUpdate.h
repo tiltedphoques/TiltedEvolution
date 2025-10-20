@@ -15,7 +15,7 @@ struct RequestQuestUpdate final : ClientMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const RequestQuestUpdate& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && Id == acRhs.Id && Stage == acRhs.Stage && Status == acRhs.Status; }
+    bool operator==(const RequestQuestUpdate& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && Id == acRhs.Id && Stage == acRhs.Stage && Status == acRhs.Status && ClientQuestType == acRhs.ClientQuestType; }
 
     enum StatusCode : uint8_t
     {
@@ -27,4 +27,5 @@ struct RequestQuestUpdate final : ClientMessage
     GameId Id;
     uint16_t Stage;
     uint8_t Status;
+    uint8_t ClientQuestType;
 };
