@@ -208,13 +208,13 @@ bool QuestService::StopQuest(uint32_t aformId)
     return false;
 }
 
-static constexpr std::array<uint32_t, 4> kNonSyncableQuestIds = {
+static constexpr std::array kNonSyncableQuestIds = std::to_array<uint32_t>({
     0x2BA16,   // Werewolf transformation quest
     0x20071D0, // Vampire transformation quest
     0x3AC44,   // MS13BleakFallsBarrowLeverScene
     // 0xFE014801,  // Unknown dynamic ID, kept as note, maybe lookup correct ID this game?
     0xF2593 // Skill experience quest
-};
+});
 
 bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
 {
