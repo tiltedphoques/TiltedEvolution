@@ -34,6 +34,11 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
             // Animation graph not ready, keep the action in queue and try again later
             return;
         }
+        if (aAnimationComponent.ReplayCount > 0 && aAnimationComponent.ResetAnimationGraphForReplay)
+        {
+            apActor->animationGraphHolder.RevertAnimationGraphManager();
+            aAnimationComponent.ResetAnimationGraphForReplay = false;
+        }
 
         const auto& first = *it;
 
@@ -58,6 +63,9 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
 
         const auto result = ActorMediator::Get()->ForceAction(&actionData);
 
+        if (aAnimationComponent.ReplayCount > 0)
+            aAnimationComponent.ReplayCount--;
+
         actions.pop_front();
     }
 }
@@ -71,6 +79,15 @@ void AnimationSystem::Clean(World& aWorld, const entt::entity aEntity) noexcept
 {
     if (aWorld.all_of<RemoteAnimationComponent>(aEntity))
         aWorld.remove<RemoteAnimationComponent>(aEntity);
+}
+
+void AnimationSystem::AddActionsForReplay(RemoteAnimationComponent& aAnimationComponent,
+                                          const ActionReplayChain& acReplay) noexcept
+{
+    aAnimationComponent.TimePoints.insert(aAnimationComponent.TimePoints.end(), acReplay.Actions.begin(),
+                                          acReplay.Actions.end());
+    aAnimationComponent.ReplayCount = acReplay.Actions.size();
+    aAnimationComponent.ResetAnimationGraphForReplay = acReplay.ResetAnimationGraph;
 }
 
 void AnimationSystem::AddAction(RemoteAnimationComponent& aAnimationComponent, const std::string& acActionDiff) noexcept

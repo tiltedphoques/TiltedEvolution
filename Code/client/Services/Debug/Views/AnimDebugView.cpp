@@ -1,4 +1,3 @@
-
 #include <imgui.h>
 #include <EquipManager.h>
 #include <services/DebugService.h>
@@ -131,6 +130,12 @@ void DebugService::DrawAnimDebugView()
         if (s_cachedKeys.find(hash) != std::end(s_cachedKeys))
             spdlog::warn("Key was detected before! Form ID of last detected actor: {:X}", s_cachedKeys[hash]);
         s_cachedKeys[hash] = pActor->formID;
+    }
+
+    if (ImGui::Button("Revert animation graph"))
+    {
+        spdlog::info("RevertAnimationGraphManager success? {}",
+                      pActor->animationGraphHolder.RevertAnimationGraphManager());
     }
 
     if (ImGui::BeginTabBar("##Tabs", ImGuiTabBarFlags_None))

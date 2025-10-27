@@ -54,9 +54,6 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
         if (res)
         {
             pExtension->LatestAnimation = action;
-            
-            if(apAction->action->formID == 0x132AF)
-                pExtension->LatestWeapEquipAnimation = action;
         }
 
         World::Get().GetRunner().Trigger(action);
@@ -117,7 +114,7 @@ bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
     uint8_t result = 0;
 
     auto pActor = static_cast<Actor*>(apAction->actor);
-    if (!pActor || pActor->animationGraphHolder.IsReady())
+    if (pActor)
     {
         result = TiltedPhoques::ThisCall(PerformComplexAction, this, apAction);
 
