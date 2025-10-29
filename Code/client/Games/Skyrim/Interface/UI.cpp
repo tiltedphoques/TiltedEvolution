@@ -2,6 +2,7 @@
 #include <Games/Skyrim/Interface/UI.h>
 #include <Misc/BSFixedString.h>
 #include <TiltedOnlinePCH.h>
+#include "immersive_launcher/stubs/DllBlocklist.h"
 
 #include <World.h>
 
@@ -84,7 +85,7 @@ static void* (*UI_AddToActiveQueue)(UI*, IMenu*, void*);
 static void* UI_AddToActiveQueue_Hook(UI* apSelf, IMenu* apMenu, void* apFoundItem /*In reality a reference*/)
 {
     // if the menu is empty we let the real function handle it.
-    if (!apMenu || !World::Get().GetTransport().IsConnected())
+    if (!apMenu || !World::Get().GetTransport().IsConnected() || stubs::g_IsSoulsREActive)
         return UI_AddToActiveQueue(apSelf, apMenu, apFoundItem);
 
 #if 0

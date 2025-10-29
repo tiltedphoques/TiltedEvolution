@@ -274,7 +274,11 @@ NTSTATUS WINAPI TP_LdrLoadDll(const wchar_t* apPath, uint32_t* apFlags, UNICODE_
     size_t pos = fileName.find_last_of(L'\\');
     if (pos != std::wstring_view::npos && (pos + 1) != fileName.length())
     {
-        if (stubs::IsDllBlocked(&fileName[pos + 1]))
+        const wchar_t *name = &fileName[pos + 1];
+        if (stubs::IsSoulsRE(name))
+            stubs::g_IsSoulsREActive = true;
+        
+        if (stubs::IsDllBlocked(name))
         {
             // invalid image hash
             // this signals windows to *NOT TRY* loading it again at a later time.

@@ -18,7 +18,6 @@ namespace stubs
     // for causing crashes and incompatibility with ST
     const wchar_t* const kDllBlocklist[] = {
         L"EngineFixes.dll",          // Skyrim Engine Fixes, breaks our hooks
-        L"SkyrimSoulsRE.dll",        // Our mod implements this with special handling
         L"crashhandler64.dll",       // Stream crash handler, breaks heap
         L"fraps64.dll",              // Breaks tilted ui
         L"SpecialK64.dll",           // breaks rendering
@@ -256,6 +255,15 @@ bool IsDllBlocked(std::wstring_view dllName)
             return true;
         }
     }
+
+    return false;
+}
+
+bool IsSoulsRE(std::wstring_view dllName)
+{
+    const wchar_t *dllEntry = L"SkyrimSoulsRE.dll";
+    if (std::wcscmp(dllName.data(), dllEntry) == 0)
+        return true;
 
     return false;
 }
