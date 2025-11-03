@@ -1,3 +1,10 @@
+# Building the server:
+#   x64:   $ docker build -t imagename .
+#   arm64: $ docker build --platform linux/arm64 -t imagename .
+#   multi-platform (build and push):
+#     $ docker buildx create --name st-server-multiarch --use
+#     $ docker buildx build --platform linux/amd64,linux/arm64 -t imagename:tag --push .
+
 FROM debian:12 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -18,7 +25,7 @@ COPY . /src
 RUN source ~/.xmake/profile && \
     xmake config -y -m release && xmake -y && xmake install -y -o package
 
-# Actual server runtime image
+# Actual server runtime image; distroless for small footprint
 
 FROM gcr.io/distroless/cc-debian12 AS runtime
 
@@ -30,6 +37,5 @@ COPY --from=builder \
     /src/package/bin/SkyrimTogetherServer \
     /st-server/
 
-# Run
 ENTRYPOINT ["./SkyrimTogetherServer"]
 EXPOSE 10578/udp
