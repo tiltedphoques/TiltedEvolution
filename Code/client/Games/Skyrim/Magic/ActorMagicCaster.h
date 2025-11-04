@@ -28,4 +28,6 @@ struct ActorMagicCaster : MagicCaster
     uint32_t uiFlags;
 };
 
+static_assert(offsetof(ActorMagicCaster, pCasterActor) == 0xB8);
+static_assert(offsetof(ActorMagicCaster, pMagicNode) == 0xC0);
 static_assert(sizeof(ActorMagicCaster) == 0x100);
