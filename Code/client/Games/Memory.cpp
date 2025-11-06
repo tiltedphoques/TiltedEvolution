@@ -67,6 +67,39 @@ void Memory::Free(void* apData) noexcept
     TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, false);
 }
 
+static bool IsFormAllocateReplacedByEF(TFormAllocate** appOutEngineFixesAlloc) noexcept
+{
+    POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
+    TFormAllocate* pFormAllocate = s_formAllocate.Get();
+
+    auto opcodeBytes = reinterpret_cast<uint16_t*>(*pFormAllocate);
+    uint8_t shift = 0;
+
+    if (*opcodeBytes == 0x25FF) // 'jmp' opcode 'FF 25' and the 4-byte displacement bytes come before the virtual address we're after
+        shift = 6;
+    else if (*opcodeBytes == 0xB848) // 'mov' opcode '48 B8' comes before the virtual address we're after
+        shift = 2;
+
+    auto possibleEfAllocAddress = *reinterpret_cast<uintptr_t*>(reinterpret_cast<uint8_t*>(*pFormAllocate) + shift);
+
+    MEMORY_BASIC_INFORMATION mbi;
+    if (VirtualQuery((void*)possibleEfAllocAddress, &mbi, sizeof(mbi)) != 0)
+    {
+        if (mbi.AllocationBase == GetModuleHandleW(L"EngineFixes.dll"))
+        {
+            *appOutEngineFixesAlloc = reinterpret_cast<TFormAllocate*>(possibleEfAllocAddress);
+            return true;
+        }
+    }
+    return false;
+}
+
+static void RehookFormAllocate(TFormAllocate* apEngineFixesAllocate) noexcept
+{
+    RealFormAllocate = apEngineFixesAllocate;
+    TP_HOOK_IMMEDIATE(&RealFormAllocate, HookFormAllocate);
+}
+
 size_t Hook_msize(void* apData)
 {
     return mi_malloc_size(apData);
@@ -132,4 +165,26 @@ static TiltedPhoques::Initializer s_memoryHooks(
         TP_HOOK(&RealFormAllocate, HookFormAllocate);
     });
 
+using T_initterm_e = decltype(&_initterm_e);
+T_initterm_e Real_initterm_e = nullptr;
+
+// If EngineFixes loaded, and it changed our FormAllocate hook, 
+// reset it. Our hook works just fine chaining to theirs.
+int __cdecl Hook_initterm_e(_PIFV* apFirst, _PIFV* apLast)
+{
+    // We want to run last, so pre-chain.
+    auto retval = Real_initterm_e(apFirst, apLast); 
+    
+    // Check if EngineFixes messed with STR's modified alloc hook; if it did, treat EF as truth and rehook
+    TFormAllocate* pEngineFixesAllocate = nullptr;
+    if (GetModuleHandleW(L"EngineFixes.dll") && IsFormAllocateReplacedByEF(&pEngineFixesAllocate))
+        RehookFormAllocate(pEngineFixesAllocate);
+
+    return retval;
+}
+
+void HookFormAllocateSentinelInit()
+{
+    TP_HOOK_IAT(_initterm_e, "api-ms-win-crt-runtime-l1-1-0.dll");
+}
 #pragma optimize("", on)

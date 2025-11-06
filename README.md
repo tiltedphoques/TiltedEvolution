@@ -4,7 +4,7 @@
 <img src="https://avatars.githubusercontent.com/u/52131158?s=200&v=4" align="right"
      alt="Size Limit logo by Anton Lovchikov" width="110" height="100">
 
-Tilted Online is a framework created to enable multiplayer in Bethesda games, currently supporting **Skyrim Special Edition** and eventually **Fallout 4**.
+Tilted Online is a framework created to enable multiplayer in Bethesda games, currently supporting **Skyrim Special Edition**.
 
 ## Getting started
 To play Tilted Online, go to the [nexus page](https://www.nexusmods.com/skyrimspecialedition/mods/69993).

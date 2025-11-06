@@ -9,4 +9,6 @@ struct RemoteAnimationComponent
     List<ActionEvent> TimePoints;
     ActionEvent LastRanAction;
     ActionEvent LastProcessedAction;
+    uint32_t ReplayCount;
+    bool ResetAnimationGraphForReplay{false};
 };

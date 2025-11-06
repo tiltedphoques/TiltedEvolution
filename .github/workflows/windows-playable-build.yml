@@ -9,97 +9,46 @@ on:
     branches:
       - master
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+\.[0-9]+\.[0-9]+'
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [windows-latest]
-        arch: [x64]
-        mode: [release]
+  build-windows:
+    if: ${{ github.repository_owner == 'tiltedphoques' || github.event_name != 'schedule' }} # Disable cron runs in forks
+    uses: ./.github/workflows/windows.yml
+    with:
+      build-mode: 'release'
+      upload-build-for-next-job: true
 
-    runs-on: ${{ matrix.os }}
-
+  package-and-upload:
+    runs-on: windows-latest
+    needs: build-windows
     steps:
-      - uses: actions/checkout@v4
+      - name: Download artifact from the previous job
+        uses: actions/download-artifact@v5
         with:
-          # We need full history in order to create a build version string (BuildInfo.h)
-          fetch-depth: 0
+          name: internal-job-files
 
-      - name: Checkout submodules
-        run: |
-          git submodule sync --recursive
-          git submodule update --init --force --recursive --depth=1
-
-      - name: Checkout master on tag push
-        if: github.ref_type == 'tag'
-        # Checkout only if the tag was pushed to master
-        run: (git rev-parse HEAD) -eq (git rev-parse origin/master) -and (git checkout master)
-
-      - name: Cache xmake dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/AppData/Local/.xmake/packages
-          key: ${{ runner.os }}-xmake-${{ hashFiles('**/xmake.lua') }}
-
-      # Install xmake
-      - name: Setup xmake
-        uses: xmake-io/github-action-setup-xmake@v1
-        with:
-          xmake-version: 2.9.5
-          actions-cache-folder: '.xmake-cache' # This doesn't cache dependencies, only xmake itself
-          actions-cache-key: ${{ matrix.os }}
-
-      - name: Configure xmake and install dependencies
-        run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes -vD
-
-      # Build the game
-      - name: Build with xmake
-        run: xmake -y
-
-      # Create distrib
-      - name: Output STR binaries via xmake
-        run: xmake install -o distrib
-
-      # Building the Together UI
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/iron
-          cache-dependency-path: Code/skyrim_ui/pnpm-lock.yaml
-          cache: 'pnpm'
-
-      - name: Build the UI
-        run: |
-          pnpm --prefix Code/skyrim_ui/ install
-          pnpm --prefix Code/skyrim_ui/ deploy:production
-
-      # Package everything, organize directories
-
-      - name: Package binaries and assets
+      - name: Package build and organize directories
         run: |
           mkdir -p str-build/SkyrimTogetherReborn
-          mv build/windows/${{ matrix.arch }}/${{ matrix.mode }}/* str-build/SkyrimTogetherReborn
-          cp -Force -Recurse distrib/bin/* str-build/SkyrimTogetherReborn
-          cp -r Code/skyrim_ui/dist/UI str-build/SkyrimTogetherReborn
+          mv build/windows/x64/release/* str-build/SkyrimTogetherReborn
           cp -r GameFiles/Skyrim/* str-build/
 
-      - name: Remove unnecessary build files
-        run: rm str-build/SkyrimTogetherReborn/*.pdb, str-build/SkyrimTogetherReborn/*.lib
-
-      # Upload artifact
-
-      - name: Store version string
-        run: echo "STR_VERSION=$(git describe --tags)" >> $env:GITHUB_ENV
+      - name: Remove unnecessary build files, keep .pdb
+        run: |
+          mkdir str-pdb
+          mv str-build/SkyrimTogetherReborn/SkyrimTogether.pdb, str-build/SkyrimTogetherReborn/SkyrimTogetherServer.pdb str-pdb
+          rm str-build/SkyrimTogetherReborn/*.pdb, str-build/SkyrimTogetherReborn/*.lib, str-build/SkyrimTogetherReborn/*.exp
+          rm str-build/SkyrimTogetherReborn/*Tests.exe
 
       - name: Upload playable build
         uses: actions/upload-artifact@v4
         with:
-          name: Skyrim Together Build (${{ env.STR_VERSION }})
+          name: Skyrim Together Build (${{ needs.build-windows.outputs.str-version }})
           path: str-build/
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: Debug Symbols (${{ needs.build-windows.outputs.str-version }})
+          path: str-pdb/

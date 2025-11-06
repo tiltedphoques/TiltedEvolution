@@ -42,10 +42,10 @@ std::unique_ptr<TiltedPhoques::String[]> SplitLineTokens(const TiltedPhoques::St
 std::optional<bool> BoolifyString(std::string_view view)
 {
     // let the compiler optimize this.
-    if (view == "true" || view == "TRUE" || view == "1")
+    if (view == "true" || view == "True" || view == "TRUE" || view == "1")
         return true;
 
-    if (view == "false" || view == "FALSE" || view == "0")
+    if (view == "false" || view == "False" || view == "FALSE" || view == "0")
         return false;
 
     return std::nullopt;
@@ -183,7 +183,18 @@ void ConsoleRegistry::AddSetting(TiltedPhoques::UniquePtr<SettingBase> apSetting
 CommandBase* ConsoleRegistry::FindCommand(const char* acName)
 {
     // TODO: Maybe lookup by some hash...
-    auto it = std::find_if(m_commands.begin(), m_commands.end(), [&](CommandBase* apCommand) { return std::strcmp(apCommand->m_name, acName) == 0; });
+    auto it = std::find_if(
+        m_commands.begin(), m_commands.end(),
+        [&](CommandBase* apCommand)
+        {
+            TiltedPhoques::String findName(acName);
+            TiltedPhoques::String settingName(apCommand->m_name);
+
+            std::transform(findName.begin(), findName.end(), findName.begin(), [](unsigned char c) { return std::tolower(c); });
+            std::transform(settingName.begin(), settingName.end(), settingName.begin(), [](unsigned char c) { return std::tolower(c); });
+
+            return std::strcmp(settingName.c_str(), findName.c_str()) == 0;
+        });
     if (it == m_commands.end())
         return nullptr;
     return *it;
@@ -192,7 +203,18 @@ CommandBase* ConsoleRegistry::FindCommand(const char* acName)
 SettingBase* ConsoleRegistry::FindSetting(const char* acName)
 {
     // TODO: Maybe lookup by some hash...
-    auto it = std::find_if(m_settings.begin(), m_settings.end(), [&](SettingBase* apSetting) { return std::strcmp(apSetting->name, acName) == 0; });
+    auto it = std::find_if(
+        m_settings.begin(), m_settings.end(),
+        [&](SettingBase* apSetting)
+        {
+            TiltedPhoques::String findName(acName);
+            TiltedPhoques::String settingName(apSetting->name);
+
+            std::transform(findName.begin(), findName.end(), findName.begin(), [](unsigned char c) { return std::tolower(c); });
+            std::transform(settingName.begin(), settingName.end(), settingName.begin(), [](unsigned char c) { return std::tolower(c); });
+
+            return std::strcmp(settingName.c_str(), findName.c_str()) == 0;
+        });
     if (it == m_settings.end())
         return nullptr;
     return *it;

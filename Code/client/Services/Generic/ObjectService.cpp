@@ -67,9 +67,12 @@ bool ShouldSyncObject(const TESObjectREFR* apObject) noexcept
 
     switch (apObject->formID)
     {
-        // Don't sync the chest in the "Diplomatic Immunity" quest
-    case 0x39CF1: return false;
-    default: return true;
+    case 0x39CF1: // Don't sync the chest in the "Diplomatic Immunity" quest
+        return false;
+    case 0x3EF03: // ...as well as in the "No One Escapes Cidhna Mine" quest
+        return false;
+    default:
+        return true;
     }
 }
 
@@ -135,7 +138,7 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
         if (Lock* pLock = pObject->GetLock())
         {
-            objectData.CurrentLockData.IsLocked = pLock->flags;
+            objectData.CurrentLockData.IsLocked = pLock->IsLocked();
             objectData.CurrentLockData.LockLevel = pLock->lockLevel;
         }
 
@@ -182,7 +185,14 @@ void ObjectService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessa
         }
 
         if (pObject->baseForm->formType == FormType::Container)
-            pObject->SetInventory(objectData.CurrentInventory);
+        {
+            Inventory currentInventory = pObject->GetInventory();
+
+            if (currentInventory.ContainsQuestItems())
+                pObject->SetInventoryRetainingQuestItems(currentInventory, objectData.CurrentInventory);
+            else
+                pObject->SetInventory(objectData.CurrentInventory);
+        }
     }
 }
 
@@ -347,7 +357,13 @@ void ObjectService::OnLockChangeNotify(const NotifyLockChange& acMessage) noexce
 
     auto* pLock = pObject->GetLock();
 
-    if (!pLock)
+    if(!acMessage.IsLocked)
+    {
+        if (!pLock || !pLock->IsLocked())
+            return;
+    }
+
+    if (!pLock && acMessage.IsLocked)
     {
         pLock = pObject->CreateLock();
         if (!pLock)

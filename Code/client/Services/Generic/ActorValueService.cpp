@@ -124,8 +124,13 @@ void ActorValueService::BroadcastActorValues() noexcept
         RequestActorMaxValueChanges requestMaxValueChanges;
         requestMaxValueChanges.Id = localComponent.Id;
 
+        bool isPlayer = pActor->GetExtension() && pActor->GetExtension()->IsPlayer();
+
         for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
         {
+            if (isPlayer && i == ActorValueInfo::kDragonSouls)
+                continue;
+            
             float newValue = pActor->GetActorValue(i);
             float oldValue = actorValuesComponent.CurrentActorValues.ActorValuesList[i];
             if (newValue != oldValue)

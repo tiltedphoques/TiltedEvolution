@@ -193,3 +193,13 @@ void Inventory::RemoveByFilter(std::function<bool(const Entry&)> aFilter) noexce
 {
     Entries.erase(std::remove_if(Entries.begin(), Entries.end(), aFilter), Entries.end());
 }
+
+bool Inventory::ContainsQuestItems() const noexcept
+{
+    for (const auto& entry : Entries)
+    {
+        if (entry.IsQuestItem)
+            return true;
+    }
+    return false;
+}

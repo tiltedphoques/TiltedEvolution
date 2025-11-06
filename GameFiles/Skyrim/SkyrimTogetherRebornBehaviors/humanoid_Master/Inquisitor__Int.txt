@@ -1,0 +1,5 @@
+xma_nextRight
+xma_nextLeft
+iDualWLArt
+iWLPoint
+iState_WLLeviMove

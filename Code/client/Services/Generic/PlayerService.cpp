@@ -153,7 +153,7 @@ void PlayerService::OnPlayerDialogueEvent(const PlayerDialogueEvent& acEvent) co
         return;
 
     const auto& partyService = m_world.GetPartyService();
-    if (!partyService.IsInParty() || !partyService.IsLeader())
+    if (!partyService.IsInParty())
         return;
 
     PlayerDialogueRequest request{};

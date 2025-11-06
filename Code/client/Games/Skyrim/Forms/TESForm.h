@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Components/BaseFormComponent.h>
+#include <Misc/BSFixedString.h>
 
 enum class FormType : uint8_t
 {
@@ -82,7 +83,8 @@ struct TESForm : BaseFormComponent
     virtual void sub_2B();
     virtual void sub_2C();
     virtual void sub_2D();
-    virtual const char* GetName() const noexcept;
+    // Actual function name is `GetTextForParsedSubTag`; passing an empty tag gets the full name of this form
+    virtual const char* GetName(const BSFixedString& acTag = {}) const noexcept;
     virtual void CopyFrom(TESForm* apForm);
     virtual void sub_30();
     virtual void sub_31();
@@ -93,6 +95,8 @@ struct TESForm : BaseFormComponent
     virtual void sub_36();
     virtual void ActivateReference();
     virtual void sub_38();
+    virtual void unk_39();
+    virtual void unk_3A();
 
     // void CopyFromEx(TESForm* rhs);
     void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);

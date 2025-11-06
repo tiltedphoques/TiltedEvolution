@@ -1,9 +1,7 @@
 #include "MagicTarget.h"
 
 #include <Actor.h>
-#include <Games/ActorExtension.h>
 #include <World.h>
-#include <Games/ActorExtension.h>
 #include "EffectItem.h"
 
 #include <Structs/Skyrim/AnimationGraphDescriptor_WerewolfBehavior.h>
@@ -12,6 +10,7 @@
 #include <Events/AddTargetEvent.h>
 #include <Events/HitEvent.h>
 
+#include <Games/ActorExtension.h>
 #include <Games/Overrides.h>
 #include <PlayerCharacter.h>
 
@@ -204,7 +203,9 @@ void TP_MAKE_THISCALL(HookAdjustForPerks, ActiveEffect, Actor* apCaster, MagicTa
 
 bool TP_MAKE_THISCALL(HookHasPerk, Actor, TESForm* apPerk, void* apUnk1, double* afReturnValue)
 {
-    if (apThis && apThis->GetExtension()->IsRemotePlayer())
+    ActorExtension* pExtension = apThis ? apThis->GetExtension() : nullptr;
+
+    if (pExtension && pExtension->IsRemotePlayer())
     {
         if (apPerk && apPerk->formID == 0x581f9)
         {

@@ -42,8 +42,8 @@ struct CombatController
     CombatTargetSelector *pPreviousTargetSelector;
     uint32_t handleCount;
     int32_t unkCC;
-    Actor *pCachedAttacker;
-    Actor *pCachedTarget;
+    NiPointer<Actor> pCachedAttacker;
+    NiPointer<Actor> pCachedTarget;
 };
 
 static_assert(offsetof(CombatController, targetHandle) == 0x2C);

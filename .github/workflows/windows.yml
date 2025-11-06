@@ -5,80 +5,109 @@ on:
   push:
     branches:
       - master
-      - bluedove
       - prerel
+  workflow_call:
+    inputs:
+      build-mode:
+        required: true
+        type: string
+        default: 'releasedbg'
+      upload-build-for-next-job:
+        required: true
+        type: boolean
+        default: false
+    outputs:
+      str-version:
+        description: "Skyrim Together version string"
+        value: ${{ jobs.build.outputs.version }}
+
 jobs:
   build:
     strategy:
       matrix:
         os: [windows-latest]
         arch: [x64]
-        mode: [releasedbg]
 
     runs-on: ${{ matrix.os }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
 
+    outputs:
+      version: ${{ steps.output-version.outputs.version }}
+
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          # We need full history in order to create a version string (BuildInfo.h)
+          fetch-depth: 0
 
-    - name: Checkout submodules
-      run: |
-        git submodule sync --recursive
-        git submodule update --init --force --recursive --depth=1
-        
-    # Install xmake
-    - name: Setup xmake
-      uses: xmake-io/github-action-setup-xmake@v1
-      with:
-        xmake-version: '2.9.5'
+      - name: Checkout submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --force --recursive --depth=1
 
-    # Install node
-    #- name: Setup nodejs
-    #  uses: actions/setup-node@v2
-    #  with:
-    #    cache: npm
-    #    node-version: 16
+      - name: Checkout master on tag push
+        if: github.ref_type == 'tag'
+        # Checkout only if the tag was pushed to master
+        run: (git rev-parse HEAD) -eq (git rev-parse origin/master) -and (git checkout master)
 
-    #- name: Update xmake repository
-    #  run: xmake.exe repo --update
+      - name: Cache xmake dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/AppData/Local/.xmake/packages
+          key: ${{ runner.os }}-xmake-${{ hashFiles('**/xmake.lua') }}
 
-    #- name: Cache dependencies
-    #  uses: actions/cache@v2
-    #  with:
-    #    path: C:\Users\runneradmin\AppData\Local\.xmake\packages
-    #    key: v2-${{ runner.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ hashFiles('xmake.lua') }}-${{ hashFiles('C:\Users\runneradmin\AppData\Local\.xmake\xmake.conf') }}-${{ hashFiles('C:\Users\runneradmin\AppData\Local\.xmake\repositories\**') }}
+      # Install xmake
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: 2.9.8
+          actions-cache-folder: '.xmake-cache' # This doesn't cache dependencies, only xmake itself
+          actions-cache-key: ${{ matrix.os }}
 
-    #- name: Prepare npm
-    #  run: npm install @semantic-release/github @semantic-release/exec conventional-changelog-conventionalcommits
+      - name: Configure xmake and install dependencies
+        run: xmake config --arch=${{ matrix.arch }} --mode=${{ inputs.build-mode }} --yes -vD
 
-    # Delete old releases
-    #- name: Remove old releases
-    #  uses: dev-drprasad/delete-older-releases@v0.2.0
-    #  with:
-    #    keep_latest: 1
-    #    delete_tags: true
-    #  env:
-    #    GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      # Build the client
+      - name: Build with xmake
+        run: |
+          xmake -y
+          echo "STR_BUILD_DIR=build/windows/${{ matrix.arch }}/${{ inputs.build-mode }}/" >> $env:GITHUB_ENV
 
-    # Release version
-    #- name: Release version
-    #  run: npx semantic-release
-    #  env:
-    #    GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      # Create distrib
+      - name: Output distrib binaries via xmake
+        run: |
+          xmake install -o distrib
+          cp -Force -Recurse distrib/bin/* ${{ env.STR_BUILD_DIR }}
 
-    - name: Configure xmake and install dependencies
-      run: xmake.exe config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes --vs_sdkver=10.0.19041.0 -vD
+      # Building the Together UI
 
-    # Build the game
-    - name: Build with xmake
-      run: xmake.exe
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
-    # Create install
-    #- name: Bundle package
-    #  run: xmake.exe install -o packaged
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/iron
+          cache-dependency-path: Code/skyrim_ui/pnpm-lock.yaml
+          cache: 'pnpm'
 
-    # Upload artifacts
-    #- uses: actions/upload-artifact@v2
-    #  with:
-    #    name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}
-    #    path: packaged/bin/**
+      - name: Build the UI
+        run: |
+          pnpm --prefix Code/skyrim_ui/ install
+          pnpm --prefix Code/skyrim_ui/ deploy:production
+          cp -r Code/skyrim_ui/dist/UI ${{ env.STR_BUILD_DIR }}
+
+      - id: output-version
+        run: echo "version=$(git describe --tags)" >> $env:GITHUB_OUTPUT
+
+      - name: Upload build files for the next job
+        if: ${{ inputs.upload-build-for-next-job }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: internal-job-files
+          retention-days: 1
+          path: |
+            ${{ env.STR_BUILD_DIR }}
+            GameFiles/Skyrim/

@@ -52,7 +52,7 @@ if is_plat("windows") then
 end
 
 -- dependencies' dependencies version pinning
-add_requireconfs("*.mimalloc", { version = "2.1.7", override = true })
+add_requireconfs("*.mimalloc", { version = "2.2.4", override = true })
 add_requireconfs("*.cmake", { version = "3.30.2", override = true })
 add_requireconfs("*.openssl", { version = "1.1.1-w", override = true })
 add_requireconfs("*.zlib", { version = "v1.3.1", override = true })
@@ -82,7 +82,17 @@ before_build(function (target)
     bool_to_number[branch == "master"], 
     bool_to_number[branch == "bluedove"], 
     bool_to_number[branch == "prerel"])
-    io.writefile("build/BranchInfo.h", contents)
+
+    -- fix always-compiles problem by updating the file only if content has changed.
+    local filepath = "build/BranchInfo.h"
+    local old_content = nil
+    if os.exists(filepath) then
+        old_content = io.readfile(filepath)
+    end
+    if old_content ~= contents then
+        print("Updating file:", filepath)
+        io.writefile(filepath, contents)
+    end
 end)
 
 if is_mode("debug") then

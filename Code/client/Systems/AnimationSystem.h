@@ -35,6 +35,12 @@ struct AnimationSystem
      */
     static void Clean(World& aWorld, entt::entity aEntity) noexcept;
     /**
+     * @brief Adds multiple actions to be replayed.
+     * @param aAnimationComponent The animation component attached to the actor in question.
+     * @param acReplay The replay data.
+     */
+    static void AddActionsForReplay(RemoteAnimationComponent& aAnimationComponent, const ActionReplayChain& acReplay) noexcept;
+    /**
      * @brief Adds an action (animation) to be processed.
      * @param aAnimationComponent The animation component attached to the actor in question.
      * @param acActionDiff The differential data of the animation.

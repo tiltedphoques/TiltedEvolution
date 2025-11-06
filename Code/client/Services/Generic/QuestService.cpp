@@ -54,7 +54,7 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
 {
-    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsLeader())
+    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsInParty())
         return BSTEventResult::kOk;
 
     spdlog::info("Quest start/stop event: {:X}", apEvent->formId);
@@ -63,9 +63,24 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
     {
         if (IsNonSyncableQuest(pQuest))
             return BSTEventResult::kOk;
-
+     
+        if (pQuest->type == TESQuest::Type::None || pQuest->type == TESQuest::Type::Miscellaneous)
+        {
+            // Perhaps redundant, but necessary. We need the logging and
+            // the lambda coming up is queued and runs later
+            GameId Id;
+            auto& modSys = m_world.GetModSystem();
+            if (modSys.GetServerModId(pQuest->formID, Id))
+            {
+                spdlog::info(__FUNCTION__ ": queuing type none/misc quest gameId {:X} questStage {} questStatus {} questType {} formId {:X} name {}",
+                             Id.LogFormat(),  pQuest->currentStage, pQuest->IsStopped() ? RequestQuestUpdate::Stopped : RequestQuestUpdate::Started,
+                             static_cast<std::underlying_type_t<TESQuest::Type>>(pQuest->type), 
+                             pQuest->formID, pQuest->fullName.value.AsAscii());
+            }
+        }
+        
         m_world.GetRunner().Queue(
-            [&, formId = pQuest->formID, stageId = pQuest->currentStage, stopped = pQuest->IsStopped()]()
+            [&, formId = pQuest->formID, stageId = pQuest->currentStage, stopped = pQuest->IsStopped(), type = pQuest->type]()
             {
                 GameId Id;
                 auto& modSys = m_world.GetModSystem();
@@ -75,6 +90,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
                     update.Id = Id;
                     update.Stage = stageId;
                     update.Status = stopped ? RequestQuestUpdate::Stopped : RequestQuestUpdate::Started;
+                    update.ClientQuestType = static_cast<std::underlying_type_t<TESQuest::Type>>(type); 
 
                     m_world.GetTransport().Send(update);
                 }
@@ -86,7 +102,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
 
 BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const EventDispatcher<TESQuestStageEvent>*)
 {
-    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsLeader())
+    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsInParty())
         return BSTEventResult::kOk;
 
     spdlog::info("Quest stage event: {:X}, stage: {}", apEvent->formId, apEvent->stageId);
@@ -97,8 +113,24 @@ BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const Ev
         if (IsNonSyncableQuest(pQuest))
             return BSTEventResult::kOk;
 
+        if (pQuest->type == TESQuest::Type::None || pQuest->type == TESQuest::Type::Miscellaneous)
+        {
+            // Perhaps redundant, but necessary. We need the logging and
+            // the lambda coming up is queued and runs later
+            GameId Id;
+            auto& modSys = m_world.GetModSystem();
+            if (modSys.GetServerModId(pQuest->formID, Id))
+            {
+                spdlog::info(__FUNCTION__ ": queuing type none/misc quest gameId {:X} questStage {} questStatus {} questType {} formId {:X} name {}",
+                             Id.LogFormat(), pQuest->currentStage,
+                             RequestQuestUpdate::StageUpdate,
+                             static_cast<std::underlying_type_t<TESQuest::Type>>(pQuest->type),
+                             pQuest->formID, pQuest->fullName.value.AsAscii());
+            }
+        }
+
         m_world.GetRunner().Queue(
-            [&, formId = apEvent->formId, stageId = apEvent->stageId]()
+            [&, formId = apEvent->formId, stageId = apEvent->stageId, type = pQuest->type]()
             {
                 GameId Id;
                 auto& modSys = m_world.GetModSystem();
@@ -108,6 +140,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const Ev
                     update.Id = Id;
                     update.Stage = stageId;
                     update.Status = RequestQuestUpdate::StageUpdate;
+                    update.ClientQuestType = static_cast<std::underlying_type_t<TESQuest::Type>>(type);
 
                     m_world.GetTransport().Send(update);
                 }
@@ -126,6 +159,13 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
     {
         spdlog::error("Failed to find quest, base id: {:X}, mod id: {:X}", aUpdate.Id.BaseId, aUpdate.Id.ModId);
         return;
+    }
+
+    if (pQuest->type == TESQuest::Type::None || pQuest->type == TESQuest::Type::Miscellaneous)
+    {
+        spdlog::info(__FUNCTION__ ": receiving type none/misc quest update gameId {:X} questStage {} questStatus {} questType {} formId {:X} name {}",
+                     aUpdate.Id.LogFormat(), aUpdate.Stage, aUpdate.Status,
+                     aUpdate.ClientQuestType, formId, pQuest->fullName.value.AsAscii());
     }
 
     bool bResult = false;
@@ -168,12 +208,21 @@ bool QuestService::StopQuest(uint32_t aformId)
     return false;
 }
 
+static constexpr std::array kNonSyncableQuestIds = std::to_array<uint32_t>({
+    0x2BA16,   // Werewolf transformation quest
+    0x20071D0, // Vampire transformation quest
+    0x3AC44,   // MS13BleakFallsBarrowLeverScene
+    // 0xFE014801,  // Unknown dynamic ID, kept as note, maybe lookup correct ID this game?
+    0xF2593 // Skill experience quest
+});
+
 bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
 {
-    // non story quests are "blocked" and not synced
-    auto& stages = apQuest->stages;
-    return apQuest->type == TESQuest::Type::None // internal event
-           || apQuest->type == TESQuest::Type::Miscellaneous || stages.Empty();
+    // Quests with no quest stages are never synced. Most TESQues::Type:: quests should
+    // be synced, including Type::None and Type::Miscellaneous, but there are a few
+    // known exceptions that should be excluded that are in the table.
+    return    apQuest->stages.Empty() 
+           || std::find(kNonSyncableQuestIds.begin(), kNonSyncableQuestIds.end(), apQuest->formID) != kNonSyncableQuestIds.end();
 }
 
 void QuestService::DebugDumpQuests()

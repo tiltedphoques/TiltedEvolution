@@ -83,6 +83,7 @@ struct Inventory
     void RemoveByFilter(std::function<bool(const Entry&)> aFilter) noexcept;
     void AddOrRemoveEntry(const Entry& acEntry) noexcept;
     void UpdateEquipment(const Inventory& acNewInventory) noexcept;
+    bool ContainsQuestItems() const noexcept;
 
     Vector<Entry> Entries{};
     MagicEquipment CurrentMagicEquipment{};

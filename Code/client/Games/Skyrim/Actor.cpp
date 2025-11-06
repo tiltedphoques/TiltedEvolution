@@ -628,8 +628,14 @@ void Actor::SetActorValue(uint32_t aId, float aValue) noexcept
 
 void Actor::ForceActorValue(ActorValueOwner::ForceMode aMode, uint32_t aId, float aValue) noexcept
 {
-    const float current = GetActorValue(aId);
-    actorValueOwner.ForceCurrent(aMode, aId, aValue - current);
+    float initialValue = aMode == ActorValueOwner::ForceMode::PERMANENT 
+                         ? GetActorPermanentValue(aId)
+                         : GetActorValue(aId);
+
+    if (aValue == initialValue)
+        return;
+
+    actorValueOwner.ForceCurrent(aMode, aId, aValue - initialValue);
 }
 
 Inventory Actor::GetActorInventory() const noexcept
@@ -674,7 +680,7 @@ int32_t Actor::GetGoldAmount() const noexcept
     return TiltedPhoques::ThisCall(s_getGoldAmount, this);
 }
 
-void Actor::SetActorInventory(const Inventory& aInventory) noexcept
+void Actor::SetActorInventory(const Inventory& acInventory) noexcept
 {
     spdlog::info("Setting inventory for actor {:X}", formID);
 
@@ -682,8 +688,14 @@ void Actor::SetActorInventory(const Inventory& aInventory) noexcept
     // as RemoveAllItems() unequips every item if needed.
     // Placing this UnEquipAll() here seems to trigger a Skyrim bug/race.
 
-    SetInventory(aInventory);
-    SetMagicEquipment(aInventory.CurrentMagicEquipment);
+    Inventory currentInventory = GetActorInventory();
+
+    if (!this->GetExtension()->IsPlayer() && currentInventory.ContainsQuestItems())
+        SetInventoryRetainingQuestItems(currentInventory, acInventory);
+    else
+        SetInventory(acInventory);
+
+    SetMagicEquipment(acInventory.CurrentMagicEquipment);
 }
 
 void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
@@ -716,16 +728,10 @@ void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
 void Actor::SetActorValues(const ActorValues& acActorValues) noexcept
 {
     for (auto& value : acActorValues.ActorMaxValuesList)
-    {
-        float current = actorValueOwner.GetValue(value.first);
-        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::PERMANENT, value.first, value.second - current);
-    }
+        ForceActorValue(ActorValueOwner::ForceMode::PERMANENT, value.first, value.second);
 
     for (auto& value : acActorValues.ActorValuesList)
-    {
-        float current = actorValueOwner.GetValue(value.first);
-        actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, value.first, value.second - current);
-    }
+        ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, value.first, value.second);
 }
 
 void Actor::SetFactions(const Factions& acFactions) noexcept

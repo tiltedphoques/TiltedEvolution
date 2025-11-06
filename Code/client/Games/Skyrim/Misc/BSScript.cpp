@@ -289,3 +289,16 @@ bool BSScript::IsPlayerFunc::MarshallAndDispatch(Variable* apBaseVar, IVirtualMa
 
     return true;
 }
+
+BSScript::DidLaunchSkyrimTogetherFunc::DidLaunchSkyrimTogetherFunc(const char* apFunctionName, const char* apClassName, FunctionType aFunction, Variable::Type aType)
+    : NativeFunction(apFunctionName, apClassName, true, 0)
+{
+    pFunction = reinterpret_cast<void*>(aFunction);
+    returnType = aType;
+}
+
+bool BSScript::DidLaunchSkyrimTogetherFunc::MarshallAndDispatch(Variable* apBaseVar, IVirtualMachine* apVm, uint32_t aStackID, Variable* apResult, StackFrame* apStackFrame)
+{
+    apResult->Set<bool>(true);
+    return true;
+}

@@ -40,6 +40,7 @@
 #include <Messages/NotifyActorTeleport.h>
 #include <Messages/NotifyRelinquishControl.h>
 
+#include <Setting.h>
 namespace
 {
 Console::Setting bEnableXpSync{"Gameplay:bEnableXpSync", "Syncs combat XP within the party", true};
@@ -119,8 +120,8 @@ void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, Charact
         apSpawnRequest->CellId = pCellIdComponent->Cell;
     }
 
-    const auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
-    apSpawnRequest->LatestAction = animationComponent.CurrentAction;
+    auto& animationComponent = aRegistry.get<AnimationComponent>(aEntity);
+    apSpawnRequest->ActionsToReplay = animationComponent.ActionsReplayCache.FormRefinedReplayChain();
 }
 
 void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
@@ -237,6 +238,11 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             response.Position = movementComponent.Position;
             response.CellId = cellIdComponent.Cell;
             response.WorldSpaceId = cellIdComponent.WorldSpaceId;
+
+            if (auto* pAnimationComponent = m_world.try_get<AnimationComponent>(*itor))
+            {
+                response.ActionsToReplay = pAnimationComponent->ActionsReplayCache.FormRefinedReplayChain();
+            }
 
             acMessage.pPlayer->Send(response);
 
@@ -429,6 +435,8 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
             animationComponent.Actions.push_back(animationComponent.CurrentAction);
         }
 
+        animationComponent.ActionsReplayCache.AppendAll(update.ActionEvents);
+
         movementComponent.Sent = false;
     }
 }
@@ -613,8 +621,7 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     movementComponent.Rotation = {message.Rotation.x, 0.f, message.Rotation.y};
     movementComponent.Sent = false;
 
-    auto& animationComponent = m_world.emplace<AnimationComponent>(cEntity);
-    animationComponent.CurrentAction = message.LatestAction;
+    m_world.emplace<AnimationComponent>(cEntity);
 
     // If this is a player character store a ref and trigger an event
     if (isPlayer)
@@ -753,7 +760,7 @@ void CharacterService::ProcessFactionsChanges() const noexcept
         auto& ownerComponent = characterView.get<OwnerComponent>(entity);
 
         // If we have nothing new to send skip this
-        if (characterComponent.IsDirtyFactions())
+        if (!characterComponent.IsDirtyFactions())
             continue;
 
         for (auto pPlayer : m_world.GetPlayerManager())
@@ -838,14 +845,11 @@ void CharacterService::ProcessMovementChanges() const noexcept
         }
     }
 
-    m_world.view<AnimationComponent>().each(
-        [](AnimationComponent& animationComponent)
-        {
-            if (!animationComponent.Actions.empty())
-                animationComponent.LastSerializedAction = animationComponent.Actions[animationComponent.Actions.size() - 1];
-
-            animationComponent.Actions.clear();
-        });
+    m_world.view<AnimationComponent>().each([](AnimationComponent& animationComponent)
+    {
+        // Remove actions we've sent
+        animationComponent.Actions.clear();
+    });
 
     m_world.view<MovementComponent>().each([](MovementComponent& movementComponent) { movementComponent.Sent = true; });
 
