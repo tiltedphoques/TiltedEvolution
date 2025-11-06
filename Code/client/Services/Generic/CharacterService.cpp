@@ -1269,6 +1269,82 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 
     message.CurrentActorData = BuildActorData(pActor);
 
+    // Define a small tolerance value for comparing floating-point numbers.
+    constexpr float epsilon = 1e-6;
+    // Only sync living entities, excluding players
+    // Enable only if the difficulty is sufficiently high
+    uint32_t difficulty = World::Get().GetServerSettings().Difficulty;
+    if(difficulty > 2 && !pActor->IsDead() && pActor->GetExtension() && !pActor->GetExtension()->IsPlayer())
+    {
+        // Ensure the current player is in the party
+        if(World::Get().GetPartyService().IsInParty())
+        {
+            float currentHealth = message.CurrentActorData.InitialActorValues.ActorValuesList[ActorValueInfo::kHealth];
+            float maxHealth = message.CurrentActorData.InitialActorValues.ActorMaxValuesList[ActorValueInfo::kHealth];
+            // Use tolerance for approximate equality comparison, exclude characters with health ending in 7, as 7 indicates the value has already been reset
+            if(maxHealth >= 100 && std::fabs(currentHealth - maxHealth) <= epsilon && std::fmod(maxHealth, 10) != 7)
+            {
+                // Get the current number of party members
+                size_t size = World::Get().GetPartyService().GetPartyMembers().size();
+                if(size > 1)
+                {
+                    // rounded to two decimal places
+                    double multiple = std::round(std::log(size) / std::log(2) * 100.0) / 100.0;
+                    // Increase difficulty for Legendary mode
+                    if(difficulty == 5)
+                        multiple *= 2;
+                    
+                    float newMaxHealth = maxHealth + (maxHealth * multiple);
+
+                    // Ensure the units digit of the new health value is 7
+                    int roundedNewMaxHealth = static_cast<int>(std::round(newMaxHealth));
+                    int adjustment = (7 - (roundedNewMaxHealth % 10) + 10) % 10;
+                    roundedNewMaxHealth += adjustment;
+
+                    newMaxHealth = static_cast<float>(roundedNewMaxHealth);
+                    spdlog::info("Adjust health based on the number of players: {}", newMaxHealth);
+                    // Force set the local value
+                    pActor->ForceActorValue(ActorValueOwner::ForceMode::PERMANENT, ActorValueInfo::kHealth, newMaxHealth);
+                    pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, newMaxHealth);
+                    // Update the broadcasted value
+                    message.CurrentActorData.InitialActorValues.ActorMaxValuesList[ActorValueInfo::kHealth] = newMaxHealth;
+                    message.CurrentActorData.InitialActorValues.ActorValuesList[ActorValueInfo::kHealth] = newMaxHealth;
+
+                    // Calculate new stamina value
+                    float currentStamina = message.CurrentActorData.InitialActorValues.ActorValuesList[ActorValueInfo::kStamina];
+                    float maxStamina = message.CurrentActorData.InitialActorValues.ActorMaxValuesList[ActorValueInfo::kStamina];
+                    if(maxStamina >= 50 && std::fabs(currentStamina - maxStamina) <= epsilon)
+                    {
+                        // First calculate the floating-point result, then round it directly to an integer
+                        int tempNewMaxStamina = static_cast<int>(maxStamina + (maxStamina * static_cast<float>(multiple * 0.5)));
+
+                        int newMaxStamina = tempNewMaxStamina;
+
+                        pActor->ForceActorValue(ActorValueOwner::ForceMode::PERMANENT, ActorValueInfo::kStamina, newMaxStamina);
+                        pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kStamina, newMaxStamina);
+                        message.CurrentActorData.InitialActorValues.ActorMaxValuesList[ActorValueInfo::kStamina] = newMaxStamina;
+                        message.CurrentActorData.InitialActorValues.ActorValuesList[ActorValueInfo::kStamina] = newMaxStamina;
+                    }
+
+                    // Calculate new magicka value
+                    float currentMagicka = message.CurrentActorData.InitialActorValues.ActorValuesList[ActorValueInfo::kMagicka];
+                    float maxMagicka = message.CurrentActorData.InitialActorValues.ActorMaxValuesList[ActorValueInfo::kMagicka];
+                    if(maxMagicka >= 50 && std::fabs(currentMagicka - maxMagicka) <= epsilon)
+                    {
+                        // First calculate the floating-point result, then round it directly to an integer
+                        int tempNewMaxMagicka = static_cast<int>(maxMagicka + (maxMagicka * static_cast<float>(multiple * 0.35)));
+
+                        int newMaxMagicka = tempNewMaxMagicka;
+                        pActor->ForceActorValue(ActorValueOwner::ForceMode::PERMANENT, ActorValueInfo::kMagicka, newMaxMagicka);
+                        pActor->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kMagicka, newMaxMagicka);
+                        message.CurrentActorData.InitialActorValues.ActorMaxValuesList[ActorValueInfo::kMagicka] = newMaxMagicka;
+                        message.CurrentActorData.InitialActorValues.ActorValuesList[ActorValueInfo::kMagicka] = newMaxMagicka;
+                    }
+                }
+            }
+        }
+    }
+
     message.FactionsContent = pActor->GetFactions();
     message.IsDragon = pActor->IsDragon();
     message.IsMount = pActor->IsMount();
