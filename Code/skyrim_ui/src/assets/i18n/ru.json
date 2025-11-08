@@ -81,7 +81,7 @@
     "ROOT": {
       "CONNECT": "Подключиться",
       "DISCONNECT": "Отключиться",
-      "REVEAL_PLAYERS": "Показать игроков",
+      "REVEAL_PLAYERS": "Подсветить игроков",
       "RECONNECT": "Переподключиться",
       "PLAYER_MANAGER": "Управление игроками",
       "SETTINGS": "Настройки",
