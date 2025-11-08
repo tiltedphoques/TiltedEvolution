@@ -36,7 +36,7 @@ struct DebugService
     void SetDebugKey(const TiltedPhoques::SharedPtr<KeybindService::Key>& acpKey) noexcept { m_debugKeybind = *acpKey; }
     bool IsRebinding() const noexcept { return m_rebindUI || m_rebindDebug || m_rebindRevealPlayers; }
     void DebugPressed() noexcept { m_debugKeyPressed = !m_debugKeyPressed; }
-
+    static void ArrangeGameWindows(HWND aThisWindow) noexcept;
 protected:
     void OnDraw() noexcept;
 
@@ -48,6 +48,8 @@ private:
     void DisplayFormComponent(FormIdComponent& aFormComponent) const noexcept;
     void DisplayLocalComponent(LocalComponent& aLocalComponent, const uint32_t acFormId) const noexcept;
     void DisplayRemoteComponent(RemoteComponent& aLocalComponent, const entt::entity acEntity, const uint32_t acFormId) const noexcept;
+    void DisplayListOfReplayedActions(const ReplayedActionsDebugComponent& aDebugComponent,
+                                      RemoteAnimationComponent* apAnimationComponent) const noexcept;
 
     void DrawServerView() noexcept;
     void DrawEntitiesView();

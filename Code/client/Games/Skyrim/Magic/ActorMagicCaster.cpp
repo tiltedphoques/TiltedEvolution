@@ -18,8 +18,12 @@ void TP_MAKE_THISCALL(HookSpellCast, ActorMagicCaster, bool abSuccess, int32_t a
 {
     spdlog::debug("HookSpellCast, abSuccess: {}, auiTargetCount: {}, apSpell: {:X}", abSuccess, auiTargetCount, (uint64_t)apSpell);
 
-    // TODO(cosideci): why is this here?
+    // Note: these if guards is how the game does it too
+    if (!apThis->pCasterActor)
+        return;
     if (!abSuccess)
+        return;
+    if (!apSpell && !apThis->pCurrentSpell)
         return;
 
     if (apThis->pCasterActor->GetExtension()->IsRemote())

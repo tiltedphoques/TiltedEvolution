@@ -44,6 +44,8 @@
 #include <AI/AIProcess.h>
 
 #include <Messages/RequestRespawn.h>
+#include <Messages/PartyCreateRequest.h>
+#include <Messages/PartyLeaveRequest.h>
 
 #include <Games/Misc/SubtitleManager.h>
 #include <Games/Overrides.h>
@@ -191,7 +193,10 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f7Pressed = true;
 
-            //
+            if (!m_world.GetPartyService().IsInParty())
+                m_transport.Send(PartyCreateRequest{});
+            else
+                m_transport.Send(PartyLeaveRequest{});
         }
     }
     else
@@ -417,4 +422,41 @@ void DebugService::OnDraw() noexcept
 
     if (m_showBuildTag)
         DrawBuildTag();
+}
+
+void DebugService::ArrangeGameWindows(HWND aThisWindow) noexcept
+{
+    // This function conveniently arranges multiple game windows (multi-monitor window rearrangement is
+    // not implemented)
+#if (!IS_MASTER)
+    const uint32_t screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    const uint32_t screenHeight = GetSystemMetrics(SM_CYSCREEN);
+    RECT rect{};
+    GetWindowRect(aThisWindow, &rect);
+    const uint32_t gameWindowWidth = rect.right - rect.left;
+    const uint32_t gameWindowHeight = rect.bottom - rect.top;
+
+    const bool shouldArrangeWindows = (static_cast<float>(gameWindowWidth) / screenWidth) < 0.76f;
+    if (!shouldArrangeWindows)
+        return; // Too little room for that
+
+    SetWindowPos(GetConsoleWindow(), nullptr, 0, gameWindowHeight, 0, 0, SWP_NOSIZE);
+
+    CreateMutexA(0, FALSE, "SkyrimTogetherWindowMutex");
+    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        // One game instance is already open, arrange secondary game window...
+        const bool arrangeSideBySide = (static_cast<float>(gameWindowWidth) / screenWidth) <= 0.51f;
+
+        RECT conRect{};
+        GetWindowRect(GetConsoleWindow(), &conRect);
+        const uint32_t conY = arrangeSideBySide ? gameWindowHeight : 0;
+        const uint32_t conX = arrangeSideBySide ? (gameWindowWidth - 16) : screenWidth - (conRect.right - conRect.left);
+        SetWindowPos(GetConsoleWindow(), nullptr, conX, conY, 0, 0, SWP_NOSIZE);
+
+        const uint32_t x = arrangeSideBySide ? (gameWindowWidth - 16) : (screenWidth - gameWindowWidth);
+        const uint32_t y = arrangeSideBySide ? 0 : (screenHeight - gameWindowHeight - 48);
+        SetWindowPos(aThisWindow, nullptr, x, y, 0, 0, SWP_NOSIZE);
+    }
+#endif
 }

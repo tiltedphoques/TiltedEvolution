@@ -2,9 +2,12 @@
 
 #include <Games/Events.h>
 #include <Events/EventDispatcher.h>
+#include <Events/AddTargetEvent.h>
 #include <Messages/AddTargetRequest.h>
 #include <Messages/NotifyAddTarget.h>
 #include <Messages/NotifyRemoveSpell.h>
+#include <spdlog/spdlog.h>
+#include <chrono>
 
 struct World;
 struct TransportService;
@@ -42,7 +45,7 @@ struct MagicService
     void StartRevealingOtherPlayers() noexcept;
     void RevealKeybindPressed() noexcept;
 
-protected:
+  protected:
     /**
      * @brief Checks to apply queued effects on each frame.
      */
@@ -80,7 +83,7 @@ protected:
      */
     void OnNotifyRemoveSpell(const NotifyRemoveSpell& acMessage) noexcept;
 
-private:
+  private:
     /**
      * Sometimes, certain magic effects are applied on actors that do not yet exist
      * within the client's entity component system (for example when a beast is summoned).
@@ -97,14 +100,6 @@ private:
     World& m_world;
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
-
-    /**
-     * @brief The queued magic effects.
-     * @see ApplyQueuedEffects
-     */
-    Map<uint32_t, AddTargetRequest> m_queuedEffects;
-    Map<uint32_t, NotifyAddTarget> m_queuedRemoteEffects;
-
     bool m_revealingOtherPlayers = false;
     bool m_revealKeybindPressed = false;
 
@@ -117,4 +112,64 @@ private:
     entt::scoped_connection m_notifyAddTargetConnection;
     entt::scoped_connection m_removeSpellEventConnection;
     entt::scoped_connection m_notifyRemoveSpell;
+
+    /*
+     * @brief Queued magic effects.
+     * @see ApplyQueuedEffects
+     * Tracks effects queued for incompletely constructed actors / targets
+     * There may be multiple. There may be sequencing between the targets
+     * that matters. And, the objects might also be destroyed
+     * before application, so they must time out
+     */
+  public:
+    class MagicQueue
+    {
+      public:
+        MagicQueue() = default;
+        MagicQueue(const MagicQueue&) = default;
+        ~MagicQueue() noexcept = default;
+
+        bool Expired() const noexcept { return std::chrono::steady_clock::now() > m_expiration; }
+        static spdlog::level::level_enum m_logLevel; // Initializer at file end, non-const so debugger can change.
+        template <typename... Args> static inline void Spdlog(spdlog::format_string_t<Args...> aFmt, Args&&... args)
+        {
+            spdlog::log(m_logLevel, aFmt, std::forward<Args>(args)...);
+        }
+
+      private:
+        const std::chrono::steady_clock::duration m_queueLimit{std::chrono::seconds(4)};
+        const std::chrono::steady_clock::time_point m_expiration{std::chrono::steady_clock::now() + m_queueLimit};
+    };
+
+    class MagicAddTargetEventQueue : public MagicQueue
+    {
+      public:
+        MagicAddTargetEventQueue() = default;
+        MagicAddTargetEventQueue(const AddTargetEvent& aTarget) : m_AddTargetEvent(aTarget) {};
+        ~MagicAddTargetEventQueue() noexcept = default;
+        const AddTargetEvent& Target() const noexcept           { return m_AddTargetEvent; }
+
+      private:
+        AddTargetEvent m_AddTargetEvent;
+    };
+
+    class MagicNotifyAddTargetQueue : public MagicQueue
+    {
+      public:
+        MagicNotifyAddTargetQueue() = default;
+        MagicNotifyAddTargetQueue(const NotifyAddTarget& aTarget) : m_NotifyAddTarget(aTarget) {};
+        ~MagicNotifyAddTargetQueue() noexcept = default;
+        const NotifyAddTarget& Target() const noexcept            { return m_NotifyAddTarget; }
+
+      private:
+        NotifyAddTarget m_NotifyAddTarget;
+    };
+
+  private:
+    std::queue<MagicAddTargetEventQueue> m_queuedEffects;
+    std::queue<MagicNotifyAddTargetQueue> m_queuedRemoteEffects;
 };
+
+// Exposed so we can increase log level of just this tricky code, in debugger or a build.
+// Non-const has to be initialized outside of class.
+spdlog::level::level_enum MagicService::MagicQueue::m_logLevel{spdlog::level::debug};

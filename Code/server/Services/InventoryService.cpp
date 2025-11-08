@@ -11,6 +11,7 @@
 #include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/DrawWeaponRequest.h>
 
+#include <Setting.h>
 namespace
 {
 Console::Setting bEnableItemDrops{"Gameplay:bEnableItemDrops", "(Experimental) Syncs dropped items by players", false};

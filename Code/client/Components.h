@@ -5,6 +5,8 @@
 
 #include <Components/LocalAnimationComponent.h>
 #include <Components/RemoteAnimationComponent.h>
+#include <Components/EarlyAnimationBufferComponent.h>
+#include <Components/ReplayedActionsDebugComponent.h>
 #include <Components/FormIdComponent.h>
 #include <Components/InterpolationComponent.h>
 #include <Components/WaitingForAssignmentComponent.h>

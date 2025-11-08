@@ -117,7 +117,7 @@ float CalculateTargetScore(CombatTargetSelector* apThis, CombatTarget* apCombatT
     float score = 0.f;
 
     CombatController* pCombatController = apThis->pCombatController;
-    Actor* pCachedAttacker = pCombatController->pCachedAttacker;
+    Actor* pCachedAttacker = pCombatController->pCachedAttacker.object;
 
     BGSWorldLocation pAttackerWorldLocation{};
     RefrGetWorldLocation(apAttacker, &pAttackerWorldLocation);

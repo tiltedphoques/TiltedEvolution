@@ -141,7 +141,6 @@ void LoadScriptExender()
                 "logs from the "
                 "Script Extender and its loaded mods.",
                 skseVersion);
-
             pStartSKSE();
             spdlog::info("SKSE is active");
         }
