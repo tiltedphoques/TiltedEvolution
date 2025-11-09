@@ -167,6 +167,12 @@ export class ChatComponent implements AfterViewChecked {
     this.inputRef.nativeElement.focus();
   }
 
+  @HostListener('keydown.escape', ['$event'])
+  private onEscape(event: KeyboardEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   @HostListener('keydown.ArrowUp', ['$event'])
   private onArrowUp(event: KeyboardEvent) {
     event.preventDefault();

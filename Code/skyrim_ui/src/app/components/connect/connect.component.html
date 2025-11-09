@@ -14,6 +14,7 @@
     [(ngModel)]="address"
     (focus)="focus()"
     (blur)="blur()"
+    (heydown.escape)="blur()"
     spellcheck="false"
   />
   <input
@@ -24,6 +25,7 @@
     (focus)="focus()"
     (blur)="blur()"
     (keydown.enter)="connect()"
+    (heydown.escape)="blur()"
   />
   <span class="save-password">
     <input type="checkbox" id="save-password" [(ngModel)]="savePassword" />
