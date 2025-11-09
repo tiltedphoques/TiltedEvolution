@@ -983,6 +983,39 @@ bool TP_MAKE_THISCALL(HookDamageActor, Actor, float aDamage, Actor* apHitter, bo
         }
 
         World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, -realDamage));
+
+        if(apHitter)
+        {
+            // Heal the attacker if they are not a player and they kill the local player
+            const auto* pExHitter = apHitter->GetExtension();
+            if(!pExHitter->IsPlayer() && wouldKill)
+            {
+                spdlog::debug("Heals enemies who killed the player");
+                // Get max health
+                float maxHealth = apHitter->GetActorPermanentValue(ActorValueInfo::kHealth);
+                // Difficulty range is 0-5
+                uint32_t difficulty = World::Get().GetServerSettings().Difficulty;
+                float percentage = difficulty * 0.15f;
+                // Restore 20% of max health to the attacker
+                float recoveryHealth = maxHealth * 0.2f;
+                // Legendary difficulty
+                if(difficulty == 5)
+                    recoveryHealth = maxHealth;
+                // Remaining health of the attacker
+                float remainingHealth = apHitter->GetActorValue(ActorValueInfo::kHealth);
+                if(remainingHealth > 0)
+                {
+                    // Restore health lost based on a proportion
+                    float lostHealth = (maxHealth - remainingHealth) * percentage;
+                    // Final restored value
+                    recoveryHealth = lostHealth > recoveryHealth ? lostHealth : recoveryHealth;
+                    World::Get().GetRunner().Trigger(HealthChangeEvent(apHitter->formID, recoveryHealth));
+                    // Set the local value
+                    float newHealth = apHitter->GetActorValue(ActorValueInfo::kHealth) + recoveryHealth;
+                    apHitter->ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, newHealth);
+                }
+            }
+        }
         return TiltedPhoques::ThisCall(RealDamageActor, apThis, aDamage, apHitter, aKillMove);
     }
     else if (pExHittee->IsRemotePlayer())
