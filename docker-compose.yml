@@ -5,9 +5,9 @@ services:
     image: tiltedphoques/st-reborn-server:latest
     container_name: skyrim-together
     volumes:
-      - /home/user/skyrim-together:/home/server/config
-      - /home/user/skyrim-together/Data:/home/server/Data
-      - /home/user/skyrim-together/logs:/home/server/logs
+      - /home/user/skyrim-together/config:/st-server/config
+      - /home/user/skyrim-together/logs:/st-server/logs
+      - /home/user/skyrim-together/Data:/st-server/Data
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     ports:
