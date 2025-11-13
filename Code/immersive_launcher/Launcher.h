@@ -21,7 +21,11 @@ struct LaunchContext
     fs::path exePath;
     fs::path gamePath;
     TiltedPhoques::String Version;
+    bool isLoaded{false};
     ExeLoader::TEntryPoint gameMain = nullptr;
+
+    void SetLoaded() { isLoaded = true; }   // If loaded, need to spoof GetModuleFileName*(nullptr)
+    bool GetLoaded();
 };
 
 LaunchContext* GetLaunchContext();
