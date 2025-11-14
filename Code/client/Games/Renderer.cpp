@@ -30,6 +30,7 @@ ID3D11Device* BGSRenderer::GetDevice()
     return *(s_device.Get());
 }
 
+// unused, never hooked
 static void HookPresent()
 {
     // TODO (Force): refactor this ..
@@ -38,8 +39,7 @@ static void HookPresent()
     return RealRenderPresent();
 }
 
-// TODO (Force): handle lost devices
-
+// unused, never hooked
 static bool HookCreateViewport(void* viewport, ViewportConfig* pConfig, WindowConfig* pWindowConfig, void* a4)
 {
     pConfig->name = "Skyrim Together | " BUILD_BRANCH "@" BUILD_COMMIT;
