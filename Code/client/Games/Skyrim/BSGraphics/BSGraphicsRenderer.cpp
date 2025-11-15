@@ -60,7 +60,9 @@ void Hook_Renderer_Init(Renderer* self, BSGraphics::RendererInitOSData* aOSData,
     // This how the game does it too
     g_RenderWindow = &self->Data.RenderWindowA[0];
 
-    g_sRs->OnDeviceCreation(self->Data.RenderWindowA[0].pSwapChain);
+    const BSGraphics::RendererData& renderer = self->Data;
+
+    g_sRs->OnDeviceCreation(renderer.RenderWindowA[0].pSwapChain, renderer.pForwarder, renderer.pContext);
 }
 
 void (*StopTimer)(int) = nullptr;
