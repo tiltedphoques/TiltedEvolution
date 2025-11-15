@@ -1,4 +1,5 @@
 
+#include <BranchInfo.h>
 #include <Services/TransportService.h>
 
 #include <Events/ConnectedEvent.h>
@@ -112,7 +113,11 @@ void TransportService::OnConsume(const void* apData, uint32_t aSize)
 void TransportService::OnConnected()
 {
     AuthenticationRequest request{};
+#ifdef COMPATIBLE_WITH_BUILD_COMMIT
+    request.Version = COMPATIBLE_WITH_BUILD_COMMIT;
+#else
     request.Version = BUILD_COMMIT;
+#endif
     request.SKSEActive = IsScriptExtenderLoaded();
     request.MO2Active = GetModuleHandleW(kMO2DllName);
 
@@ -211,14 +216,18 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
     // error finding
 
     TiltedPhoques::String ErrorInfo;
-
     ErrorInfo = "{";
+
+    TiltedPhoques::String protocolVersion{BUILD_COMMIT};
+#ifdef COMPATIBLE_WITH_BUILD_COMMIT
+    protocolVersion = COMPATIBLE_WITH_BUILD_COMMIT;
+#endif
 
     switch (acMessage.Type)
     {
     case AR::kWrongVersion:
         ErrorInfo += "\"error\": \"wrong_version\", \"data\": {";
-        ErrorInfo += fmt::format("\"expectedVersion\": \"{}\", \"version\": \"{}\"", acMessage.Version, BUILD_COMMIT);
+        ErrorInfo += fmt::format("\"expectedVersion\": \"{}\", \"protocolVersion\": \"{}\", \"version\": \"{}\"", acMessage.Version, protocolVersion, BUILD_COMMIT);
         ErrorInfo += "}";
         break;
     case AR::kModsMismatch:

@@ -78,6 +78,9 @@ before_build(function (target)
     #define IS_MASTER %d
     #define IS_BRANCH_BETA %d
     #define IS_BRANCH_PREREL %d
+    #if !IS_MASTER
+    #define COMPATIBLE_WITH_BUILD_COMMIT "v1.8.0"
+    #endif
     ]], 
     bool_to_number[branch == "master"], 
     bool_to_number[branch == "bluedove"], 
