@@ -43,6 +43,7 @@ struct MagicService
      * @see UpdateRevealOtherPlayersEffect
      */
     void StartRevealingOtherPlayers() noexcept;
+    void RevealKeybindPressed() noexcept;
 
   protected:
     /**
@@ -100,6 +101,7 @@ struct MagicService
     entt::dispatcher& m_dispatcher;
     TransportService& m_transport;
     bool m_revealingOtherPlayers = false;
+    bool m_revealKeybindPressed = false;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_spellCastEventConnection;

@@ -163,9 +163,11 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     static std::atomic<bool> s_f7Pressed = false;
     static std::atomic<bool> s_f6Pressed = false;
 
-    if (GetAsyncKeyState(VK_F3) & 0x01)
+    // Bool state handled via KeybindService due to sometimes missing the key state changes
+    if (m_debugKeyPressed)
     {
         m_showDebugStuff = !m_showDebugStuff;
+        m_debugKeyPressed = false;
     }
 
 #if (!IS_MASTER)
@@ -206,7 +208,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         {
             s_f8Pressed = true;
 
-            //PlaceActorInWorld();
+            // PlaceActorInWorld();
         }
     }
     else
@@ -231,6 +233,7 @@ static bool g_enableWeatherWindow{false};
 static bool g_enableCombatWindow{false};
 static bool g_enableCalendarWindow{false};
 static bool g_enableDragonSpawnerWindow{false};
+static bool g_enableKeybindWindow{false};
 
 void DebugService::DrawServerView() noexcept
 {
@@ -320,6 +323,16 @@ void DebugService::OnDraw() noexcept
         ImGui::EndMenu();
     }
 #endif
+    if (ImGui::BeginMenu("Keybinds"))
+    {
+        ImGui::MenuItem("Show keybinds menu", nullptr, &g_enableKeybindWindow);
+        if (ImGui::Button("Reset all binds to default"))
+        {
+            m_world.GetKeybindService().ResetKeybinds(KeybindService::Keybind::All);
+        }
+
+        ImGui::EndMenu();
+    }
     if (ImGui::BeginMenu("Debuggers"))
     {
         ImGui::MenuItem("Quests", nullptr, &g_enableQuestWindow);
@@ -327,6 +340,7 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Server", nullptr, &g_enableServerWindow);
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
         ImGui::MenuItem("Dragon spawner", nullptr, &g_enableDragonSpawnerWindow);
+        ImGui::MenuItem("Keybinds", nullptr, &g_enableKeybindWindow);
 
 #if (!IS_MASTER)
         ImGui::MenuItem("Network", nullptr, &g_enableNetworkWindow);
@@ -373,6 +387,8 @@ void DebugService::OnDraw() noexcept
         DrawPartyView();
     if (g_enableDragonSpawnerWindow)
         DrawDragonSpawnerView();
+    if (g_enableKeybindWindow)
+        DrawKeybindView();
 
 #if (!IS_MASTER)
     if (g_enableNetworkWindow)

@@ -47,6 +47,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessDisconnectMessage();
         else if (eventName == "revealPlayers")
             ProcessRevealPlayersMessage();
+        else if (eventName == "textInputFocus")
+            ProcessIsTextInputFocused(eventArgs);
         else if (eventName == "sendMessage")
             ProcessChatMessage(eventArgs);
         else if (eventName == "setTime")
@@ -148,6 +150,11 @@ void OverlayClient::ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs)
 void OverlayClient::ProcessToggleDebugUI()
 {
     World::Get().GetDebugService().m_showDebugStuff = !World::Get().GetDebugService().m_showDebugStuff;
+}
+
+void OverlayClient::ProcessIsTextInputFocused(CefRefPtr<CefListValue> aEventArgs)
+{
+    World::Get().GetKeybindService().SetTextInputFocus(aEventArgs->GetBool(0));
 }
 
 void OverlayClient::SetUIVisible(bool aVisible) noexcept

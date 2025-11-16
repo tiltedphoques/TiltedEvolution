@@ -277,6 +277,10 @@ export class ClientService implements OnDestroy {
     skyrimtogether.teleportToPlayer(playerId);
   }
 
+  public textInputFocused(isFocused: boolean): void {
+    skyrimtogether.textInputFocus(isFocused);
+  }
+
   /**
    * Called when the UI is first initialized.
    */

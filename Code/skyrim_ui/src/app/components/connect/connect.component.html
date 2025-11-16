@@ -12,6 +12,9 @@
     [placeholder]="'COMPONENT.CONNECT.ADDRESS' | transloco"
     (keydown.enter)="connect()"
     [(ngModel)]="address"
+    (focus)="focus()"
+    (blur)="blur()"
+    (heydown.escape)="blur()"
     spellcheck="false"
   />
   <input
@@ -19,7 +22,10 @@
     [placeholder]="'COMPONENT.CONNECT.PASSWORD' | transloco"
     spellcheck="false"
     [(ngModel)]="password"
+    (focus)="focus()"
+    (blur)="blur()"
     (keydown.enter)="connect()"
+    (heydown.escape)="blur()"
   />
   <span class="save-password">
     <input type="checkbox" id="save-password" [(ngModel)]="savePassword" />

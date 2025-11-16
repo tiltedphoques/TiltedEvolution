@@ -350,6 +350,11 @@ interface SkyrimTogether {
   ): void;
 
   /**
+   * Notify the client if a text input field has been focused/unfocused.
+   */
+  textInputFocus(isFocused: boolean): void;
+
+  /**
    * Connect to server at given address and port.
    *
    * @param host IP address or hostname.
