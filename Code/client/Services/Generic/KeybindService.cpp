@@ -7,6 +7,8 @@
 
 #include "Services/MagicService.h"
 
+#include <cwctype>
+
 KeybindService::KeybindService(entt::dispatcher& aDispatcher, InputService& aInputService, DebugService& aDebugService, MagicService& aMagicService)
     : m_dispatcher(aDispatcher)
     , m_inputService(aInputService)
@@ -76,9 +78,9 @@ void KeybindService::InitializeKeys(bool aLoadDefaults) noexcept
     }
     else
     {
-        m_uiKey.first = m_config.ini.GetValue(L"Keybinds", L"sUiKey", L"F2");
-        m_debugKey.first = m_config.ini.GetValue(L"Keybinds", L"sDebugKey", L"F3");
-        m_revealPlayersKey.first = m_config.ini.GetValue(L"Keybinds", L"sRevealPlayersKey", L"F4");
+        m_uiKey.first = ToUpper(m_config.ini.GetValue(L"Keybinds", L"sUiKey", L"F2"));
+        m_debugKey.first = ToUpper(m_config.ini.GetValue(L"Keybinds", L"sDebugKey", L"F3"));
+        m_revealPlayersKey.first = ToUpper(m_config.ini.GetValue(L"Keybinds", L"sRevealPlayersKey", L"F4"));
 
         CheckForDuplicates();
 
@@ -429,6 +431,14 @@ TiltedPhoques::String KeybindService::ConvertToString(const TiltedPhoques::WStri
     }
 
     return {};
+}
+
+TiltedPhoques::WString KeybindService::ToUpper(const TiltedPhoques::WString& aString) noexcept
+{
+    TiltedPhoques::WString upperString = aString;
+    std::ranges::transform(upperString, upperString.begin(), [](wchar_t aChar) { return std::towupper(aChar); });
+
+    return upperString;
 }
 
 uint16_t KeybindService::ResolveVkKeyModifier(const uint16_t& acKeyCode) noexcept
