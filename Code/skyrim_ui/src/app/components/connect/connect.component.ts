@@ -131,12 +131,10 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   }
 
   public focus() : void {
-    this.inputRef.nativeElement.focus();
     this.client.textInputFocused(true);
   }
 
   public blur(): void {
-    this.inputRef.nativeElement.blur();
     this.client.textInputFocused(false);
   }
 
