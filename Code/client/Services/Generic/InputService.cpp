@@ -1,4 +1,5 @@
 #include <TiltedOnlinePCH.h>
+#include <BranchInfo.h>
 
 #include <Services/InputService.h>
 #include <Services/OverlayService.h>
@@ -103,7 +104,11 @@ void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
     aOverlay.SetActive(aActive);
 
     // Ensures the game is actually loaded, in case the initial event was sent too early
+#ifdef COMPATIBLE_WITH_BUILD_COMMIT
+    aOverlay.SetVersion(COMPATIBLE_WITH_BUILD_COMMIT);
+#else
     aOverlay.SetVersion(BUILD_COMMIT);
+#endif
     aOverlay.GetOverlayApp()->ExecuteAsync("enterGame");
 
     apRenderer->SetCursorVisible(aActive);

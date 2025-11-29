@@ -1,4 +1,5 @@
 #include <TiltedOnlinePCH.h>
+#include <BranchInfo.h>
 
 #include <Services/OverlayService.h>
 
@@ -217,7 +218,11 @@ void OverlayService::SetInGame(bool aInGame) noexcept
 
     if (m_inGame)
     {
+#ifdef COMPATIBLE_WITH_BUILD_COMMIT
+        SetVersion(COMPATIBLE_WITH_BUILD_COMMIT);
+#else
         SetVersion(BUILD_COMMIT);
+#endif
         m_pOverlay->ExecuteAsync("enterGame");
     }
     else

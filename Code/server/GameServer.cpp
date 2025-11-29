@@ -1,4 +1,5 @@
-﻿#include <Components.h>
+﻿#include <BranchInfo.h>
+#include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
 
@@ -183,6 +184,9 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
 
     UpdateInfo();
     spdlog::info("Server {} started on port {}", BUILD_COMMIT, GetPort());
+#ifdef COMPATIBLE_WITH_BUILD_COMMIT
+    spdlog::info("Server is compatible with protocol version {}", COMPATIBLE_WITH_BUILD_COMMIT);
+#endif
     UpdateTitle();
 
     m_pWorld = MakeUnique<World>();
@@ -825,9 +829,14 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
     };
 #if 1
     // to make our testing life a bit easier.
-    if (acRequest->Version != BUILD_COMMIT)
+#ifdef COMPATIBLE_WITH_BUILD_COMMIT
+    const auto effectiveVersion = COMPATIBLE_WITH_BUILD_COMMIT;
+#else
+    const auto effectiveVersion = BUILD_COMMIT;
+#endif
+    if (acRequest->Version != effectiveVersion)
     {
-        spdlog::info("New player {:x} '{}' tried to connect with client {} - Version mismatch", aConnectionId, remoteAddress, acRequest->Version.c_str());
+        spdlog::info("New player {:x} '{}' tried to connect with client protocol version {} - Version mismatch", aConnectionId, remoteAddress, acRequest->Version.c_str());
         sendKick(RT::kWrongVersion);
         return;
     }
@@ -1037,8 +1046,12 @@ void GameServer::UpdateTitle() const
 {
     const auto name = m_info.name.empty() ? "Private server" : m_info.name;
     const char* playerText = GetClientCount() <= 1 ? " player" : " players";
-
-    const auto title = fmt::format("{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT, name.c_str(), GetClientCount(), playerText, GetTickRate());
+#ifdef COMPATIBLE_WITH_BUILD_COMMIT
+    constexpr auto protocolVersion = ", protocol version " COMPATIBLE_WITH_BUILD_COMMIT;
+#else
+    constexpr auto protocolVersion = "";
+#endif
+    const auto title = fmt::format("{} - {} {} - {} Ticks - " BUILD_BRANCH "@" BUILD_COMMIT "{}", name.c_str(), GetClientCount(), playerText, GetTickRate(), protocolVersion);
 
 #if TP_PLATFORM_WINDOWS
     SetConsoleTitleA(title.c_str());

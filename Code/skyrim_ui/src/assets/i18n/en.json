@@ -162,7 +162,7 @@
     },
     "ERROR": {
       "ERRORS": {
-        "WRONG_VERSION": "This server expects version {{expectedVersion}} but you are on version {{version}}.",
+        "WRONG_VERSION": "This server requires protocol version {{expectedVersion}}\n but you are on protocol version {{protocolVersion}}, build {{version}}.\nUpdate your version or run the private server that comes with it.",
         "MODS_MISMATCH": "This server has ModPolicy enabled.{{mods}}",
         "MODS_MISMATCH_REMOVE": "Please remove the following mods to join:\n{{mods}}",
         "MODS_MISMATCH_INSTALL": "Please install the following mods to join:\n{{mods}}",

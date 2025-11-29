@@ -69,7 +69,12 @@
 #include <inttypes.h>
 extern thread_local bool g_overrideFormId;
 
-constexpr char kBuildTag[] = "Build: " BUILD_COMMIT " " BUILD_BRANCH " EVO\nBuilt: " __TIMESTAMP__;
+#define COMPAT_STRING
+#ifdef COMPATIBLE_WITH_BUILD_COMMIT
+#define COMPAT_STRING "\nCompatible with protocol version " COMPATIBLE_WITH_BUILD_COMMIT
+#endif
+constexpr char kBuildTag[] = "Build: " BUILD_COMMIT " " BUILD_BRANCH " EVO\nBuilt: " __TIMESTAMP__ COMPAT_STRING;
+
 static void DrawBuildTag()
 {
     auto* pWindow = BSGraphics::GetMainWindow();
