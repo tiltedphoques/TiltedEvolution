@@ -43,7 +43,7 @@ jobs:
 
       # (Release) Build the server for both x86_64 and arm64 platforms
       - name: Build and push release image
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: github.ref_type == 'tag'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -51,13 +51,13 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/st-reborn-server:${{ github.ref_name }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/st-reborn-server:${{ env.VERSION }}
             ${{ secrets.DOCKERHUB_USERNAME }}/st-reborn-server:latest
           labels: |
-            org.opencontainers.image.title=st-reborn-server
+            org.opencontainers.image.title=Skyrim Together Server
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.version=${{ github.ref_name  }}
+            org.opencontainers.image.version=${{ env.VERSION  }}
 
       # (Weekly) Build the server for both x86_64 and arm64 platforms
       - name: Build and push weekly image
@@ -71,7 +71,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/st-reborn-server:weekly-latest
           labels: |
-            org.opencontainers.image.title=st-reborn-server
+            org.opencontainers.image.title=Skyrim Together Server
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.version=${{ env.VERSION }}
