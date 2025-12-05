@@ -5,7 +5,7 @@
 #     $ docker buildx create --name st-server-multiarch --use
 #     $ docker buildx build --platform linux/amd64,linux/arm64 -t imagename:tag --push .
 
-FROM debian:12 AS builder
+FROM --platform=$TARGETOS/$TARGETARCH debian:12 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV XMAKE_ROOT=y
@@ -27,7 +27,7 @@ RUN source ~/.xmake/profile && \
 
 # Actual server runtime image; distroless for small footprint
 
-FROM gcr.io/distroless/cc-debian12 AS runtime
+FROM --platform=$TARGETOS/$TARGETARCH gcr.io/distroless/cc-debian12 AS runtime
 
 WORKDIR /st-server
 
