@@ -1,0 +1,14 @@
+replicas: 1
+image:
+  registry: docker.io
+  ports:
+    server: 10578
+volumes:
+  data:
+    hostPath: /data/skyrim-together
+  logs:
+    hostPath: /var/log/skyrim-together
+
+configMap:
+  STServer.ini: |
+    sLogLevel=warn

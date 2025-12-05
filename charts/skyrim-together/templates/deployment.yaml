@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: st
+  labels:
+    app: {{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: skyrim-together
+        image: "{{ .Values.image.registry }}/tiltedphoques/st-reborn-server:{{ .Chart.AppVersion }}"
+        imagePullPolicy: IfNotPresent
+        stdin: true
+        tty: true
+        ports:
+        - name: server
+          containerPort: {{ .Values.image.ports.server }}
+          protocol: UDP
+        volumeMounts:
+        - name: config
+          mountPath: /st-server/config
+        - name: data
+          mountPath: /st-server/Data
+        - name: logs
+          mountPath: /st-server/logs
+        - name: localtime
+          mountPath: /etc/localtime
+          readOnly: true
+        - name: timezone
+          mountPath: /etc/timezone
+          readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: skyrim-together-config
+            defaultMode: 0644
+        - name: data
+          hostPath:
+            path: {{ .Values.volumes.data.hostPath }}
+            type: Directory
+        - name: logs
+          hostPath:
+            path: {{ .Values.volumes.logs.hostPath }}
+            type: Directory
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+            type: File
+        - name: timezone
+          hostPath:
+            path: /etc/timezone
+            type: File

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: skyrim-together
+description: A Helm chart for Skyrim Together
+type: application
+version: 0.0.0
+appVersion: "v1.8.0"
