@@ -78,6 +78,8 @@ jobs:
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/st-reborn-server:buildcache-${{ matrix.arch }}
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/st-reborn-server:buildcache-${{ matrix.arch }},mode=max
 
       - name: Upload image artifact
         uses: actions/upload-artifact@v4
