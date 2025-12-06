@@ -24,7 +24,6 @@ COPY xmake.lua ./
 COPY modules/version.lua modules/
 COPY Libraries/xmake.lua Libraries/
 COPY Code/xmake.lua Code/
-# 🤪?
 COPY Code/admin/xmake.lua Code/admin/
 COPY Code/admin_protocol/xmake.lua Code/admin_protocol/
 COPY Code/base/xmake.lua Code/base/
