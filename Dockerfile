@@ -21,37 +21,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 WORKDIR /src
 
 COPY xmake.lua ./
-COPY modules/version.lua modules/
-COPY Libraries/xmake.lua Libraries/
-COPY Code/xmake.lua Code/
-COPY Code/admin/xmake.lua Code/admin/
-COPY Code/admin_protocol/xmake.lua Code/admin_protocol/
-COPY Code/base/xmake.lua Code/base/
-COPY Code/client/xmake.lua Code/client/
-COPY Code/common/xmake.lua Code/common/
-COPY Code/components/xmake.lua Code/components/
-COPY Code/components/console/xmake.lua Code/components/console/
-COPY Code/components/crash_handler/xmake.lua Code/components/crash_handler/
-COPY Code/components/es_loader/xmake.lua Code/components/es_loader/
-COPY Code/components/imgui/xmake.lua Code/components/imgui/
-COPY Code/components/resources/xmake.lua Code/components/resources/
-COPY Code/encoding/xmake.lua Code/encoding/
-COPY Code/immersive_elf/xmake.lua Code/immersive_elf/
-COPY Code/immersive_launcher/xmake.lua Code/immersive_launcher/
-COPY Code/server/xmake.lua Code/server/
-COPY Code/server_runner/xmake.lua Code/server_runner/
-COPY Code/tests/xmake.lua Code/tests/
-COPY Code/tp_process/xmake.lua Code/tp_process/
 
 COPY Libraries/ Libraries/
 
-RUN source ~/.xmake/profile && \
+RUN --mount=type=cache,target=/root/.xmake/packages \
+    source ~/.xmake/profile && \
     xmake config -y -m release
 
 # Copy source and build
 COPY . /src
 
-RUN source ~/.xmake/profile && \
+RUN --mount=type=cache,target=/root/.xmake/packages \
+    --mount=type=cache,target=/root/.xmake/cache \
+    source ~/.xmake/profile && \
     xmake -y && \
     xmake install -y -o package
 
