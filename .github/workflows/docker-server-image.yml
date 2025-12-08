@@ -1,0 +1,126 @@
+name: Server image build and push
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every Friday at 1:00 p.m. UTC
+    - cron: '0 13 * * 5'
+  push:
+    tags:
+      - 'v[0-9]+\.[0-9]+\.[0-9]+'
+
+env:
+  REGISTRY_IMAGE: tiltedphoques/st-reborn-server
+
+jobs:
+  build:
+    if: ${{ github.repository_owner == 'tiltedphoques' || github.event_name != 'schedule' }} # Disable cron runs in forks
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            platform: linux/amd64
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            arch: arm64
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # We need full history in order to create a version string (BuildInfo.h)
+          fetch-depth: 0
+
+      - name: Checkout submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --force --recursive --depth=1
+
+      - name: Store version in output
+        id: version
+        run: echo "version=$(git describe --tags)" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
+          labels: |
+            org.opencontainers.image.title=Skyrim Together Server
+            org.opencontainers.image.description=Dedicated server for the Skyrim Together multiplayer mod
+            org.opencontainers.image.url=https://skyrim-together.com
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          echo "${digest#sha256:}" > "/tmp/digests/${{ matrix.arch }}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.runner }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # Combine images into multi-arch manifest (x86-64 and arm) and push
+  merge-and-push:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Generate metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            type=schedule,pattern=weekly-latest
+            type=semver,pattern={{version}}
+            type=raw,value=${{ needs.build.outputs.version }},enable=${{ github.event_name == 'workflow_dispatch' }}
+
+      - name: Create manifest list and push
+        run: |
+          docker buildx imagetools create \
+            ${{ steps.meta.outputs.tags && format('-t {0}', join(fromJSON(steps.meta.outputs.json).tags, ' -t ')) }} \
+            ${{ env.REGISTRY_IMAGE }}@sha256:$(cat /tmp/digests/amd64) \
+            ${{ env.REGISTRY_IMAGE }}@sha256:$(cat /tmp/digests/arm64)

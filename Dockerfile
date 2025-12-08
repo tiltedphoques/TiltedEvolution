@@ -5,7 +5,7 @@
 #     $ docker buildx create --name st-server-multiarch --use
 #     $ docker buildx build --platform linux/amd64,linux/arm64 -t imagename:tag --push .
 
-FROM --platform=$TARGETOS/$TARGETARCH debian:12 AS builder
+FROM debian:12 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV XMAKE_ROOT=y
@@ -17,29 +17,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
     rm -rf /var/lib/apt/lists/* && \
     curl -fsSL https://xmake.io/shget.text | bash
 
-# Copy only xmake config files & submodules
-WORKDIR /src
-
-COPY xmake.lua ./
-
-COPY Libraries/ Libraries/
-
-RUN --mount=type=cache,target=/root/.xmake/packages \
-    source ~/.xmake/profile && \
-    xmake config -y -m release
-
 # Copy source and build
+
+WORKDIR /src
 COPY . /src
 
 RUN --mount=type=cache,target=/root/.xmake/packages \
-    --mount=type=cache,target=/root/.xmake/cache \
+    --mount=type=cache,target=/root/.xmake/repositories \
     source ~/.xmake/profile && \
+    xmake config -y -m release && \
     xmake -y && \
     xmake install -y -o package
 
 # Actual server runtime image; distroless for small footprint
 
-FROM --platform=$TARGETOS/$TARGETARCH gcr.io/distroless/cc-debian12 AS runtime
+FROM gcr.io/distroless/cc-debian12 AS runtime
 
 WORKDIR /st-server
 
