@@ -97,7 +97,7 @@ bool TESQuest::SetStage(uint16_t newStage)
     return SetStage(this, newStage);
 }
 
-void TESQuest::ScriptSetStage(uint16_t stageIndex, boolean bForce)
+void TESQuest::ScriptSetStage(uint16_t stageIndex, bool bForce)
 {
     if ((currentStage == stageIndex || IsStageDone(stageIndex)) && !bForce)
         return;
