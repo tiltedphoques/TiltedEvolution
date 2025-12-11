@@ -12,43 +12,72 @@ on:
       - 'v[0-9]+\.[0-9]+\.[0-9]+'
 
 jobs:
-  build-windows:
+  prepare:
     if: ${{ github.repository_owner == 'tiltedphoques' || github.event_name != 'schedule' }} # Disable cron runs in forks
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # We need full history in order to create a version string (BuildInfo.h)
+          fetch-depth: 0
+
+      - name: Store version in output
+        id: version
+        run: echo "version=$(git describe --tags)" >> $GITHUB_OUTPUT
+
+  build-linux:
+    needs: prepare
+    uses: ./.github/workflows/linux.yml
+    with:
+      build-mode: 'release'
+      upload-build-for-next-job: true
+
+  build-windows:
+    needs: prepare
     uses: ./.github/workflows/windows.yml
     with:
       build-mode: 'release'
       upload-build-for-next-job: true
 
   package-and-upload:
-    runs-on: windows-latest
-    needs: build-windows
+    runs-on: ubuntu-latest
+    needs: [prepare, build-windows, build-linux]
+    strategy:
+      matrix:
+        platform: [windows-x64, linux-arm64, linux-amd64, DebugSymbols-x64]
+
     steps:
       - name: Download artifact from the previous job
         uses: actions/download-artifact@v5
         with:
-          name: internal-job-files
+          name: internal-job-files-${{ matrix.platform }}-release
 
-      - name: Package build and organize directories
-        run: |
-          mkdir -p str-build/SkyrimTogetherReborn
-          mv build/windows/x64/release/* str-build/SkyrimTogetherReborn
-          cp -r GameFiles/Skyrim/* str-build/
-
-      - name: Remove unnecessary build files, keep .pdb
-        run: |
-          mkdir str-pdb
-          mv str-build/SkyrimTogetherReborn/SkyrimTogether.pdb, str-build/SkyrimTogetherReborn/SkyrimTogetherServer.pdb str-pdb
-          rm str-build/SkyrimTogetherReborn/*.pdb, str-build/SkyrimTogetherReborn/*.lib, str-build/SkyrimTogetherReborn/*.exp
-          rm str-build/SkyrimTogetherReborn/*Tests.exe
-
-      - name: Upload playable build
+      - name: Re-upload package artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Skyrim Together Build (${{ needs.build-windows.outputs.str-version }})
-          path: str-build/
+          name: Skyrim Together Build ${{ matrix.platform }} (${{ needs.prepare.outputs.version }})
+          path: .
 
-      - name: Upload debug symbols
-        uses: actions/upload-artifact@v4
+  release-upload:
+    # if: github.ref_type == 'tag'
+    needs: [prepare, artifact-upload]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifact
+        uses: actions/download-artifact@v5
         with:
-          name: Debug Symbols (${{ needs.build-windows.outputs.str-version }})
-          path: str-pdb/
+          path: release-files
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.prepare.outputs.version }}
+          name: Release ${{ needs.prepare.outputs.version }}
+          files: release-files/**
+          # Pre-release tag if push prerel
+          prerelease: ${{ contains(github.ref, 'prerel') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
