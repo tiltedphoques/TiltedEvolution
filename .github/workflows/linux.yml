@@ -18,43 +18,43 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'ci skip')"
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Checkout submodules
-      run: |
-        git submodule sync --recursive
-        git submodule update --init --force --recursive --depth=1
+      - name: Checkout submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --force --recursive --depth=1
 
-    # Install dependencies
-    - name: Update apt repositories
-      run: sudo apt-get update
+      # Install dependencies
+      - name: Update apt repositories
+        run: sudo apt-get update
 
-    # Install xmake
-    - name: Setup xmake
-      uses: xmake-io/github-action-setup-xmake@v1
-      with:
-        xmake-version: '2.9.8'
+      # Install xmake
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: '2.9.8'
 
-    # Update xmake repository (in order to have the file that will be cached)
-    - name: Update xmake repository
-      run: xmake repo --update
+      # Update xmake repository (in order to have the file that will be cached)
+      - name: Update xmake repository
+        run: xmake repo --update
 
-    # Setup compilation mode and install project dependencies
-    # (continue-on-error + timeout is a temporary solution until sentry-native is fixed; shouldn't affect the building step)
-    - name: Configure xmake and install dependencies
-      continue-on-error: true
-      run: timeout 15m xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes
+      # Setup compilation mode and install project dependencies
+      # (continue-on-error + timeout is a temporary solution until sentry-native is fixed; shouldn't affect the building step)
+      - name: Configure xmake and install dependencies
+        continue-on-error: true
+        run: timeout 15m xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes
 
-    # Build the server
-    - name: Build
-      run: xmake -y
+      # Build the server
+      - name: Build
+        run: xmake -y
 
-    # Create install
-    #- name: Install
-    # run: xmake install -o packaged
+      # Create install
+      #- name: Install
+      # run: xmake install -o packaged
 
-    # Upload artifacts
-    #- uses: actions/upload-artifact@v2
-    #  with:
-    #    name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}
-    #    path: packaged/bin/**
+      # Upload artifacts
+      #- uses: actions/upload-artifact@v2
+      #  with:
+      #    name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}
+      #    path: packaged/bin/**
