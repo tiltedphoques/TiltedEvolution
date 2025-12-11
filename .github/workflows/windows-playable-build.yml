@@ -41,7 +41,7 @@ jobs:
       build-mode: 'release'
       upload-build-for-next-job: true
 
-  package-and-upload:
+  artifact-upload:
     runs-on: ubuntu-latest
     needs: [prepare, build-windows, build-linux]
     strategy:
