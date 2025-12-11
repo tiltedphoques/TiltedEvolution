@@ -16,10 +16,6 @@ on:
         required: true
         type: boolean
         default: false
-    outputs:
-      str-version:
-        description: "Skyrim Together version string"
-        value: ${{ jobs.build.outputs.version }}
 
 jobs:
   build:
@@ -30,9 +26,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
-
-    outputs:
-      version: ${{ steps.output-version.outputs.version }}
 
     steps:
       - uses: actions/checkout@v4
