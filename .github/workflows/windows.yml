@@ -99,15 +99,33 @@ jobs:
           pnpm --prefix Code/skyrim_ui/ deploy:production
           cp -r Code/skyrim_ui/dist/UI ${{ env.STR_BUILD_DIR }}
 
-      - id: output-version
-        run: echo "version=$(git describe --tags)" >> $env:GITHUB_OUTPUT
+      - name: Package build and organize directories
+        shell: bash
+        run: |
+          mkdir -p str-build/SkyrimTogetherReborn str-pdb
+          mv "${{ env.STR_BUILD_DIR }}"/* str-build/SkyrimTogetherReborn/
+          cp -r GameFiles/Skyrim/* str-build/
 
-      - name: Upload build files for the next job
+      - name: Remove unnecessary build files, keep .pdb
+        shell: bash
+        run: |
+          mv str-build/SkyrimTogetherReborn/SkyrimTogether.pdb str-pdb/ 2>/dev/null || true
+          mv str-build/SkyrimTogetherReborn/SkyrimTogetherServer.pdb str-pdb/ 2>/dev/null || true
+          rm -f str-build/SkyrimTogetherReborn/*.pdb str-build/SkyrimTogetherReborn/*.lib str-build/SkyrimTogetherReborn/*.exp
+          rm -f str-build/SkyrimTogetherReborn/*Tests.exe
+
+      - name: Upload Windows build artifact
         if: ${{ inputs.upload-build-for-next-job }}
         uses: actions/upload-artifact@v4
         with:
-          name: internal-job-files
+          name: internal-job-files-windows-${{ matrix.arch }}-${{ inputs.build-mode }}
           retention-days: 1
-          path: |
-            ${{ env.STR_BUILD_DIR }}
-            GameFiles/Skyrim/
+          path: str-build/
+
+      - name: Upload Windows debug symbols artifact
+        if: ${{ inputs.upload-build-for-next-job }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: internal-job-files-DebugSymbols-${{ matrix.arch }}-${{ inputs.build-mode }}
+          retention-days: 1
+          path: str-pdb/
