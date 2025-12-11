@@ -5,56 +5,89 @@ on:
   push:
     branches:
       - master
+      - prerel
+  workflow_call:
+    inputs:
+      build-mode:
+        required: true
+        type: string
+        default: 'releasedbg'
+      upload-build-for-next-job:
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-22.04]
-        arch: [x64]
-        mode: [debug]
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # We need full history in order to create a version string (BuildInfo.h)
+          fetch-depth: 0
 
       - name: Checkout submodules
         run: |
           git submodule sync --recursive
           git submodule update --init --force --recursive --depth=1
 
-      # Install dependencies
-      - name: Update apt repositories
-        run: sudo apt-get update
+      - name: Checkout master on tag push
+        if: github.ref_type == 'tag'
+        # Checkout only if the tag was pushed to master
+        run: (git rev-parse HEAD) -eq (git rev-parse origin/master) -and (git checkout master)
+
+      - name: Cache xmake dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.xmake/packages
+          key: ${{ matrix.runner }}-xmake-${{ hashFiles('**/xmake.lua') }}
 
       # Install xmake
       - name: Setup xmake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: '2.9.8'
-
-      # Update xmake repository (in order to have the file that will be cached)
-      - name: Update xmake repository
-        run: xmake repo --update
+          xmake-version: 2.9.8
+          actions-cache-folder: '.xmake-cache' # This doesn't cache dependencies, only xmake itself
+          actions-cache-key: ${{ matrix.runner }}
 
       # Setup compilation mode and install project dependencies
       # (continue-on-error + timeout is a temporary solution until sentry-native is fixed; shouldn't affect the building step)
       - name: Configure xmake and install dependencies
-        continue-on-error: true
-        run: timeout 15m xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes
+        run: xmake config --mode=${{ inputs.build-mode }} --yes -vD
 
       # Build the server
       - name: Build
-        run: xmake -y
+        run: |
+          xmake -y
+          echo "STR_BUILD_DIR=build/linux/${{ matrix.arch }}/${{ inputs.build-mode }}" >> $GITHUB_ENV
 
       # Create install
-      #- name: Install
-      # run: xmake install -o packaged
+      - name: Output distrib binaries via xmake
+        run: |
+          xmake install -o packaged
+          mkdir -p ${{ env.STR_BUILD_DIR }}
+          cp packaged/lib/libSTServer.so ${{ env.STR_BUILD_DIR }}/ || true
+          cp packaged/bin/crashpad_handler ${{ env.STR_BUILD_DIR }}/ || true
+          cp packaged/bin/SkyrimTogetherServer ${{ env.STR_BUILD_DIR }}/ || true
 
       # Upload artifacts
-      #- uses: actions/upload-artifact@v2
-      #  with:
-      #    name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}
-      #    path: packaged/bin/**
+      - name: Upload build files for the next job
+        if: ${{ inputs.upload-build-for-next-job }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: internal-job-files-linux-${{ matrix.arch }}-${{ inputs.build-mode }}
+          retention-days: 1
+          path: |
+            ${{ env.STR_BUILD_DIR }}/libSTServer.so
+            ${{ env.STR_BUILD_DIR }}/crashpad_handler
+            ${{ env.STR_BUILD_DIR }}/SkyrimTogetherServer
