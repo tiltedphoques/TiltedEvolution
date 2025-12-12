@@ -83,7 +83,7 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           path: release-files
-          pattern: SkyrimTogether*
+          pattern: Skyrim Together*
           merge-multiple: true
 
       - name: Create GitHub Release
