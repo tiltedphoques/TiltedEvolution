@@ -71,7 +71,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Skyrim Together Build ${{ matrix.platform }} (${{ needs.prepare.outputs.version }})
-          path: ${{ matrix.filename }}
+          path: ${{ matrix.filename }}.zip
 
   release-upload:
     if: github.ref_type == 'tag'
@@ -83,6 +83,8 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           path: release-files
+          pattern: SkyrimTogether*
+          merge-multiple: true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
