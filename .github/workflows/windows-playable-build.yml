@@ -46,22 +46,35 @@ jobs:
     needs: [prepare, build-windows, build-linux]
     strategy:
       matrix:
-        platform: [windows-x64, linux-arm64, linux-amd64, DebugSymbols-x64]
+        include:
+          - platform: windows-x64
+            filename: SkyrimTogether-Windows-x64
+          - platform: DebugSymbols-x64
+            filename: SkyrimTogether-DebugSymbols-x64
+          - platform: linux-arm64
+            filename: SkyrimTogether-Linux-server-arm64
+          - platform: linux-amd64
+            filename: SkyrimTogether-Linux-server-amd64
 
     steps:
       - name: Download artifact from the previous job
         uses: actions/download-artifact@v5
         with:
           name: internal-job-files-${{ matrix.platform }}-release
+          path: output
+
+      - name: Package into zip
+        run: |
+          zip -r "${{ matrix.filename }}.zip" output
 
       - name: Re-upload package artifact
         uses: actions/upload-artifact@v4
         with:
           name: Skyrim Together Build ${{ matrix.platform }} (${{ needs.prepare.outputs.version }})
-          path: .
+          path: ${{ matrix.filename }}
 
   release-upload:
-    # if: github.ref_type == 'tag'
+    if: github.ref_type == 'tag'
     needs: [prepare, artifact-upload]
     runs-on: ubuntu-latest
 
