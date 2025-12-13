@@ -64,7 +64,7 @@ jobs:
 
       - name: Package into zip
         run: |
-          zip -r "${{ matrix.filename }}_(${{ needs.prepare.outputs.version }}).zip" output
+          zip -r "${{ matrix.filename }}_(${{ needs.prepare.outputs.version }}).zip" .
 
       - name: Re-upload package artifact
         uses: actions/upload-artifact@v4
