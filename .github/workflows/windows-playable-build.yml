@@ -64,13 +64,13 @@ jobs:
 
       - name: Package into zip
         run: |
-          zip -r "${{ matrix.filename }}_(${{ needs.prepare.outputs.version }}.zip" output
+          zip -r "${{ matrix.filename }}_(${{ needs.prepare.outputs.version }}).zip" output
 
       - name: Re-upload package artifact
         uses: actions/upload-artifact@v4
         with:
           name: Skyrim Together Build ${{ matrix.platform }} (${{ needs.prepare.outputs.version }})
-          path: ${{ matrix.filename }}_(${{ needs.prepare.outputs.version }}.zip
+          path: ${{ matrix.filename }}_(${{ needs.prepare.outputs.version }}).zip
 
   release-upload:
     if: github.ref_type == 'tag'
