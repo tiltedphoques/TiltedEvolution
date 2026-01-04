@@ -65,9 +65,12 @@ struct LogInstance
 
         auto fileOut = std::make_shared<sinks::rotating_file_sink_mt>(std::string("logs/") + kLogFileName, kLogFileSizeCap, 3);
         auto serverOut = std::make_shared<sinks::stdout_color_sink_mt>();
-        serverOut->set_pattern("%^[%H:%M:%S.%e] [%l] [tid %t] %$ %v");
+        serverOut->set_pattern("%^[%Y-%m-%d %H:%M:%S.%e] [%l] [tid %t] %$ %v");
         auto globalOut = std::make_shared<logger>("", sinks_init_list{serverOut, fileOut});
+        globalOut->set_pattern("%^[%Y-%m-%d %H:%M:%S.%e] [%l] [tid %t] %$ %v");
+
         globalOut->set_level(level::from_str(sLogLevel.value()));
+        spdlog::flush_every(std::chrono::seconds(2));
 
         // as the library is compiled into the client + server we have to do this twice
         spdlog::set_default_logger(globalOut);
