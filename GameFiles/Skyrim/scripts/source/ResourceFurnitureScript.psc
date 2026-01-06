@@ -40,49 +40,48 @@ endEvent
 
 auto STATE normal
 Event OnActivate(ObjectReference akActionRef)
-        Actor actorRef = akActionRef as Actor
-    if SkyrimTogetherUtils.IsRemotePlayer(actorRef)
-        return
-    endif
-    if akActionRef == Game.GetPlayer()
+	Actor actorRef = akActionRef as Actor
+	if SkyrimTogetherUtils.IsRemotePlayer(actorRef)
+		return
+	endif
 
-
-	gotoState("busy")
-; 	debug.trace(self + "OnActivate")
-	if akActionRef == Game.GetPlayer()  || (akActionRef as actor).isInFaction(CurrentFollowerFaction)
-; 		debug.trace("akActionRef is either player or a follower")
-		if (akActionRef as actor) != game.getPlayer()
-; 			debug.trace("It's a follower - store in NPCfollower property")
-			; if not the player, must be the follower
-			NPCfollower = akActionRef
-		endif
-		bool allowActivation = true
-		; check if player has required item
-		if requiredItemList
-			if akActionRef.GetItemCount(requiredItemList) == 0
-				if akActionRef == game.getPlayer()
-					; only require the axe item for the player
-					allowActivation = false
-; 					debug.trace("allowActivation = "+allowActivation)
-					FailureMessage.Show()
+	if akActionRef == Game.GetPlayer()
+		gotoState("busy")
+; 		debug.trace(self + "OnActivate")
+		if akActionRef == Game.GetPlayer()  || (akActionRef as actor).isInFaction(CurrentFollowerFaction)
+; 			debug.trace("akActionRef is either player or a follower")
+			if (akActionRef as actor) != game.getPlayer()
+; 				debug.trace("It's a follower - store in NPCfollower property")
+				; if not the player, must be the follower
+				NPCfollower = akActionRef
+			endif
+			bool allowActivation = true
+			; check if player has required item
+			if requiredItemList
+				if akActionRef.GetItemCount(requiredItemList) == 0
+					if akActionRef == game.getPlayer()
+						; only require the axe item for the player
+						allowActivation = false
+; 						debug.trace("allowActivation = "+allowActivation)
+						FailureMessage.Show()
+					endif
 				endif
 			endif
-		endif
 
-		if allowActivation
-			RegisterForEvents(akActionRef)
-; 			debug.trace(self + "player/follower activation START")
+			if allowActivation
+				RegisterForEvents(akActionRef)
+; 				debug.trace(self + "player/follower activation START")
+				Activate(akActionRef, true)
+; 				debug.trace(self + "player/follower activation END")
+			endif
+		else
+; 			;debug.trace(self + "non-follower NPC activation START")
+			; just activate it
 			Activate(akActionRef, true)
-; 			debug.trace(self + "player/follower activation END")
+; 			;debug.trace(self + "non-follower NPC activation END")
 		endif
-	else
-; 		;debug.trace(self + "non-follower NPC activation START")
-		; just activate it
-		Activate(akActionRef, true)
-; 		;debug.trace(self + "non-follower NPC activation END")
+		gotoState("normal") 
 	endif
-	gotoState("normal") 
-endif
 endEvent
 endState
 
