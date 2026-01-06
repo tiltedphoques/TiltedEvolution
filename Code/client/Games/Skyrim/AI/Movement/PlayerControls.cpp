@@ -19,6 +19,13 @@ void PlayerControls::SetCamSwitch(bool aSet) noexcept
     Data.remapMode = aSet;
 }
 
+bool PlayerControls::IsMovementControlsEnabled() noexcept
+{
+    using TIsMovementControlsEnabled = bool();
+    POINTER_SKYRIMSE(TIsMovementControlsEnabled, s_isMovementControlsEnabled, 55485);
+    return s_isMovementControlsEnabled.Get()();
+}
+
 BSInputEnableManager* BSInputEnableManager::Get()
 {
     POINTER_SKYRIMSE(BSInputEnableManager*, s_instance, 400863);

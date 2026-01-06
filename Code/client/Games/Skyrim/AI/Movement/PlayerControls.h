@@ -42,6 +42,8 @@ struct PlayerControls
 
     void SetCamSwitch(bool aSet) noexcept;
 
+    static bool IsMovementControlsEnabled() noexcept;
+
 public:
     char pad0[0x20];
     PlayerControlsData Data;

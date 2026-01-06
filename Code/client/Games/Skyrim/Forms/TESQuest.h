@@ -46,6 +46,23 @@ static_assert(offsetof(BGSSceneAction, flags) == 0x10);
 static_assert(offsetof(BGSSceneAction, status) == 0x14);
 static_assert(offsetof(BGSSceneAction, index) == 0x18);
 
+struct BGSSceneAction
+{
+    virtual ~BGSSceneAction();
+
+    uint32_t actorID;
+    uint16_t startPhase;
+    uint16_t endPhase;
+    uint32_t flags;
+    uint8_t status;
+
+    void Start()
+    {
+        this->status |= 1u;
+    }
+};
+
+static_assert(offsetof(BGSSceneAction, flags) == 0x10);
 struct BGSScene : TESForm
 {
     GameArray<void*> phases;
@@ -128,6 +145,10 @@ struct TESQuest : BGSStoryManagerTreeForm
         uint16_t stageIndex;
         uint8_t flags;
 
+        operator bool() const
+        {
+            return *reinterpret_cast<const std::uintptr_t*>(this) != 0;
+        }
         inline bool IsDone() { return flags & 1; }
     };
 
@@ -142,11 +163,8 @@ struct TESQuest : BGSStoryManagerTreeForm
     Type type;            // 0x00DF
     int32_t scopedStatus; // 0x00E0 default init: -1, if not -1 outside of story manager scope
     uint32_t padE4;
-    GameList<Stage> stages;
-    /*
-    GameList<Stage>* pExecutedStages;  // 0x00E8
-    GameList<Stage>* pWaitingStages;   // 0x00F0
-    */
+    GameValueList<Stage>* pExecutedStages; // 0x00E8
+    GameValueList<Stage*>* pWaitingStages; // 0x00F0
     GameList<Objective> objectives; // 0x00F8
     char pad108[0x100];             // 0x0108
     GameArray<BGSScene*> scenes;    // 0x0208
@@ -178,15 +196,18 @@ struct TESQuest : BGSStoryManagerTreeForm
 
     bool EnsureQuestStarted(bool& succeded, bool force);
 
-    bool SetStage(uint16_t stage);
-    void ScriptSetStage(uint16_t stage);
+    bool SetStage(uint16_t stageIndex);
+    bool ScriptSetStage(uint16_t stage, bool bForce = false);
+    void ScriptReset();
+    void ScriptResetAndUpdate();
     void SetStopped();
+    bool IsAnyCutscenePlaying();    
 };
 
 static_assert(sizeof(TESQuest) == 0x268);
 static_assert(offsetof(TESQuest, fullName) == 0x28);
 static_assert(offsetof(TESQuest, flags) == 0xDC);
-static_assert(offsetof(TESQuest, stages) == 0xE8);
+static_assert(offsetof(TESQuest, pExecutedStages) == 0xE8);
 static_assert(offsetof(TESQuest, objectives) == 0xF8);
 static_assert(offsetof(TESQuest, currentStage) == 0x228);
 static_assert(offsetof(TESQuest, unkFlags) == 0x248);

@@ -53,15 +53,49 @@ void DebugService::DrawQuestDebugView()
 
             if (ImGui::CollapsingHeader("Stages"))
             {
-                for (auto* pStage : pQuest->stages)
+                for (auto& stage : *pQuest->pExecutedStages)
                 {
-                    ImGui::TextColored({0.f, 255.f, 255.f, 255.f}, "Stage: %d, is done? %s", pStage->stageIndex, pStage->IsDone() ? "true" : "false");
+                    auto pStage = &stage;
+                    ImGui::TextColored({0.f, 255.f, 255.f, 255.f}, "Stage: %d, is done? %s", pStage->stageIndex,
+                                       pStage->IsDone() ? "true" : "false");
 
                     char setStage[64];
                     sprintf_s(setStage, std::size(setStage), "Set stage (%d)", pStage->stageIndex);
 
                     if (ImGui::Button(setStage))
                         pQuest->ScriptSetStage(pStage->stageIndex);
+                }
+            }
+            if (ImGui::CollapsingHeader("Waiting Stages"))
+            {
+                for (auto& pStage : *pQuest->pWaitingStages)
+                {
+                    ImGui::TextColored({0.f, 255.f, 255.f, 255.f}, "Stage: %d, is done? %s", pStage->stageIndex,
+                                       pStage->IsDone() ? "true" : "false");
+
+                    char setStage[64];
+                    sprintf_s(setStage, std::size(setStage), "Set stage (%d)", pStage->stageIndex);
+
+                    if (ImGui::Button(setStage))
+                        pQuest->ScriptSetStage(pStage->stageIndex);
+                }
+            }
+
+            if (ImGui::CollapsingHeader("Scenes"))
+            {
+                for (auto& pScene : pQuest->scenes)
+                {
+                    ImGui::TextColored({0.f, 255.f, 255.f, 255.f}, "Scene Form ID: %x, is playing? %s", pScene->formID,
+                                       pScene->isPlaying ? "true" : "false");
+
+                    ImGui::Text("Scene actions:");
+                    for (int i = 0; i < pScene->actions.length; ++i)
+                    {
+                        char startAction[64];
+                        sprintf_s(startAction, std::size(startAction), "Start action %d", i);
+                        if (ImGui::Button(startAction))
+                            pScene->actions[i]->Start();
+                    }
                 }
             }
 

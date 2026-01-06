@@ -20,6 +20,9 @@ static TPerformAction* RealPerformAction;
 // TODO: make scoped override
 thread_local bool g_forceAnimation = false;
 
+// This is where the Actors AI is enabled/disabled: almost all of NPC AI/behavior is
+// determined by Actions that are run on them.
+
 uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apAction)
 {
     auto pActor = apAction->actor;
