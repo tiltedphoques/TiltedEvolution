@@ -3,6 +3,7 @@
 #include <TiltedOnlineApp.h>
 
 #include <DInputHook.hpp>
+#include <dinput.h>
 #include <WindowsHook.hpp>
 
 #include <World.h>
@@ -114,6 +115,7 @@ void TiltedOnlineApp::InstallHooks2()
     TiltedPhoques::Initializer::RunAll();
 
     TiltedPhoques::DInputHook::Install();
+    TiltedPhoques::DInputHook::Get().SetToggleKeys({DIK_F2, DIK_RCONTROL});
 }
 
 void TiltedOnlineApp::UninstallHooks()
