@@ -73,9 +73,9 @@ jobs:
         run: |
           xmake install -o packaged
           mkdir -p ${{ env.STR_BUILD_DIR }}
-          cp packaged/lib/libSTServer.so ${{ env.STR_BUILD_DIR }}/ || true
-          cp packaged/bin/crashpad_handler ${{ env.STR_BUILD_DIR }}/ || true
-          cp packaged/bin/SkyrimTogetherServer ${{ env.STR_BUILD_DIR }}/ || true
+          cp packaged/lib/libSTServer.so ${{ env.STR_BUILD_DIR }}/
+          cp packaged/bin/crashpad_handler ${{ env.STR_BUILD_DIR }}/
+          cp packaged/bin/SkyrimTogetherServer ${{ env.STR_BUILD_DIR }}/
 
       # Upload artifacts
       - name: Upload build files for the next job
@@ -84,7 +84,4 @@ jobs:
         with:
           name: internal-job-files-linux-${{ matrix.arch }}-${{ inputs.build-mode }}
           retention-days: 1
-          path: |
-            ${{ env.STR_BUILD_DIR }}/libSTServer.so
-            ${{ env.STR_BUILD_DIR }}/crashpad_handler
-            ${{ env.STR_BUILD_DIR }}/SkyrimTogetherServer
+          path: ${{ env.STR_BUILD_DIR }}
