@@ -86,12 +86,9 @@ jobs:
           merge-multiple: true
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ needs.prepare.outputs.version }}
-          name: Release ${{ needs.prepare.outputs.version }}
-          files: release-files/**
-          # Pre-release tag if push prerel
-          prerelease: ${{ contains(github.ref, 'prerel') }}
+        run: |
+          gh release create ${{ needs.prepare.outputs.version }} \
+            ./release-files/* \
+            --title "Release ${{ needs.prepare.outputs.version }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
