@@ -43,7 +43,7 @@ jobs:
       - name: Checkout master on tag push
         if: github.ref_type == 'tag'
         # Checkout only if the tag was pushed to master
-        run: '[ "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)" ] && git checkout master'
+        run: '[ "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)" ] && git checkout master || echo False'
 
       - name: Cache xmake dependencies
         uses: actions/cache@v4
