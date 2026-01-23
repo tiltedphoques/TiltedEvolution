@@ -74,7 +74,7 @@ static bool SetThreadNameLinux(pthread_t thread, const char* name)
     if (!name) return false;
 
     // Linux limits thread names to 16 chars (including \0). We strictly truncate to fit the buffer
-    char buf[LINUX_THREAD_NAME_MAX];
+    char buf[LINUX_THREAD_NAME_MAX] = {};
     std::strncpy(buf, name, LINUX_THREAD_NAME_MAX - 1);
     buf[LINUX_THREAD_NAME_MAX - 1] = '\0';
 
