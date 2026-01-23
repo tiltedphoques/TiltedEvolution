@@ -14,7 +14,6 @@
 #include <base/threading/ThreadUtils.h>
 
 #include "DediRunner.h"
-#include <crash_handler/CrashHandler.h>
 
 #ifdef _WIN32
 #include <base/dialogues/win/TaskDialog.h>
@@ -213,17 +212,6 @@ int main(int argc, char** argv)
 
     LogInstance logger;
     (void)logger;
-
-    // Disabled EULA check since we have no EULA contents yet
-    /*
-    if (!IsEULAAccepted())
-    {
-        spdlog::error("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
-        return 2;
-    }
-    */
-
-    //ScopedCrashHandler _(true, true);
 
     // Note(Vince): This started crashing on 1.7+ lets disable it for now.
     // RegisterQuitHandler(); 

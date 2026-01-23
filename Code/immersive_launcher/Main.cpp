@@ -7,7 +7,6 @@
 
 #include "utils/ComUtils.h"
 #include "script_extender/SEMemoryBlock.h"
-#include <crash_handler/CrashHandler.h>
 
 #include <TiltedCore/Platform.hpp>
 
@@ -60,7 +59,6 @@ int main(int argc, char** argv)
     ComScope cs;
     TP_UNUSED(cs);
 
-    ScopedCrashHandler _;
     auto ret = launcher::StartUp(argc, argv);
 
     return ret;

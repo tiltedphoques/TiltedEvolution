@@ -37,7 +37,6 @@ WORKDIR /st-server
 
 COPY --from=builder \
     /src/package/lib/libSTServer.so \
-    /src/package/bin/crashpad_handler \
     /src/package/bin/SkyrimTogetherServer \
     /st-server/
 

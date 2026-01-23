@@ -41,7 +41,6 @@ add_requires(
     "gtest v1.14.0", 
     "mem 1.0.0", 
     "glm 0.9.9+8", 
-    "sentry-native 0.7.1", 
     "zlib v1.3.1"
 )
 if is_plat("windows") then
@@ -61,7 +60,6 @@ if is_plat("linux") then
 end
 
 add_requireconfs("cpp-httplib", {configs = {ssl = true}})
-add_requireconfs("sentry-native", { configs = { backend = "crashpad" } })
 --[[
 add_requireconfs("magnum", { configs = { sdl2 = true }})
 add_requireconfs("magnum-integration",  { configs = { imgui = true }})
@@ -106,56 +104,3 @@ end
 -- add projects
 includes("Libraries")
 includes("Code")
-
-task("upload-symbols")
-    on_run(function ()
-        import("core.base.option")
-
-        local key = option.get('key')
-        local linux = option.get('linux')
-
-        if key ~= nil then
-            import("net.http")
-            import("core.project.config")
-
-            config.load()
-
-            local sentrybin = path.join(os.projectdir(), "build", "sentry-cli.exe")
-            if not os.exists(sentrybin) then 
-                http.download("https://github.com/getsentry/sentry-cli/releases/download/2.0.2/sentry-cli-Windows-x86_64.exe", sentrybin)
-            end
-
-            if linux then
-                -- linux server bins
-                local file_path = path.join(os.projectdir(), "build", "linux", "x64", "SkyrimTogetherServer.debug")
-                os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-server", file_path})
-
-                file_path = path.join(os.projectdir(), "build", "linux", "x64", "libSTServer.debug")
-                os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-server", file_path})
-            end
-
-            -- windows bins
-            if not linux then
-                local file_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "SkyrimTogether.pdb")
-                os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-reborn", file_path})
-
-                file_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "SkyrimTogetherServer.pdb")
-                os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-server", file_path})
-
-                file_path = path.join(os.projectdir(), "build", config.get("plat"), config.get("arch"), config.get("mode"), "STServer.pdb")
-                os.execv(sentrybin, {"--auth-token", key, "upload-dif", "-o", "together-team", "-p", "st-server", file_path})
-            end
-
-        else
-            print("An API key is required to proceed!")
-        end
-    end)
-
-    set_menu {
-        usage = "xmake upload-symbols",
-        description = "Upload symbols to sentry",
-        options = {
-            {'k', "key", "kv", nil, "The API key to use." },
-            {'l', "linux", "v", false, "Upload linux symbols that were manually copied." },
-        }
-    }
