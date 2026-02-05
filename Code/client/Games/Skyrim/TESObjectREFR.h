@@ -18,6 +18,7 @@ struct TESWorldSpace;
 struct TESBoundObject;
 struct TESActorBase;
 struct TESContainer;
+struct BGSScene;
 
 enum class ITEM_REMOVE_REASON
 {
@@ -79,7 +80,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_47();
     virtual void sub_48();
     virtual void sub_49();
-    virtual void sub_4A();
+    virtual BGSScene* GetCurrentScene();
     virtual void sub_4B();
     virtual void sub_4C();
     virtual void sub_4D();

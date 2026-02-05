@@ -1116,24 +1116,73 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
     if (!m_transport.IsConnected())
         return;
 
+    const bool isLeader = World::Get().GetPartyService().IsLeader(); // Helps distinguish in 2-party logs
     auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
-    auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.ActorID](auto entity) { return view.get<FormIdComponent>(entity).Id == formId; });
+    auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.ActorID](auto entity) {
+        return view.get<FormIdComponent>(entity).Id == formId;
+    });
 
     if (entityIt == view.end())
+    {
+        spdlog::debug(__FUNCTION__ ": failed to find speaking Actor's FormIdComponent, formId {:X}, isLeader {}", acEvent.ActorID, isLeader);
         return;
+    }
 
     auto serverIdRes = Utils::GetServerId(*entityIt);
     if (!serverIdRes)
     {
-        spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.ActorID);
+        spdlog::debug(__FUNCTION__ ": server id not found for formId {:X}, isLeader {}", acEvent.ActorID, isLeader);
         return;
     }
+    
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.ActorID));
+    if (!pActor)
+        return;
 
-    DialogueRequest request{};
-    request.ServerId = serverIdRes.value();
-    request.SoundFilename = acEvent.VoiceFile;
+    bool isLocal = pActor->GetExtension()->IsLocal();
+    bool isInScene = pActor->IsInScene();
+    auto sceneId = isInScene ? pActor->GetCurrentScene()->formID : 0;
+    bool isTaskDialogue = pActor->IsTalking() && pActor->IsInDialogueWithPlayer();
+    bool isSpeakingInScene = pActor->IsSpeakingInScene();
 
-    m_transport.Send(request);
+    // There's no good way to distinguish the goodbye line 
+    // from the  first line of the scene, so disable this.
+    bool repairEdgeCase = false;
+#if 0
+    // Fix the edge case, "goodbye line" of TaskDialogue
+    static Actor* plastDialogueActor = nullptr;
+    static bool lastIsInDialogueWithPlayer = false;
+    bool repairEdgeCase = (pActor == plastDialogueActor) && lastIsInDialogueWithPlayer;
+
+    if (repairEdgeCase)
+    {
+        plastDialogueActor = nullptr;
+        lastIsInDialogueWithPlayer = false;
+    }
+
+    else if (isTaskDialogue)
+    {
+        plastDialogueActor = pActor;
+        lastIsInDialogueWithPlayer = true;
+    }
+#endif
+
+    const bool willSync = isTaskDialogue || repairEdgeCase || isLocal && !isInScene;
+
+    spdlog::debug(
+        __FUNCTION__ ": isLocal {}, isInScene {}, isSpeakingInScene {}, isTaskDialogue {} repaireEdgeCase {}, willSync {}, scene {:X}, Actor "
+                     "{:X}, serverId {:X}, isLeader {}, name {}, soundFile {}",
+        isLocal, isInScene, isSpeakingInScene, isTaskDialogue, repairEdgeCase, willSync, sceneId, pActor->formID, serverIdRes.value(), isLeader, pActor->baseForm->GetName(),
+        acEvent.VoiceFile);
+
+    if (willSync)
+    {
+        DialogueRequest request{};
+        request.ServerId = serverIdRes.value();
+        request.SoundFilename = acEvent.VoiceFile;
+
+        m_transport.Send(request);
+    }
 }
 
 void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept
@@ -1142,6 +1191,10 @@ void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcep
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
     if (!pActor)
         return;
+
+    spdlog::debug(
+        __FUNCTION__ ": playing dialogue Actor {:X}, serverId {:X}, isLeader {}, name {}, soundFile {}", pActor->formID, acMessage.ServerId, isLeader, pActor->baseForm->GetName(),
+        acMessage.SoundFilename);
 
     pActor->StopCurrentDialogue(true);
     pActor->SpeakSound(acMessage.SoundFilename.c_str());
@@ -1152,25 +1205,71 @@ void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
     if (!m_transport.IsConnected())
         return;
 
+    const bool isLeader = World::Get().GetPartyService().IsLeader(); // Helps distinguish in 2-party logs
     auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
     auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.SpeakerID](auto entity) { return view.get<FormIdComponent>(entity).Id == formId; });
 
     if (entityIt == view.end())
+    {
+        spdlog::debug(__FUNCTION__ ": failed to find subtitle Actor's FormIdComponent, formId {:X}, isLeader {}", acEvent.SpeakerID, isLeader);
         return;
+    }
 
     auto serverIdRes = Utils::GetServerId(*entityIt);
     if (!serverIdRes)
     {
-        spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.SpeakerID);
+        spdlog::debug(__FUNCTION__ ": server id not found for formId {:X}, isLeader {}", acEvent.SpeakerID, isLeader);
         return;
     }
 
-    SubtitleRequest request{};
-    request.ServerId = serverIdRes.value();
-    request.Text = acEvent.Text;
-    request.TopicFormId = acEvent.TopicFormID;
+    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.SpeakerID));
+    if (!pActor)
+        return;
 
-    m_transport.Send(request);
+    bool isLocal = pActor->GetExtension()->IsLocal();
+    bool isInScene = pActor->IsInScene();
+    auto isSpeakingInScene = pActor->IsSpeakingInScene();
+    auto sceneId = isInScene ? pActor->GetCurrentScene()->formID : 0;
+    bool isTaskDialogue = pActor->IsTalking() && pActor->IsInDialogueWithPlayer();
+
+    // There's no good way to distinguish the goodbye line
+    // from the  first line of the scene, so disable this.
+    bool repairEdgeCase = false;
+#if 0
+    // Fix the edge case, "goodbye line" of TaskDialogue
+    static Actor* plastDialogueActor = nullptr;
+    static bool lastIsInDialogueWithPlayer = false;
+    bool repairEdgeCase = (pActor == plastDialogueActor) && lastIsInDialogueWithPlayer;
+
+    if (repairEdgeCase)
+    {
+        plastDialogueActor = nullptr;
+        lastIsInDialogueWithPlayer = false;
+    }
+
+    else if (isTaskDialogue)
+    {
+        plastDialogueActor = pActor;
+        lastIsInDialogueWithPlayer = true;
+    }
+#endif
+
+    const bool willSync = isTaskDialogue || repairEdgeCase || isLocal && !isInScene;
+
+    spdlog::debug(
+        __FUNCTION__ ": isLocal {}, isInScene {}, isSpeakingInScene {}, isTaskDialogue {} repaireEdgeCase {}, willSync {}, scene {:X}, Actor "
+                     "{:X}, serverId {:X}, isLeader {}, name {}, subtitle {}",
+        isLocal, isInScene, isSpeakingInScene, isTaskDialogue, repairEdgeCase, willSync, sceneId, pActor->formID, serverIdRes.value(), isLeader, pActor->baseForm->GetName(),
+        acEvent.Text);
+
+    if (willSync)
+    {
+        SubtitleRequest request{};
+        request.ServerId = serverIdRes.value();
+        request.Text = acEvent.Text;
+        request.TopicFormId = acEvent.TopicFormID;
+        m_transport.Send(request);
+    }
 }
 
 void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
@@ -1183,6 +1282,10 @@ void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcep
     TESTopicInfo* pInfo = nullptr;
     pInfo = Cast<TESTopicInfo>(TESForm::GetById(acMessage.TopicFormId));
 
+    spdlog::debug(__FUNCTION__ ": showing subtitle Actor {:X}, serverId {:X}, isLeader {}, name {}, message: {}",
+                     pActor->formID, acMessage.ServerId, isLeader, pActor->baseForm->GetName(), acMessage.Text);
+
+    SubtitleManager::Get()->HideSubtitle(pActor);   // Subtitle conflicts can hang, this makes it beter at least.
     SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str(), pInfo);
 }
 
