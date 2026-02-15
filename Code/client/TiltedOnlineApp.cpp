@@ -36,8 +36,6 @@ TiltedOnlineApp::TiltedOnlineApp()
     auto rotatingLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logPath / "tp_client.log", 1048576 * 5, 3);
     // rotatingLogger->set_level(spdlog::level::debug);
     auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    console->set_pattern("%^[%Y-%m-%d %H:%M:%S.%e] [%l] [tid %t] %$ %v");
-
     auto logger = std::make_shared<spdlog::logger>("", spdlog::sinks_init_list{console, rotatingLogger});
     logger->set_pattern("%^[%Y-%m-%d %H:%M:%S.%e] [%l] [tid %t] %$ %v");
     spdlog::flush_every(std::chrono::seconds(1));
