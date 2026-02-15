@@ -65,7 +65,6 @@ struct LogInstance
 
         auto fileOut = std::make_shared<sinks::rotating_file_sink_mt>(std::string("logs/") + kLogFileName, kLogFileSizeCap, 3);
         auto serverOut = std::make_shared<sinks::stdout_color_sink_mt>();
-        serverOut->set_pattern("%^[%Y-%m-%d %H:%M:%S.%e] [%l] [tid %t] %$ %v");
         auto globalOut = std::make_shared<logger>("", sinks_init_list{serverOut, fileOut});
         globalOut->set_pattern("%^[%Y-%m-%d %H:%M:%S.%e] [%l] [tid %t] %$ %v");
 
