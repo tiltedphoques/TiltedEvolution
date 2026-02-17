@@ -101,7 +101,7 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
             }
         }
 
-        spdlog::default_logger()->flush();
+        spdlog::shutdown();
 
         // Something in STR breaks top-level unhandled exception filters.
         // The Win API for them is pretty clunky (non-atomic, not chainable), 
