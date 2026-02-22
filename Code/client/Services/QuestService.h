@@ -51,28 +51,3 @@ private:
     entt::scoped_connection m_questUpdateConnection;
     entt::scoped_connection m_questSceneUpdateConnection;
 };
-
-#if 0
-class SceneService final : public BSTEventSink<TESSceneEvent>
-{
-  public:
-    SceneService(World&, entt::dispatcher&);
-    ~SceneService() = default;
-
-    const uint32_t PlayerId() const noexcept { return m_playerId; }
-
-  private:
-    friend struct SceneEventHandler;
-
-    void OnConnected(const ConnectedEvent&) noexcept;
-    void Disconnected(const DisconnectedEvent&) noexcept { m_playerId = 0; }
-
-    BSTEventResult OnEvent(const TESSceneEvent*, const EventDispatcher<TESSceneEvent>*) override;
-
-    World& m_world;
-    uint32_t m_playerId;
-
-    entt::scoped_connection m_joinedConnection;
-    entt::scoped_connection m_leftConnection;
-};
-#endif

@@ -164,54 +164,6 @@ BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const Ev
     return BSTEventResult::kOk;
 }
 
-#if 0
-void SceneService::OnConnected(const ConnectedEvent& apEvent) noexcept
-{
-    m_playerId = apEvent.PlayerId;
-    spdlog::info(__FUNCTION__ ": connected, playerId: {:X}", apEvent.PlayerId);
-}
-
-SceneService::SceneService(World& aWorld, entt::dispatcher& aDispatcher) : m_world(aWorld)
-{
-    m_joinedConnection = aDispatcher.sink<ConnectedEvent>().connect<&SceneService::OnConnected>(this);
-    m_playerId = 0;
-
-    // A note about the Gameevents:
-    // TESQuestStageItemDoneEvent gets fired to late, we instead use TESQuestStageEvent, because it responds
-    // immediately. TESQuestInitEvent can be instead managed by start stop quest management. bind game event listeners
-    auto* pEventList = EventDispatcherManager::Get();
-    pEventList->sceneEvent.RegisterSink(this);
-}
-
-BSTEventResult SceneService::OnEvent(const TESSceneEvent* apEvent, const EventDispatcher<TESSceneEvent>*)
-{
-    GameId Id;
-    auto pScene = Cast<BGSScene>(TESForm::GetById(apEvent->sceneFormId));
-    auto pQuest = pScene->owningQuest;
-    if (pQuest == nullptr || QuestService::IsNonSyncableQuest(pQuest) || !m_world.Get().GetPartyService().IsInParty() ||
-        !m_world.GetModSystem().GetServerModId(pQuest->formID, Id))
-        return BSTEventResult::kOk; // pQuest == nullptr shouldn't happen, nor should getting GameId fail.
-
-    const auto beginEnd = apEvent->sceneType ? "End" : "Begin";
-    const bool isMiscNone =
-        (pQuest->type == TESQuest::Type::None ||
-         pQuest->type == TESQuest::Type::Miscellaneous); // If we can't get the GameId we can't sync anyway.
-    const TiltedPhoques::String miscQuest(isMiscNone ? spdfmt::format("none/misc quest gameId {:X},", Id.LogFormat())
-                                                     : "quest");
-    const bool isLeader = m_world.Get().GetPartyService().IsLeader();
-    const auto playerString = isLeader ? "leader" : "player";
-    const auto isPlaying = pScene->isPlaying;
-
-    spdlog::info(__FUNCTION__ ": scene {}, isPlaying {}, formId: {:X}, {} formId: {:X}, questStage: {}, questType: {}, "
-                              "isStopped: {}, flags: {:X}, {} {}, name: {}",
-                 beginEnd, isPlaying, apEvent->sceneFormId, miscQuest, pQuest->formID, pQuest->currentStage,
-                 static_cast<std::underlying_type_t<TESQuest::Type>>(pQuest->type), pQuest->IsStopped(), pQuest->flags,
-                 playerString, PlayerId(), pQuest->fullName.value.AsAscii());
-
-    return BSTEventResult::kOk;
-}
-#endif
-
 BSTEventResult QuestService::OnEvent(const TESSceneEvent* apEvent, const EventDispatcher<TESSceneEvent>*)
 {
     GameId Id;
