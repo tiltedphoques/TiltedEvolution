@@ -1145,34 +1145,12 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
     bool isTaskDialogue = pActor->IsTalking() && pActor->IsInDialogueWithPlayer();
     bool isSpeakingInScene = pActor->IsSpeakingInScene();
 
-    // There's no good way to distinguish the goodbye line 
-    // from the  first line of the scene, so disable this.
-    bool repairEdgeCase = false;
-#if 0
-    // Fix the edge case, "goodbye line" of TaskDialogue
-    static Actor* plastDialogueActor = nullptr;
-    static bool lastIsInDialogueWithPlayer = false;
-    bool repairEdgeCase = (pActor == plastDialogueActor) && lastIsInDialogueWithPlayer;
-
-    if (repairEdgeCase)
-    {
-        plastDialogueActor = nullptr;
-        lastIsInDialogueWithPlayer = false;
-    }
-
-    else if (isTaskDialogue)
-    {
-        plastDialogueActor = pActor;
-        lastIsInDialogueWithPlayer = true;
-    }
-#endif
-
-    const bool willSync = isTaskDialogue || repairEdgeCase || isLocal && !isInScene;
+    const bool willSync = isTaskDialogue || isLocal && !isInScene;
 
     spdlog::debug(
-        __FUNCTION__ ": isLocal {}, isInScene {}, isSpeakingInScene {}, isTaskDialogue {} repaireEdgeCase {}, willSync {}, scene {:X}, Actor "
+        __FUNCTION__ ": isLocal {}, isInScene {}, isSpeakingInScene {}, isTaskDialogue {}, willSync {}, scene {:X}, Actor "
                      "{:X}, serverId {:X}, isLeader {}, name {}, soundFile {}",
-        isLocal, isInScene, isSpeakingInScene, isTaskDialogue, repairEdgeCase, willSync, sceneId, pActor->formID, serverIdRes.value(), isLeader, pActor->baseForm->GetName(),
+        isLocal, isInScene, isSpeakingInScene, isTaskDialogue, willSync, sceneId, pActor->formID, serverIdRes.value(), isLeader, pActor->baseForm->GetName(),
         acEvent.VoiceFile);
 
     if (willSync)
@@ -1232,34 +1210,12 @@ void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
     auto sceneId = isInScene ? pActor->GetCurrentScene()->formID : 0;
     bool isTaskDialogue = pActor->IsTalking() && pActor->IsInDialogueWithPlayer();
 
-    // There's no good way to distinguish the goodbye line
-    // from the  first line of the scene, so disable this.
-    bool repairEdgeCase = false;
-#if 0
-    // Fix the edge case, "goodbye line" of TaskDialogue
-    static Actor* plastDialogueActor = nullptr;
-    static bool lastIsInDialogueWithPlayer = false;
-    bool repairEdgeCase = (pActor == plastDialogueActor) && lastIsInDialogueWithPlayer;
-
-    if (repairEdgeCase)
-    {
-        plastDialogueActor = nullptr;
-        lastIsInDialogueWithPlayer = false;
-    }
-
-    else if (isTaskDialogue)
-    {
-        plastDialogueActor = pActor;
-        lastIsInDialogueWithPlayer = true;
-    }
-#endif
-
-    const bool willSync = isTaskDialogue || repairEdgeCase || isLocal && !isInScene;
+    const bool willSync = isTaskDialogue || isLocal && !isInScene;
 
     spdlog::debug(
-        __FUNCTION__ ": isLocal {}, isInScene {}, isSpeakingInScene {}, isTaskDialogue {} repaireEdgeCase {}, willSync {}, scene {:X}, Actor "
+        __FUNCTION__ ": isLocal {}, isInScene {}, isSpeakingInScene {}, isTaskDialogue {}, willSync {}, scene {:X}, Actor "
                      "{:X}, serverId {:X}, isLeader {}, name {}, subtitle {}",
-        isLocal, isInScene, isSpeakingInScene, isTaskDialogue, repairEdgeCase, willSync, sceneId, pActor->formID, serverIdRes.value(), isLeader, pActor->baseForm->GetName(),
+        isLocal, isInScene, isSpeakingInScene, isTaskDialogue, willSync, sceneId, pActor->formID, serverIdRes.value(), isLeader, pActor->baseForm->GetName(),
         acEvent.Text);
 
     if (willSync)
