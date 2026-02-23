@@ -67,7 +67,7 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     {
         entries.emplace_back(message.Id, message.Stage);
         questIt = std::prev(entries.end());
-        spdlog::info("{}: started/discovered quest: {:X}, stage: {}, by {} {:X}", __FUNCTION__, message.Id.LogFormat(), notify.Stage, playerTypeString, pPlayer->GetId());
+        spdlog::debug("{}: started/discovered quest: {:X}, stage: {}, by {} {:X}", __FUNCTION__, message.Id.LogFormat(), notify.Stage, playerTypeString, pPlayer->GetId());
     }
 
     bool useAggressiveSend = false;
@@ -78,14 +78,14 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     case RequestQuestUpdate::StageUpdateForced: useAggressiveSend = true; [[fallthrough]];
     case RequestQuestUpdate::StageUpdate:
         notify.Status = NotifyQuestUpdate::StageUpdate;
-        spdlog::info(
+        spdlog::debug(
             "{}: updated quest: {:X}, stage: {}, SceneMaster {}, by {} {:X}", __FUNCTION__, message.Id.LogFormat(), notify.Stage, notify.SceneMaster, playerTypeString,
             pPlayer->GetId());
         break;
 
     case RequestQuestUpdate::Stopped:
         notify.Status = NotifyQuestUpdate::Stopped;
-        spdlog::info("{}: stopped quest: {:X}, stage: {}, by {} {:X}", __FUNCTION__, message.Id.LogFormat(), notify.Stage, playerTypeString, pPlayer->GetId());
+        spdlog::debug("{}: stopped quest: {:X}, stage: {}, by {} {:X}", __FUNCTION__, message.Id.LogFormat(), notify.Stage, playerTypeString, pPlayer->GetId());
 
         if (questIt != entries.end())
             entries.erase(questIt);
@@ -98,7 +98,7 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     case RequestQuestUpdate::Reset:
         useAggressiveSend = true;
         notify.Status = NotifyQuestUpdate::Reset;
-        spdlog::warn("{}: reset quest: {:X}, stage: {}, by {} {:X}", __FUNCTION__, message.Id.LogFormat(), notify.Stage, playerTypeString, pPlayer->GetId());
+        spdlog::warn("{}: FIXME/REVIEW reset quest: {:X}, stage: {}, by {} {:X}", __FUNCTION__, message.Id.LogFormat(), notify.Stage, playerTypeString, pPlayer->GetId());
         break;
 
     default:
@@ -111,12 +111,13 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     // All side effects have been generated. Now just logging and a forwarding decision left.
     if (inParty)
     {
-        if (notify.ClientQuestType == 0 || notify.ClientQuestType == 6) // Types None or Miscellaneous. Hard-coded to avoid including client header file.
+        if (notify.ClientQuestType == 0 ||
+            notify.ClientQuestType == 6) // Types None or Miscellaneous. Hard-coded to avoid including client header file.
         {
             if (!bEnableMiscQuestSync)
                 return;
 
-            spdlog::info(
+            spdlog::debug(
                 "{}: syncing type none/misc quest to party, quest: {:X}, questStage: {}, questStatus: {}, "
                 "questType: {}",
                 __FUNCTION__, notify.Id.LogFormat(), notify.Stage, notify.Status, notify.ClientQuestType);
@@ -130,21 +131,18 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
         // the originator was a party member, they are already in the dedup history. SendToParty() skips sending to any
         // party member who already has this quest+stage change.
         //
-        // If the SceneEndFlag is set and is not a duplicate, we want to kick the entire party so don't loop around through Leader,
-        // pretend to be leader if the request came from a party Member.
-        //
-
+        // Scene End sends ::StageUpdateForced, setting useAggressiveSend, to kick any players that got stuck in a scene dialog.
         if (isLeader)
         {
             // Leader originated or party member sent to leader.
             // SendToParty unless Leader has already done it.
             if (!useAggressiveSend && dedupHistory.FoundWPlayerId(notify.Id, notify.Stage, notify.Status, pPlayer->GetId()))
-                spdlog::info(
+                spdlog::debug(
                     "{}: SendToParty dropping duplicate: quest: {:X}, stage: {}, status: {}, by {} {:X}", __FUNCTION__, notify.Id.LogFormat(), notify.Stage, notify.Status,
                     playerTypeString, pPlayer->GetId());
             else
             {
-                spdlog::info(
+                spdlog::debug(
                     "{}: SendToParty: quest: {:X}, stage: {}, status: {}, by {} {:X}", __FUNCTION__, notify.Id.LogFormat(), notify.Stage, notify.Status, playerTypeString,
                     pPlayer->GetId());
 
@@ -158,14 +156,14 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
                     {
                         if (!useAggressiveSend && dedupHistory.FoundWPlayerId(notify.Id, notify.Stage, notify.Status, pPlayer->GetId()))
                         {
-                            spdlog::info(
+                            spdlog::debug(
                                 "{}: SendToParty skipping duplicate send quest: {:X}, stage: {}, status: {}, "
                                 "SceneMaster {}, to player {:X}",
                                 __FUNCTION__, notify.Id.LogFormat(), notify.Stage, notify.Status, notify.SceneMaster, pPlayer->GetId());
                         }
                         else
                         {
-                            spdlog::info(
+                            spdlog::debug(
                                 "{}: SendToParty sending quest: {:X}, stage: {}, status: {}, SceneMaster {}, "
                                 "to player {:X}",
                                 __FUNCTION__, notify.Id.LogFormat(), notify.Stage, notify.Status, notify.SceneMaster, pPlayer->GetId());
@@ -184,12 +182,12 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
             dedupHistory.Add(notify.Id, notify.Stage, notify.Status, pPlayer->GetId());
 
             if (bFound)
-                spdlog::info(
+                spdlog::debug(
                     "{}: SendToLeader dropping duplicate quest: {:X}, stage: {}, status: {}, by {} {:X}", __FUNCTION__, notify.Id.LogFormat(), notify.Stage, notify.Status,
                     playerTypeString, pPlayer->GetId());
             else
             {
-                spdlog::info(
+                spdlog::debug(
                     "{}: SendToLeader quest: {:X}, stage: {}, status: {}, by {} {:X}", __FUNCTION__, notify.Id.LogFormat(), notify.Stage, notify.Status, playerTypeString,
                     pPlayer->GetId());
 
@@ -235,17 +233,17 @@ void QuestService::OnQuestSceneChanges(const PacketEvent<RequestQuestSceneUpdate
         dedupHistory.Add(message.SceneId, 0, RequestQuestUpdate::StatusCode::SceneUpdate, pPlayer->GetId());
 
         if (!needSceneMaster)
-            spdlog::info(
+            spdlog::debug(
                 "{}: quest {:X}, scene {:X}, sceneType {}, {} {} already have SceneMaster player {}", __FUNCTION__, message.QuestId.LogFormat(), message.SceneId.LogFormat(),
                 sceneTypeString, playerTypeString, pPlayer->GetId(), dedupHistory.GetSceneMaster());
         else
         {
             dedupHistory.SetSceneMaster(pPlayer->GetId());
-            spdlog::info(
+            spdlog::debug(
                 "{}: quest {:X}, scene {:X}, sceneType {}, {} {} is now SceneMaster", __FUNCTION__, message.QuestId.LogFormat(), message.SceneId.LogFormat(), sceneTypeString,
                 playerTypeString, pPlayer->GetId());
 
-            spdlog::info(
+            spdlog::debug(
                 "{}: sending scene {} update quest {:X}, scene {:X}, by {} {}", __FUNCTION__, sceneTypeString, notify.QuestId.LogFormat(), notify.SceneId.LogFormat(),
                 playerTypeString, pPlayer->GetId());
             GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
@@ -256,18 +254,18 @@ void QuestService::OnQuestSceneChanges(const PacketEvent<RequestQuestSceneUpdate
     {
         if (dedupHistory.GetSceneMaster() == pPlayer->GetId())
         {
-            spdlog::info(
+            spdlog::debug(
                 "{}: sending scene {} update quest {:X}, scene {:X}, by {} {}", __FUNCTION__, sceneTypeString, notify.QuestId.LogFormat(), notify.SceneId.LogFormat(),
                 playerTypeString, pPlayer->GetId());
             GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
 
-            spdlog::info(
+            spdlog::debug(
                 "{}: quest {:X}, scene {:X}, scenetype {}, {} {} removing SceneMaster player {}", __FUNCTION__, message.QuestId.LogFormat(), message.SceneId.LogFormat(),
                 sceneTypeString, playerTypeString, pPlayer->GetId(), dedupHistory.GetSceneMaster());
             // dedupHistory.ResetSceneMaster();
 
             // Force an update out to bring anyone behind to current quest stage.
-            spdlog::info(
+            spdlog::debug(
                 "{}: SceneMaster {} {} sending force current quest stage {} to party quest {:X}, scene {:X}, scenetype {}", __FUNCTION__, playerTypeString, pPlayer->GetId(),
                 message.Stage, message.QuestId.LogFormat(), message.SceneId.LogFormat(), sceneTypeString);
 
@@ -285,14 +283,14 @@ void QuestService::OnQuestSceneChanges(const PacketEvent<RequestQuestSceneUpdate
 
 void inline QuestStageDedupHistory::Expire() noexcept
 {
-    const auto expiration =
-        std::chrono::steady_clock::now() - uQuestHistoryExpiration.value_as<std::chrono::milliseconds>();
+    const auto expiration = std::chrono::steady_clock::now() - uQuestHistoryExpiration.value_as<std::chrono::milliseconds>();
 
     while (!m_cache.empty() && m_cache.front().timestamp < expiration)
     {
         auto& it = m_cache.front();
-        spdlog::info("{}: expiring dedup history entry quest/scene: {:X}, stage: {}, status: {}, by player {:X}", __FUNCTION__,
-                     it.questOrSceneId.LogFormat(), it.questStage, it.questStatus, it.playerId);
+        spdlog::debug(
+            "{}: expiring dedup history entry quest/scene: {:X}, stage: {}, status: {}, by player {:X}", __FUNCTION__,
+            it.questOrSceneId.LogFormat(), it.questStage, it.questStatus, it.playerId);
         m_cache.pop_front();
     }
 }
