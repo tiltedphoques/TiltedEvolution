@@ -101,8 +101,6 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
             }
         }
 
-        spdlog::shutdown();
-
         // Something in STR breaks top-level unhandled exception filters.
         // The Win API for them is pretty clunky (non-atomic, not chainable), 
         // but they can do some important things. If someone actually set one
@@ -122,6 +120,8 @@ LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
                 retval = EXCEPTION_CONTINUE_EXECUTION;
             singleThreaded.lock();
         }
+
+        spdlog::shutdown();
     }
     return retval;
 }
