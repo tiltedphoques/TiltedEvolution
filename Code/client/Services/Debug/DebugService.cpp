@@ -170,6 +170,14 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
         m_showDebugStuff = !m_showDebugStuff;
     }
 
+    if (GetAsyncKeyState(VK_F11) & 0x01)
+    {
+        for (const auto& modifier : TES::Get()->activeImageSpaceModifiers)
+        {
+            ImageSpaceModifierInstance::Stop(modifier.object);
+        }
+    }
+
 #if (!IS_MASTER)
     if (GetAsyncKeyState(VK_F6))
     {
