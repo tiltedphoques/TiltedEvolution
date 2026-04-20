@@ -983,7 +983,7 @@ bool TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, u
     Actor* pActivator = Cast<Actor>(apActivator);
 
     // Exclude books from activation since only reading them removes them from the cell
-    // Note: Books are now unsynced 
+    // Note: Books are now unsynced
     if (pActivator && apThis->baseForm->formType != FormType::Book)
     {
         auto openState = TESObjectREFR::kNone;
@@ -993,6 +993,21 @@ bool TP_MAKE_THISCALL(HookActivate, TESObjectREFR, TESObjectREFR* apActivator, u
         World::Get().GetRunner().Trigger(
             ActivateEvent(apThis, pActivator, apObjectToGet, aCount, aDefaultProcessing, aUnk1, openState)
         );
+    }
+
+    // #845: prevent non-leader party members from triggering zone transitions.
+    // A load door is a Door reference that carries an ExtraTeleport entry.
+    if (pActivator == PlayerCharacter::Get() &&
+        apThis->baseForm->formType == FormType::Door &&
+        apThis->extraData.Contains(ExtraDataType::Teleport))
+    {
+        auto& partyService = World::Get().GetPartyService();
+        if (partyService.IsInParty() && !partyService.IsLeader())
+        {
+            World::Get().GetOverlayService().SendSystemMessage(
+                "Only the party leader can use zone transition doors. Use the party menu to teleport to them.");
+            return false;
+        }
     }
 
     return TiltedPhoques::ThisCall(RealActivate, apThis, apActivator, aUnk1, apObjectToGet, aCount, aDefaultProcessing);
