@@ -61,6 +61,7 @@
         "TELEPORT": "传送",
         "MAKE_LEADER": "转移队长"
       },
+      "AUTO_JOIN": "自动加入",
       "LEAVE_PARTY": "离开团队"
     },
     "PARTY_LIST": {

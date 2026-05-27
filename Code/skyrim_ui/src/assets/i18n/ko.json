@@ -60,6 +60,7 @@
         "TELEPORT": "순간 이동",
         "MAKE_LEADER": "리더 임명"
       },
+      "AUTO_JOIN": "자동 참가",
       "LEAVE_PARTY": "파티에서 탈퇴"
     },
     "PARTY_LIST": {

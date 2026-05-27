@@ -60,6 +60,7 @@
         "TELEPORT": "Teleportieren",
         "MAKE_LEADER": "Zum Anführer befördern"
       },
+      "AUTO_JOIN": "Auto-Beitritt",
       "LEAVE_PARTY": "Gruppe verlassen"
     },
     "PARTY_LIST": {

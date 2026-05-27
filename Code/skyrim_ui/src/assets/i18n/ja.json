@@ -60,6 +60,7 @@
         "TELEPORT": "テレポート",
         "MAKE_LEADER": "リーダーにする"
       },
+      "AUTO_JOIN": "自動参加",
       "LEAVE_PARTY": "パーティーを抜ける"
     },
     "PARTY_LIST": {

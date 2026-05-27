@@ -113,6 +113,11 @@
     </div>
   </ng-template>
 
+  <label class="autojoin-toggle" *ngIf="isPartyLeader$ | async">
+    <input type="checkbox" [checked]="allowAutoJoin$ | async" [disabled]="autoJoinCheckboxDisabled$ | async" (change)="toggleAutoJoinParty()">
+    {{ 'COMPONENT.PARTY_MENU.AUTO_JOIN' | transloco }}
+  </label>
+
   <button class="party-menu-button btn" (click)="leave()">
     {{ 'COMPONENT.PARTY_MENU.LEAVE_PARTY' | transloco }}
   </button>

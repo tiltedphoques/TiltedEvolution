@@ -16,6 +16,7 @@ enum ClientOpcode : unsigned char
     kPartyCreateRequest,
     kPartyChangeLeaderRequest,
     kPartyKickRequest,
+    kPartyAutoJoinToggleRequest,
     kRequestActorValueChanges,
     kRequestActorMaxValueChanges,
     kRequestHealthChangeBroadcast,

@@ -61,6 +61,7 @@
         "TELEPORT": "Téléporter",
         "MAKE_LEADER": "En faire le chef de groupe"
       },
+      "AUTO_JOIN": "Adhésion auto",
       "LEAVE_PARTY": "Quitter le groupe"
     },
     "PARTY_LIST": {

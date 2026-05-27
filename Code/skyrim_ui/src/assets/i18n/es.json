@@ -61,6 +61,7 @@
         "TELEPORT": "Teletransportar",
         "MAKE_LEADER": "Hacer lider"
       },
+      "AUTO_JOIN": "Auto-unión",
       "LEAVE_PARTY": "Abandonar grupo"
     },
     "PARTY_LIST": {

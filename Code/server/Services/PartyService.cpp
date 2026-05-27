@@ -17,6 +17,7 @@
 #include <Messages/PartyCreateRequest.h>
 #include <Messages/PartyChangeLeaderRequest.h>
 #include <Messages/PartyKickRequest.h>
+#include <Messages/PartyAutoJoinToggleRequest.h>
 #include <Messages/NotifyPlayerJoined.h>
 
 #include <Setting.h>
@@ -36,6 +37,7 @@ PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcep
     , m_partyCreateConnection(aDispatcher.sink<PacketEvent<PartyCreateRequest>>().connect<&PartyService::OnPartyCreate>(this))
     , m_partyChangeLeaderConnection(aDispatcher.sink<PacketEvent<PartyChangeLeaderRequest>>().connect<&PartyService::OnPartyChangeLeader>(this))
     , m_partyKickConnection(aDispatcher.sink<PacketEvent<PartyKickRequest>>().connect<&PartyService::OnPartyKick>(this))
+    , m_partyAutoJoinToggleConnection(aDispatcher.sink<PacketEvent<PartyAutoJoinToggleRequest>>().connect<&PartyService::OnPartyAutoJoinToggle>(this))
 {
 }
 
@@ -120,6 +122,7 @@ void PartyService::OnPartyCreate(const PacketEvent<PartyCreateRequest>& acPacket
         inviterPartyComponent.JoinedPartyId = partyId;
 
         spdlog::debug("[PartyService]: Created party for {}", player->GetId());
+        party.AllowAutoJoin = bAutoPartyJoin;
         SendPartyJoinedEvent(party, player);
 
         if (m_parties.size() == 1 && bAutoPartyJoin)
@@ -134,9 +137,9 @@ void PartyService::OnPartyCreate(const PacketEvent<PartyCreateRequest>& acPacket
                     SendPartyJoinedEvent(party, otherPlayer);
                 }
             }
-
-            BroadcastPartyInfo(partyId);
         }
+
+        BroadcastPartyInfo(partyId);
     }
 }
 
@@ -201,6 +204,24 @@ void PartyService::OnPartyKick(const PacketEvent<PartyKickRequest>& acPacket) no
     }
 }
 
+void PartyService::OnPartyAutoJoinToggle(const PacketEvent<PartyAutoJoinToggleRequest>& acPacket) noexcept
+{
+    Player* const player = acPacket.pPlayer;
+
+    auto& partyComponent = player->GetParty();
+    if (!partyComponent.JoinedPartyId)
+        return;
+
+    Party& party = m_parties[*partyComponent.JoinedPartyId];
+    if (party.LeaderPlayerId != player->GetId())
+        return;
+
+    party.AllowAutoJoin = !party.AllowAutoJoin;
+    spdlog::debug("[PartyService]: Party {} AllowAutoJoin={}", *partyComponent.JoinedPartyId, party.AllowAutoJoin);
+
+    BroadcastPartyInfo(*partyComponent.JoinedPartyId);
+}
+
 void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 {
     BroadcastPlayerList();
@@ -220,6 +241,12 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 
     if (m_parties.size() == 1 && bAutoPartyJoin)
     {
+        // Skip auto-join if the party has disabled it
+        auto it = m_parties.begin();
+        if (it != m_parties.end() && !it->second.AllowAutoJoin)
+        {
+            return;
+        }
         for (Player* player : m_world.GetPlayerManager())
         {
             if (IsPlayerInParty(player))
@@ -367,6 +394,12 @@ void PartyService::RemovePlayerFromParty(Player* apPlayer) noexcept
         if (members.empty())
         {
             m_parties.erase(id);
+            // If there's exactly one party left, broadcast its info so clients
+            // learn the updated party count and can re-enable the auto-join checkbox
+            if (m_parties.size() == 1)
+            {
+                BroadcastPartyInfo(m_parties.begin()->first);
+            }
         }
         else
         {
@@ -422,6 +455,9 @@ void PartyService::BroadcastPartyInfo(uint32_t aPartyId) const noexcept
 
     NotifyPartyInfo message;
     message.LeaderPlayerId = party.LeaderPlayerId;
+    message.AllowAutoJoin = party.AllowAutoJoin;
+    message.ServerAutoJoin = bAutoPartyJoin;
+    message.PartyCount = m_parties.size();
 
     for (auto pPlayer : members)
     {

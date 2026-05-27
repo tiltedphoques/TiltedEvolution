@@ -60,6 +60,7 @@
         "TELEPORT": "Teleportovat",
         "MAKE_LEADER": "Povýšit na lídra"
       },
+      "AUTO_JOIN": "Auto připojení",
       "LEAVE_PARTY": "Opustit skupinu"
     },
     "PARTY_LIST": {

@@ -11,6 +11,7 @@ struct PartyAcceptInviteRequest;
 struct PartyLeaveRequest;
 struct NotifyPartyInfo;
 struct PartyCreateRequest;
+struct PartyAutoJoinToggleRequest;
 struct PartyChangeLeaderRequest;
 struct PartyKickRequest;
 
@@ -24,6 +25,7 @@ struct PartyService
         uint32_t LeaderPlayerId;
         Vector<Player*> Members;
         GameId CachedWeather{};
+        bool AllowAutoJoin{true};
     };
 
     PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;
@@ -46,6 +48,7 @@ protected:
     void OnPartyCreate(const PacketEvent<PartyCreateRequest>& acPacket) noexcept;
     void OnPartyChangeLeader(const PacketEvent<PartyChangeLeaderRequest>& acPacket) noexcept;
     void OnPartyKick(const PacketEvent<PartyKickRequest>& acPacket) noexcept;
+    void OnPartyAutoJoinToggle(const PacketEvent<PartyAutoJoinToggleRequest>& acPacket) noexcept;
     void RemovePlayerFromParty(Player* apPlayer) noexcept;
 
     void BroadcastPlayerList(Player* apPlayer = nullptr) const noexcept;
@@ -67,6 +70,7 @@ private:
     entt::scoped_connection m_partyCreateConnection;
     entt::scoped_connection m_partyChangeLeaderConnection;
     entt::scoped_connection m_partyKickConnection;
+    entt::scoped_connection m_partyAutoJoinToggleConnection;
 
     void SendPartyJoinedEvent(Party& aParty, Player* aPlayer) noexcept;
 };

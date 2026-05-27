@@ -258,6 +258,11 @@ export class ClientService implements OnDestroy {
     skyrimtogether.changePartyLeader(playerId);
   }
 
+  /** As a party leader, toggle auto-join on/off for this party. */
+  public toggleAutoJoinParty(): void {
+    skyrimtogether.toggleAutoJoinParty();
+  }
+
   /**
    * Deactivate UI and release control.
    */
@@ -569,7 +574,7 @@ export class ClientService implements OnDestroy {
     });
   }
 
-  public onPartyInfo(playerIds: Array<number>, leaderId: number) {
+  public onPartyInfo(playerIds: Array<number>, leaderId: number, allowAutoJoin: boolean, serverAutoJoin: boolean, partyCount: number) {
     if (environment.game) {
       console.log(
         `%conPartyInfo`,
@@ -582,6 +587,9 @@ export class ClientService implements OnDestroy {
         new PartyInfo({
           playerIds: playerIds,
           leaderId: leaderId,
+          allowAutoJoin: allowAutoJoin,
+          serverAutoJoin: serverAutoJoin,
+          partyCount: partyCount,
         }),
       );
     });
