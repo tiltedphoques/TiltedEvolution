@@ -1,4 +1,4 @@
-set_xmakever("2.8.5")
+set_xmakever("3.0.0")
 
 -- If newer version of xmake, remove ccache until it actually works
 if set_policy ~= nil then
@@ -12,6 +12,7 @@ if is_plat("windows") then
     add_cxflags("/bigobj")
     add_syslinks("kernel32")
     set_arch("x64")
+    set_runtimes("MT")
 end
 
 if is_plat("linux") then
