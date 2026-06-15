@@ -427,6 +427,11 @@ interface SkyrimTogether {
   leaveParty(): void;
 
   /**
+   * As a party leader, toggle auto-join on/off for this party.
+   */
+  toggleAutoJoinParty(): void;
+
+  /**
    * As a party leader, make someone else the leader.
    *
    * @param playerId Id of the new leader.

@@ -278,9 +278,7 @@ export class GroupService implements OnDestroy {
     this.clientService.createPartyInvite(playerId);
   }
 
-  public selectMembers(): Observable<Player[]> {
-
-  async accept(inviterId: number) {
+  public async accept(inviterId: number) {
     const group = this.createGroup(this.group.getValue());
 
     if (group) {
@@ -300,7 +298,7 @@ export class GroupService implements OnDestroy {
     }
   }
 
-  async kick(playerId: number) {
+  public async kick(playerId: number) {
     const group = this.createGroup(this.group.getValue());
 
     if (group) {
@@ -320,7 +318,7 @@ export class GroupService implements OnDestroy {
     }
   }
 
-  async changeLeader(playerId: number) {
+  public async changeLeader(playerId: number) {
     const group = this.createGroup(this.group.getValue());
 
     if (group) {
