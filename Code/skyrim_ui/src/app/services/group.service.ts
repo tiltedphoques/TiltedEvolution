@@ -267,7 +267,13 @@ export class GroupService implements OnDestroy {
   public toggleAutoJoinParty() {
     const group = this.createGroup(this.group.getValue());
 
-    if (group && group.isEnabled && group.owner === this.clientService.localPlayerId) {
+    if (
+      group &&
+      group.isEnabled &&
+      group.owner === this.clientService.localPlayerId &&
+      group.serverAutoJoin &&
+      group.partyCount <= 1
+    ) {
       this.soundService.play(Sound.Ok);
       this.clientService.toggleAutoJoinParty();
     }
