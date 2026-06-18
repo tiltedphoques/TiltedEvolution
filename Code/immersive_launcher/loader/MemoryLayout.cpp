@@ -32,7 +32,7 @@ namespace
 {
 extern "C" const IMAGE_DOS_HEADER __ImageBase;
 
-const uint8_t* const pBasePtr = reinterpret_cast<const uint8_t*>(&__ImageBase);
+constinit const uint8_t* pBasePtr = reinterpret_cast<const uint8_t*>(&__ImageBase);
 const uint8_t* kpImageEnd{pBasePtr + ((PIMAGE_NT_HEADERS)(pBasePtr + __ImageBase.e_lfanew))->OptionalHeader.SizeOfImage};
 
 bool InRange(const uint8_t* apObj, const uint8_t* apLo, const uint8_t* apHi)
