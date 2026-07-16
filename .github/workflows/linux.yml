@@ -74,7 +74,6 @@ jobs:
           xmake install -o packaged
           mkdir -p ${{ env.STR_BUILD_DIR }}
           cp packaged/lib/libSTServer.so ${{ env.STR_BUILD_DIR }}/
-          cp packaged/bin/crashpad_handler ${{ env.STR_BUILD_DIR }}/
           cp packaged/bin/SkyrimTogetherServer ${{ env.STR_BUILD_DIR }}/
 
       # Upload artifacts
