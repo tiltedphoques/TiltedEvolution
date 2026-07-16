@@ -68,7 +68,7 @@ bool MagicTarget::AddTargetData::IsForbiddenEffect(Actor* apTarget)
     if (apTarget != PlayerCharacter::Get())
         return false;
 
-    return pEffectItem->IsNightVisionEffect();
+    return pEffectItem->IsNightVisionEffect() || pEffectItem->IsSlowEffect();
 }
 
 Actor* MagicTarget::GetTargetAsActor()

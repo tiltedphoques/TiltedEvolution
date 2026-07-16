@@ -9,6 +9,13 @@
 #include <Messages/TeleportCommandRequest.h>
 #include <Messages/TeleportCommandResponse.h>
 
+#include <Setting.h>
+
+namespace
+{
+Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer", "Whether to list the server on the public server list", false};
+}
+
 CommandService::CommandService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
 {
@@ -22,7 +29,7 @@ void CommandService::OnSetTimeCommand(const PacketEvent<SetTimeCommandRequest>& 
 
     const auto cPlayerId = static_cast<uint32_t>(acMessage.Packet.PlayerId);
 
-    // Only set time if player is an admin
+    // Admin override: always allowed
     for (const auto session : GameServer::Get()->GetAdminSessions())
     {
         if (PlayerManager::Get()->GetByConnectionId(session)->GetId() == cPlayerId)
@@ -37,6 +44,21 @@ void CommandService::OnSetTimeCommand(const PacketEvent<SetTimeCommandRequest>& 
 
             return;
         }
+    }
+
+    // Party leader allowed on private servers only
+    const auto* pPartyService = &m_world.GetPartyService();
+    if (pPartyService->IsPlayerLeader(acMessage.pPlayer) && !bAnnounceServer)
+    {
+        const auto cHours = static_cast<int>(acMessage.Packet.Hours);
+        const auto cMinutes = static_cast<int>(acMessage.Packet.Minutes);
+
+        m_world.GetCalendarService().SetTime(cHours, cMinutes, m_world.GetCalendarService().GetTimeScale());
+
+        response.Result = NotifySetTimeResult::SetTimeResult::kSuccess;
+        acMessage.pPlayer->Send(response);
+
+        return;
     }
 
     response.Result = NotifySetTimeResult::SetTimeResult::kNoPermission;

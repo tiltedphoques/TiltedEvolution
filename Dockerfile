@@ -11,6 +11,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV XMAKE_ROOT=y
 SHELL ["/bin/bash", "-c"]
 
+# Passed from the workflow; needed so that xmake always picks github.com as host
+ARG GITHUB_ACTIONS
+
 # Get packages and xmake
 
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential curl pkg-config git ca-certificates unzip libssl-dev && \
@@ -37,7 +40,6 @@ WORKDIR /st-server
 
 COPY --from=builder \
     /src/package/lib/libSTServer.so \
-    /src/package/bin/crashpad_handler \
     /src/package/bin/SkyrimTogetherServer \
     /st-server/
 

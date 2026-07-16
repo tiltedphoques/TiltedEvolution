@@ -22,7 +22,6 @@ local function build_server()
         "Console",
         "Resources",
         "ESLoader",
-        "CrashHandler",
         "BaseLib",
         "AdminProtocol",
         "TiltedConnect"
@@ -37,8 +36,7 @@ local function build_server()
         "glm",
         "entt",
         "cpp-httplib",
-        "tiltedcore",
-        "sentry-native")
+        "tiltedcore")
 end
 
 target("SkyrimTogetherServer")

@@ -152,15 +152,6 @@ void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
 
 void OverlayService::Render() noexcept
 {
-    // TODO: delete this hack?
-    static bool s_bi = false;
-    if (!s_bi)
-    {
-        m_pOverlay->GetClient()->GetBrowser()->GetHost()->WasResized();
-
-        s_bi = true;
-    }
-
     auto pPlayer = PlayerCharacter::Get();
     bool inGame = pPlayer && pPlayer->GetNiNode();
     if (inGame && !m_inGame)

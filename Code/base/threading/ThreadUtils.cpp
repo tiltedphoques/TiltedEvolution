@@ -1,46 +1,96 @@
-
 #include "ThreadUtils.h"
 
-namespace
-{
-// as defined in sentry-native/src/sentry_sync.h
-#ifdef _WIN32
+#if defined(_WIN32)
 #include <Windows.h>
-using sentry_threadid_t = HANDLE;
+#include <string>
+#include <vector>
 
-sentry_threadid_t GetCurrentThreadHandle()
-{
-    return ::GetCurrentThread();
-}
+using TSetThreadDescription = HRESULT(WINAPI*)(HANDLE, PCWSTR);
 #else
+#include <cstring>
 #include <pthread.h>
-using sentry_threadid_t = pthread_t;
-
-sentry_threadid_t GetCurrentThreadHandle()
-{
-    return ::pthread_self();
-}
+// Linux thread name limit is 16 bytes (15 chars + null terminator)
+static constexpr size_t LINUX_THREAD_NAME_MAX = 16;
 #endif
-
-} // namespace
-
-// we use the sentry impl here, as it covers all bases, e.g linux & windows support, plus additional windows 10+
-// features
-extern "C"
-{
-    int sentry__thread_setname(sentry_threadid_t aThreadHandle, const char* apThreadName);
-}
 
 namespace Base
 {
-bool SetThreadName(void* apThreadHandle, const char* apThreadName)
+
+#if defined(_WIN32)
+
+static std::wstring ToWString(const char* src)
 {
-    return sentry__thread_setname(reinterpret_cast<sentry_threadid_t>(apThreadHandle), apThreadName) == 0;
+    if (!src || !*src)
+        return L"";
+
+    size_t srcLen = std::strlen(src);
+    if (srcLen > 256)
+        return L""; // Limit to reasonable size
+
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, src, -1, NULL, 0);
+    if (size_needed <= 0)
+        return L"";
+
+    std::vector<wchar_t> buffer(size_needed);
+    MultiByteToWideChar(CP_UTF8, 0, src, -1, buffer.data(), size_needed);
+    return std::wstring(buffer.data());
+}
+
+static bool SetThreadNameWindows(HANDLE hThread, const char* name)
+{
+    // We dynamically load SetThreadDescription to ensure the application
+    // doesn't crash on older Windows versions (pre-Win10 1607) where this
+    // export is missing from Kernel32.dll.
+    static const auto pSetThreadDescription = reinterpret_cast<TSetThreadDescription>(
+        reinterpret_cast<void*>(GetProcAddress(GetModuleHandleA("kernel32.dll"), "SetThreadDescription"))
+    );
+
+    if (pSetThreadDescription)
+    {
+        std::wstring wName = ToWString(name);
+        HRESULT hr = pSetThreadDescription(hThread, wName.c_str());
+        return SUCCEEDED(hr);
+    }
+
+    return false;
+}
+
+bool SetThreadName(const ThreadHandle& acHandle, const char* apThreadName)
+{
+    if (!acHandle || !apThreadName) return false;
+    return SetThreadNameWindows(acHandle, apThreadName);
 }
 
 bool SetCurrentThreadName(const char* apThreadName)
 {
-    return sentry__thread_setname(GetCurrentThreadHandle(), apThreadName) == 0;
+    if (!apThreadName) return false;
+    return SetThreadNameWindows(::GetCurrentThread(), apThreadName);
 }
+
+#else
+
+static bool SetThreadNameLinux(pthread_t thread, const char* name)
+{
+    if (!name) return false;
+
+    // Linux limits thread names to 16 chars (including \0). We strictly truncate to fit the buffer
+    char buf[LINUX_THREAD_NAME_MAX] = {};
+    std::strncpy(buf, name, LINUX_THREAD_NAME_MAX - 1);
+    buf[LINUX_THREAD_NAME_MAX - 1] = '\0';
+
+    return pthread_setname_np(thread, buf) == 0;
+}
+
+bool SetThreadName(const ThreadHandle& acHandle, const char* apThreadName)
+{
+    return SetThreadNameLinux(acHandle, apThreadName);
+}
+
+bool SetCurrentThreadName(const char* apThreadName)
+{
+    return SetThreadNameLinux(pthread_self(), apThreadName);
+}
+
+#endif
 
 } // namespace Base

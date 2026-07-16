@@ -33,7 +33,7 @@ struct PartyService
 
     const Party* GetById(uint32_t aId) const noexcept;
     bool IsPlayerInParty(Player* const apPlayer) const noexcept;
-    bool IsPlayerLeader(Player* const apPlayer) noexcept;
+    bool IsPlayerLeader(const Player* const apPlayer) const noexcept;
     Party* GetPlayerParty(Player* const apPlayer) noexcept;
 
 protected:

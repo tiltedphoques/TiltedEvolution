@@ -38,7 +38,7 @@ inline bool IsUsingMO2()
     return GetModuleHandleW(L"usvfs_x64.dll");
 }
 
-inline bool IsMyModule(HMODULE aHmod)
+bool IsMyModule(HMODULE aHmod)
 {
     return aHmod == nullptr || aHmod == NtInternal::ThePeb()->pImageBase;
 }
@@ -156,55 +156,18 @@ NTSTATUS WINAPI TP_LdrGetDllFullName(HMODULE Module, PUNICODE_STRING DllName)
     return RealLdrGetDllFullName(Module, DllName);
 }
 
-bool NeedsToFool(void* pRbp, bool* wantsTruth = nullptr)
-{
-    // game code/stub segment within this exe needs to be fooled
-    if (IsThisExeAddress(static_cast<uint8_t*>(pRbp)))
-    {
-        return IsGameMemoryAddress(static_cast<uint8_t*>(pRbp));
-    }
-
-    // this heuristic indicates hooked game code... that is still owned by us...
-    // not recognized immedeatly, but still looks like game code...
-    HMODULE hMod = HModFromAddress(pRbp);
-
-    // simple debug hook
-#if 0
-    if (hMod == GetModuleHandleW(L"NvCameraAllowlisting64.dll"))
-    {
-        __debugbreak();
-    }
-#endif
-
-    if (hMod == NtInternal::ThePeb()->pImageBase || hMod == nullptr /*This is a hook, virtual allocd, not owned by anybody, so we assign ownership to the ST directory*/)
-    {
-        if (wantsTruth)
-            *wantsTruth = true;
-        return false;
-    }
-
-    return !IsLocalModulePath(hMod);
-}
-
 DWORD WINAPI TP_GetModuleFileNameW(HMODULE aModule, LPWSTR alpFilename, DWORD aSize)
 {
     // trampoline space for USVFS
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    void* rbp = _ReturnAddress();
-    // PrintOwnerNa me(rbp);
-
-    bool force = false;
-    if (IsMyModule(aModule) && NeedsToFool(rbp, &force) && launcher::GetLaunchContext())
+    if (IsMyModule(aModule) && launcher::GetLaunchContext() && launcher::GetLaunchContext()->GetLoaded())
     {
         auto& aExePath = launcher::GetLaunchContext()->exePath;
         StringCchCopyW(alpFilename, aSize, aExePath.c_str());
 
         return static_cast<DWORD>(std::wcslen(alpFilename));
     }
-
-    if (force)
-        return MYGetModuleFileNameW(aModule, alpFilename, aSize);
 
     return RealGetModuleFileNameW(aModule, alpFilename, aSize);
 }
@@ -228,15 +191,6 @@ DWORD WINAPI TP_GetModuleFileNameA(HMODULE aModule, char* alpFileName, DWORD aBu
 {
     TP_EMPTY_HOOK_PLACEHOLDER;
 
-    void* rbp = _ReturnAddress();
-    if (IsMyModule(aModule) && NeedsToFool(rbp) && launcher::GetLaunchContext())
-    {
-        auto aExePath = launcher::GetLaunchContext()->exePath.string();
-        StringCchCopyA(alpFileName, aBufferSize, aExePath.c_str());
-
-        return static_cast<DWORD>(std::strlen(alpFileName));
-    }
-
     ScopedOSHeapItem wideBuffer((aBufferSize * sizeof(wchar_t)) + 1);
 
     wchar_t* pBuffer = static_cast<wchar_t*>(wideBuffer.m_pBlock);
@@ -246,8 +200,9 @@ DWORD WINAPI TP_GetModuleFileNameA(HMODULE aModule, char* alpFileName, DWORD aBu
     // of quitting, so just avoid the bug. 
     // TODO: Further analysis of what is under MO2 USVFS and what is needed.
     DWORD result = 0;
-    if (aModule != GetModuleHandleW(L"XAudio2_7.dll"))
-        result = RealGetModuleFileNameW(aModule, pBuffer, aBufferSize * sizeof(wchar_t));
+    HMODULE tMod = RealGetModuleHandleW(L"XAudio2_7.dll");
+    if (tMod == nullptr || aModule != tMod)
+        result = TP_GetModuleFileNameW(aModule, pBuffer, aBufferSize * sizeof(wchar_t)); // To make sure spoofing happens if needed
 
     if (result == 0)
     {

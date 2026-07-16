@@ -32,5 +32,10 @@ template <class T> struct NiPointer
         return *this;
     }
 
+    [[nodiscard]] explicit constexpr operator bool() const noexcept
+    {
+        return static_cast<bool>(object);
+    }
+
     T* object;
 };

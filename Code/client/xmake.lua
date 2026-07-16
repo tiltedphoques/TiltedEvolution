@@ -72,6 +72,6 @@ target(name)
         "kernel32")
 end
 
-add_requires("tiltedcore v0.2.7", {debug = true})
+add_requires("tiltedcore")
 
 build_client("SkyrimTogetherClient")

@@ -53,13 +53,13 @@ bool PartyService::IsPlayerInParty(Player* const apPlayer) const noexcept
     return apPlayer->GetParty().JoinedPartyId.has_value();
 }
 
-bool PartyService::IsPlayerLeader(Player* const apPlayer) noexcept
+bool PartyService::IsPlayerLeader(const Player* const apPlayer) const noexcept
 {
-    auto& inviterPartyComponent = apPlayer->GetParty();
+    const auto& inviterPartyComponent = apPlayer->GetParty();
     if (inviterPartyComponent.JoinedPartyId)
     {
-        Party& party = m_parties[*inviterPartyComponent.JoinedPartyId];
-        return party.LeaderPlayerId == apPlayer->GetId();
+        if (const auto* const pParty = GetById(*inviterPartyComponent.JoinedPartyId))
+            return pParty->LeaderPlayerId == apPlayer->GetId();
     }
 
     return false;

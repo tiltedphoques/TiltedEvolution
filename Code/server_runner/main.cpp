@@ -14,7 +14,6 @@
 #include <base/threading/ThreadUtils.h>
 
 #include "DediRunner.h"
-#include <crash_handler/CrashHandler.h>
 
 #ifdef _WIN32
 #include <base/dialogues/win/TaskDialog.h>
@@ -65,9 +64,11 @@ struct LogInstance
 
         auto fileOut = std::make_shared<sinks::rotating_file_sink_mt>(std::string("logs/") + kLogFileName, kLogFileSizeCap, 3);
         auto serverOut = std::make_shared<sinks::stdout_color_sink_mt>();
-        serverOut->set_pattern("%^[%H:%M:%S.%e] [%l] [tid %t] %$ %v");
         auto globalOut = std::make_shared<logger>("", sinks_init_list{serverOut, fileOut});
+        globalOut->set_pattern("%^[%Y-%m-%d %H:%M:%S.%e] [%l] [tid %t] %$ %v");
+
         globalOut->set_level(level::from_str(sLogLevel.value()));
+        spdlog::flush_every(std::chrono::seconds(2));
 
         // as the library is compiled into the client + server we have to do this twice
         spdlog::set_default_logger(globalOut);
@@ -213,17 +214,6 @@ int main(int argc, char** argv)
 
     LogInstance logger;
     (void)logger;
-
-    // Disabled EULA check since we have no EULA contents yet
-    /*
-    if (!IsEULAAccepted())
-    {
-        spdlog::error("Please accept the EULA by setting bConfirmEULA to true in EULA.txt");
-        return 2;
-    }
-    */
-
-    //ScopedCrashHandler _(true, true);
 
     // Note(Vince): This started crashing on 1.7+ lets disable it for now.
     // RegisterQuitHandler(); 
