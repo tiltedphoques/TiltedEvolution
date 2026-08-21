@@ -15,7 +15,7 @@ static void ShowAddressLibraryError(const wchar_t* apGamePath)
 {
     auto errorDetail = fmt::format(L"Looking for it here: {}\\Data\\SKSE\\Plugins", apGamePath);
 
-    Base::TaskDialog dia(g_SharedWindowIcon, L"Error", L"Failed to load Skyrim Address Library", L"Make sure to use \"All in one (1.6.X)\"", errorDetail.c_str());
+    Base::TaskDialog dia(g_SharedWindowIcon, L"Error", L"Failed to load Skyrim Address Library", L"Make sure to use \"All in one\"", errorDetail.c_str());
 
     dia.AppendButton(0xBEED, L"Visit troubleshooting page on wiki.tiltedphoques.com");
     dia.AppendButton(0xBEEF, L"Visit Address Library modpage on nexusmods.com");
@@ -38,8 +38,6 @@ void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVe
     {
         ShowAddressLibraryError(acGamePath.c_str());
     }
-
-    // VersionDb::Get().DumpToTextFile(R"(S:\Work\Tilted\fallout\_addresslib.txt)");
 
     g_appInstance = std::make_unique<TiltedOnlineApp>();
 
