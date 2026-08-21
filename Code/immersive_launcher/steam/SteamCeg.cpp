@@ -25,12 +25,19 @@ static uint32_t SteamXor(uint8_t* data, uint32_t size, uint32_t key)
 }
 
 // Just don't touch it, its evil
+// ...sorry, it left me no choice.
 uintptr_t CrackCEGInPlace(const CEGLocationInfo& acInfo)
 {
     SteamStubHeaderV31 stub{};
     std::memcpy(&stub, acInfo.start - sizeof(SteamStubHeaderV31), sizeof(SteamStubHeaderV31));
     SteamXor(reinterpret_cast<uint8_t*>(&stub), sizeof(SteamStubHeaderV31), stub.XorKey);
     assert(stub.Signature == 0xC0DEC0DF);
+
+    // Newer SteamStub v3.1 builds may leave the code section unencrypted.
+    if (stub.CodeSectionVirtualAddress == 0 || stub.CodeSectionRawSize == 0)
+    {
+        return stub.OriginalEntryPoint;
+    }
 
     // decrypt IV in place
     ECB_Mode<AES>::Decryption ecbDec(stub.AES_Key, sizeof(stub.AES_Key));
