@@ -1,6 +1,7 @@
 
 #include <TiltedOnlineApp.h>
 #include <TiltedOnlinePCH.h>
+#include <ScriptExtender.h>
 
 #include <Commctrl.h>
 #include <Windows.h>
@@ -43,6 +44,8 @@ void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVe
 
     TiltedOnlineApp::InstallHooks2();
     TP_HOOK_COMMIT;
+
+    LoadScriptExtender();
 }
 
 void RunTiltedApp()
