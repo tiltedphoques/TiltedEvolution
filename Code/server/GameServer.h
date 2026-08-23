@@ -66,6 +66,8 @@ struct GameServer final : Server
 
     bool IsRunning() const noexcept { return !m_requestStop; }
     bool IsPasswordProtected() const noexcept { return m_isPasswordProtected; }
+    [[nodiscard]] bool IsPublicServer() const noexcept;
+    [[nodiscard]] bool AllowsAutoPartyJoin() const noexcept;
 
     template <class T> void ForEachAdmin(const T& aFunctor)
     {

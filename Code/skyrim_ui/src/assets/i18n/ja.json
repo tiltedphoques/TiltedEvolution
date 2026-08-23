@@ -167,7 +167,7 @@
         "NO_REASON": "接続出来ませんでした。",
         "SERVER_FULL": "このサーバーは満員です。",
         "BAD_UGRIDSTOLOAD": "Skyrim.iniの「uGridsToLoad」値がデフォルトではないようです。これはイケマセン。「Skyrim Together」が故障してしまいます。この値をデフォルト（５）に戻すか、Skyrim.iniを削除し１回バニラで起動し新しいファイルをジェネレートしてください。「uExterior Cell Buffer」と「uInterior Cell Buffer」もデフォルトの値のままであったほうがマシです。やり方が分からない場合はSkyrim TogetherのRedditやDiscordをご参考にしてください。",
-        "NON_DEFAULT_INSTALL": "スカイリムが純粋なバニラではないようです［CCコンテンツなど］。\nMODSを使わなかったほうがマシ。\nAEのCCコンテンツコンテンツも含めて、インストールしたMODSを削除し無効にすることをお勧めします［詳細はWIKIに。］\n\n有効な順番はこの通り：<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp</strong>"
+        "NON_DEFAULT_INSTALL": "スカイリムが純粋なバニラではないようです［CCコンテンツなど］。\nMODSを使わなかったほうがマシ。\nAEのCCコンテンツコンテンツも含めて、インストールしたMODSを削除し無効にすることをお勧めします［詳細はWIKIに。］\n\n有効な順番はこの通り：<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp\nSkyrimTogetherQuestPatches.esp</strong>"
       }
     },
     "PLAYER_LIST": {

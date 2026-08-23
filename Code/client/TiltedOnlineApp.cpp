@@ -18,7 +18,6 @@
 #include <Services/ImguiService.h>
 #include <Services/DiscordService.h>
 
-#include <ScriptExtender.h>
 #include <NvidiaUtil.h>
 
 using TiltedPhoques::Debug;
@@ -56,8 +55,6 @@ bool TiltedOnlineApp::BeginMain()
     World::Create();
     World::Get().ctx().at<DiscordService>().Init();
     World::Get().ctx().emplace<RenderSystemD3D11>(World::Get().ctx().at<OverlayService>(), World::Get().ctx().at<ImguiService>());
-
-    LoadScriptExender();
 
     // TODO: Figure out a way to un-blacklist NvCamera64.dll (see DllBlocklist.cpp). Then this hack can be removed
     if (IsNvidiaOverlayLoaded())
