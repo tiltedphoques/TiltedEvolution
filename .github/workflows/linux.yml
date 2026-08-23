@@ -8,13 +8,16 @@ on:
   workflow_call:
     inputs:
       build-mode:
-        required: true
+        required: false
         type: string
-        default: 'releasedbg'
+        default: releasedbg
       upload-build-for-next-job:
-        required: true
+        required: false
         type: boolean
         default: false
+
+env:
+  BUILD_MODE: ${{ inputs.build-mode || 'releasedbg' }}
 
 jobs:
   build:
@@ -22,7 +25,7 @@ jobs:
       matrix:
         include:
           - arch: amd64
-            runner: ubuntu-latest
+            runner: ubuntu-24.04
           - arch: arm64
             runner: ubuntu-24.04-arm
 
@@ -30,7 +33,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'ci skip')"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # We need full history in order to create a version string (BuildInfo.h)
           fetch-depth: 0
@@ -42,11 +45,12 @@ jobs:
 
       - name: Checkout master on tag push
         if: github.ref_type == 'tag'
-        # Checkout only if the tag was pushed to master
-        run: '[ "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)" ] && git checkout master'
+        run: |
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)"
+          git checkout -B master HEAD
 
       - name: Cache xmake dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.xmake/packages
           key: ${{ matrix.runner }}-xmake-${{ hashFiles('**/xmake.lua') }}
@@ -60,27 +64,43 @@ jobs:
           actions-cache-key: ${{ matrix.runner }}
 
       - name: Configure xmake and install dependencies
-        run: xmake config --mode=${{ inputs.build-mode }} --yes -vD
+        run: xmake config --mode="$BUILD_MODE" --yes -vD
 
       # Build the server
       - name: Build
-        run: |
-          xmake -y
-          echo "STR_BUILD_DIR=build/linux/${{ matrix.arch }}/${{ inputs.build-mode }}" >> $GITHUB_ENV
+        run: xmake -y
 
-      # Create install
-      - name: Output distrib binaries via xmake
+      - name: Stage Linux server
         run: |
           xmake install -o packaged
-          mkdir -p ${{ env.STR_BUILD_DIR }}
-          cp packaged/lib/libSTServer.so ${{ env.STR_BUILD_DIR }}/
-          cp packaged/bin/SkyrimTogetherServer ${{ env.STR_BUILD_DIR }}/
+          install -d release-stage
+          install -m 755 packaged/bin/SkyrimTogetherServer release-stage/
+          install -m 644 packaged/lib/libSTServer.so release-stage/
+
+      - name: Verify Linux binary architecture
+        run: |
+          file release-stage/SkyrimTogetherServer
+          case "${{ matrix.arch }}" in
+            amd64) file release-stage/SkyrimTogetherServer | grep -Eq 'x86-64|x86_64' ;;
+            arm64) file release-stage/SkyrimTogetherServer | grep -Eqi 'aarch64|arm64' ;;
+          esac
+
+      - name: Create Linux release archive
+        if: ${{ inputs.upload-build-for-next-job }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          echo "ARTIFACT_VERSION=$version" >> "$GITHUB_ENV"
+          mkdir -p release-assets
+          tar -C release-stage -czf \
+            "release-assets/SkyrimTogetherServer-${version}-linux-${{ matrix.arch }}.tar.gz" \
+            .
 
       # Upload artifacts
       - name: Upload build files for the next job
         if: ${{ inputs.upload-build-for-next-job }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: internal-job-files-linux-${{ matrix.arch }}-${{ inputs.build-mode }}
+          name: release-asset-linux-${{ matrix.arch }}
           retention-days: 1
-          path: ${{ env.STR_BUILD_DIR }}
+          if-no-files-found: error
+          path: release-assets/SkyrimTogetherServer-${{ env.ARTIFACT_VERSION }}-linux-${{ matrix.arch }}.tar.gz
