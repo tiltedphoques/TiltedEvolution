@@ -70,7 +70,7 @@ jobs:
           actions-cache-key: ${{ matrix.os }}
 
       - name: Configure xmake and install dependencies
-        run: xmake config --arch=${{ matrix.arch }} --mode="$BUILD_MODE" --yes -vD
+        run: xmake config --plat=windows --arch=${{ matrix.arch }} --mode="$BUILD_MODE" --yes -vD
 
       # Build the client
       - name: Build with xmake
