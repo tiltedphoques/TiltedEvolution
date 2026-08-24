@@ -65,7 +65,7 @@ jobs:
       - name: Setup xmake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: 3.0.9
+          xmake-version: 3.1.0
           actions-cache-folder: '.xmake-cache' # This doesn't cache dependencies, only xmake itself
           actions-cache-key: ${{ matrix.os }}
 
@@ -130,13 +130,20 @@ jobs:
             "../release-assets/SkyrimTogether-${ARTIFACT_VERSION}-windows-${{ matrix.arch }}-debug-symbols.zip" \
             .)
 
-      - name: Upload Windows release assets
+      - name: Upload playable build
         if: ${{ inputs.upload-build-for-next-job }}
         uses: actions/upload-artifact@v7
         with:
-          name: release-asset-windows-${{ matrix.arch }}
+          name: SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}
           retention-days: 7
           if-no-files-found: error
-          path: |
-            release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}.zip
-            release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}-debug-symbols.zip
+          path: release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}.zip
+
+      - name: Upload debug symbols
+        if: ${{ inputs.upload-build-for-next-job }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}-debug-symbols
+          retention-days: 7
+          if-no-files-found: error
+          path: release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}-debug-symbols.zip

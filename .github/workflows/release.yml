@@ -25,7 +25,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: release-files
-          pattern: release-asset-*
+          pattern: '{release-asset-linux-*,SkyrimTogether-*}'
           merge-multiple: true
 
       - name: Verify release assets
