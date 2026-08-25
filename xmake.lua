@@ -35,7 +35,7 @@ end
 add_requires(
     "entt v3.10.0", 
     "recastnavigation v1.6.0", 
-    "tiltedcore 0.2.8", 
+    "tiltedcore 0.2.9", 
     "cryptopp 8.9.0", 
     "spdlog v1.13.0", 
     "cpp-httplib 0.14.0",
