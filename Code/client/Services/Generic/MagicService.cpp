@@ -425,7 +425,14 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
 
     // This hack is here because slow time seems to be twice as slow when cast by an npc
     if (pEffect->IsSlowEffect())
-        pActor = PlayerCharacter::Get();
+    {
+        acMessage.CasterId && (pCaster = PlayerCharacter::Get());
+        spdlog::debug(
+            __FUNCTION__ ": hacking IsSlowEffect() targetId {:X}, casterId {:X}, magnitude {}, IsDualCasting {}",
+            acMessage.TargetId, acMessage.CasterId, acMessage.Magnitude, acMessage.IsDualCasting);
+
+    }
+
 
     pActor->magicTarget.AddTarget(data, acMessage.ApplyHealPerkBonus, acMessage.ApplyStaminaPerkBonus);
     spdlog::debug("Applied remote magic effect");

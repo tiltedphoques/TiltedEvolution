@@ -59,6 +59,7 @@ struct GameServer final : Server
     void SendToLoaded(const ServerMessage& acServerMessage) const;
     void SendToPlayers(const ServerMessage& acServerMessage, const Player* apExcludeSender = nullptr) const;
     bool SendToPlayersInRange(const ServerMessage& acServerMessage, const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
+    void SendToLeader(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apLeader) const;
     void SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apExcludeSender = nullptr) const;
     void SendToPartyInRange(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const entt::entity acOrigin, const Player* apExcludeSender = nullptr) const;
 

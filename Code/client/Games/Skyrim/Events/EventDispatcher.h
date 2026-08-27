@@ -188,16 +188,31 @@ struct TESResolveNPCTemplatesEvent
 {
 };
 
+// The RE'd fields in TESSceneEvent, TESSceneActionEvent and TESScenePhaseEvent may be incorrect
+
 struct TESSceneEvent
 {
+    void* ref;
+    uint32_t sceneFormId;
+    uint32_t sceneType; // BEGIN (0) or END (1)
 };
 
 struct TESSceneActionEvent
 {
+    void* ref;
+    uint32_t sceneFormId;
+    uint32_t actionIndex;
+    uint32_t questFormId;
+    uint32_t actorAliasId;
 };
 
 struct TESScenePhaseEvent
 {
+    void* callback;
+    uint32_t sceneFormId;
+    uint16_t phaseIndex;   
+    uint32_t sceneType;     // BEGIN (0) or END (1)
+    uint32_t questStageId; 
 };
 
 struct TESSellEvent

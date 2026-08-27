@@ -1,4 +1,4 @@
-﻿#include <Components.h>
+#include <Components.h>
 #include <GameServer.h>
 #include <Packet.hpp>
 
@@ -741,6 +741,23 @@ bool GameServer::SendToPlayersInRange(const ServerMessage& acServerMessage, cons
     }
 
     return true;
+}
+
+void GameServer::SendToLeader(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apLeader) const
+{
+    if (!acPartyComponent.JoinedPartyId.has_value())
+    {
+        spdlog::warn("Party does not exist, canceling broadcast.");
+        return;
+    }
+
+    if (const_cast<Player*>(apLeader)->GetParty().JoinedPartyId != acPartyComponent.JoinedPartyId)
+    {
+        spdlog::warn("Specified party leader belongs to different party? Canceling send");
+        return;
+    }
+
+    apLeader->Send(acServerMessage);
 }
 
 void GameServer::SendToParty(const ServerMessage& acServerMessage, const PartyComponent& acPartyComponent, const Player* apExcludeSender) const
