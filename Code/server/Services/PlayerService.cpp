@@ -68,9 +68,12 @@ void PlayerService::HandleGridCellShift(const PacketEvent<ShiftGridCellRequest>&
         if (ownedComponent.GetOwner() == pPlayer)
             continue;
 
-        const auto cellIt = std::find_if(std::begin(message.Cells), std::end(message.Cells), [Cells = message.Cells, CharacterCell = characterCellComponent.Cell](auto playerCell) { return playerCell == CharacterCell; });
+        const auto& characterComponent = characterView.get<CharacterComponent>(character);
+        // An actor's parent cell can be temporary and absent from the client's cell list.
+        // Use the same worldspace/position range as movement broadcasts, including dragon range.
+        const bool isInRange = cell.IsInRange(characterCellComponent, characterComponent.IsDragon());
 
-        if (cellIt == std::end(message.Cells))
+        if (!isInRange)
         {
             continue;
         }
