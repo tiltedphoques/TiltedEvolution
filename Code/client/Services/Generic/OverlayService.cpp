@@ -60,6 +60,8 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
     [[nodiscard]] HWND GetWindow() override { return m_pRenderSystem->GetWindow(); }
 
     [[nodiscard]] IDXGISwapChain* GetSwapChain() const noexcept override { return m_pRenderSystem->GetSwapChain(); }
+    [[nodiscard]] ID3D11Device* GetDevice() const noexcept override { return m_pRenderSystem->GetDevice(); }
+    [[nodiscard]] ID3D11DeviceContext* GetDeviceContext() const noexcept override { return m_pRenderSystem->GetDeviceContext(); }
 
 private:
     RenderSystemD3D11* m_pRenderSystem;
@@ -150,15 +152,6 @@ void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
 
 void OverlayService::Render() noexcept
 {
-    // TODO: delete this hack?
-    static bool s_bi = false;
-    if (!s_bi)
-    {
-        m_pOverlay->GetClient()->GetBrowser()->GetHost()->WasResized();
-
-        s_bi = true;
-    }
-
     auto pPlayer = PlayerCharacter::Get();
     bool inGame = pPlayer && pPlayer->GetNiNode();
     if (inGame && !m_inGame)

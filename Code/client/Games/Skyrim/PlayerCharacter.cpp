@@ -21,6 +21,7 @@
 #include <Forms/TESWorldSpace.h>
 
 #include <Forms/TESObjectCELL.h>
+#include <Games/Skyrim/CellRespawnOverrides.h>
 
 #include <ModCompat/BehaviorVar.h>
 
@@ -112,7 +113,18 @@ NiPoint3 PlayerCharacter::RespawnPlayer() noexcept
 
     NiPoint3 pos{};
     NiPoint3 rot{};
-    pCell->GetCOCPlacementInfo(&pos, &rot, true);
+
+    if (!pCell)
+    {
+        SetNoBleedoutRecovery(true);
+        return pos;
+    }
+
+    // If we find an override position for this respawn cell, we will use that instead of COC.
+    if (!CellRespawnOverrides::GetRespawnPos(pCell, pos))
+    {
+        pCell->GetCOCPlacementInfo(&pos, &rot, true);
+    }
 
     MoveTo(pCell, pos);
 
@@ -168,7 +180,14 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
     // The inventory change event should always be sent to the server, otherwise the server inventory won't be updated.
     bool shouldUpdateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
 
-    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item), false, shouldUpdateClients));
+    // The player still needs its server entity and ownership epoch so stale inventory events can be rejected.
+    if (const auto ownershipToken = Utils::GetLocalOwnershipToken(apThis->formID))
+    {
+        InventoryChangeEvent event(apThis->formID, std::move(item), false, shouldUpdateClients);
+        event.ServerId = ownershipToken->ServerId;
+        event.OwnershipEpoch = ownershipToken->OwnershipEpoch;
+        World::Get().GetRunner().Trigger(std::move(event));
+    }
 
     ScopedInventoryOverride _;
 

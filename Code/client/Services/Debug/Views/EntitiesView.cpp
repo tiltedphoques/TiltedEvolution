@@ -193,6 +193,7 @@ void DebugService::DisplayLocalComponent(LocalComponent& aLocalComponent, const 
 
     auto& action = aLocalComponent.CurrentAction;
     ImGui::InputInt("Net Id", (int*)&aLocalComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputInt("Ownership Epoch", (int*)&aLocalComponent.OwnershipEpoch, 0, 0, ImGuiInputTextFlags_ReadOnly);
     ImGui::InputInt("Action Id", (int*)&action.ActionId, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputInt("Idle Id", (int*)&action.IdleId, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     ImGui::InputScalarN("State", ImGuiDataType_U32, &action.State1, 2, nullptr, nullptr, "%x", ImGuiInputTextFlags_ReadOnly);
@@ -204,6 +205,7 @@ void DebugService::DisplayRemoteComponent(RemoteComponent& aRemoteComponent, con
         return;
 
     ImGui::InputInt("Server Id", (int*)&aRemoteComponent.Id, 0, 0, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+    ImGui::InputInt("Ownership Epoch", (int*)&aRemoteComponent.OwnershipEpoch, 0, 0, ImGuiInputTextFlags_ReadOnly);
 
     if (ImGui::Button("Take ownership"))
     {
@@ -211,7 +213,7 @@ void DebugService::DisplayRemoteComponent(RemoteComponent& aRemoteComponent, con
             [acEntity, acFormId]()
             {
                 if (auto* pRemoteCompoment = World::Get().try_get<RemoteComponent>(acEntity))
-                    World::Get().GetCharacterService().TakeOwnership(acFormId, pRemoteCompoment->Id, acEntity);
+                    World::Get().GetCharacterService().RequestOwnership(acFormId, pRemoteCompoment->Id, acEntity);
             });
     }
 }

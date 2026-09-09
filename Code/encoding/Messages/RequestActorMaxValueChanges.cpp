@@ -3,6 +3,7 @@
 void RequestActorMaxValueChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteVarInt(aWriter, Id);
+    Serialization::WriteVarInt(aWriter, OwnershipEpoch);
 
     Serialization::WriteVarInt(aWriter, Values.size());
     for (const auto& value : Values)
@@ -17,6 +18,7 @@ void RequestActorMaxValueChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& 
     ClientMessage::DeserializeRaw(aReader);
 
     Id = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    OwnershipEpoch = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 
     auto count = Serialization::ReadVarInt(aReader);
     for (decltype(count) i = 0; i < count; i++)

@@ -42,6 +42,11 @@ LaunchContext* GetLaunchContext()
     return g_context;
 }
 
+bool LaunchContext::GetLoaded()
+{
+    return isLoaded;
+}
+
 // Everything is nothing, life is worth living, just look to the stars
 #define DIE_NOW(err)  \
     {                 \
@@ -126,6 +131,7 @@ bool LoadProgram(LaunchContext& LC)
     LC.Version = QueryFileVersion(LC.exePath.c_str());
     if (LC.Version.empty())
         DIE_NOW(L"Failed to query game version");
+    LC.SetLoaded();
 
     ExeLoader loader(CurrentTarget.exeLoadSz);
     if (!loader.Load(reinterpret_cast<uint8_t*>(content.data())))

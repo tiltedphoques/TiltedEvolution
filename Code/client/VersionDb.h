@@ -164,32 +164,10 @@ public:
 
         return Load(acGamePath, major, minor, revision, build);
     }
-
-    bool Load(const std::filesystem::path& acGamePath, int major, int minor, int revision, int build)
+    
+    // Address Library format version 2
+    bool LoadV2(std::ifstream& file)
     {
-        Clear();
-
-        char fileName[256];
-        _snprintf_s(fileName, 256, "versionlib-%d-%d-%d-%d.bin", major, minor, revision, build);
-
-        std::ifstream file(acGamePath / "Data" / "SKSE" / "Plugins" / fileName, std::ios::binary);
-        if (!file.good())
-            return false;
-
-        int format = read<int>(file);
-
-        if (format != 2)
-            return false;
-
-        for (int i = 0; i < 4; i++)
-            _ver[i] = read<int>(file);
-
-        {
-            char verName[64];
-            _snprintf_s(verName, 64, "%d.%d.%d.%d", _ver[0], _ver[1], _ver[2], _ver[3]);
-            _verStr = verName;
-        }
-
         int tnLen = read<int>(file);
 
         if (tnLen < 0 || tnLen >= 0x10000)
@@ -204,13 +182,7 @@ public:
             free(tnbuf);
         }
 
-        {
-            HMODULE handle = GetModuleHandleA(NULL);
-            _base = (unsigned long long)handle;
-        }
-
         int ptrSize = read<int>(file);
-
         int addrCount = read<int>(file);
 
         unsigned char type, low, high;
@@ -221,6 +193,7 @@ public:
         unsigned long long pvid = 0;
         unsigned long long poffset = 0;
         unsigned long long tpoffset;
+
         for (int i = 0; i < addrCount; i++)
         {
             type = read<unsigned char>(file);
@@ -306,6 +279,66 @@ public:
         }
 
         return true;
+    }
+
+    // Address Library format version 5
+    bool LoadV5(std::ifstream& file)
+    {
+        char nameBuf[65] = {};
+        file.read(nameBuf, 64);
+        nameBuf[64] = '\0';
+        _moduleName = nameBuf;
+
+        const auto pointerSize = read<std::uint64_t>(file);
+        (void)pointerSize;
+
+        const auto addressCount = read<std::uint32_t>(file);
+
+        for (std::uint32_t id = 0; id < addressCount; ++id)
+        {
+            const auto offset = read<std::uint32_t>(file);
+
+            if (offset == 0)
+                continue;
+
+            _data[id] = offset;
+            _rdata[offset] = id;
+        }
+
+        return true;
+    }
+
+    bool Load(const std::filesystem::path& acGamePath, int major, int minor, int revision, int build)
+    {
+        Clear();
+
+        char fileName[256];
+        _snprintf_s(fileName, 256, "versionlib-%d-%d-%d-%d.bin", major, minor, revision, build);
+
+        std::ifstream file(acGamePath / "Data" / "SKSE" / "Plugins" / fileName, std::ios::binary);
+        if (!file.good())
+            return false;
+
+        int format = read<int>(file);
+
+        if (format != 2 && format != 5)
+            return false;
+
+        for (int i = 0; i < 4; i++)
+            _ver[i] = read<int>(file);
+
+        {
+            char verName[64];
+            _snprintf_s(verName, 64, "%d.%d.%d.%d", _ver[0], _ver[1], _ver[2], _ver[3]);
+            _verStr = verName;
+        }
+
+        {
+            HMODULE handle = GetModuleHandleA(NULL);
+            _base = (unsigned long long)handle;
+        }
+
+        return format == 5 ? LoadV5(file) : LoadV2(file);
     }
 
     bool DumpToTextFile(const std::string& path)

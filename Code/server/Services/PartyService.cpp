@@ -19,12 +19,6 @@
 #include <Messages/PartyKickRequest.h>
 #include <Messages/NotifyPlayerJoined.h>
 
-#include <Setting.h>
-namespace
-{
-Console::Setting bAutoPartyJoin{"Gameplay:bAutoPartyJoin", "Join parties automatically, as long as there is only one party in the server", true};
-}
-
 PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_updateEvent(aDispatcher.sink<UpdateEvent>().connect<&PartyService::OnUpdate>(this))
@@ -53,13 +47,13 @@ bool PartyService::IsPlayerInParty(Player* const apPlayer) const noexcept
     return apPlayer->GetParty().JoinedPartyId.has_value();
 }
 
-bool PartyService::IsPlayerLeader(Player* const apPlayer) noexcept
+bool PartyService::IsPlayerLeader(const Player* const apPlayer) const noexcept
 {
-    auto& inviterPartyComponent = apPlayer->GetParty();
+    const auto& inviterPartyComponent = apPlayer->GetParty();
     if (inviterPartyComponent.JoinedPartyId)
     {
-        Party& party = m_parties[*inviterPartyComponent.JoinedPartyId];
-        return party.LeaderPlayerId == apPlayer->GetId();
+        if (const auto* const pParty = GetById(*inviterPartyComponent.JoinedPartyId))
+            return pParty->LeaderPlayerId == apPlayer->GetId();
     }
 
     return false;
@@ -122,7 +116,7 @@ void PartyService::OnPartyCreate(const PacketEvent<PartyCreateRequest>& acPacket
         spdlog::debug("[PartyService]: Created party for {}", player->GetId());
         SendPartyJoinedEvent(party, player);
 
-        if (m_parties.size() == 1 && bAutoPartyJoin)
+        if (m_parties.size() == 1 && GameServer::Get()->AllowsAutoPartyJoin())
         {
             for (Player* otherPlayer : m_world.GetPlayerManager())
             {
@@ -218,7 +212,7 @@ void PartyService::OnPlayerJoin(const PlayerJoinEvent& acEvent) noexcept
 
     GameServer::Get()->SendToPlayers(notify, acEvent.pPlayer);
 
-    if (m_parties.size() == 1 && bAutoPartyJoin)
+    if (m_parties.size() == 1 && GameServer::Get()->AllowsAutoPartyJoin())
     {
         for (Player* player : m_world.GetPlayerManager())
         {

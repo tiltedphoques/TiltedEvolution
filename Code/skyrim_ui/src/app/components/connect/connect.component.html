@@ -15,18 +15,26 @@
     spellcheck="false"
   />
   <input
-    type="text"
+    [type]="hidePassword ? 'password' : 'text'"
     [placeholder]="'COMPONENT.CONNECT.PASSWORD' | transloco"
     spellcheck="false"
     [(ngModel)]="password"
     (keydown.enter)="connect()"
   />
-  <span class="save-password">
-    <input type="checkbox" id="save-password" [(ngModel)]="savePassword" />
-    <label for="save-password">{{
-      'COMPONENT.CONNECT.SAVE_PASSWORD' | transloco
-    }}</label>
-  </span>
+  <div class="password-options">
+    <span>
+      <input type="checkbox" id="save-password" [(ngModel)]="savePassword" />
+      <label for="save-password">{{
+        'COMPONENT.CONNECT.SAVE_PASSWORD' | transloco
+      }}</label>
+    </span>
+    <span>
+      <input type="checkbox" id="hide-password" [(ngModel)]="hidePassword" />
+      <label for="hide-password">{{
+        'COMPONENT.CONNECT.HIDE_PASSWORD' | transloco
+      }}</label>
+    </span>
+  </div>
 
   <app-action-buttons>
     <button

@@ -12,9 +12,6 @@
         <tr>
           <th>{{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.LEVEL' | transloco }}</th>
           <th>{{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.NAME' | transloco }}</th>
-          <th>
-            {{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.LOCATION' | transloco }}
-          </th>
           <th></th>
         </tr>
       </thead>
@@ -22,7 +19,6 @@
         <tr *ngFor="let player of playerList$ | async">
           <td>{{ player.level }}</td>
           <td>{{ player.name }}</td>
-          <td>{{ player.cellName }}</td>
           <td class="actions-col">
             <button
               [class.hidden]="player.isMember || !(isPartyLeader$ | async)"
