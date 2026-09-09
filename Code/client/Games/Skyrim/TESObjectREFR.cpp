@@ -864,26 +864,37 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
         return;
     }
 
-    ExtraDataList* pExtraDataList = GetExtraDataFromItem(arEntry);
+    ExtraDataList* pExtraDataList = nullptr;
+    Actor* pActor = Cast<Actor>(this);
+
+    if(pActor)
+    {
+        // NOTE: Custom enchantments cause remote non-player Actor weapons to disappear.
+        // Remote NPCs typically use default enchanted weapons, so skip custom enchantment sync.
+        if(!arEntry.IsQuestItem && pActor->GetExtension() && pActor->GetExtension()->IsRemotePlayer())
+            pExtraDataList = GetExtraDataFromItem(arEntry);
+    }
+    else
+    {
+        if(!arEntry.IsQuestItem)
+            pExtraDataList = GetExtraDataFromItem(arEntry);
+    }
 
     if (arEntry.Count > 0)
     {
-        bool isWorn = false;
-        bool isWornLeft = false;
-        if (pExtraDataList)
-        {
-            isWorn = pExtraDataList->Contains(ExtraDataType::Worn);
-            isWornLeft = pExtraDataList->Contains(ExtraDataType::WornLeft);
-        }
+        bool isWorn = arEntry.ExtraWorn;
+        bool isWornLeft = arEntry.ExtraWornLeft;
 
         spdlog::debug("Adding item {:X}, count {}", pObject->formID, arEntry.Count);
         AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
 
-        // TODO: check Actor cast first?
-        if (isWorn)
-            EquipManager::Get()->Equip(Cast<Actor>(this), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-        else if (isWornLeft)
-            EquipManager::Get()->Equip(Cast<Actor>(this), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+        if(pActor && pActor->GetExtension() && pActor->GetExtension()->IsRemote())
+        {
+            if (isWorn)
+                EquipManager::Get()->Equip(pActor, pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+            else if (isWornLeft)
+                EquipManager::Get()->Equip(pActor, pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+        }
     }
     else if (arEntry.Count < 0)
     {
@@ -897,10 +908,9 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
     {
         PlayerCharacter* pPlayer = PlayerCharacter::Get();
 
-        if (!pPlayer->IsItemInInventory(objectId))
+        if (pPlayer && !pPlayer->IsItemInInventory(objectId))
         {
-            Actor* pActor = Cast<Actor>(this);
-            if (pActor && pActor->GetExtension()->IsRemotePlayer())
+            if (pActor && pActor->GetExtension() && pActor->GetExtension()->IsRemotePlayer())
                 pPlayer->AddOrRemoveItem(arEntry);
         }
     }
