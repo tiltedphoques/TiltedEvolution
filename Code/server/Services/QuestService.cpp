@@ -11,6 +11,8 @@
 namespace
 {
 Console::Setting bEnableMiscQuestSync{"Gameplay:bEnableMiscQuestSync", "(Experimental) Syncs miscellaneous quests when possible", false};
+Console::Setting bPartyMembersCanStopQuests{
+    "Gameplay:bPartyMembersCanStopQuests", "Whether quest stop events from party members (non-leaders) are forwarded to the rest of the party", false};
 
 }
 
@@ -93,6 +95,18 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     const auto& partyComponent = acMessage.pPlayer->GetParty();
     if (!partyComponent.JoinedPartyId.has_value())
         return;
+
+    // A quest normally ends on every client through the synced stage that completes it,
+    // so a stop event from a member carries no new information in the common case.
+    // When it does (a member's local scripts decided the quest failed, e.g. misjudging
+    // the outcome of a brawl in "Trouble in Whiterun"), forwarding it would stop the
+    // leader's copy of the quest and corrupt the party's progress. Keep the member's
+    // own quest log up to date (done above), but don't broadcast the stop.
+    if (message.Status == RequestQuestUpdate::Stopped && !bPartyMembersCanStopQuests && !m_world.GetPartyService().IsPlayerLeader(pPlayer))
+    {
+        spdlog::info("{}: not forwarding quest stop from party member {:X}, quest: {:X}, stage: {}", __FUNCTION__, pPlayer->GetId(), message.Id.LogFormat(), message.Stage);
+        return;
+    }
 
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
 }
