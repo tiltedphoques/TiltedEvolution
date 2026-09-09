@@ -54,13 +54,15 @@ void TESQuest::SetActive(bool toggle)
 
 bool TESQuest::IsStageDone(uint16_t stageIndex)
 {
-    for (Stage* it : stages)
-    {
-        if (it->stageIndex == stageIndex)
-            return it->IsDone();
-    }
-
-    return false;
+    // Ask the game instead of walking `stages`: that field is really the pair of
+    // (executed stages, waiting stages) list heads (see the commented-out layout in
+    // TESQuest.h), so iterating it as a single GameList<Stage> only ever sees the
+    // first executed stage. Every other completed stage reported "not done", which
+    // let a remote stage update re-run the fragments of a stage this client had
+    // already played (scene restarts, duplicated quest side effects).
+    using Quest = TESQuest;
+    PAPYRUS_FUNCTION(bool, Quest, IsStageDone, int);
+    return s_pIsStageDone(this, stageIndex);
 }
 
 bool TESQuest::Kill()
