@@ -20,11 +20,12 @@ struct RequestEquipmentChanges final : ClientMessage
 
     bool operator==(const RequestEquipmentChanges& acRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() && ServerId == acRhs.ServerId && ItemId == acRhs.ItemId && EquipSlotId == acRhs.EquipSlotId && Count == acRhs.Count && Unequip == acRhs.Unequip && IsSpell == acRhs.IsSpell && IsShout == acRhs.IsShout && IsAmmo == acRhs.IsAmmo &&
+        return GetOpcode() == acRhs.GetOpcode() && ServerId == acRhs.ServerId && OwnershipEpoch == acRhs.OwnershipEpoch && ItemId == acRhs.ItemId && EquipSlotId == acRhs.EquipSlotId && Count == acRhs.Count && Unequip == acRhs.Unequip && IsSpell == acRhs.IsSpell && IsShout == acRhs.IsShout && IsAmmo == acRhs.IsAmmo &&
                CurrentInventory == acRhs.CurrentInventory;
     }
 
     uint32_t ServerId{};
+    uint32_t OwnershipEpoch{};
     GameId ItemId{};
     GameId EquipSlotId{};
     uint32_t Count{};

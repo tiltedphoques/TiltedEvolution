@@ -20,6 +20,31 @@
 
 #include <World.h>
 
+namespace
+{
+bool IsDefaultModlist(GameList<Mod>& aCurrentModlist) noexcept
+{
+    static const auto s_defaultModlist = std::to_array<TiltedPhoques::String>(
+        {"Skyrim.esm", "Update.esm", "Dawnguard.esm", "HearthFires.esm", 
+        "Dragonborn.esm", "_ResourcePack.esl", "SkyrimTogether.esp", "SkyrimTogetherQuestPatches.esp"}
+    );
+
+    if (aCurrentModlist.Size() != s_defaultModlist.size())
+        return false;
+
+    auto expectedMod = s_defaultModlist.begin();
+    for (const auto* pCurrentMod : aCurrentModlist)
+    {
+        if (pCurrentMod->filename != *expectedMod)
+            return false;
+
+        ++expectedMod;
+    }
+
+    return true;
+}
+} // namespace
+
 DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_dispatcher(aDispatcher)
@@ -254,30 +279,7 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
 {
     spdlog::info("Finished loading, triggering visit cell");
 
-    const TiltedPhoques::String defaultModlist[7] = {"Skyrim.esm",        "Update.esm",     "Dawnguard.esm",
-                                                    "HearthFires.esm",   "Dragonborn.esm", "_ResourcePack.esl",
-                                                    "SkyrimTogether.esp"};
-
-    auto& currentModlist = ModManager::Get()->mods;
-
-    bool isModlistEqual = currentModlist.Size() == 7;
-
-    if (isModlistEqual)
-    {
-        int i = 0;
-        for (const auto& currentMod : currentModlist)
-        {
-            if (currentMod->filename != defaultModlist[i])
-            {
-                isModlistEqual = false;
-                break;
-            }
-
-            i++;
-        }
-    }
-
-    if (!isModlistEqual)
+    if (!IsDefaultModlist(ModManager::Get()->mods))
     {
         ConnectionErrorEvent errorEvent{};
         errorEvent.ErrorDetail = "{\"error\": \"non_default_install\"}";
