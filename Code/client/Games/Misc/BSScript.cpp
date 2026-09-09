@@ -9,6 +9,9 @@
 #include <PlayerCharacter.h>
 #include <Games/ActorExtension.h>
 #include <Games/PapyrusFunctions.h>
+#include <Games/References.h>
+#include <Misc/BSFixedString.h>
+#include <Events/ScriptAnimationEvent.h>
 
 TP_THIS_FUNCTION(TRegisterPapyrusFunction, void, BSScript::IVirtualMachine, NativeFunction*);
 TP_THIS_FUNCTION(TBindEverythingToScript, void, BSScript::IVirtualMachine*);
@@ -20,6 +23,23 @@ TBindEverythingToScript* RealBindEverythingToScript = nullptr;
 TSignaturesMatch* RealSignaturesMatch = nullptr;
 TCompareVariables* RealCompareVariables = nullptr;
 
+// Papyrus global native: Debug.SendAnimationEvent(ObjectReference arRef, string asEventName).
+// ABI matches the repo's PapyrusFunction<> convention: (VM*, stackId, this/tag, args...).
+using TDebugSendAnimationEvent = void(BSScript::IVirtualMachine*, uint32_t, void*, TESObjectREFR*, BSFixedString*);
+static TDebugSendAnimationEvent* RealDebugSendAnimationEvent = nullptr;
+
+static void HookDebugSendAnimationEvent(BSScript::IVirtualMachine* apVm, uint32_t aStackId, void* apTag, TESObjectREFR* apRef, BSFixedString* apEventName)
+{
+    const char* pcEventName = apEventName ? apEventName->AsAscii() : nullptr;
+    if (apRef && pcEventName && pcEventName[0] != '\0')
+    {
+        spdlog::debug("Debug.SendAnimationEvent captured: ref {:X}, event {}", apRef->formID, pcEventName);
+        World::Get().GetRunner().Trigger(ScriptAnimationEvent(apRef->formID, String{}, pcEventName));
+    }
+
+    RealDebugSendAnimationEvent(apVm, aStackId, apTag, apRef, apEventName);
+}
+
 void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, NativeFunction* apFunction)
 {
     auto& runner = World::Get().GetRunner();
@@ -27,6 +47,13 @@ void TP_MAKE_THISCALL(HookRegisterPapyrusFunction, BSScript::IVirtualMachine, Na
     PapyrusFunctionRegisterEvent event(apFunction->functionName.AsAscii(), apFunction->typeName.AsAscii(), apFunction->functionAddress);
 
     runner.Trigger(std::move(event));
+
+    if (!RealDebugSendAnimationEvent && apFunction->functionAddress && !strcmp(apFunction->typeName.AsAscii(), "Debug") && !strcmp(apFunction->functionName.AsAscii(), "SendAnimationEvent"))
+    {
+        RealDebugSendAnimationEvent = reinterpret_cast<TDebugSendAnimationEvent*>(apFunction->functionAddress);
+        TP_HOOK_IMMEDIATE(&RealDebugSendAnimationEvent, HookDebugSendAnimationEvent);
+        spdlog::info("Hooked Debug.SendAnimationEvent at {}", apFunction->functionAddress);
+    }
 
     TiltedPhoques::ThisCall(RealRegisterPapyrusFunction, apThis, apFunction);
 }

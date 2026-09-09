@@ -7,6 +7,7 @@
 #include <Events/ActivateEvent.h>
 #include <Events/LockChangeEvent.h>
 #include <Events/ScriptAnimationEvent.h>
+#include <Events/WaveCommandEvent.h>
 #include <Messages/ServerTimeSettings.h>
 #include <Messages/AssignObjectsRequest.h>
 #include <Messages/AssignObjectsResponse.h>
@@ -37,6 +38,7 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_assignObjectConnection = aDispatcher.sink<AssignObjectsResponse>().connect<&ObjectService::OnAssignObjectsResponse>(this);
     m_scriptAnimationConnection = aDispatcher.sink<ScriptAnimationEvent>().connect<&ObjectService::OnScriptAnimationEvent>(this);
     m_scriptAnimationNotifyConnection = aDispatcher.sink<NotifyScriptAnimation>().connect<&ObjectService::OnNotifyScriptAnimation>(this);
+    m_waveCommandConnection = aDispatcher.sink<WaveCommandEvent>().connect<&ObjectService::OnWaveCommand>(this);
 
     EventDispatcherManager::Get()->activateEvent.RegisterSink(this);
 }
@@ -378,34 +380,78 @@ void ObjectService::OnLockChangeNotify(const NotifyLockChange& acMessage) noexce
     pObject->LockChange();
 }
 
+// ScriptAnimationEvent carries a LOCAL form id; the wire format
+// (ScriptAnimationRequest/NotifyScriptAnimation.FormID) carries a SERVER id.
+// The translation happens here; refs without a server id are local-only.
 void ObjectService::OnScriptAnimationEvent(const ScriptAnimationEvent& acEvent) noexcept
 {
+    if (!m_transport.IsOnline())
+        return;
+
+    auto view = m_world.view<FormIdComponent>();
+    const auto it = std::find_if(view.begin(), view.end(), [view, id = acEvent.FormID](auto entity) { return view.get<FormIdComponent>(entity).Id == id; });
+
+    if (it == view.end())
+    {
+        spdlog::debug("{}: no synced entity for form id {:X}, event {}", __FUNCTION__, acEvent.FormID, acEvent.EventName.c_str());
+        return;
+    }
+
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
+    if (!serverIdRes.has_value())
+        return;
+
     ScriptAnimationRequest request{};
-    request.FormID = acEvent.FormID;
+    request.FormID = serverIdRes.value();
     request.Animation = acEvent.Animation;
     request.EventName = acEvent.EventName;
 
     m_transport.Send(request);
 }
 
-void ObjectService::OnNotifyScriptAnimation(const NotifyScriptAnimation& acMessage) noexcept
+void ObjectService::OnWaveCommand(const WaveCommandEvent& acEvent) noexcept
 {
-    if (acMessage.FormID == 0)
+    if (!m_transport.IsOnline())
         return;
 
-    auto* pForm = TESForm::GetById(acMessage.FormID);
-    auto* pObject = Cast<TESObjectREFR>(pForm);
+    auto view = m_world.view<FormIdComponent>();
+    const auto it = std::find_if(view.begin(), view.end(), [view](auto entity) { return view.get<FormIdComponent>(entity).Id == 0x14; });
 
-    if (!pObject)
+    if (it == view.end())
     {
-        spdlog::error("Failed to fetch notify script animation object, form id: {:X}", acMessage.FormID);
+        spdlog::debug("{}: local player entity not found", __FUNCTION__);
         return;
     }
+
+    std::optional<uint32_t> serverIdRes = Utils::GetServerId(*it);
+    if (!serverIdRes.has_value())
+    {
+        spdlog::debug("{}: local player has no server id yet", __FUNCTION__);
+        return;
+    }
+
+    ScriptAnimationRequest request{};
+    request.FormID = serverIdRes.value();
+    request.EventName = "IdleWave";
+
+    m_transport.Send(request);
+
+    // The relay no longer echoes to the sender; play the wave locally.
+    BSFixedString eventName("IdleWave");
+    PlayerCharacter::Get()->SendAnimationEvent(&eventName);
+}
+
+void ObjectService::OnNotifyScriptAnimation(const NotifyScriptAnimation& acMessage) noexcept
+{
+    // FormID carries a server id; resolve it to whatever local form mirrors that entity
+    TESObjectREFR* pObject = Utils::GetByServerId<TESObjectREFR>(acMessage.FormID);
+    if (!pObject)
+        return;
 
     BSFixedString eventName(acMessage.EventName.c_str());
     if (acMessage.Animation == String{})
     {
-        pObject->PlayAnimation(&eventName);
+        pObject->SendAnimationEvent(&eventName);
     }
     else
     {

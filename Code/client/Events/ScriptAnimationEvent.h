@@ -12,6 +12,8 @@ struct ScriptAnimationEvent
     {
     }
 
+    // Local form id of the animating reference; ObjectService::OnScriptAnimationEvent
+    // translates it to a server id before it goes on the wire.
     uint32_t FormID;
     String Animation;
     String EventName;
