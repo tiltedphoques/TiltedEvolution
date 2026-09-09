@@ -3,6 +3,7 @@
 void NotifyActorMaxValueChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteVarInt(aWriter, Id);
+    Serialization::WriteVarInt(aWriter, OwnershipEpoch);
 
     Serialization::WriteVarInt(aWriter, Values.size());
     for (auto& value : Values)
@@ -17,6 +18,7 @@ void NotifyActorMaxValueChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& a
     ServerMessage::DeserializeRaw(aReader);
 
     Id = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    OwnershipEpoch = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 
     auto count = Serialization::ReadVarInt(aReader);
     for (int i = 0; i < count; i++)

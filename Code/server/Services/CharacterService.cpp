@@ -250,6 +250,12 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
         return;
     }
 
+    if (message.Reason != OwnershipReleaseReason::Relinquish && message.Reason != OwnershipReleaseReason::DeclineGrant)
+    {
+        spdlog::warn("Ignored ownership release with invalid reason from player {:X} for actor {:X}", acMessage.pPlayer->GetId(), message.ServerId);
+        return;
+    }
+
     auto& characterComponent = view.get<CharacterComponent>(*it);
     if (characterComponent.IsPlayerSummon())
     {
@@ -258,7 +264,7 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
         return;
     }
 
-    if (message.WorldSpaceId || message.CellId)
+    if (message.Reason == OwnershipReleaseReason::Relinquish && (message.WorldSpaceId || message.CellId))
     {
         const auto* pFormIdComponent = m_world.try_get<FormIdComponent>(cEntity);
         if (pFormIdComponent)
@@ -282,6 +288,11 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
         movementComponent.Sent = true;
     }
 
+    // A normal release starts a fresh search. A declined grant continues the current
+    // search, retaining failed candidates so unloaded clients cannot bounce ownership.
+    if (message.Reason == OwnershipReleaseReason::Relinquish)
+        ownerComponent.InvalidOwners.clear();
+
     ownerComponent.InvalidOwners.push_back(acMessage.pPlayer);
 
     TransferToNextOwner(cEntity, OwnershipTransferReason::Relinquish);
@@ -289,6 +300,11 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
 
 void CharacterService::OnOwnershipTransferEvent(const OwnershipTransferEvent& acEvent) const noexcept
 {
+    // A disconnect starts a fresh search; previously unavailable clients may be ready now.
+    const auto view = m_world.view<OwnerComponent>();
+    if (const auto it = view.find(acEvent.Entity); it != view.end())
+        view.get<OwnerComponent>(*it).InvalidOwners.clear();
+
     TransferToNextOwner(acEvent.Entity, OwnershipTransferReason::OwnerUnavailable);
 }
 
@@ -347,7 +363,7 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         auto itor = view.find(entity);
         if (itor == std::end(view))
         {
-            spdlog::debug("{:x} requested move of {:x} but does not exist", acMessage.pPlayer->GetConnectionId(), World::ToInteger(*itor));
+            spdlog::debug("{:x} requested move of {:x} but does not exist", acMessage.pPlayer->GetConnectionId(), World::ToInteger(entity));
             continue;
         }
 
