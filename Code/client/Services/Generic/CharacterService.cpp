@@ -1015,6 +1015,24 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
     pPlayer->AddSkillExperience(PlayerCharacter::LastUsedCombatSkill, acMessage.Experience);
 }
 
+// Scenes (BGSScene) run on every client that has the owning quest at the right stage, so
+// each client already plays the lines of a scene locally, including those of actors it
+// does not own. Broadcasting the owner's copy of those lines makes the receivers call
+// StopCurrentDialogue() on their own copy of the actor mid-scene, which ends the scene's
+// dialogue action early, lets their scene phase race ahead of the owner's, and can hang
+// the scene for everyone. Lines said to the local player (dialogue menu) are not played
+// elsewhere, so those still need to be synced even inside a scene.
+static bool ShouldSyncSpeech(Actor* apActor) noexcept
+{
+    if (!apActor)
+        return false;
+
+    if (!apActor->IsInScene())
+        return true;
+
+    return apActor->IsInDialogueWithPlayer();
+}
+
 void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
 {
     if (!m_transport.IsConnected())
@@ -1030,6 +1048,12 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
     if (!serverIdRes)
     {
         spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.ActorID);
+        return;
+    }
+
+    if (!ShouldSyncSpeech(Cast<Actor>(TESForm::GetById(acEvent.ActorID))))
+    {
+        spdlog::debug("{}: not syncing scene line of actor {:X}: {}", __FUNCTION__, acEvent.ActorID, acEvent.VoiceFile.c_str());
         return;
     }
 
@@ -1077,6 +1101,12 @@ void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
     if (!serverIdRes)
     {
         spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.SpeakerID);
+        return;
+    }
+
+    if (!ShouldSyncSpeech(Cast<Actor>(TESForm::GetById(acEvent.SpeakerID))))
+    {
+        spdlog::debug("{}: not syncing scene subtitle of actor {:X}: {}", __FUNCTION__, acEvent.SpeakerID, acEvent.Text.c_str());
         return;
     }
 

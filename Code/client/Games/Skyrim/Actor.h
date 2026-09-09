@@ -208,6 +208,8 @@ struct Actor : TESObjectREFR
     [[nodiscard]] bool HasPerk(uint32_t aPerkFormId) const noexcept;
     [[nodiscard]] uint8_t GetPerkRank(uint32_t aPerkFormId) const noexcept;
     [[nodiscard]] bool IsVampireLord() const noexcept;
+    [[nodiscard]] bool IsInScene() const noexcept;
+    [[nodiscard]] bool IsInDialogueWithPlayer() noexcept;
 
     // Setters
     void SetSpeed(float aSpeed) noexcept;
@@ -249,6 +251,12 @@ struct Actor : TESObjectREFR
     bool PlayIdle(TESIdleForm* apIdle) noexcept;
     void FixVampireLordModel() noexcept;
     bool RemoveSpell(MagicItem* apSpell) noexcept;
+
+    // Bits of `flags1` (Actor::boolBits in CommonLibSSE).
+    enum ActorBoolBits : uint32_t
+    {
+        HAS_SCENE_EXTRA = 1 << 3,
+    };
 
     enum ActorFlags
     {

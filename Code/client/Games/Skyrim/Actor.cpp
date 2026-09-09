@@ -843,6 +843,18 @@ bool Actor::IsVampireLord() const noexcept
     return race && race->formID == 0x200283A;
 }
 
+bool Actor::IsInScene() const noexcept
+{
+    return (flags1 & ActorBoolBits::HAS_SCENE_EXTRA) != 0;
+}
+
+bool Actor::IsInDialogueWithPlayer() noexcept
+{
+    using ObjectReference = TESObjectREFR;
+    PAPYRUS_FUNCTION(bool, ObjectReference, IsInDialogueWithPlayer);
+    return s_pIsInDialogueWithPlayer(this);
+}
+
 extern thread_local bool g_forceAnimation;
 
 void Actor::FixVampireLordModel() noexcept
