@@ -14,6 +14,7 @@
 #include <Messages/AssignObjectsResponse.h>
 #include <Messages/ScriptAnimationRequest.h>
 #include <Messages/NotifyScriptAnimation.h>
+#include <Messages/NotifyRemoveObjects.h>
 
 ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
@@ -25,9 +26,7 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher)
     m_scriptAnimationConnection = aDispatcher.sink<PacketEvent<ScriptAnimationRequest>>().connect<&ObjectService::OnScriptAnimationRequest>(this);
 }
 
-// TODO(cosideci): the cell handling of objects need to be revamped.
-// We already store the location and worldspace of the mod through CellIdComponent.
-// Clients need a message saying the entity was destroyed.
+// TODO: Account for loaded exterior grids, not only players' current cells.
 void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
 {
     for (Player* pPlayer : m_world.GetPlayerManager())
@@ -38,6 +37,7 @@ void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) 
 
     auto objectView = m_world.view<ObjectComponent, CellIdComponent>();
     Vector<entt::entity> toDestroy;
+    NotifyRemoveObjects notify{};
 
     for (auto entity : objectView)
     {
@@ -47,7 +47,13 @@ void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) 
             continue;
 
         toDestroy.push_back(entity);
+        notify.ServerIds.push_back(World::ToInteger(entity));
     }
+
+    // Clients retain object bindings after leaving a cell. Retire those bindings
+    // everywhere before the server entity identifiers can be reused.
+    if (!notify.ServerIds.empty())
+        GameServer::Get()->SendToPlayers(notify);
 
     for (auto& entity : toDestroy)
     {
