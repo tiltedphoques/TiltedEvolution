@@ -1,4 +1,5 @@
 #include <Services/ObjectService.h>
+#include <Services/ObjectLifecycle.h>
 
 #include <GameServer.h>
 #include <World.h>
@@ -14,6 +15,7 @@
 #include <Messages/AssignObjectsResponse.h>
 #include <Messages/ScriptAnimationRequest.h>
 #include <Messages/NotifyScriptAnimation.h>
+#include <Messages/NotifyRemoveObjects.h>
 
 ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
@@ -25,34 +27,16 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher)
     m_scriptAnimationConnection = aDispatcher.sink<PacketEvent<ScriptAnimationRequest>>().connect<&ObjectService::OnScriptAnimationRequest>(this);
 }
 
-// TODO(cosideci): the cell handling of objects need to be revamped.
-// We already store the location and worldspace of the mod through CellIdComponent.
-// Clients need a message saying the entity was destroyed.
 void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
 {
+    Vector<GameId> playerCells;
+    playerCells.reserve(m_world.GetPlayerManager().Count());
     for (Player* pPlayer : m_world.GetPlayerManager())
-    {
-        if (pPlayer->GetCellComponent().Cell == acEvent.OldCell)
-            return;
-    }
+        playerCells.push_back(pPlayer->GetCellComponent().Cell);
 
-    auto objectView = m_world.view<ObjectComponent, CellIdComponent>();
-    Vector<entt::entity> toDestroy;
-
-    for (auto entity : objectView)
-    {
-        const auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
-
-        if (cellIdComponent.Cell != acEvent.OldCell)
-            continue;
-
-        toDestroy.push_back(entity);
-    }
-
-    for (auto& entity : toDestroy)
-    {
-        m_world.destroy(entity);
-    }
+    // Clients retain object bindings after leaving a cell. Retire those bindings
+    // everywhere before the server entity identifiers can be reused.
+    ObjectLifecycle::RetireCell(m_world, acEvent.OldCell, playerCells, [](const NotifyRemoveObjects& acNotify) { GameServer::Get()->SendToPlayers(acNotify); });
 }
 
 // NOTE: this whole system kinda relies on all objects in a cell being static.
