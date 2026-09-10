@@ -1,4 +1,5 @@
 #include <Services/ObjectService.h>
+#include <Services/ObjectLifecycle.h>
 
 #include <GameServer.h>
 #include <World.h>
@@ -26,39 +27,16 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher)
     m_scriptAnimationConnection = aDispatcher.sink<PacketEvent<ScriptAnimationRequest>>().connect<&ObjectService::OnScriptAnimationRequest>(this);
 }
 
-// TODO: Account for loaded exterior grids, not only players' current cells.
 void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
 {
+    Vector<GameId> playerCells;
+    playerCells.reserve(m_world.GetPlayerManager().Count());
     for (Player* pPlayer : m_world.GetPlayerManager())
-    {
-        if (pPlayer->GetCellComponent().Cell == acEvent.OldCell)
-            return;
-    }
-
-    auto objectView = m_world.view<ObjectComponent, CellIdComponent>();
-    Vector<entt::entity> toDestroy;
-    NotifyRemoveObjects notify{};
-
-    for (auto entity : objectView)
-    {
-        const auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
-
-        if (cellIdComponent.Cell != acEvent.OldCell)
-            continue;
-
-        toDestroy.push_back(entity);
-        notify.ServerIds.push_back(World::ToInteger(entity));
-    }
+        playerCells.push_back(pPlayer->GetCellComponent().Cell);
 
     // Clients retain object bindings after leaving a cell. Retire those bindings
     // everywhere before the server entity identifiers can be reused.
-    if (!notify.ServerIds.empty())
-        GameServer::Get()->SendToPlayers(notify);
-
-    for (auto& entity : toDestroy)
-    {
-        m_world.destroy(entity);
-    }
+    ObjectLifecycle::RetireCell(m_world, acEvent.OldCell, playerCells, [](const NotifyRemoveObjects& acNotify) { GameServer::Get()->SendToPlayers(acNotify); });
 }
 
 // NOTE: this whole system kinda relies on all objects in a cell being static.

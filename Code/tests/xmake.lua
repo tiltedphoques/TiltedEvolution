@@ -15,3 +15,13 @@ target("TPTests")
         "mimalloc",
         "glm",
         "entt")
+
+option("server_tests")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Build isolated server object lifecycle tests")
+option_end()
+
+if has_config("server_tests") then
+    includes("server")
+end
