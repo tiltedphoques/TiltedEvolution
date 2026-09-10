@@ -171,6 +171,7 @@ void CharacterService::DeclineOwnership(const uint32_t aServerId, const uint32_t
     RequestOwnershipTransfer request{};
     request.ServerId = aServerId;
     request.OwnershipEpoch = aOwnershipEpoch;
+    request.Reason = OwnershipReleaseReason::DeclineGrant;
     m_transport.Send(request);
 }
 
@@ -1511,6 +1512,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
         RequestOwnershipTransfer request{};
         request.ServerId = localComponent.Id;
         request.OwnershipEpoch = localComponent.OwnershipEpoch;
+        request.Reason = OwnershipReleaseReason::Relinquish;
 
         if (Actor* pActor = Cast<Actor>(TESForm::GetById(aFormId)))
         {

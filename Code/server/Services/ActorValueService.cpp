@@ -28,16 +28,17 @@ void ActorValueService::OnActorValueChanges(const PacketEvent<RequestActorValueC
 
     auto it = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
-    if (it != actorValuesView.end())
+    if (it == actorValuesView.end() || !actorValuesView.get<OwnerComponent>(*it).IsCurrentOwner(acMessage.pPlayer, message.OwnershipEpoch))
+        return;
+
+    auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*it);
+    for (auto& [id, value] : message.Values)
     {
-        auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*it);
-        for (auto& [id, value] : message.Values)
-        {
-            actorValuesComponent.CurrentActorValues.ActorValuesList[id] = value;
-        }
+        actorValuesComponent.CurrentActorValues.ActorValuesList[id] = value;
     }
 
     NotifyActorValueChanges notify;
+    notify.OwnershipEpoch = message.OwnershipEpoch;
     notify.Id = acMessage.Packet.Id;
     notify.Values = acMessage.Packet.Values;
 
@@ -54,16 +55,17 @@ void ActorValueService::OnActorMaxValueChanges(const PacketEvent<RequestActorMax
 
     auto it = actorValuesView.find(static_cast<entt::entity>(message.Id));
 
-    if (it != actorValuesView.end())
+    if (it == actorValuesView.end() || !actorValuesView.get<OwnerComponent>(*it).IsCurrentOwner(acMessage.pPlayer, message.OwnershipEpoch))
+        return;
+
+    auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*it);
+    for (auto& [id, value] : message.Values)
     {
-        auto& actorValuesComponent = actorValuesView.get<ActorValuesComponent>(*it);
-        for (auto& [id, value] : message.Values)
-        {
-            actorValuesComponent.CurrentActorValues.ActorMaxValuesList[id] = value;
-        }
+        actorValuesComponent.CurrentActorValues.ActorMaxValuesList[id] = value;
     }
 
     NotifyActorMaxValueChanges notify;
+    notify.OwnershipEpoch = message.OwnershipEpoch;
     notify.Id = message.Id;
     notify.Values = message.Values;
 
@@ -105,14 +107,15 @@ void ActorValueService::OnDeathStateChange(const PacketEvent<RequestDeathStateCh
 
     const auto it = characterView.find(static_cast<entt::entity>(message.Id));
 
-    if (it != characterView.end())
-    {
-        auto& characterComponent = characterView.get<CharacterComponent>(*it);
-        characterComponent.SetDead(message.IsDead);
-        spdlog::debug("Updating death state {:x}:{}", message.Id, message.IsDead);
-    }
+    if (it == characterView.end() || !characterView.get<OwnerComponent>(*it).IsCurrentOwner(acMessage.pPlayer, message.OwnershipEpoch))
+        return;
+
+    auto& characterComponent = characterView.get<CharacterComponent>(*it);
+    characterComponent.SetDead(message.IsDead);
+    spdlog::debug("Updating death state {:x}:{}", message.Id, message.IsDead);
 
     NotifyDeathStateChange notify;
+    notify.OwnershipEpoch = message.OwnershipEpoch;
     notify.Id = message.Id;
     notify.IsDead = message.IsDead;
 
