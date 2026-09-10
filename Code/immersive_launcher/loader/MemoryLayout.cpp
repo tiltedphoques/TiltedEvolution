@@ -32,7 +32,10 @@ namespace
 {
 extern "C" const IMAGE_DOS_HEADER __ImageBase;
 
-constinit const uint8_t* pBasePtr = reinterpret_cast<const uint8_t*>(&__ImageBase);
+// Not `constinit`: MSVC 14.51+ (VS 18) rejects a reinterpret_cast of &__ImageBase as a constant
+// initializer (C2127). The linker still resolves it as an ADDR64 relocation to __ImageBase with no
+// dynamic initializer, so behaviour is unchanged for older toolsets.
+const uint8_t* pBasePtr = reinterpret_cast<const uint8_t*>(&__ImageBase);
 const uint8_t* kpImageEnd{pBasePtr + ((PIMAGE_NT_HEADERS)(pBasePtr + __ImageBase.e_lfanew))->OptionalHeader.SizeOfImage};
 
 bool InRange(const uint8_t* apObj, const uint8_t* apLo, const uint8_t* apHi)
