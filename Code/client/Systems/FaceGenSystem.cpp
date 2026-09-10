@@ -58,6 +58,9 @@ using TCreateTints = void(__fastcall)(const GameArray<TintMask*>& acTints, NiRen
 
 void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFaceGenComponent) noexcept
 {
+    if (apActor->GetExtension()->IsReenabling())
+        return;
+
     POINTER_SKYRIMSE(NiRTTI, NiMaskedShaderRTTI, 414675);
     POINTER_SKYRIMSE(TCreateTexture, CreateTexture, 70717);
     POINTER_SKYRIMSE(TCreateResourceView, CreateResourceView, 77299);

@@ -42,8 +42,8 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 
     aInterpolationComponent.Position = position;
 
-    // Don't try to move a null actor
-    if (!apActor)
+    // Keep buffering positions while the actor's 3D is unavailable.
+    if (!apActor || apActor->GetExtension()->IsReenabling())
         return;
 
     apActor->ForcePosition(position);

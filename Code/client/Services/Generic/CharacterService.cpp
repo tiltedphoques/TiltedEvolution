@@ -22,6 +22,7 @@
 #include <Systems/AnimationSystem.h>
 #include <Systems/CacheSystem.h>
 #include <Systems/FaceGenSystem.h>
+#include <Systems/LeveledNpcSystem.h>
 
 #include <Events/ActorAddedEvent.h>
 #include <Events/ActorRemovedEvent.h>
@@ -66,62 +67,13 @@
 #include <World.h>
 #include <Games/TES.h>
 
-namespace
-{
-TESNPC* ResolveCustomSpawnNpcBase(World& aWorld, const GameId& acPickId, const GameId& acBaseId) noexcept
-{
-    const auto resolveNpc = [&aWorld](const GameId& acId, const char* apKind) -> TESNPC*
-    {
-        const uint32_t cFormId = aWorld.GetModSystem().GetGameId(acId);
-        if (cFormId == 0)
-        {
-            spdlog::warn("{} NPC {:X}:{:X} is not resolvable, possibly because a mod is missing", apKind, acId.ModId, acId.BaseId);
-            return nullptr;
-        }
-
-        TESForm* pForm = TESForm::GetById(cFormId);
-        TESNPC* pNpc = Cast<TESNPC>(pForm);
-        if (!pNpc || pNpc->IsTemporary())
-        {
-            spdlog::warn("{} form {:X}:{:X} resolved to {:X}, which is not a static NPC base", apKind, acId.ModId, acId.BaseId, cFormId);
-            return nullptr;
-        }
-
-        return pNpc;
-    };
-
-    if (acPickId != GameId{})
-    {
-        if (TESNPC* pPick = resolveNpc(acPickId, "Leveled pick"))
-            return pPick;
-
-        spdlog::warn("Falling back to the placed NPC base after failing to resolve the leveled pick");
-    }
-    else
-    {
-        spdlog::warn("No leveled NPC pick was provided; falling back to the placed NPC base");
-    }
-
-    if (acBaseId != GameId{})
-    {
-        if (TESNPC* pBase = resolveNpc(acBaseId, "Placed base"))
-            return pBase;
-    }
-    else
-    {
-        spdlog::warn("No placed NPC base was provided for the custom spawn fallback");
-    }
-
-    spdlog::error("Neither the leveled pick nor the placed base resolves to a valid NPC; aborting custom spawn");
-    return nullptr;
-}
-} // namespace
-
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
     , m_dispatcher(aDispatcher)
     , m_transport(aTransport)
 {
+    LeveledNpcSystem::Initialize(m_world);
+
     m_referenceAddedConnection = m_dispatcher.sink<ActorAddedEvent>().connect<&CharacterService::OnActorAdded>(this);
     m_referenceRemovedConnection = m_dispatcher.sink<ActorRemovedEvent>().connect<&CharacterService::OnActorRemoved>(this);
 
@@ -543,7 +495,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
         if (acMessage.BaseId != GameId{})
         {
-            pNpc = ResolveCustomSpawnNpcBase(m_world, acMessage.LeveledNpcPickId, acMessage.BaseId);
+            pNpc = LeveledNpcSystem::ResolveCustomSpawnNpcBase(m_world, acMessage.LeveledNpcPickId, acMessage.BaseId);
             if (!pNpc)
                 return;
         }
@@ -699,6 +651,10 @@ void CharacterService::OnActionEvent(const ActionEvent& acActionEvent) const noe
 
     if (itor != std::end(view))
     {
+        // Don't queue action events for leveled NPCs that are currently "conforming" and rebuilding
+        if (m_world.all_of<LeveledNpcConformComponent>(*itor))
+            return;
+
         auto& localComponent = view.get<LocalAnimationComponent>(*itor);
 
         localComponent.Append(acActionEvent);
@@ -712,6 +668,9 @@ void CharacterService::OnActionEvent(const ActionEvent& acActionEvent) const noe
 
         if (itor != std::end(view))
         {
+            if (m_world.all_of<LeveledNpcConformComponent>(*itor))
+                return;
+
             view.get<EarlyAnimationBufferComponent>(*itor).Actions.push_back(acActionEvent);
         }
     }
@@ -1569,7 +1528,7 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
 
         if (acMessage.BaseId != GameId{})
         {
-            pNpc = ResolveCustomSpawnNpcBase(m_world, acMessage.LeveledNpcPickId, acMessage.BaseId);
+            pNpc = LeveledNpcSystem::ResolveCustomSpawnNpcBase(m_world, acMessage.LeveledNpcPickId, acMessage.BaseId);
             if (!pNpc)
                 return nullptr;
 
@@ -1633,17 +1592,6 @@ ActorData CharacterService::BuildActorData(Actor* apActor) const noexcept
     return actorData;
 }
 
-// A static base that still uses a leveled-character template is an unresolved
-// placed shell. It has no usable model until the canonical pick is applied.
-static bool IsUnresolvedLeveledShell(const TESNPC* apBase) noexcept
-{
-    if (!apBase || apBase->IsTemporary())
-        return false;
-
-    const TESForm* pTemplate = apBase->actorData.baseTemplateForm;
-    return pTemplate && pTemplate->formType == FormType::LeveledCharacter;
-}
-
 void CharacterService::ApplyLeveledNpcPick(const entt::entity aEntity, Actor* apActor, const GameId& acPickId) const noexcept
 {
     if (!apActor || acPickId == GameId{})
@@ -1653,7 +1601,7 @@ void CharacterService::ApplyLeveledNpcPick(const entt::entity aEntity, Actor* ap
     if (!pBase)
         return;
 
-    const bool isUnresolvedShell = IsUnresolvedLeveledShell(pBase);
+    const bool isUnresolvedShell = LeveledNpcSystem::IsUnresolvedShell(pBase);
     if (!pBase->IsTemporary() && !isUnresolvedShell)
     {
         spdlog::debug("Leveled pick {:x}:{:x} received for actor {:X} whose base is already static, skipping", acPickId.ModId, acPickId.BaseId, apActor->formID);
@@ -1834,7 +1782,7 @@ void CharacterService::ProcessLeveledConforms() noexcept
             continue;
         }
 
-        const bool isUnresolvedShell = IsUnresolvedLeveledShell(Cast<TESNPC>(pActor->baseForm));
+        const bool isUnresolvedShell = LeveledNpcSystem::IsUnresolvedShell(Cast<TESNPC>(pActor->baseForm));
         const bool hasStable3D = pActor->loadedState && pActor->GetNiNode() && pActor->currentProcess;
         if (!isUnresolvedShell && !hasStable3D)
         {
@@ -1844,7 +1792,7 @@ void CharacterService::ProcessLeveledConforms() noexcept
             continue;
         }
 
-        m_world.emplace_or_replace<LeveledNpcConformComponent>(conform.Entity);
+        m_world.emplace<LeveledNpcConformComponent>(conform.Entity, pActor, cActorFormId);
         conform.Disabled = true;
         pActor->DisableImpl();
         ++it;
@@ -1941,7 +1889,7 @@ void CharacterService::RunRemoteUpdates() noexcept
         auto& waitingFor3D = waitingView.get<WaitingFor3D>(entity);
 
         Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
-        if (!pActor || !pActor->GetNiNode())
+        if (!pActor || pActor->GetExtension()->IsReenabling() || !pActor->GetNiNode())
             continue;
 
         // By now, the actor has materialized in the world and is ready for further setup
@@ -2087,6 +2035,10 @@ void CharacterService::ApplyCachedWeaponDraws(const UpdateEvent& acUpdateEvent) 
 
     for (auto& [cId, _] : m_weaponDrawUpdates)
     {
+        Actor* pActor = Cast<Actor>(TESForm::GetById(cId));
+        if (pActor && pActor->GetExtension()->IsReenabling())
+            continue;
+
         auto& data = m_weaponDrawUpdates[cId];
 
         data.m_timer += acUpdateEvent.Delta;
@@ -2096,7 +2048,6 @@ void CharacterService::ApplyCachedWeaponDraws(const UpdateEvent& acUpdateEvent) 
         if (data.m_timer <= maxTime)
             continue;
 
-        Actor* pActor = Cast<Actor>(TESForm::GetById(cId));
         if (!pActor || !pActor->GetExtension()->IsRemote())
         {
             toRemove.push_back(cId);

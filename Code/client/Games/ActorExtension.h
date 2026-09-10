@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Structs/ActionEvent.h>
+#include <atomic>
 
 struct ActorExtension
 {
@@ -17,10 +18,14 @@ struct ActorExtension
     bool IsLocalPlayer() const noexcept;
     void SetRemote(bool aSet) noexcept;
     void SetPlayer(bool aSet) noexcept;
+    // Pause animation and appearance sync during a leveled NPC's disable/enable rebuild.
+    bool IsReenabling() const noexcept { return isReenabling.load(); }
+    void SetReenabling(bool aSet) noexcept { isReenabling.store(aSet); }
 
     ActionEvent LatestAnimation{};
     size_t GraphDescriptorHash = 0;
 
   private:
     uint32_t onlineFlags{0};
+    std::atomic_bool isReenabling{false};
 };

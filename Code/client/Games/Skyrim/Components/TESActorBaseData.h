@@ -33,9 +33,9 @@ struct TESActorBaseData : BaseFormComponent
     {
         TESFaction* faction;
         int8_t rank;
-        uint8_t pad09{0};
-        uint8_t pad0A{0};
-        uint8_t pad0C{0};
+        uint8_t pad09{ 0 };
+        uint16_t pad0A{ 0 };
+        uint32_t pad0C{ 0 };
     };
     static_assert(sizeof(FactionRank) == 0x10);
 

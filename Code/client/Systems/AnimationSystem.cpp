@@ -23,6 +23,9 @@ extern thread_local const char* g_animErrorCode;
 
 void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationComponent& aAnimationComponent, const uint64_t aTick) noexcept
 {
+    if (apActor->GetExtension()->IsReenabling())
+        return;
+
     auto& actions = aAnimationComponent.TimePoints;
 
     const auto it = std::begin(actions);
@@ -109,7 +112,7 @@ void AnimationSystem::Serialize(World& aWorld, ClientReferencesMoveRequest& aMov
 {
     const auto pForm = TESForm::GetById(formIdComponent.Id);
     const auto pActor = Cast<Actor>(pForm);
-    if (!pActor)
+    if (!pActor || pActor->GetExtension()->IsReenabling())
         return;
 
     auto& update = aMovementSnapshot.Updates[localComponent.Id];

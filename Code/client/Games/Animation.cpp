@@ -27,6 +27,9 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
 
     if (!pExtension->IsRemote() || g_forceAnimation)
     {
+        if (pExtension->IsReenabling())
+            return TiltedPhoques::ThisCall(RealPerformAction, apThis, apAction);
+
         ActionEvent action;
         action.State1 = pActor->actorState.flags1;
         action.State2 = pActor->actorState.flags2;
@@ -114,7 +117,7 @@ bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
     uint8_t result = 0;
 
     auto pActor = static_cast<Actor*>(apAction->actor);
-    if (pActor)
+    if (pActor && !pActor->GetExtension()->IsReenabling())
     {
         result = TiltedPhoques::ThisCall(PerformComplexAction, this, apAction);
 

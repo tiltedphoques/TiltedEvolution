@@ -167,6 +167,9 @@ using TiltedPhoques::Serialization;
 
 void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const noexcept
 {
+    if (auto* pActor = Cast<Actor>(this); pActor && pActor->GetExtension()->IsReenabling())
+        return;
+
     BSAnimationGraphManager* pManager = nullptr;
     if (animationGraphHolder.GetBSAnimationGraph(&pManager))
     {
@@ -250,6 +253,9 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
 
 void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables) const noexcept
 {
+    if (auto* pActor = Cast<Actor>(this); pActor && pActor->GetExtension()->IsReenabling())
+        return;
+
     BSAnimationGraphManager* pManager = nullptr;
     if (animationGraphHolder.GetBSAnimationGraph(&pManager))
     {

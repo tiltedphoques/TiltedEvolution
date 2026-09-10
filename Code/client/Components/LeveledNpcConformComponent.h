@@ -4,8 +4,14 @@
 #error Include Components.h instead
 #endif
 
-// Marks the one-frame disable used to rebuild a leveled actor's 3D and
-// animation graph. Removal listeners must not treat that disable as an unload.
+struct Actor;
+
+// Marks the disable/enable cycle used to apply a leveled actor's canonical base.
+// Removal listeners ignore the temporary disappearance. Component checks and
+// IsReenabling guards suspend animation, appearance, and actor movement updates
+// until the cycle finishes or is cleaned up.
 struct LeveledNpcConformComponent
 {
+    Actor* ExpectedActor{};
+    uint32_t ActorFormId{};
 };
