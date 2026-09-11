@@ -11,6 +11,7 @@
 #include <Games/Misc/SubtitleManager.h>
 
 #include <Forms/TESNPC.h>
+#include <Components/TESActorBaseData.h>
 #include <Interface/UI.h>
 #include <Forms/TESQuest.h>
 
@@ -1364,7 +1365,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
             pickFormId = pChainPick->formID;
 
         if (pickFormId == 0)
-            pickFormId = TESNPC::GetLeveledPickFormId(pNpc->formID);
+            pickFormId = TESActorBaseData::GetLeveledPickFormId(pNpc->formID);
 
         if (pickFormId != 0)
         {
@@ -1613,7 +1614,7 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
         localPickId = pLocalPick->formID;
 
     if (localPickId == 0)
-        localPickId = TESNPC::GetLeveledPickFormId(pBase->formID);
+        localPickId = TESActorBaseData::GetLeveledPickFormId(pBase->formID);
 
     if (localPickId == cPickId)
     {

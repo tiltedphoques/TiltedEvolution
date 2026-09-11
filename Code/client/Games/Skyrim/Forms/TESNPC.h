@@ -30,8 +30,6 @@ struct TESNPC : TESActorBase
         return pTemplate;
     }
 
-    static uint32_t GetLeveledPickFormId(uint32_t aTempNpcFormId) noexcept;
-
     // Recovers the first static NPC pick from the template chain when the resolver hook is bypassed, excluding placed shells.
     // Form-type guards prevent reading faceNPC from leveled-list entries with smaller layouts.
     TESNPC* GetLeveledPick() const noexcept

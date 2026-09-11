@@ -8,6 +8,8 @@ struct TESLevItem;
 
 struct TESActorBaseData : BaseFormComponent
 {
+    static uint32_t GetLeveledPickFormId(uint32_t aTempNpcFormId) noexcept;
+
     enum BaseFlags
     {
         IS_ESSENTIAL = 1 << 1,

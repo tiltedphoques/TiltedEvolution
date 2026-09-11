@@ -1,6 +1,7 @@
 #include <TiltedOnlinePCH.h>
 
-#include <Forms/TESNPC.h>
+#include <Components/TESActorBaseData.h>
+#include <Forms/TESActorBase.h>
 
 using TCreateTemplateActorBase = TESActorBase* __fastcall(TESActorBase*, TESActorBase**);
 static TCreateTemplateActorBase* RealCreateTemplateActorBase = nullptr;
@@ -12,12 +13,13 @@ static TCreateTemplateActorBase* RealCreateTemplateActorBase = nullptr;
 static std::mutex s_leveledPicksLock;
 static TiltedPhoques::Map<uint32_t, uint32_t> s_leveledPicks;
 
+// In Skyrim, called by ExtraDataList::LoadGame (12095) and some unknown function (23277)
 TESActorBase* HookCreateTemplateActorBase(TESActorBase* apOriginalBase, TESActorBase** appTemplateBaseA)
 {
     TESActorBase* pTemplateBase = appTemplateBaseA ? appTemplateBaseA[0] : nullptr;
     TESActorBase* pResult = RealCreateTemplateActorBase(apOriginalBase, appTemplateBaseA);
 
-    spdlog::debug("Leveled resolution: original base {:X} -> template base {:X}, temp base {:X}", apOriginalBase ? apOriginalBase->formID : 0, pTemplateBase ? pTemplateBase->formID : 0, pResult ? pResult->formID : 0);
+    spdlog::info("Leveled resolution: original base {:X} -> template base {:X}, temp base {:X}", apOriginalBase ? apOriginalBase->formID : 0, pTemplateBase ? pTemplateBase->formID : 0, pResult ? pResult->formID : 0);
 
     if (pResult && pTemplateBase && pResult->formType == FormType::Npc && pTemplateBase->formType == FormType::Npc)
     {
@@ -28,7 +30,7 @@ TESActorBase* HookCreateTemplateActorBase(TESActorBase* apOriginalBase, TESActor
     return pResult;
 }
 
-uint32_t TESNPC::GetLeveledPickFormId(uint32_t aTempNpcFormId) noexcept
+uint32_t TESActorBaseData::GetLeveledPickFormId(uint32_t aTempNpcFormId) noexcept
 {
     std::lock_guard lock(s_leveledPicksLock);
 
@@ -36,9 +38,12 @@ uint32_t TESNPC::GetLeveledPickFormId(uint32_t aTempNpcFormId) noexcept
     return cIt != s_leveledPicks.end() ? cIt->second : 0;
 }
 
-static TiltedPhoques::Initializer s_npcInitHooks(
+static TiltedPhoques::Initializer s_actorBaseDataInitHooks(
     []()
     {
+        // If this causes bugs or will not work as intended, then consider
+        // TESObjectREFR::SetLeveledCreature (ID 20231) instead. In Skyrim, SetLeveledCreature is
+        // called by Actor::RecalcLeveledActor and TESActorBaseData::CalcTemplateForRef
         POINTER_SKYRIMSE(TCreateTemplateActorBase, s_CreateTemplateActorBase, 14375);
 
         RealCreateTemplateActorBase = s_CreateTemplateActorBase.Get();
