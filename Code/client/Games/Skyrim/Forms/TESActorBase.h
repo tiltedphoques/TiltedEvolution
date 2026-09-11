@@ -28,3 +28,5 @@ struct TESActorBase : TESBoundAnimObject
     BGSAttackDataForm attackDataForm;
     BGSPerkRankArray perkRanks;
 };
+
+static_assert(sizeof(TESActorBase) == 0x150);
