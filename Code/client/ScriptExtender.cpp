@@ -74,7 +74,7 @@ bool IsScriptExtenderLoaded()
     return g_SKSEModuleHandle;
 }
 
-void LoadScriptExender()
+void LoadScriptExtender()
 {
     const auto exeVerson{GetSKSEStyleExeVersion()};
 
@@ -137,12 +137,11 @@ void LoadScriptExender()
         if (auto* pStartSKSE = reinterpret_cast<void (*)()>(GetProcAddress(g_SKSEModuleHandle, kScriptExtenderEntrypoint)))
         {
             spdlog::info(
-                "Starting SKSE {}... be aware that messages that start without a colored [timestamp] prefix are "
-                "logs from the "
-                "Script Extender and its loaded mods.",
+                "Installing SKSE {} startup hooks... be aware that messages that start without a colored "
+                "[timestamp] prefix are logs from the Script Extender and its loaded mods.",
                 skseVersion);
             pStartSKSE();
-            spdlog::info("SKSE is active");
+            spdlog::info("SKSE startup hooks installed; initialization will continue during game startup");
         }
         else
             spdlog::warn("SKSE dll doesn't expose StartSKSE(), it may be outdated.");

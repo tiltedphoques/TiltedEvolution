@@ -7,4 +7,5 @@
 struct WaitingForAssignmentComponent
 {
     uint32_t Cookie;
+    bool Cancelled{false};
 };

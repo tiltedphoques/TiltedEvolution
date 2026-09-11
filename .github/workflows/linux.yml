@@ -5,56 +5,102 @@ on:
   push:
     branches:
       - master
+  workflow_call:
+    inputs:
+      build-mode:
+        required: false
+        type: string
+        default: releasedbg
+      upload-build-for-next-job:
+        required: false
+        type: boolean
+        default: false
+
+env:
+  BUILD_MODE: ${{ inputs.build-mode || 'releasedbg' }}
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-22.04]
-        arch: [x64]
-        mode: [debug]
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        with:
+          # We need full history in order to create a version string (BuildInfo.h)
+          fetch-depth: 0
 
-    - name: Checkout submodules
-      run: |
-        git submodule sync --recursive
-        git submodule update --init --force --recursive --depth=1
+      - name: Checkout submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --force --recursive --depth=1
 
-    # Install dependencies
-    - name: Update apt repositories
-      run: sudo apt-get update
+      - name: Checkout master on tag push
+        if: github.ref_type == 'tag'
+        run: |
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)"
+          git checkout -B master HEAD
 
-    # Install xmake
-    - name: Setup xmake
-      uses: xmake-io/github-action-setup-xmake@v1
-      with:
-        xmake-version: '3.0.9'
+      - name: Cache xmake dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.xmake/packages
+          key: ${{ matrix.runner }}-xmake-${{ hashFiles('**/xmake.lua') }}
 
-    # Update xmake repository (in order to have the file that will be cached)
-    - name: Update xmake repository
-      run: xmake repo --update
+      # Install xmake
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: 3.1.0
+          actions-cache-folder: '.xmake-cache' # This doesn't cache dependencies, only xmake itself
+          actions-cache-key: ${{ matrix.runner }}
 
-    # Setup compilation mode and install project dependencies
-    # (continue-on-error + timeout is a temporary solution until sentry-native is fixed; shouldn't affect the building step)
-    - name: Configure xmake and install dependencies
-      continue-on-error: true
-      run: timeout 15m xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} --yes
+      - name: Configure xmake and install dependencies
+        run: xmake config --mode="$BUILD_MODE" --yes -vD
 
-    # Build the server
-    - name: Build
-      run: xmake -y
+      # Build the server
+      - name: Build
+        run: xmake -y
 
-    # Create install
-    #- name: Install
-    # run: xmake install -o packaged
+      - name: Stage Linux server
+        run: |
+          xmake install -o packaged
+          install -d release-stage
+          install -m 755 packaged/bin/SkyrimTogetherServer release-stage/
+          install -m 644 packaged/lib/libSTServer.so release-stage/
 
-    # Upload artifacts
-    #- uses: actions/upload-artifact@v2
-    #  with:
-    #    name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}
-    #    path: packaged/bin/**
+      - name: Verify Linux binary architecture
+        run: |
+          file release-stage/SkyrimTogetherServer
+          case "${{ matrix.arch }}" in
+            amd64) file release-stage/SkyrimTogetherServer | grep -Eq 'x86-64|x86_64' ;;
+            arm64) file release-stage/SkyrimTogetherServer | grep -Eqi 'aarch64|arm64' ;;
+          esac
+
+      - name: Create Linux release archive
+        if: ${{ inputs.upload-build-for-next-job }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          echo "ARTIFACT_VERSION=$version" >> "$GITHUB_ENV"
+          mkdir -p release-assets
+          tar -C release-stage -czf \
+            "release-assets/SkyrimTogetherServer-${version}-linux-${{ matrix.arch }}.tar.gz" \
+            .
+
+      # Upload artifacts
+      - name: Upload build files for the next job
+        if: ${{ inputs.upload-build-for-next-job }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-asset-linux-${{ matrix.arch }}
+          retention-days: 1
+          if-no-files-found: error
+          path: release-assets/SkyrimTogetherServer-${{ env.ARTIFACT_VERSION }}-linux-${{ matrix.arch }}.tar.gz

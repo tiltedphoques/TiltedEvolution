@@ -16,7 +16,6 @@ struct ServerReferencesMoveRequest;
 struct NotifyInventoryChanges;
 struct NotifyFactionsChanges;
 struct NotifyRemoveCharacter;
-struct NotifySpawnData;
 struct NotifyOwnershipTransfer;
 struct SpellCastEvent;
 struct NotifySpellCast;
@@ -39,7 +38,6 @@ struct NotifyDialogue;
 struct SubtitleEvent;
 struct NotifySubtitle;
 struct NotifyActorTeleport;
-struct NotifyRelinquishControl;
 struct PartyJoinedEvent;
 
 struct Actor;
@@ -58,7 +56,7 @@ struct CharacterService
 
     static void DeleteTempActor(const uint32_t aFormId) noexcept;
 
-    bool TakeOwnership(const uint32_t acFormId, const uint32_t acServerId, const entt::entity acEntity) const noexcept;
+    bool RequestOwnership(uint32_t aFormId, uint32_t aServerId, entt::entity aEntity) const noexcept;
 
     void OnActorAdded(const ActorAddedEvent& acEvent) noexcept;
     void OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept;
@@ -70,9 +68,8 @@ struct CharacterService
     void OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept;
     void OnActionEvent(const ActionEvent& acActionEvent) const noexcept;
     void OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept;
-    void OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) const noexcept;
+    void OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) noexcept;
     void OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept;
-    void OnRemoteSpawnDataReceived(const NotifySpawnData& acEvent) noexcept;
     void OnMountEvent(const MountEvent& acEvent) const noexcept;
     void OnNotifyMount(const NotifyMount& acMessage) const noexcept;
     void OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept;
@@ -86,7 +83,6 @@ struct CharacterService
     void OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept;
     void OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept;
     void OnNotifyActorTeleport(const NotifyActorTeleport& acMessage) noexcept;
-    void OnNotifyRelinquishControl(const NotifyRelinquishControl& acMessage) noexcept;
     void OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept;
 
     void ProcessNewEntity(entt::entity aEntity) const noexcept;
@@ -97,6 +93,8 @@ private:
     void RequestServerAssignment(entt::entity aEntity) const noexcept;
     void CancelServerAssignment(entt::entity aEntity, uint32_t aFormId) const noexcept;
     void DeleteRemoteEntityComponents(entt::entity aEntity) const noexcept;
+    void DeclineOwnership(uint32_t aServerId, uint32_t aOwnershipEpoch) const noexcept;
+    void ReconcileActorData(entt::entity aEntity, Actor* apActor, uint32_t aOwnershipEpoch, const ActorData& acActorData, bool aApplyInventory, bool aIsLocalOwner) noexcept;
 
     Actor* CreateCharacterForEntity(entt::entity aEntity) const noexcept;
     ActorData BuildActorData(Actor* apActor) const noexcept;
@@ -153,7 +151,6 @@ private:
     entt::scoped_connection m_assignCharacterConnection;
     entt::scoped_connection m_characterSpawnConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
-    entt::scoped_connection m_remoteSpawnDataReceivedConnection;
     entt::scoped_connection m_mountConnection;
     entt::scoped_connection m_notifyMountConnection;
     entt::scoped_connection m_initPackageConnection;
@@ -167,6 +164,5 @@ private:
     entt::scoped_connection m_subtitleEventConnection;
     entt::scoped_connection m_subtitleSyncConnection;
     entt::scoped_connection m_actorTeleportConnection;
-    entt::scoped_connection m_relinquishConnection;
     entt::scoped_connection m_partyJoinedConnection;
 };

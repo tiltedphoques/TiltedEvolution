@@ -32,7 +32,7 @@ struct CharacterSpawnRequest final : ServerMessage
                ChangeFlags == acRhs.ChangeFlags && AppearanceBuffer == acRhs.AppearanceBuffer &&
                InventoryContent == acRhs.InventoryContent && FactionsContent == acRhs.FactionsContent &&
                ActionsToReplay == acRhs.ActionsToReplay && FaceTints == acRhs.FaceTints && PlayerId == acRhs.PlayerId &&
-               IsDead == acRhs.IsDead && IsPlayer == acRhs.IsPlayer && IsWeaponDrawn == acRhs.IsWeaponDrawn &&
+               OwnershipEpoch == acRhs.OwnershipEpoch && IsDead == acRhs.IsDead && IsPlayer == acRhs.IsPlayer && IsWeaponDrawn == acRhs.IsWeaponDrawn &&
                IsPlayerSummon == acRhs.IsPlayerSummon && LeveledNpcPickId == acRhs.LeveledNpcPickId && GetOpcode() == acRhs.GetOpcode();
     }
 
@@ -51,6 +51,7 @@ struct CharacterSpawnRequest final : ServerMessage
     Tints FaceTints{};
     ActorValues InitialActorValues{};
     uint32_t PlayerId{};
+    uint32_t OwnershipEpoch{};
     bool IsDead{};
     bool IsPlayer{};
     bool IsWeaponDrawn{};

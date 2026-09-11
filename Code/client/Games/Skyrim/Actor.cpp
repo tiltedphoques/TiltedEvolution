@@ -9,7 +9,6 @@
 #include <Components/TESActorBaseData.h>
 #include <ExtraData/ExtraFactionChanges.h>
 #include <Games/Memory.h>
-#include <Forms/TESLevItem.h>
 #include <Combat/CombatController.h>
 
 #include <Events/HealthChangeEvent.h>
@@ -50,10 +49,25 @@
 #include <Games/Skyrim/BSAnimationGraphManager.h>
 #include <Havok/hkbStateMachine.h>
 #include <Havok/hkbBehaviorGraph.h>
-#include <Forms/BGSOutfit.h>
-#include <Forms/TESObjectARMO.h>
 
 #include <ModCompat/BehaviorVar.h>
+
+namespace
+{
+void QueueActorInventoryChange(Actor* apActor, InventoryChangeEvent aEvent, TESObjectREFR* apTransferReference = nullptr)
+{
+    auto ownershipToken = Utils::GetLocalOwnershipToken(apActor->formID);
+    if (!ownershipToken && apTransferReference == PlayerCharacter::Get())
+        ownershipToken = Utils::GetRemoteOwnershipToken(apActor->formID);
+
+    if (!ownershipToken)
+        return;
+
+    aEvent.ServerId = ownershipToken->ServerId;
+    aEvent.OwnershipEpoch = ownershipToken->OwnershipEpoch;
+    World::Get().GetRunner().Trigger(std::move(aEvent));
+}
+}
 
 #ifdef SAVE_STUFF
 
@@ -476,48 +490,6 @@ TESForm* Actor::GetEquippedAmmo() const noexcept
     }
 
     return nullptr;
-}
-
-bool Actor::IsWearingBodyPiece() const noexcept
-{
-    return GetContainerChanges()->GetArmor(32) != nullptr;
-}
-
-bool Actor::ShouldWearBodyPiece() const noexcept
-{
-    TESNPC* pBase = Cast<TESNPC>(baseForm);
-    if (!pBase)
-        return false;
-
-    BGSOutfit* pDefaultOutfit = pBase->outfits[0];
-    if (!pDefaultOutfit)
-        return false;
-
-    for (auto* pItem : pDefaultOutfit->outfitItems)
-    {
-        TESObjectARMO* pArmor = nullptr;
-
-        if (pItem->formType == FormType::Armor)
-            pArmor = Cast<TESObjectARMO>(pItem);
-        else if (pItem->formType == FormType::LeveledItem)
-        {
-            TESLevItem* pLevItem = Cast<TESLevItem>(pItem);
-            if (!pLevItem || !pLevItem->pLeveledListA || !pLevItem->pLeveledListA->pForm)
-                continue;
-
-            pArmor = Cast<TESObjectARMO>(pLevItem->pLeveledListA->pForm);
-        }
-        else
-            continue;
-
-        if (!pArmor)
-            continue;
-
-        if (pArmor->IsBodyPiece()) 
-            return true;
-    }
-
-    return false;
 }
 
 // Get owner of a summon or raised corpse
@@ -1075,7 +1047,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, Extra
         if (apExtraData)
             apThis->GetItemFromExtraData(item, apExtraData);
 
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+        QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item)), apOldOwner);
     }
 
     TiltedPhoques::ThisCall(RealAddInventoryItem, apThis, apItem, apExtraData, aCount, apOldOwner);
@@ -1098,7 +1070,7 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
         // The inventory change event should always be sent to the server, otherwise the server inventory won't be updated.
         bool shouldUpdateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
 
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item), false, shouldUpdateClients));
+        QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item), false, shouldUpdateClients));
     }
 
     return TiltedPhoques::ThisCall(RealPickUpObject, apThis, apObject, aCount, aUnk1, aUnk2);
@@ -1120,7 +1092,7 @@ void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* ap
     if (apExtraData)
         apThis->GetItemFromExtraData(item, apExtraData);
 
-    World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item), true));
+    QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item), true));
 
     ScopedInventoryOverride _;
 

@@ -37,6 +37,27 @@
 
 extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager* pManager, Actor* pActor);
 
+namespace
+{
+void QueueReferenceInventoryChange(TESObjectREFR* apReference, InventoryChangeEvent aEvent, TESObjectREFR* apTransferReference)
+{
+    if (const auto* pActor = Cast<Actor>(apReference))
+    {
+        auto ownershipToken = Utils::GetLocalOwnershipToken(pActor->formID);
+        if (!ownershipToken && apTransferReference == PlayerCharacter::Get())
+            ownershipToken = Utils::GetRemoteOwnershipToken(pActor->formID);
+
+        if (!ownershipToken)
+            return;
+
+        aEvent.ServerId = ownershipToken->ServerId;
+        aEvent.OwnershipEpoch = ownershipToken->OwnershipEpoch;
+    }
+
+    World::Get().GetRunner().Trigger(std::move(aEvent));
+}
+}
+
 TP_THIS_FUNCTION(TActivate, bool, TESObjectREFR, TESObjectREFR* apActivator, uint8_t aUnk1, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing);
 TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject* apItem, ExtraDataList* apExtraData, int32_t aCount, TESObjectREFR* apOldOwner);
 TP_THIS_FUNCTION(
@@ -1019,7 +1040,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIte
         if (apExtraData)
             apThis->GetItemFromExtraData(item, apExtraData);
 
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+        QueueReferenceInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item)), apOldOwner);
     }
 
     spdlog::debug("Adding inventory item {:X} to {:X}", apItem->formID, apThis->formID);
@@ -1045,7 +1066,7 @@ TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, BSPointerHandle<TESObje
 
         item.Count = -aCount;
 
-        World::Get().GetRunner().Trigger(InventoryChangeEvent(apThis->formID, std::move(item)));
+        QueueReferenceInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item)), apMoveToRef);
     }
 
     spdlog::debug("Removing inventory item {:X} from {:X}", apItem->formID, apThis->formID);

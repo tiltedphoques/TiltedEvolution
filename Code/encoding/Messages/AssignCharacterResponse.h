@@ -23,7 +23,7 @@ struct AssignCharacterResponse final : ServerMessage
     bool operator==(const AssignCharacterResponse& achRhs) const noexcept
     {
         return GetOpcode() == achRhs.GetOpcode() && Cookie == achRhs.Cookie && ServerId == achRhs.ServerId && PlayerId == achRhs.PlayerId && Position == achRhs.Position && CellId == achRhs.CellId && WorldSpaceId == achRhs.WorldSpaceId && AllActorValues == achRhs.AllActorValues &&
-               CurrentInventory == achRhs.CurrentInventory && ActionsToReplay == achRhs.ActionsToReplay && Owner == achRhs.Owner && IsDead == achRhs.IsDead && IsWeaponDrawn == achRhs.IsWeaponDrawn && LeveledNpcPickId == achRhs.LeveledNpcPickId;
+               CurrentInventory == achRhs.CurrentInventory && ActionsToReplay == achRhs.ActionsToReplay && OwnershipEpoch == achRhs.OwnershipEpoch && Owner == achRhs.Owner && IsDead == achRhs.IsDead && IsWeaponDrawn == achRhs.IsWeaponDrawn && LeveledNpcPickId == achRhs.LeveledNpcPickId;
     }
 
     uint32_t Cookie{};
@@ -36,6 +36,7 @@ struct AssignCharacterResponse final : ServerMessage
     ActorValues AllActorValues{};
     Inventory CurrentInventory{};
     ActionReplayChain ActionsToReplay;
+    uint32_t OwnershipEpoch{};
     bool Owner{false};
     bool IsDead{};
     bool IsWeaponDrawn{};

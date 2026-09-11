@@ -32,6 +32,7 @@ Console::Setting bPremiumTickrate{"GameServer:bPremiumMode", "Use premium tick r
 Console::StringSetting sServerName{"GameServer:sServerName", "Name that shows up in the server list", "Dedicated Together Server"};
 Console::StringSetting sAdminPassword{"GameServer:sAdminPassword", "Admin authentication password", ""};
 Console::StringSetting sPassword{"GameServer:sPassword", "Server password", ""};
+Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer", "Whether to list the server on the public server list", false};
 
 // Gameplay
 // TODO: to make this easier for users, use game names for difficulty instead of int
@@ -201,6 +202,16 @@ GameServer::~GameServer()
 GameServer* GameServer::Get() noexcept
 {
     return s_pInstance;
+}
+
+bool GameServer::IsPublicServer() const noexcept
+{
+    return bAnnounceServer;
+}
+
+bool GameServer::AllowsAutoPartyJoin() const noexcept
+{
+    return bAutoPartyJoin && !IsPublicServer();
 }
 
 void GameServer::Initialize()

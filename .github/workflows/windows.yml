@@ -5,21 +5,19 @@ on:
   push:
     branches:
       - master
-      - prerel
   workflow_call:
     inputs:
       build-mode:
-        required: true
+        required: false
         type: string
-        default: 'releasedbg'
+        default: releasedbg
       upload-build-for-next-job:
-        required: true
+        required: false
         type: boolean
         default: false
-    outputs:
-      str-version:
-        description: "Skyrim Together version string"
-        value: ${{ jobs.build.outputs.version }}
+
+env:
+  BUILD_MODE: ${{ inputs.build-mode || 'releasedbg' }}
 
 jobs:
   build:
@@ -30,12 +28,12 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
-
-    outputs:
-      version: ${{ steps.output-version.outputs.version }}
+    defaults:
+      run:
+        shell: bash
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # We need full history in order to create a version string (BuildInfo.h)
           fetch-depth: 0
@@ -47,11 +45,18 @@ jobs:
 
       - name: Checkout master on tag push
         if: github.ref_type == 'tag'
-        # Checkout only if the tag was pushed to master
-        run: (git rev-parse HEAD) -eq (git rev-parse origin/master) -and (git checkout master)
+        run: |
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)"
+          git checkout -B master HEAD
+
+      - name: Resolve artifact version
+        if: ${{ inputs.upload-build-for-next-job }}
+        run: |
+          version="$(git describe --tags --always)"
+          echo "ARTIFACT_VERSION=${version#v}" >> "$GITHUB_ENV"
 
       - name: Cache xmake dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/AppData/Local/.xmake/packages
           key: ${{ runner.os }}-xmake-${{ hashFiles('**/xmake.lua') }}
@@ -60,54 +65,85 @@ jobs:
       - name: Setup xmake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: 3.0.9
+          xmake-version: 3.1.0
           actions-cache-folder: '.xmake-cache' # This doesn't cache dependencies, only xmake itself
           actions-cache-key: ${{ matrix.os }}
 
       - name: Configure xmake and install dependencies
-        run: xmake config --arch=${{ matrix.arch }} --mode=${{ inputs.build-mode }} --yes -vD
+        run: xmake config --plat=windows --arch=${{ matrix.arch }} --mode="$BUILD_MODE" --yes -vD
 
       # Build the client
       - name: Build with xmake
         run: |
           xmake -y
-          echo "STR_BUILD_DIR=build/windows/${{ matrix.arch }}/${{ inputs.build-mode }}/" >> $env:GITHUB_ENV
+          echo "STR_BUILD_DIR=build/windows/${{ matrix.arch }}/${BUILD_MODE}/" >> "$GITHUB_ENV"
 
       # Create distrib
       - name: Output distrib binaries via xmake
         run: |
           xmake install -o distrib
-          cp -Force -Recurse distrib/bin/* ${{ env.STR_BUILD_DIR }}
+          cp -rf distrib/bin/* "$STR_BUILD_DIR"
 
       # Building the Together UI
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 9
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: lts/iron
           cache-dependency-path: Code/skyrim_ui/pnpm-lock.yaml
-          cache: 'pnpm'
+          cache: pnpm
 
       - name: Build the UI
         run: |
           pnpm --prefix Code/skyrim_ui/ install
           pnpm --prefix Code/skyrim_ui/ deploy:production
-          cp -r Code/skyrim_ui/dist/UI ${{ env.STR_BUILD_DIR }}
+          cp -r Code/skyrim_ui/dist/UI "$STR_BUILD_DIR"
 
-      - id: output-version
-        run: echo "version=$(git describe --tags)" >> $env:GITHUB_OUTPUT
-
-      - name: Upload build files for the next job
+      - name: Package build and organize directories
         if: ${{ inputs.upload-build-for-next-job }}
-        uses: actions/upload-artifact@v4
+        run: |
+          mkdir -p str-build/SkyrimTogetherReborn str-pdb
+          mv "$STR_BUILD_DIR"/* str-build/SkyrimTogetherReborn/
+          cp -r GameFiles/Skyrim/* str-build/
+
+      - name: Remove unnecessary build files, keep .pdb
+        if: ${{ inputs.upload-build-for-next-job }}
+        run: |
+          mv str-build/SkyrimTogetherReborn/SkyrimTogether.pdb str-pdb/
+          mv str-build/SkyrimTogetherReborn/SkyrimTogetherServer.pdb str-pdb/
+          rm -f str-build/SkyrimTogetherReborn/*.pdb str-build/SkyrimTogetherReborn/*.lib str-build/SkyrimTogetherReborn/*.exp
+          rm -f str-build/SkyrimTogetherReborn/*Tests.exe
+
+      - name: Create Windows release zips
+        if: ${{ inputs.upload-build-for-next-job }}
+        run: |
+          mkdir -p release-assets
+          (cd str-build && 7z a -tzip \
+            "../release-assets/SkyrimTogether-${ARTIFACT_VERSION}-windows-${{ matrix.arch }}.zip" \
+            .)
+          (cd str-pdb && 7z a -tzip \
+            "../release-assets/SkyrimTogether-${ARTIFACT_VERSION}-windows-${{ matrix.arch }}-debug-symbols.zip" \
+            .)
+
+      - name: Upload playable build
+        if: ${{ inputs.upload-build-for-next-job }}
+        uses: actions/upload-artifact@v7
         with:
-          name: internal-job-files
-          retention-days: 1
-          path: |
-            ${{ env.STR_BUILD_DIR }}
-            GameFiles/Skyrim/
+          name: SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}
+          retention-days: 7
+          if-no-files-found: error
+          path: release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}.zip
+
+      - name: Upload debug symbols
+        if: ${{ inputs.upload-build-for-next-job }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}-debug-symbols
+          retention-days: 7
+          if-no-files-found: error
+          path: release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}-debug-symbols.zip
