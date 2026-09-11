@@ -2,30 +2,27 @@
 
 #include <Forms/TESNPC.h>
 
-TP_THIS_FUNCTION(TSetLeveledNpc, TESNPC*, TESNPC, TESNPC*);
-static TSetLeveledNpc* RealSetLeveledNpc = nullptr;
+using TCreateTemplateActorBase = TESActorBase* __fastcall(TESActorBase*, TESActorBase**);
+static TCreateTemplateActorBase* RealCreateTemplateActorBase = nullptr;
 
-// The engine resolves a leveled spawn by creating a temporary TESNPC from
-// (placed base, picked NPC); named leveled NPCs hide the pick from the temp
-// NPC's template chain, so remember it here. CAUTION: temp form ids are
-// recycled by the engine and cell attach resolves without this hook, so an
-// entry may describe a previous occupant of its id - consumers must prefer
-// the chain and treat this map as a last resort. The lock is needed since
-// resolution can run on a loader thread while services read from the game
-// thread.
+// Cache the first template base, which named leveled NPCs can hide from the template chain.
+// Temporary form IDs are recycled and cell attach bypasses this hook, so entries can be stale.
+// Consumers must prefer the template chain and use this cache only as a last resort.
+// The lock protects loader-thread writes against game-thread reads.
 static std::mutex s_leveledPicksLock;
 static TiltedPhoques::Map<uint32_t, uint32_t> s_leveledPicks;
 
-TESNPC* TP_MAKE_THISCALL(HookSetLeveledNpc, TESNPC, TESNPC* apSelectedNpc)
+TESActorBase* HookCreateTemplateActorBase(TESActorBase* apOriginalBase, TESActorBase** appTemplateBaseA)
 {
-    TESNPC* pResult = TiltedPhoques::ThisCall(RealSetLeveledNpc, apThis, apSelectedNpc);
+    TESActorBase* pTemplateBase = appTemplateBaseA ? appTemplateBaseA[0] : nullptr;
+    TESActorBase* pResult = RealCreateTemplateActorBase(apOriginalBase, appTemplateBaseA);
 
-    spdlog::debug("Leveled resolution: placed base {:X} -> pick {:X}, temp base {:X}", apThis ? apThis->formID : 0, apSelectedNpc ? apSelectedNpc->formID : 0, pResult ? pResult->formID : 0);
+    spdlog::debug("Leveled resolution: original base {:X} -> template base {:X}, temp base {:X}", apOriginalBase ? apOriginalBase->formID : 0, pTemplateBase ? pTemplateBase->formID : 0, pResult ? pResult->formID : 0);
 
-    if (pResult && apSelectedNpc)
+    if (pResult && pTemplateBase && pResult->formType == FormType::Npc && pTemplateBase->formType == FormType::Npc)
     {
         std::lock_guard lock(s_leveledPicksLock);
-        s_leveledPicks[pResult->formID] = apSelectedNpc->formID;
+        s_leveledPicks[pResult->formID] = pTemplateBase->formID;
     }
 
     return pResult;
@@ -42,9 +39,9 @@ uint32_t TESNPC::GetLeveledPickFormId(uint32_t aTempNpcFormId) noexcept
 static TiltedPhoques::Initializer s_npcInitHooks(
     []()
     {
-        POINTER_SKYRIMSE(TSetLeveledNpc, s_SetLeveledNpc, 14375);
+        POINTER_SKYRIMSE(TCreateTemplateActorBase, s_CreateTemplateActorBase, 14375);
 
-        RealSetLeveledNpc = s_SetLeveledNpc.Get();
+        RealCreateTemplateActorBase = s_CreateTemplateActorBase.Get();
 
-        TP_HOOK(&RealSetLeveledNpc, HookSetLeveledNpc);
+        TP_HOOK(&RealCreateTemplateActorBase, HookCreateTemplateActorBase);
     });
