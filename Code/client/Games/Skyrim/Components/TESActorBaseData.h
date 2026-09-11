@@ -25,14 +25,19 @@ struct TESActorBaseData : BaseFormComponent
     uint16_t unk1A;
     void* unk1C;
     BGSVoiceType* voiceType;
-    TESForm* owner;
-    uint32_t unk28;
+    TESForm* baseTemplateForm;
+    uint32_t changeFlags;
+    uint32_t pad3C;
 
-    struct alignas(sizeof(void*)) FactionInfo
+    struct FactionRank
     {
         TESFaction* faction;
         int8_t rank;
+        uint8_t pad09{ 0 };
+        uint16_t pad0A{ 0 };
+        uint32_t pad0C{ 0 };
     };
+    static_assert(sizeof(FactionRank) == 0x10);
 
     bool IsEssential() const noexcept { return flags & BaseFlags::IS_ESSENTIAL; }
     void SetEssential(bool aSet) noexcept
@@ -43,8 +48,8 @@ struct TESActorBaseData : BaseFormComponent
             flags &= ~BaseFlags::IS_ESSENTIAL;
     }
 
-    GameArray<FactionInfo> factions;
+    GameArray<FactionRank> factions;
 };
 
-static_assert(offsetof(TESActorBaseData, owner) == 0x30);
+static_assert(offsetof(TESActorBaseData, baseTemplateForm) == 0x30);
 static_assert(offsetof(TESActorBaseData, factions) == 0x40);

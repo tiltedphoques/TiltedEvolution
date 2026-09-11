@@ -136,7 +136,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_81();
     virtual void sub_82();
     virtual void sub_83();
-    virtual void SetBaseForm(TESForm* apForm);
+    virtual void SetBaseForm(TESBoundObject* apForm); // "void SetObjectReference(...)"?
     virtual void sub_85();
     virtual void sub_86();
     virtual void sub_87();

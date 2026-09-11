@@ -22,33 +22,29 @@ struct TESNPC : TESActorBase
 
     TESNPC* GetTemplateBase() const noexcept
     {
-        TESNPC* pTemplate = npcTemplate;
+        TESNPC* pTemplate = faceNPC;
 
         while (pTemplate && pTemplate->IsTemporary())
-            pTemplate = pTemplate->npcTemplate;
+            pTemplate = pTemplate->faceNPC;
 
         return pTemplate;
     }
 
     static uint32_t GetLeveledPickFormId(uint32_t aTempNpcFormId) noexcept;
 
-    // Best-effort pick recovery for temp bases the hooked resolver never saw
-    // (some engine spawn paths bypass fn 14375, e.g. live cell attach): the
-    // first static NPC in the template chain is the pick - unless it is the
-    // placed shell itself, recognizable by templating off a leveled list.
-    // Chain entries can be TESLevCharacter posing as TESNPC*, whose layout is
-    // too small to hold npcTemplate - hence the formType guards.
+    // Recovers the first static NPC pick from the template chain when the resolver hook is bypassed, excluding placed shells.
+    // Form-type guards prevent reading faceNPC from leveled-list entries with smaller layouts.
     TESNPC* GetLeveledPick() const noexcept
     {
-        TESNPC* pTemplate = npcTemplate;
+        TESNPC* pTemplate = faceNPC;
 
         while (pTemplate && pTemplate->formType == FormType::Npc && pTemplate->IsTemporary())
-            pTemplate = pTemplate->npcTemplate;
+            pTemplate = pTemplate->faceNPC;
 
         if (!pTemplate || pTemplate->formType != FormType::Npc)
             return nullptr;
 
-        TESNPC* pShellTemplate = pTemplate->npcTemplate;
+        TESNPC* pShellTemplate = pTemplate->faceNPC;
         if (pShellTemplate && pShellTemplate->formType == FormType::LeveledCharacter)
             return nullptr;
 
@@ -85,14 +81,15 @@ struct TESNPC : TESActorBase
     uintptr_t unk114;
     TESCombatStyle* combatStyle;
     size_t unk11C;
-    TESRace* overlayRace;
-    TESNPC* npcTemplate;
+    TESRace* originalRace;
+    TESNPC* faceNPC;
     float height;
     float weight;
-    uintptr_t unk130;
+    void* sounds;
     BSFixedString shortName;
-    TESObjectARMO* farArmo;
-    BGSOutfit* outfits[2];
+    TESObjectARMO* farSkin;
+    BGSOutfit* defaultOutfit;
+    BGSOutfit* sleepOutfit;
     uintptr_t unk144;
     TESFaction* faction;
 
@@ -121,5 +118,6 @@ struct TESNPC : TESActorBase
 };
 
 static_assert(offsetof(TESNPC, npcClass) == 0x1C0);
+static_assert(offsetof(TESNPC, faceNPC) == 0x1F0);
 static_assert(offsetof(TESNPC, color) == 0x246);
 static_assert(offsetof(TESNPC, relationships) == 0x250);

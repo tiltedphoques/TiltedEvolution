@@ -10,11 +10,6 @@ vsxmake2026
 .xmake
 vs2019
 
-# Local AI tooling and working notes
-.claude/
-CLAUDE.md
-docs/superpowers/
-
 build
 Build
 Build/*.log

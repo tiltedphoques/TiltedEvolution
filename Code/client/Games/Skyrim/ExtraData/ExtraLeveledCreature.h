@@ -2,7 +2,7 @@
 
 #include "ExtraData.h"
 
-struct TESNPC;
+struct TESActorBase;
 
 struct ExtraLeveledCreature : BSExtraData
 {
@@ -10,9 +10,10 @@ struct ExtraLeveledCreature : BSExtraData
 
     virtual ~ExtraLeveledCreature();
 
-    TESNPC* npc1;
-    TESNPC* npc2;
+    TESActorBase* originalBase;
+    TESActorBase* templateBase;
 };
 
 static_assert(sizeof(ExtraLeveledCreature) == 0x20);
-static_assert(offsetof(ExtraLeveledCreature, npc1) == 0x10);
+static_assert(offsetof(ExtraLeveledCreature, originalBase) == 0x10);
+static_assert(offsetof(ExtraLeveledCreature, templateBase) == 0x18);
