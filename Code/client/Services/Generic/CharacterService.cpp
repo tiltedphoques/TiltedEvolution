@@ -21,6 +21,7 @@
 #include <Systems/AnimationSystem.h>
 #include <Systems/CacheSystem.h>
 #include <Systems/FaceGenSystem.h>
+#include <Systems/LeveledNpcSystem.h>
 
 #include <Events/ActorAddedEvent.h>
 #include <Events/ActorRemovedEvent.h>
@@ -1356,11 +1357,8 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 
     if (pNpc->IsTemporary())
     {
-        // The chain is derived from the live actor and cannot go stale; the
-        // resolver map is keyed by temp ids the engine recycles, and cell
-        // attach bypasses the hook, so a map hit may describe a previous
-        // occupant of this id. Only named leveled NPCs, whose chain hides
-        // the pick, fall back to the map.
+        // Prefer the live template chain; recycled temp IDs and unhooked cell attaches can leave stale resolver-map entries.
+        // Fall back to the map for named leveled NPCs whose chain hides the pick.
         uint32_t pickFormId = 0;
         if (TESNPC* pChainPick = pNpc->GetLeveledPick())
             pickFormId = pChainPick->formID;
@@ -1573,18 +1571,6 @@ ActorData CharacterService::BuildActorData(Actor* apActor) const noexcept
     return actorData;
 }
 
-// A static base still templating onto a leveled list is the placed shell:
-// the local engine has not rolled this actor yet. Shells have no model of
-// their own - such actors render invisible or headless until conformed.
-static bool IsUnresolvedLeveledShell(const TESNPC* apBase) noexcept
-{
-    if (!apBase || apBase->IsTemporary())
-        return false;
-
-    const TESNPC* pTemplate = apBase->npcTemplate;
-    return pTemplate && pTemplate->formType == FormType::LeveledCharacter;
-}
-
 void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickId) const noexcept
 {
     if (acPickId == GameId{})
@@ -1598,7 +1584,7 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
     {
         // Conforming a shell is exactly what resolution would have done; any
         // other static base is an already conformed actor.
-        if (!IsUnresolvedLeveledShell(pBase))
+        if (!LeveledNpcSystem::IsUnresolvedLeveledShell(pBase))
         {
             spdlog::info("Leveled pick {:x}:{:x} received for actor {:X} whose base is not a leveled temp, skipping", acPickId.ModId, acPickId.BaseId, apActor->formID);
             return;
@@ -1637,10 +1623,8 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
 
     spdlog::info("Conforming leveled actor {:X} (temp base {:X}, local pick {:X}) to owner's pick {:X}", apActor->formID, pBase->formID, localPickId, cPickId);
 
-    // Never mutate the reference here: this runs from message handlers, while
-    // the cell attach may still own the reference, and queueing to the runner
-    // from a drained task re-locks the drain mutex (UB). The service update
-    // tick applies pending conforms once the world has settled.
+    // Defer reference changes to the service update: cell attach may still own the actor here.
+    // Queueing to the runner from a drained task would re-lock its drain mutex.
     m_pendingLeveledConforms[apActor->formID] = {cPickId, false};
 }
 
@@ -1673,12 +1657,7 @@ void CharacterService::ProcessLeveledConforms() noexcept
             pActor->baseForm = pPick;
             pActor->EnableImpl();
 
-            // The animation sync caches the graph descriptor per actor. A pick that
-            // crosses animation projects (rabbit -> fox) keeps the old project's
-            // variable indices, and every remote update then scribbles the owner's
-            // values through them into the new graph's variable set - the OOB
-            // variable-index crash. Zero it so the next sync tick recomputes it
-            // from the rebuilt graph, like the werewolf/vampire lord transforms do.
+            // Recompute the graph descriptor after changing picks; stale variable indices can cause out-of-bounds writes.
             pActor->GetExtension()->GraphDescriptorHash = 0;
 
             spdlog::info("Re-enabled conformed leveled actor {:X}, base {:X}", it->first, conform.PickFormId);
@@ -1686,12 +1665,10 @@ void CharacterService::ProcessLeveledConforms() noexcept
             continue;
         }
 
-        if (!pActor->loadedState && !IsUnresolvedLeveledShell(Cast<TESNPC>(pActor->baseForm)))
+        if (!pActor->loadedState && !LeveledNpcSystem::IsUnresolvedLeveledShell(Cast<TESNPC>(pActor->baseForm)))
         {
-            // Distant actors stream their 3D in whenever the player approaches -
-            // possibly minutes later. Stay pending until then; a newer pick
-            // overwrites this entry and a disconnect clears the map. Shell-based
-            // actors are exempt: they have no model to load until conformed.
+            // Wait for distant actors to load 3D; newer picks replace pending work and disconnects clear it.
+            // Unresolved shells bypass this wait because they need a pick before they can load a model.
             ++it;
             continue;
         }
