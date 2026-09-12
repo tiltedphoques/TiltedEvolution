@@ -130,14 +130,9 @@ private:
 
     Map<uint32_t, WeaponDrawData> m_weaponDrawUpdates{};
 
-    struct LeveledConformData
-    {
-        uint32_t PickFormId{};
-        bool Disabled{};
-    };
-
-    // Written from const message handlers, drained by ProcessLeveledConforms
-    mutable Map<uint32_t, LeveledConformData> m_pendingLeveledConforms{};
+    // Actor form ID -> pick form ID. The active stage lives in ActorExtension.
+    // Written from const message handlers, drained by ProcessLeveledConforms.
+    mutable Map<uint32_t, uint32_t> m_pendingLeveledConforms{};
 
     entt::scoped_connection m_referenceAddedConnection;
     entt::scoped_connection m_referenceRemovedConnection;

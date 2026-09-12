@@ -247,6 +247,11 @@ void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
 
 void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept
 {
+    if (auto* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId)))
+        pActor->GetExtension()->Reconciliation = ActorExtension::ReconciliationStage::None;
+
+    m_pendingLeveledConforms.erase(acEvent.FormId);
+
     auto view = m_world.view<FormIdComponent>();
     const auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.FormId](auto aEntity) { return view.get<FormIdComponent>(aEntity).Id == formId; });
 
@@ -324,6 +329,12 @@ void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEve
     }
 
     m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
+
+    for (const auto& [formId, pickFormId] : m_pendingLeveledConforms)
+    {
+        if (auto* pActor = Cast<Actor>(TESForm::GetById(formId)))
+            pActor->GetExtension()->Reconciliation = ActorExtension::ReconciliationStage::None;
+    }
 
     m_pendingLeveledConforms.clear();
 }
@@ -1612,11 +1623,14 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
 
     // Defer reference changes to the service update: cell attach may still own the actor here.
     // Queueing to the runner from a drained task would re-lock its drain mutex.
-    m_pendingLeveledConforms[apActor->formID] = {cPickId, false};
+    // Preserve the stage when a newer pick arrives during a disable or rebuild.
+    m_pendingLeveledConforms[apActor->formID] = cPickId;
 }
 
 void CharacterService::ProcessLeveledConforms() noexcept
 {
+    using ReconciliationStage = ActorExtension::ReconciliationStage;
+
     if (m_pendingLeveledConforms.empty())
         return;
 
@@ -1628,17 +1642,48 @@ void CharacterService::ProcessLeveledConforms() noexcept
 
     for (auto it = m_pendingLeveledConforms.begin(); it != m_pendingLeveledConforms.end();)
     {
-        LeveledConformData& conform = it.value();
+        const uint32_t cPickFormId = it->second;
 
         Actor* pActor = Cast<Actor>(TESForm::GetById(it->first));
-        TESNPC* pPick = Cast<TESNPC>(TESForm::GetById(conform.PickFormId));
-        if (!pActor || !pPick)
+        TESNPC* pPick = Cast<TESNPC>(TESForm::GetById(cPickFormId));
+        if (!pActor || pActor->IsDeleted() || !pPick)
         {
+            if (pActor)
+                pActor->GetExtension()->Reconciliation = ReconciliationStage::None;
+
             it = m_pendingLeveledConforms.erase(it);
             continue;
         }
 
-        if (conform.Disabled)
+        auto& stage = pActor->GetExtension()->Reconciliation;
+        if (stage == ReconciliationStage::WaitingFor3D)
+        {
+            const auto* pCell = pActor->GetParentCell();
+            if (!pCell || !pCell->IsValid())
+            {
+                stage = ReconciliationStage::None;
+                it = m_pendingLeveledConforms.erase(it);
+                continue;
+            }
+
+            if (!pActor->GetNiNode())
+            {
+                ++it;
+                continue;
+            }
+
+            if (pActor->baseForm == pPick)
+            {
+                stage = ReconciliationStage::None;
+                it = m_pendingLeveledConforms.erase(it);
+                continue;
+            }
+
+            // A newer pick arrived during the rebuild; start its disable now.
+            stage = ReconciliationStage::None;
+        }
+
+        if (stage == ReconciliationStage::Disabled)
         {
             // Teardown ran last tick; rebuild the 3D from the pick
             pActor->baseForm = pPick;
@@ -1647,8 +1692,10 @@ void CharacterService::ProcessLeveledConforms() noexcept
             // Recompute the graph descriptor after changing picks; stale variable indices can cause out-of-bounds writes.
             pActor->GetExtension()->GraphDescriptorHash = 0;
 
-            spdlog::info("Re-enabled conformed leveled actor {:X}, base {:X}", it->first, conform.PickFormId);
-            it = m_pendingLeveledConforms.erase(it);
+            spdlog::info("Re-enabled conformed leveled actor {:X}, base {:X}", it->first, cPickFormId);
+            // Enable can return before the rebuilt 3D is available to discovery.
+            stage = ReconciliationStage::WaitingFor3D;
+            ++it;
             continue;
         }
 
@@ -1661,7 +1708,7 @@ void CharacterService::ProcessLeveledConforms() noexcept
         }
 
         pActor->DisableImpl();
-        conform.Disabled = true;
+        stage = ReconciliationStage::Disabled;
         ++it;
     }
 }
