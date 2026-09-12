@@ -334,7 +334,7 @@ void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEve
     {
         if (auto* pActor = Cast<Actor>(TESForm::GetById(formId)))
             pActor->GetExtension()->Reconciliation = ActorExtension::ReconciliationStage::None;
-    }
+        }
 
     m_pendingLeveledConforms.clear();
 }
@@ -1593,7 +1593,7 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
             return;
         }
 
-        spdlog::info("Actor {:X} still carries unresolved shell base {:X}, conforming to owner's pick", apActor->formID, pBase->formID);
+        spdlog::debug("Actor {:X} still carries unresolved shell base {:X}, conforming to owner's pick", apActor->formID, pBase->formID);
     }
 
     const uint32_t cPickId = World::Get().GetModSystem().GetGameId(acPickId);
@@ -1619,7 +1619,8 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
         return;
     }
 
-    spdlog::info("Conforming leveled actor {:X} (temp base {:X}, local pick {:X}) to owner's pick {:X}", apActor->formID, pBase->formID, localPickId, cPickId);
+    spdlog::info("Queued leveled NPC reconciliation for actor {:X}, base: {:X}, local pick: {:X}, owner's pick: {:X}",
+        apActor->formID, pBase->formID, localPickId, cPickId);
 
     // Defer reference changes to the service update: cell attach may still own the actor here.
     // Queueing to the runner from a drained task would re-lock its drain mutex.
@@ -1661,6 +1662,8 @@ void CharacterService::ProcessLeveledConforms() noexcept
             const auto* pCell = pActor->GetParentCellEx();
             if (!pCell || !pCell->IsAttached())
             {
+                spdlog::info("Abandoning leveled NPC reconciliation for actor {:X} because its cell is not attached, pick: {:X}, cell state: {}, disabled: {}",
+                    it->first, cPickFormId, pCell ? static_cast<int>(pCell->cellState) : -1, pActor->IsDisabled());
                 stage = ReconciliationStage::None;
                 it = m_pendingLeveledConforms.erase(it);
                 continue;
@@ -1674,6 +1677,7 @@ void CharacterService::ProcessLeveledConforms() noexcept
 
             if (pActor->baseForm == pPick)
             {
+                spdlog::info("Completed leveled NPC reconciliation for actor {:X}, base: {:X}", it->first, cPickFormId);
                 stage = ReconciliationStage::None;
                 it = m_pendingLeveledConforms.erase(it);
                 continue;
@@ -1685,6 +1689,8 @@ void CharacterService::ProcessLeveledConforms() noexcept
 
         if (stage == ReconciliationStage::Disabled)
         {
+            if (!pActor->IsDisabled())
+                spdlog::warn("Re-enabling leveled actor {:X} with pick {:X} before its disabled flag is set", it->first, cPickFormId);
             // Teardown ran last tick; rebuild the 3D from the pick
             pActor->baseForm = pPick;
             pActor->EnableImpl();
@@ -1692,9 +1698,9 @@ void CharacterService::ProcessLeveledConforms() noexcept
             // Recompute the graph descriptor after changing picks; stale variable indices can cause out-of-bounds writes.
             pActor->GetExtension()->GraphDescriptorHash = 0;
 
-            spdlog::info("Re-enabled conformed leveled actor {:X}, base {:X}", it->first, cPickFormId);
             // Enable can return before the rebuilt 3D is available to discovery.
             stage = ReconciliationStage::WaitingFor3D;
+            spdlog::info("Re-enabled conformed leveled actor {:X}, base: {:X}, waiting for 3D", it->first, cPickFormId);
             ++it;
             continue;
         }

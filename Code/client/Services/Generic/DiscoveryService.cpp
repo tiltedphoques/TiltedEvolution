@@ -252,7 +252,6 @@ void DiscoveryService::VisitForms() noexcept
             using ReconciliationStage = ActorExtension::ReconciliationStage;
             const auto cStage = pActor->GetExtension()->Reconciliation;
             const auto* pCell = pActor->GetParentCellEx();
-            const auto* pParentCell = pActor->parentCell;
             // Finish the disable/enable pair even if the cell starts unloading.
             // Once enabled, an unloaded cell is a real removal.
             if (cStage == ReconciliationStage::Disabled || (cStage == ReconciliationStage::WaitingFor3D && pCell && pCell->IsAttached()))

@@ -684,6 +684,17 @@ void CharacterService::PopulateAssignmentResponse(const entt::entity aEntity, As
         aResponse.IsDead = pCharacterComponent->IsDead();
         aResponse.IsWeaponDrawn = pCharacterComponent->IsWeaponDrawn();
         aResponse.LeveledNpcPickId = pCharacterComponent->LeveledNpcPickId.Id;
+
+        if (pCharacterComponent->LeveledNpcPickId)
+        {
+            spdlog::debug(
+                "Including leveled NPC pick in assignment response for actor {:X}, pick: {:x}:{:x}, owner: {}, epoch: {}",
+                aResponse.ServerId,
+                aResponse.LeveledNpcPickId.ModId,
+                aResponse.LeveledNpcPickId.BaseId,
+                aResponse.Owner,
+                aResponse.OwnershipEpoch);
+        }
     }
 
     if (const auto* pMovementComponent = m_world.try_get<MovementComponent>(aEntity))
