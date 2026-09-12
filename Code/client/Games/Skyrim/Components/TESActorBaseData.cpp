@@ -7,7 +7,7 @@ using TCreateTemplateActorBase = TESActorBase* __fastcall(TESActorBase*, TESActo
 static TCreateTemplateActorBase* RealCreateTemplateActorBase = nullptr;
 
 // Cache the first template base, which named leveled NPCs can hide from the template chain.
-// Temporary form IDs are recycled and cell attach bypasses this hook, so entries can be stale.
+// Temporary form IDs are recycled and resolution paths can bypass the hook, so entries can be stale.
 // Consumers must prefer the template chain and use this cache only as a last resort.
 // The lock protects loader-thread writes against game-thread reads.
 static std::mutex s_leveledPicksLock;
@@ -23,11 +23,16 @@ TESActorBase* HookCreateTemplateActorBase(TESActorBase* apOriginalBase, TESActor
 
     if (pResult && pTemplateBase && pResult->formType == FormType::Npc && pTemplateBase->formType == FormType::Npc)
     {
-        std::lock_guard lock(s_leveledPicksLock);
-        s_leveledPicks[pResult->formID] = pTemplateBase->formID;
+        TESActorBaseData::SetLeveledPickFormId(pResult->formID, pTemplateBase->formID);
     }
 
     return pResult;
+}
+
+void TESActorBaseData::SetLeveledPickFormId(uint32_t aTempNpcFormId, uint32_t aTemplateFormId) noexcept
+{
+    std::lock_guard lock(s_leveledPicksLock);
+    s_leveledPicks[aTempNpcFormId] = aTemplateFormId;
 }
 
 uint32_t TESActorBaseData::GetLeveledPickFormId(uint32_t aTempNpcFormId) noexcept
@@ -41,12 +46,9 @@ uint32_t TESActorBaseData::GetLeveledPickFormId(uint32_t aTempNpcFormId) noexcep
 static TiltedPhoques::Initializer s_actorBaseDataInitHooks(
     []()
     {
-        // If this causes bugs or will not work as intended, then consider
-        // TESObjectREFR::SetLeveledCreature (ID 20231) instead. In Skyrim, SetLeveledCreature is
-        // called by Actor::RecalcLeveledActor and TESActorBaseData::CalcTemplateForRef
-        POINTER_SKYRIMSE(TCreateTemplateActorBase, s_CreateTemplateActorBase, 14375);
+        // Temporarily disabled while testing SetLeveledCreature instead.
 
-        RealCreateTemplateActorBase = s_CreateTemplateActorBase.Get();
-
-        TP_HOOK(&RealCreateTemplateActorBase, HookCreateTemplateActorBase);
+        // POINTER_SKYRIMSE(TCreateTemplateActorBase, s_CreateTemplateActorBase, 14375);
+        // RealCreateTemplateActorBase = s_CreateTemplateActorBase.Get();
+        // TP_HOOK(&RealCreateTemplateActorBase, HookCreateTemplateActorBase);
     });

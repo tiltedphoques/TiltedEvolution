@@ -31,6 +31,7 @@
 #include <Havok/hkbStateMachine.h>
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
+#include <Forms/TESActorBase.h>
 
 #include <Structs/AnimationGraphDescriptorManager.h>
 #include <Structs/AnimationVariables.h>
@@ -66,6 +67,7 @@ TP_THIS_FUNCTION(TPlayAnimationAndWait, bool, void, uint32_t auiStackID, TESObje
 TP_THIS_FUNCTION(TPlayAnimation, bool, void, uint32_t auiStackID, TESObjectREFR* apSelf, BSFixedString* apEventName);
 TP_THIS_FUNCTION(TRotate, void, TESObjectREFR, float aAngle);
 TP_THIS_FUNCTION(TLockChange, void, TESObjectREFR);
+TP_THIS_FUNCTION(TSetLeveledCreature, void, TESObjectREFR, TESActorBase* apOriginalBase, TESActorBase* apTemplateBase);
 
 static TActivate* RealActivate = nullptr;
 static TAddInventoryItem* RealAddInventoryItem = nullptr;
@@ -76,6 +78,7 @@ static TRotate* RealRotateX = nullptr;
 static TRotate* RealRotateY = nullptr;
 static TRotate* RealRotateZ = nullptr;
 static TLockChange* RealLockChange = nullptr;
+static TSetLeveledCreature* RealSetLeveledCreature = nullptr;
 
 #ifdef SAVE_STUFF
 
@@ -1125,10 +1128,30 @@ void TP_MAKE_THISCALL(HookLockChange, TESObjectREFR)
         World::Get().GetRunner().Trigger(LockChangeEvent(apThis->formID, false, 0));
 }
 
+// Called by Actor::RecalcLeveledActor and TESActorBaseData::CalcTemplateForRef in the engine
+void TP_MAKE_THISCALL(HookSetLeveledCreature, TESObjectREFR, TESActorBase* apOriginalBase, TESActorBase* apTemplateBase)
+{
+    TiltedPhoques::ThisCall(RealSetLeveledCreature, apThis, apOriginalBase, apTemplateBase);
+
+    const uint32_t cOriginalBaseId = apOriginalBase ? apOriginalBase->formID : 0;
+    // ExtraDataList::SetLeveledCreature stores this pointer directly in templateBase.
+    const uint32_t cTemplateBaseId = apTemplateBase ? apTemplateBase->formID : 0;
+    const bool cIsNpcTemplate = apTemplateBase && apTemplateBase->formType == FormType::Npc;
+
+    TESForm* pResult = apThis->baseForm;
+    spdlog::info("SetLeveledCreature: ref {:X}, original base {:X}, template base {:X}, current base {:X}", apThis->formID, cOriginalBaseId, cTemplateBaseId, pResult ? pResult->formID : 0);
+
+    if (pResult && pResult->formType == FormType::Npc && cIsNpcTemplate)
+    {
+        TESActorBaseData::SetLeveledPickFormId(pResult->formID, cTemplateBaseId);
+    }
+}
+
 static TiltedPhoques::Initializer s_objectReferencesHooks(
     []()
     {
         POINTER_SKYRIMSE(TLockChange, s_lockChange, 19512);
+        POINTER_SKYRIMSE(TSetLeveledCreature, s_SetLeveledCreature, 20231);
         POINTER_SKYRIMSE(TRotate, s_rotateX, 19787);
         POINTER_SKYRIMSE(TRotate, s_rotateY, 19788);
         POINTER_SKYRIMSE(TRotate, s_rotateZ, 19789);
@@ -1139,6 +1162,7 @@ static TiltedPhoques::Initializer s_objectReferencesHooks(
         POINTER_SKYRIMSE(TPlayAnimation, s_playAnimation, 56205);
 
         RealLockChange = s_lockChange.Get();
+        RealSetLeveledCreature = s_SetLeveledCreature.Get();
         RealRotateX = s_rotateX.Get();
         RealRotateY = s_rotateY.Get();
         RealRotateZ = s_rotateZ.Get();
@@ -1149,6 +1173,7 @@ static TiltedPhoques::Initializer s_objectReferencesHooks(
         RealPlayAnimation = s_playAnimation.Get();
 
         TP_HOOK(&RealLockChange, HookLockChange);
+        TP_HOOK(&RealSetLeveledCreature, HookSetLeveledCreature);
         TP_HOOK(&RealRotateX, HookRotateX);
         TP_HOOK(&RealRotateY, HookRotateY);
         TP_HOOK(&RealRotateZ, HookRotateZ);
