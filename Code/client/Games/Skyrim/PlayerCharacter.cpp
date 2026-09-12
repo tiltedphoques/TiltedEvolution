@@ -108,7 +108,7 @@ NiPoint3 PlayerCharacter::RespawnPlayer() noexcept
     else
     {
         // TP to start of cell when killed in an interior
-        pCell = GetParentCell();
+        pCell = GetSaveParentCell();
     }
 
     NiPoint3 pos{};

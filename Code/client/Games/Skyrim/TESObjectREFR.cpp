@@ -337,8 +337,8 @@ uint32_t TESObjectREFR::GetCellId() const noexcept
 
 TESWorldSpace* TESObjectREFR::GetWorldSpace() const noexcept
 {
-    auto* pParentCell = parentCell ? parentCell : GetParentCell();
-    if (pParentCell && !(pParentCell->cellFlags[0] & 1))
+    auto* pParentCell = GetParentCellEx();
+    if (pParentCell && !(pParentCell->cellFlags & 1))
         return pParentCell->worldspace;
 
     return nullptr;
@@ -489,7 +489,7 @@ int64_t TESObjectREFR::GetItemCountInInventory(TESForm* apItem) const noexcept
 
 TESObjectCELL* TESObjectREFR::GetParentCellEx() const noexcept
 {
-    return parentCell ? parentCell : GetParentCell();
+    return parentCell ? parentCell : GetSaveParentCell();
 }
 
 void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept

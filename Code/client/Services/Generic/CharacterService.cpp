@@ -1460,7 +1460,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
                         spdlog::error("World space id not found, despite having a world space, {:X}", pWorldSpace->formID);
                 }
 
-                if (TESObjectCELL* pCell = pActor->GetParentCell())
+                if (TESObjectCELL* pCell = pActor->GetParentCellEx())
                 {
                     if (!modSystem.GetServerModId(pCell->formID, request.CellId))
                         spdlog::error("Cell id not found, despite having a cell, {:X}", pCell->formID);
@@ -1658,8 +1658,8 @@ void CharacterService::ProcessLeveledConforms() noexcept
         auto& stage = pActor->GetExtension()->Reconciliation;
         if (stage == ReconciliationStage::WaitingFor3D)
         {
-            const auto* pCell = pActor->GetParentCell();
-            if (!pCell || !pCell->IsValid())
+            const auto* pCell = pActor->GetParentCellEx();
+            if (!pCell || !pCell->IsAttached())
             {
                 stage = ReconciliationStage::None;
                 it = m_pendingLeveledConforms.erase(it);

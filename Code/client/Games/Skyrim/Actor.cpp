@@ -216,7 +216,7 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
     auto position = pPlayer->position;
     auto rotation = pPlayer->rotation;
 
-    if (pCell && !(pCell->cellFlags[0] & 1))
+    if (pCell && !(pCell->cellFlags & 1))
         pCell = nullptr;
 
     ModManager::Get()->Spawn(position, rotation, pCell, pWorldSpace, pActor);

@@ -247,7 +247,7 @@ void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
 
     if (!m_world.GetModSystem().GetServerModId(pCell->formID, request.CellId))
     {
-        spdlog::error("Server cell id not found for cell form id {:X}", acEvent.pObject->parentCell->formID);
+        spdlog::error("Server cell id not found for cell form id {:X}", pCell->formID);
         return;
     }
 
@@ -329,7 +329,7 @@ void ObjectService::OnLockChange(const LockChangeEvent& acEvent) noexcept
 
     if (!m_world.GetModSystem().GetServerModId(pCell->formID, request.CellId))
     {
-        spdlog::error("Server cell id for cell not found, cell form id: {:X}", pObject->parentCell->formID);
+        spdlog::error("Server cell id for cell not found, cell form id: {:X}", pCell->formID);
         return;
     }
 

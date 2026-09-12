@@ -63,7 +63,7 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
 
     if (pPlayer->GetWorldSpace())
         VisitExteriorCell(aForceTrigger);
-    else if (pPlayer->GetParentCell())
+    else if (pPlayer->GetParentCellEx())
         VisitInteriorCell(aForceTrigger);
 
     // exactly how the game does it too
@@ -129,7 +129,7 @@ void DiscoveryService::VisitInteriorCell(bool aForceTrigger) noexcept
 {
     ResetCachedCellData();
 
-    const uint32_t cellId = PlayerCharacter::Get()->GetParentCell()->formID;
+    const uint32_t cellId = PlayerCharacter::Get()->GetParentCellEx()->formID;
     if (m_interiorCellId != cellId || aForceTrigger)
     {
         CellChangeEvent cellChangeEvent{};
@@ -251,10 +251,11 @@ void DiscoveryService::VisitForms() noexcept
         {
             using ReconciliationStage = ActorExtension::ReconciliationStage;
             const auto cStage = pActor->GetExtension()->Reconciliation;
-            const auto* pCell = pActor->GetParentCell();
+            const auto* pCell = pActor->GetParentCellEx();
+            const auto* pParentCell = pActor->parentCell;
             // Finish the disable/enable pair even if the cell starts unloading.
             // Once enabled, an unloaded cell is a real removal.
-            if (cStage == ReconciliationStage::Disabled || (cStage == ReconciliationStage::WaitingFor3D && pCell && pCell->IsValid()))
+            if (cStage == ReconciliationStage::Disabled || (cStage == ReconciliationStage::WaitingFor3D && pCell && pCell->IsAttached()))
             {
                 continue;
             }
