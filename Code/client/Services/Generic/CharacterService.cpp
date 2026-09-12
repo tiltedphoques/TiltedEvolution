@@ -333,8 +333,15 @@ void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEve
     for (const auto& [formId, pickFormId] : m_pendingLeveledConforms)
     {
         if (auto* pActor = Cast<Actor>(TESForm::GetById(formId)))
-            pActor->GetExtension()->Reconciliation = ActorExtension::ReconciliationStage::None;
+        {
+            auto& stage = pActor->GetExtension()->Reconciliation;
+            // Don't leave the actor disabled if we disconnect before re-enabling it.
+            if (stage == ActorExtension::ReconciliationStage::Disabled && !pActor->IsDeleted())
+                pActor->EnableImpl();
+
+            stage = ActorExtension::ReconciliationStage::None;
         }
+    }
 
     m_pendingLeveledConforms.clear();
 }
