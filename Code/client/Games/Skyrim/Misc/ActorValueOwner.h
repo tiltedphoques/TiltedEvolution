@@ -15,7 +15,7 @@ struct ActorValueOwner
     virtual float GetValue(uint32_t aId) const noexcept;
     virtual float GetPermanentValue(uint32_t aId) const noexcept;
     virtual float GetBaseValue(uint32_t aId) const noexcept;
-    virtual void SetBaseValue(uint32_t aId);
+    virtual void SetBaseValue(uint32_t aId, float aValue);
     virtual void ModValue(uint32_t aId, float aValue);
     virtual void ForceCurrent(ForceMode aMode, uint32_t aId, float aValue);
     virtual void SetValue(uint32_t aId, float aValue) noexcept;

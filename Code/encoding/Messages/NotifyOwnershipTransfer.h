@@ -2,6 +2,7 @@
 
 #include "Message.h"
 #include <Structs/ActorData.h>
+#include <Structs/GameId.h>
 
 struct NotifyOwnershipTransfer final : ServerMessage
 {
@@ -18,11 +19,12 @@ struct NotifyOwnershipTransfer final : ServerMessage
 
     bool operator==(const NotifyOwnershipTransfer& achRhs) const noexcept
     {
-        return ServerId == achRhs.ServerId && OwnerPlayerId == achRhs.OwnerPlayerId && OwnershipEpoch == achRhs.OwnershipEpoch && CurrentActorData == achRhs.CurrentActorData && GetOpcode() == achRhs.GetOpcode();
+        return ServerId == achRhs.ServerId && OwnerPlayerId == achRhs.OwnerPlayerId && OwnershipEpoch == achRhs.OwnershipEpoch && CurrentActorData == achRhs.CurrentActorData && LeveledNpcPickId == achRhs.LeveledNpcPickId && GetOpcode() == achRhs.GetOpcode();
     }
 
     uint32_t ServerId{};
     uint32_t OwnerPlayerId{};
     uint32_t OwnershipEpoch{};
     ActorData CurrentActorData{};
+    GameId LeveledNpcPickId{};
 };

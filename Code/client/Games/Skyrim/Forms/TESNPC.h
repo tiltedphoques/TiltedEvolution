@@ -22,10 +22,10 @@ struct TESNPC : TESActorBase
 
     TESNPC* GetTemplateBase() const noexcept
     {
-        TESNPC* pTemplate = npcTemplate;
+        TESNPC* pTemplate = faceNPC;
 
         while (pTemplate && pTemplate->IsTemporary())
-            pTemplate = pTemplate->npcTemplate;
+            pTemplate = pTemplate->faceNPC;
 
         return pTemplate;
     }
@@ -60,14 +60,15 @@ struct TESNPC : TESActorBase
     uintptr_t unk114;
     TESCombatStyle* combatStyle;
     size_t unk11C;
-    TESRace* overlayRace;
-    TESNPC* npcTemplate;
+    TESRace* originalRace;
+    TESNPC* faceNPC;
     float height;
     float weight;
-    uintptr_t unk130;
+    void* sounds;
     BSFixedString shortName;
-    TESObjectARMO* farArmo;
-    BGSOutfit* outfits[2];
+    TESObjectARMO* farSkin;
+    BGSOutfit* defaultOutfit;
+    BGSOutfit* sleepOutfit;
     uintptr_t unk144;
     TESFaction* faction;
 
@@ -96,5 +97,6 @@ struct TESNPC : TESActorBase
 };
 
 static_assert(offsetof(TESNPC, npcClass) == 0x1C0);
+static_assert(offsetof(TESNPC, faceNPC) == 0x1F0);
 static_assert(offsetof(TESNPC, color) == 0x246);
 static_assert(offsetof(TESNPC, relationships) == 0x250);

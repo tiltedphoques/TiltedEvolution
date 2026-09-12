@@ -98,6 +98,8 @@ private:
 
     Actor* CreateCharacterForEntity(entt::entity aEntity) const noexcept;
     ActorData BuildActorData(Actor* apActor) const noexcept;
+    void ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickId) const noexcept;
+    void ProcessLeveledConforms() noexcept;
 
     void RunLocalUpdates() const noexcept;
     void RunRemoteUpdates() noexcept;
@@ -127,6 +129,10 @@ private:
     };
 
     Map<uint32_t, WeaponDrawData> m_weaponDrawUpdates{};
+
+    // Actor form ID -> pick form ID. The active stage lives in ActorExtension.
+    // Written from const message handlers, drained by ProcessLeveledConforms.
+    mutable Map<uint32_t, uint32_t> m_pendingLeveledConforms{};
 
     entt::scoped_connection m_referenceAddedConnection;
     entt::scoped_connection m_referenceRemovedConnection;

@@ -19,6 +19,7 @@ void AssignCharacterRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     Serialization::WriteBool(aWriter, IsMount);
     Serialization::WriteBool(aWriter, IsPlayerSummon);
     CurrentActorData.Serialize(aWriter);
+    LeveledNpcPickId.Serialize(aWriter);
 }
 
 void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -53,4 +54,5 @@ void AssignCharacterRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     IsPlayerSummon = Serialization::ReadBool(aReader);
 
     CurrentActorData.Deserialize(aReader);
+    LeveledNpcPickId.Deserialize(aReader);
 }

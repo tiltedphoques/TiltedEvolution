@@ -8,6 +8,7 @@
 #include <Forms/TESFaction.h>
 #include <Components/TESActorBaseData.h>
 #include <ExtraData/ExtraFactionChanges.h>
+#include <ExtraData/ExtraLeveledCreature.h>
 #include <Games/Memory.h>
 #include <Combat/CombatController.h>
 
@@ -157,6 +158,16 @@ void Actor::SetSpeed(float aSpeed) noexcept
     animationGraphHolder.SetVariableFloat(&speedSampledStr, aSpeed);
 }
 
+TESNPC* Actor::GetLeveledPick() const noexcept
+{
+    const auto* pExtra = static_cast<ExtraLeveledCreature*>(extraData.GetByType(ExtraDataType::LeveledCreature));
+    TESActorBase* pTemplate = pExtra ? pExtra->templateBase : nullptr;
+    if (!pTemplate || pTemplate->formType != FormType::Npc || pTemplate->IsTemporary())
+        return nullptr;
+
+    return static_cast<TESNPC*>(pTemplate);
+}
+
 uint16_t Actor::GetLevel() const noexcept
 {
     TP_THIS_FUNCTION(TGetLevel, uint16_t, const Actor);
@@ -205,7 +216,7 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
     auto position = pPlayer->position;
     auto rotation = pPlayer->rotation;
 
-    if (pCell && !(pCell->cellFlags[0] & 1))
+    if (pCell && !(pCell->cellFlags & 1))
         pCell = nullptr;
 
     ModManager::Get()->Spawn(position, rotation, pCell, pWorldSpace, pActor);

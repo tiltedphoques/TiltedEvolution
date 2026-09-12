@@ -37,10 +37,10 @@ void DebugService::DrawFormDebugView()
 
     if (pRefr)
     {
-        if (auto* pParentCell = pRefr->GetParentCell())
+        if (auto* pParentCell = pRefr->GetSaveParentCell())
         {
             const uint32_t cellId = pParentCell->formID;
-            ImGui::InputScalar("GetParentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+            ImGui::InputScalar("GetSaveParentCell", ImGuiDataType_U32, (void*)&cellId, nullptr, nullptr, "%" PRIx32, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
         }
 
         if (auto* pParentCell = pRefr->parentCell)

@@ -63,7 +63,7 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
 
     if (pPlayer->GetWorldSpace())
         VisitExteriorCell(aForceTrigger);
-    else if (pPlayer->GetParentCell())
+    else if (pPlayer->GetParentCellEx())
         VisitInteriorCell(aForceTrigger);
 
     // exactly how the game does it too
@@ -129,7 +129,7 @@ void DiscoveryService::VisitInteriorCell(bool aForceTrigger) noexcept
 {
     ResetCachedCellData();
 
-    const uint32_t cellId = PlayerCharacter::Get()->GetParentCell()->formID;
+    const uint32_t cellId = PlayerCharacter::Get()->GetParentCellEx()->formID;
     if (m_interiorCellId != cellId || aForceTrigger)
     {
         CellChangeEvent cellChangeEvent{};
@@ -244,6 +244,22 @@ void DiscoveryService::VisitForms() noexcept
     // We dispatch removal events first to prevent needless reallocations
     for (uint32_t formId : s_previousForms)
     {
+        // A conform can remove both the 3D and the high-process handle. Keep the
+        // existing discovery entry so rebuilding it does not cancel its assignment.
+        // TODO: GetById performance in loop?
+        if (auto* pActor = Cast<Actor>(TESForm::GetById(formId)); pActor && !pActor->IsDeleted())
+        {
+            using ReconciliationStage = ActorExtension::ReconciliationStage;
+            const auto cStage = pActor->GetExtension()->Reconciliation;
+            const auto* pCell = pActor->GetParentCellEx();
+            // Finish the disable/enable pair even if the cell starts unloading.
+            // Once enabled, an unloaded cell is a real removal.
+            if (cStage == ReconciliationStage::Disabled || (cStage == ReconciliationStage::WaitingFor3D && pCell && pCell->IsAttached()))
+            {
+                continue;
+            }
+        }
+
         m_dispatcher.trigger(ActorRemovedEvent(formId));
         m_forms.erase(formId);
     }
