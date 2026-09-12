@@ -8,6 +8,7 @@
 #include <Forms/TESFaction.h>
 #include <Components/TESActorBaseData.h>
 #include <ExtraData/ExtraFactionChanges.h>
+#include <ExtraData/ExtraLeveledCreature.h>
 #include <Games/Memory.h>
 #include <Combat/CombatController.h>
 
@@ -155,6 +156,16 @@ void Actor::SetSpeed(float aSpeed) noexcept
 {
     static BSFixedString speedSampledStr("SpeedSampled");
     animationGraphHolder.SetVariableFloat(&speedSampledStr, aSpeed);
+}
+
+TESNPC* Actor::GetLeveledPick() const noexcept
+{
+    const auto* pExtra = static_cast<ExtraLeveledCreature*>(extraData.GetByType(ExtraDataType::LeveledCreature));
+    TESActorBase* pTemplate = pExtra ? pExtra->templateBase : nullptr;
+    if (!pTemplate || pTemplate->formType != FormType::Npc || pTemplate->IsTemporary())
+        return nullptr;
+
+    return static_cast<TESNPC*>(pTemplate);
 }
 
 uint16_t Actor::GetLevel() const noexcept

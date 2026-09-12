@@ -197,6 +197,9 @@ struct Actor : TESObjectREFR
     MagicEquipment GetMagicEquipment() const noexcept;
     Inventory GetEquipment() const noexcept;
     int32_t GetGoldAmount() const noexcept;
+    // Returns the engine-recorded static leveled pick, or nullptr if unavailable.
+    // Changing baseForm directly does not update this record.
+    TESNPC* GetLeveledPick() const noexcept;
     uint16_t GetLevel() const noexcept;
     Factions GetFactions() const noexcept;
     ActorValues GetEssentialActorValues() const noexcept;

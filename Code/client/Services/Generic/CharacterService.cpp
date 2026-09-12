@@ -11,7 +11,6 @@
 #include <Games/Misc/SubtitleManager.h>
 
 #include <Forms/TESNPC.h>
-#include <Components/TESActorBaseData.h>
 #include <Interface/UI.h>
 #include <Forms/TESQuest.h>
 
@@ -1358,17 +1357,9 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 
     if (pNpc->IsTemporary())
     {
-        // Prefer the live template chain; recycled temp IDs and unhooked cell attaches can leave stale resolver-map entries.
-        // Fall back to the map for named leveled NPCs whose chain hides the pick.
-        uint32_t pickFormId = 0;
-        if (TESNPC* pChainPick = pNpc->GetLeveledPick())
-            pickFormId = pChainPick->formID;
-
-        if (pickFormId == 0)
-            pickFormId = TESActorBaseData::GetLeveledPickFormId(pNpc->formID);
-
-        if (pickFormId != 0)
+        if (const TESNPC* pPick = pActor->GetLeveledPick())
         {
+            const uint32_t pickFormId = pPick->formID;
             if (m_world.GetModSystem().GetServerModId(pickFormId, message.LeveledNpcPickId))
                 spdlog::info("Captured leveled NPC pick {:X} for actor {:X} (temp base {:X})", pickFormId, pActor->formID, pNpc->formID);
             else
@@ -1608,13 +1599,8 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
         return;
     }
 
-    // Chain first for the same staleness reason as the capture side
-    uint32_t localPickId = 0;
-    if (TESNPC* pLocalPick = pBase->GetLeveledPick())
-        localPickId = pLocalPick->formID;
-
-    if (localPickId == 0)
-        localPickId = TESActorBaseData::GetLeveledPickFormId(pBase->formID);
+    const TESNPC* pLocalPick = apActor->GetLeveledPick();
+    const uint32_t localPickId = pLocalPick ? pLocalPick->formID : 0;
 
     if (localPickId == cPickId)
     {

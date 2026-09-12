@@ -30,25 +30,6 @@ struct TESNPC : TESActorBase
         return pTemplate;
     }
 
-    // Recovers the first static NPC pick from the template chain when the resolver hook is bypassed, excluding placed shells.
-    // Form-type guards prevent reading faceNPC from leveled-list entries with smaller layouts.
-    TESNPC* GetLeveledPick() const noexcept
-    {
-        TESNPC* pTemplate = faceNPC;
-
-        while (pTemplate && pTemplate->formType == FormType::Npc && pTemplate->IsTemporary())
-            pTemplate = pTemplate->faceNPC;
-
-        if (!pTemplate || pTemplate->formType != FormType::Npc)
-            return nullptr;
-
-        TESNPC* pShellTemplate = pTemplate->faceNPC;
-        if (pShellTemplate && pShellTemplate->formType == FormType::LeveledCharacter)
-            return nullptr;
-
-        return pTemplate;
-    }
-
     struct FaceMorphs
     {
         float option[19];
