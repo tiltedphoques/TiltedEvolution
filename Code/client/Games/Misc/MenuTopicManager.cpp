@@ -1,6 +1,7 @@
 #include "MenuTopicManager.h"
 
 #include <Events/PlayerDialogueEvent.h>
+#include <TESObjectREFR.h>
 
 TP_THIS_FUNCTION(TPlayDialogueOption, bool, MenuTopicManager, int32_t aIndex);
 static TPlayDialogueOption* RealPlayDialogueOption = nullptr;
@@ -9,6 +10,17 @@ MenuTopicManager* MenuTopicManager::Get() noexcept
 {
     POINTER_SKYRIMSE(MenuTopicManager*, s_singleton, 401099);
     return *s_singleton.Get();
+}
+
+bool MenuTopicManager::IsPlayerDialogueSpeaker(const TESObjectREFR* apSpeaker) noexcept
+{
+    if (!apSpeaker)
+        return false;
+
+    const auto* pManager = Get();
+    // lastSpeaker survives menu closure; using it here would also capture
+    // subsequent ambient speech from a remotely owned NPC.
+    return pManager && pManager->IsCurrentSpeaker(apSpeaker->GetHandle());
 }
 
 bool TP_MAKE_THISCALL(HookPlayDialogueOption, MenuTopicManager, int32_t aIndex)
