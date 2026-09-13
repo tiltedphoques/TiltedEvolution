@@ -21,6 +21,8 @@
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
 #include <Forms/BGSEncounterZone.h>
+#include <Forms/TESFaction.h>
+#include <Games/TES.h>
 
 #include <inttypes.h>
 
@@ -60,11 +62,44 @@ bool IsPlayerHome(const TESObjectCELL* pCell) noexcept
     return false;
 }
 
-bool ShouldSyncObject(const TESObjectREFR* apObject) noexcept
+// Containers where the game stashes an arrested player's belongings, taken from the crime data of every
+// loaded faction. Sending a player to jail moves their whole inventory into the faction's player inventory
+// container (stolen goods go to the stolen goods container) and hands it back on release, so these are
+// per-player storage: if they were synced, the first player to enter the jail cell would overwrite the
+// stash of everyone who follows, and the others would walk out with the wrong inventory (#700).
+// Only pointers are compared here; the crime data itself is never dereferenced.
+Set<const TESObjectREFR*> GetPlayerStashContainers() noexcept
+{
+    Set<const TESObjectREFR*> containers{};
+
+    ModManager* pModManager = ModManager::Get();
+    if (!pModManager)
+        return containers;
+
+    for (const TESFaction* pFaction : pModManager->factions)
+    {
+        if (!pFaction)
+            continue;
+
+        if (pFaction->crimeData.playerInventoryContainer)
+            containers.insert(pFaction->crimeData.playerInventoryContainer);
+
+        if (pFaction->crimeData.stolenGoodsContainer)
+            containers.insert(pFaction->crimeData.stolenGoodsContainer);
+    }
+
+    return containers;
+}
+
+bool ShouldSyncObject(const TESObjectREFR* apObject, const Set<const TESObjectREFR*>& acPlayerStashContainers) noexcept
 {
     if (!apObject)
         return false;
 
+    if (acPlayerStashContainers.contains(apObject))
+        return false;
+
+    // Quest chests that take the player's whole inventory without going through faction crime data.
     switch (apObject->formID)
     {
     case 0x39CF1: // Don't sync the chest in the "Diplomatic Immunity" quest
@@ -117,9 +152,11 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
 
     AssignObjectsRequest request{};
 
+    const Set<const TESObjectREFR*> playerStashContainers = GetPlayerStashContainers();
+
     for (TESObjectREFR* pObject : objects)
     {
-        if (!ShouldSyncObject(pObject))
+        if (!ShouldSyncObject(pObject, playerStashContainers))
         {
             spdlog::warn("Excluding sync for {:X}", pObject->formID);
             continue;
