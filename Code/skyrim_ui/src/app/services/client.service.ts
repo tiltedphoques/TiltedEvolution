@@ -4,6 +4,7 @@ import { AsyncSubject, BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Debug } from '../models/debug';
 import { PartyInfo } from '../models/party-info';
+import { PartyInvite } from '../models/party-invite';
 import { Player } from '../models/player';
 import { ChatService } from './chat.service';
 import { ErrorEvents, ErrorService } from './error.service';
@@ -53,7 +54,7 @@ export class ClientService implements OnDestroy {
   public partyLeftChange = new Subject<void>();
 
   /** Connect party invite received. */
-  public partyInviteReceivedChange = new Subject<number>();
+  public partyInviteReceivedChange = new Subject<PartyInvite>();
 
   /** Local quest started or updated while not in a party. */
   public questUpdatedChange = new Subject<void>();
@@ -631,7 +632,7 @@ export class ClientService implements OnDestroy {
     });
   }
 
-  private onPartyInviteReceived(inviterId: number) {
+  private onPartyInviteReceived(inviterId: number, expiresInMs = 60000) {
     if (environment.game) {
       console.log(
         `%conPartyInviteReceived`,
@@ -640,7 +641,7 @@ export class ClientService implements OnDestroy {
       );
     }
     this.zone.run(() => {
-      this.partyInviteReceivedChange.next(inviterId);
+      this.partyInviteReceivedChange.next({ inviterId, expiresInMs });
     });
   }
 

@@ -79,22 +79,9 @@ void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
     // Only expire once every 10 seconds
     m_nextInvitationExpire = cCurrentTick + 10000;
 
-    auto view = m_world.view<PartyComponent>();
-    for (auto entity : view)
+    for (Player* pPlayer : m_world.GetPlayerManager())
     {
-        auto& partyComponent = view.get<PartyComponent>(entity);
-        auto itor = std::begin(partyComponent.Invitations);
-        while (itor != std::end(partyComponent.Invitations))
-        {
-            if (itor->second < cCurrentTick)
-            {
-                itor = partyComponent.Invitations.erase(itor);
-            }
-            else
-            {
-                ++itor;
-            }
-        }
+        pPlayer->GetParty().ExpireInvitations(cCurrentTick);
     }
 }
 
@@ -158,6 +145,9 @@ void PartyService::OnPartyChangeLeader(const PacketEvent<PartyChangeLeaderReques
             {
                 if (pPlayer->GetId() == pNewLeader->GetId())
                 {
+                    if (party.LeaderPlayerId != pNewLeader->GetId())
+                        RevokeInvitations(party.LeaderPlayerId);
+
                     party.LeaderPlayerId = pPlayer->GetId();
                     spdlog::debug("[PartyService]: Changed party leader to {}, updating party members.", party.LeaderPlayerId);
                     BroadcastPartyInfo(*inviterPartyComponent.JoinedPartyId);
@@ -271,7 +261,7 @@ void PartyService::OnPartyInvite(const PacketEvent<PartyInviteRequest>& acPacket
 
         // Expire in 60 seconds
         const auto cExpiryTick = GameServer::Get()->GetTick() + 60000;
-        inviteePartyComponent.Invitations[pInviter] = cExpiryTick;
+        inviteePartyComponent.Invitations[pInviter->GetId()] = cExpiryTick;
 
         NotifyPartyInvite notification;
         notification.InviterId = pInviter->GetId();
@@ -297,11 +287,6 @@ void PartyService::OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteReques
         auto& inviterPartyComponent = pInviter->GetParty();
         auto& selfPartyComponent = pSelf->GetParty();
 
-        // Check if we have this invitation so people don't invite themselves
-        if (selfPartyComponent.Invitations.count(pInviter) == 0)
-            return;
-
-        spdlog::debug("[PartyService]: Invite found, processing.");
         if (!inviterPartyComponent.JoinedPartyId) // Ensure inviter is in a party otherwise break
         {
             spdlog::debug("[PartyService]: Inviter not in party. Cancelling.");
@@ -321,6 +306,13 @@ void PartyService::OnPartyAcceptInvite(const PacketEvent<PartyAcceptInviteReques
         {
             spdlog::debug("[PartyService]: Invitee already in party, cancelling.");
             // RemovePlayerFromParty(pSelf, false); // skip sending left event, will override with SendPartyJoinedEvent
+            return;
+        }
+
+        // Acceptance must check the deadline even between periodic cleanup passes.
+        if (!selfPartyComponent.TryConsumeInvitation(pInviter->GetId(), GameServer::Get()->GetTick()))
+        {
+            spdlog::debug("[PartyService]: Invitation missing or expired, cancelling.");
             return;
         }
 
@@ -347,6 +339,8 @@ void PartyService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 void PartyService::RemovePlayerFromParty(Player* apPlayer) noexcept
 {
     auto* pPartyComponent = &apPlayer->GetParty();
+    pPartyComponent->Invitations.clear();
+    RevokeInvitations(apPlayer->GetId());
     spdlog::debug("[PartyService]: Removing player from party.");
 
     if (pPartyComponent->JoinedPartyId)
@@ -378,6 +372,14 @@ void PartyService::RemovePlayerFromParty(Player* apPlayer) noexcept
         spdlog::debug("[PartyService]: Sending party left event to player.");
         NotifyPartyLeft leftMessage;
         apPlayer->Send(leftMessage);
+    }
+}
+
+void PartyService::RevokeInvitations(uint32_t aInviterId) noexcept
+{
+    for (Player* pPlayer : m_world.GetPlayerManager())
+    {
+        pPlayer->GetParty().Invitations.erase(aInviterId);
     }
 }
 
@@ -431,6 +433,8 @@ void PartyService::BroadcastPartyInfo(uint32_t aPartyId) const noexcept
 
 void PartyService::SendPartyJoinedEvent(Party& aParty, Player* aPlayer) noexcept
 {
+    aPlayer->GetParty().Invitations.clear();
+
     NotifyPartyJoined joinedMessage;
     joinedMessage.LeaderPlayerId = aParty.LeaderPlayerId;
     joinedMessage.IsLeader = aParty.LeaderPlayerId == aPlayer->GetId();
