@@ -22,6 +22,41 @@
 
 using TiltedPhoques::Debug;
 
+namespace
+{
+// Client instances use tp_client.log, tp_client_instance_2.log, tp_client_instance_3.log, etc.
+std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> CreateClientLogSink(const std::filesystem::path& acLogPath)
+{
+    std::string filename = "tp_client.log";
+    for (uint32_t instance = 1;; ++instance)
+    {
+        const auto mutexName = fmt::format("SkyrimTogether.ClientLog.Instance_{}", instance);
+        HANDLE pMutex = CreateMutexA(nullptr, FALSE, mutexName.c_str());
+        const DWORD error = GetLastError();
+
+        if (!pMutex)
+        {
+            // Never fall back to a filename that another client may be writing to.
+            spdlog::warn("Failed to reserve a client log slot (error {}); using a process-specific log", error);
+            filename = fmt::format("tp_client_pid_{}.log", GetCurrentProcessId());
+            break;
+        }
+
+        if (error == ERROR_ALREADY_EXISTS)
+        {
+            CloseHandle(pMutex);
+            continue;
+        }
+
+        // Keep this slot's mutex handle open until process exit, like ArrangeGameWindows.
+        if (instance > 1)
+            filename = fmt::format("tp_client_instance_{}.log", instance);
+        break;
+    }
+    return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(acLogPath / filename, 1048576 * 5, 3);
+}
+}
+
 TiltedOnlineApp::TiltedOnlineApp()
 {
     // Set console code page to UTF-8 so console known how to interpret string data
@@ -32,7 +67,7 @@ TiltedOnlineApp::TiltedOnlineApp()
     std::error_code ec;
     create_directory(logPath, ec);
 
-    auto rotatingLogger = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logPath / "tp_client.log", 1048576 * 5, 3);
+    auto rotatingLogger = CreateClientLogSink(logPath);
     // rotatingLogger->set_level(spdlog::level::debug);
     auto console = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     auto logger = std::make_shared<spdlog::logger>("", spdlog::sinks_init_list{console, rotatingLogger});
