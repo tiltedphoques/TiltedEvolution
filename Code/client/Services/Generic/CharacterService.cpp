@@ -1373,21 +1373,21 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.IsMount = pActor->IsMount();
     message.IsPlayerSummon = pActor->GetCommandingActor() && pActor->GetCommandingActor()->formID == 0x14;
 
-    if (pNpc->IsTemporary())
+    if (const TESNPC* pPick = pActor->GetLeveledPick())
     {
-        if (const TESNPC* pPick = pActor->GetLeveledPick())
-        {
-            const uint32_t pickFormId = pPick->formID;
-            if (m_world.GetModSystem().GetServerModId(pickFormId, message.LeveledNpcPickId))
-                spdlog::info("Captured leveled NPC pick {:X} for actor {:X} (temp base {:X})", pickFormId, pActor->formID, pNpc->formID);
-            else
-                spdlog::warn("Leveled NPC pick {:X} has no server id, identity sync skipped", pickFormId);
-        }
+        const uint32_t pickFormId = pPick->formID;
+        if (m_world.GetModSystem().GetServerModId(pickFormId, message.LeveledNpcPickId))
+            spdlog::info("Captured leveled NPC pick {:X} for actor {:X} (base {:X})", pickFormId, pActor->formID, pNpc->formID);
         else
-            spdlog::info("No leveled pick recoverable for temp base {:X} (actor {:X}), identity sync unavailable", pNpc->formID, pActor->formID);
-
-        pNpc = pNpc->GetTemplateBase();
+            spdlog::warn("Leveled NPC pick {:X} has no server id, identity sync skipped", pickFormId);
     }
+    else if (pNpc->IsTemporary())
+    {
+        spdlog::info("No leveled pick recoverable for temp base {:X} (actor {:X}), identity sync unavailable", pNpc->formID, pActor->formID);
+    }
+
+    if (pNpc->IsTemporary())
+        pNpc = pNpc->GetTemplateBase();
 
     if (isTemporary)
     {

@@ -211,12 +211,20 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             spdlog::debug("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
             auto& ownerComponent = view.get<OwnerComponent>(*itor);
+            auto& characterComponent = view.get<CharacterComponent>(*itor);
             const bool isOwner = ownerComponent.GetOwner() == acMessage.pPlayer;
             const bool transferToLeader = !isOwner && CanClaimOwnership(acMessage.pPlayer, *itor, ownerComponent.OwnershipEpoch, OwnershipTransferReason::LeaderAssignment);
 
-            // A validated leader assignment makes the incoming owner's leveled roll authoritative.
-            if (transferToLeader)
-                view.get<CharacterComponent>(*itor).LeveledNpcPickId = FormIdComponent(message.LeveledNpcPickId);
+            if (!characterComponent.LeveledNpcPickId && message.LeveledNpcPickId != GameId{})
+            {
+                characterComponent.LeveledNpcPickId = FormIdComponent(message.LeveledNpcPickId);
+                spdlog::debug(
+                    "Stored previously unknown leveled NPC pick {:x}:{:x} for FormId {:x}:{:x}",
+                    message.LeveledNpcPickId.ModId,
+                    message.LeveledNpcPickId.BaseId,
+                    refId.ModId,
+                    refId.BaseId);
+            }
 
             AssignCharacterResponse response{};
             response.Cookie = message.Cookie;
@@ -611,8 +619,9 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.ChangeFlags = message.ChangeFlags;
     characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
     characterComponent.BaseId = FormIdComponent(message.FormId);
-    // Client-authoritative like BaseId; worst case a forged id changes which NPC identity renders
-    characterComponent.LeveledNpcPickId = FormIdComponent(message.LeveledNpcPickId);
+    // Client-authoritative like BaseId; worst case a forged id changes which NPC identity renders.
+    if (message.LeveledNpcPickId != GameId{})
+        characterComponent.LeveledNpcPickId = FormIdComponent(message.LeveledNpcPickId);
 
     if (characterComponent.LeveledNpcPickId)
         spdlog::debug("Stored leveled NPC pick {:x}:{:x} for FormId {:x}:{:x}", message.LeveledNpcPickId.ModId, message.LeveledNpcPickId.BaseId, gameId.ModId, gameId.BaseId);
