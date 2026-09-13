@@ -41,7 +41,7 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     {
         if (!bEnableMiscQuestSync)
             return;
-        spdlog::info("{}: syncing type none/misc quest to party, gameId {:X} questStage {} questStatus {} questType {}",
+        spdlog::info("{}: syncing type none/misc quest to party, gameId: {:X}, questStage: {}, questStatus: {}; questType: {}",
                      __FUNCTION__, notify.Id.LogFormat(), notify.Stage, notify.Status, notify.ClientQuestType);
     }
 
@@ -58,7 +58,7 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
 
             if (message.Status == RequestQuestUpdate::Started)
             {
-                spdlog::debug("Started quest: {:X} stage: {}", message.Id.LogFormat(), message.Stage);
+                spdlog::info("{}: started quest: {:X}, stage: {}", __FUNCTION__, message.Id.LogFormat(), message.Stage);
 
                 notify.Status = NotifyQuestUpdate::Started;
             }
@@ -69,7 +69,7 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
         }
         else
         {
-            spdlog::debug("Updated quest: {:X}, stage: {}", message.Id.LogFormat(), message.Id.BaseId, message.Stage);
+            spdlog::info("{}: updated quest: {:X}, stage: {}", __FUNCTION__, message.Id.LogFormat(), message.Stage);
 
             auto& record = *questIt;
             record.Id = message.Id;
@@ -80,12 +80,12 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     }
     else if (message.Status == RequestQuestUpdate::Stopped)
     {
-        spdlog::debug("Stopped quest: {:X}, stage: {}", message.Id.LogFormat(), message.Id.BaseId, message.Stage);
+        spdlog::info("{}: stopped quest: {:X}, stage: {}", __FUNCTION__, message.Id.LogFormat(), message.Stage);
 
         if (questIt != entries.end())
             entries.erase(questIt);
         else
-            spdlog::warn("Unable to delete quest object {:X}", message.Id.LogFormat(), message.Id.BaseId);
+            spdlog::warn("{}: unable to delete quest object {:X}", __FUNCTION__, message.Id.LogFormat());
 
         notify.Status = NotifyQuestUpdate::Stopped;
     }

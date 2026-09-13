@@ -61,7 +61,7 @@ void DebugService::DrawQuestDebugView()
                     sprintf_s(setStage, std::size(setStage), "Set stage (%d)", pStage->stageIndex);
 
                     if (ImGui::Button(setStage))
-                        pQuest->ScriptSetStage(pStage->stageIndex);
+                        pQuest->ScriptSetStage(pStage->stageIndex, true);
                 }
             }
 
