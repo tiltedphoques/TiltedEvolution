@@ -13,7 +13,7 @@ struct ActorExtension
     enum class ReconciliationStage
     {
         None,
-        Disabled,
+        WaitingForDisable,
         WaitingFor3D
     };
 

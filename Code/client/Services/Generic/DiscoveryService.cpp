@@ -254,7 +254,7 @@ void DiscoveryService::VisitForms() noexcept
             const auto* pCell = pActor->GetParentCellEx();
             // Finish the disable/enable pair even if the cell starts unloading.
             // Once enabled, an unloaded cell is a real removal.
-            if (cStage == ReconciliationStage::Disabled || (cStage == ReconciliationStage::WaitingFor3D && pCell && pCell->IsAttached()))
+            if (cStage == ReconciliationStage::WaitingForDisable || (cStage == ReconciliationStage::WaitingFor3D && pCell && pCell->IsAttached()))
             {
                 continue;
             }

@@ -336,7 +336,7 @@ void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEve
         {
             auto& stage = pActor->GetExtension()->Reconciliation;
             // Don't leave the actor disabled if we disconnect before re-enabling it.
-            if (stage == ActorExtension::ReconciliationStage::Disabled && !pActor->IsDeleted())
+            if (stage == ActorExtension::ReconciliationStage::WaitingForDisable && !pActor->IsDeleted())
                 pActor->EnableImpl();
 
             stage = ActorExtension::ReconciliationStage::None;
@@ -1676,7 +1676,7 @@ void CharacterService::ProcessLeveledConforms() noexcept
                 continue;
             }
 
-            if (!pActor->GetNiNode())
+            if (pActor->IsDisabled() || !pActor->GetNiNode())
             {
                 ++it;
                 continue;
@@ -1694,11 +1694,17 @@ void CharacterService::ProcessLeveledConforms() noexcept
             stage = ReconciliationStage::None;
         }
 
-        if (stage == ReconciliationStage::Disabled)
+        if (stage == ReconciliationStage::WaitingForDisable)
         {
-            if (!pActor->IsDisabled())
-                spdlog::warn("Re-enabling leveled actor {:X} with pick {:X} before its disabled flag is set", it->first, cPickFormId);
-            // Teardown ran last tick; rebuild the 3D from the pick
+            if (!pActor->IsDisabled() || pActor->GetNiNode())
+            {
+                spdlog::debug("Waiting for leveled actor {:X} to finish disabling before applying pick {:X}, disabled: {}, has 3D: {}",
+                    it->first, cPickFormId, pActor->IsDisabled(), pActor->GetNiNode() != nullptr);
+                ++it;
+                continue;
+            }
+
+            // Disable and 3D teardown have completed; rebuild from the pick.
             pActor->baseForm = pPick;
             pActor->EnableImpl();
 
@@ -1720,8 +1726,10 @@ void CharacterService::ProcessLeveledConforms() noexcept
             continue;
         }
 
+        // DisableImpl() is asynchronous: it only queues a request to disable this actor.
+        // Wait for the disabled flag and old 3D removal before changing the base.
         pActor->DisableImpl();
-        stage = ReconciliationStage::Disabled;
+        stage = ReconciliationStage::WaitingForDisable;
         ++it;
     }
 }
