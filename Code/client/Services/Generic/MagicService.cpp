@@ -57,12 +57,9 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
     UpdateRevealOtherPlayersEffect();
 }
 
-// A summoned creature is replicated to the other players as a regular actor by the client that
-// owns it (see IsPlayerSummon in CharacterService). Replaying the cast that summoned it on the
-// other clients spawns a second, unowned creature next to the replicated one, which then fights
-// it. Fire-and-forget summon *spells* never reach spell cast sync (they go through projectile
-// sync), but staff enchantments such as the Sanguine Rose (DA14StaffEnchSummonDremora) or the
-// Staff of the Familiar are EnchantmentItems, so they did (issue #791).
+// Summoned creatures are replicated by their owning client (see IsPlayerSummon); replaying the
+// summon cast elsewhere spawns a duplicate, unowned creature that fights the real one. Summon spells avoid
+// this via projectile sync, but summon EnchantmentItems (Sanguine Rose, Staff of the Familiar) didn't (#791).
 static bool HasSummonEffect(const MagicItem* apMagicItem) noexcept
 {
     if (!apMagicItem)
