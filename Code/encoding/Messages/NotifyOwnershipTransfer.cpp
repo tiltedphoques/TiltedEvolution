@@ -6,6 +6,7 @@ void NotifyOwnershipTransfer::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     Serialization::WriteVarInt(aWriter, OwnerPlayerId);
     Serialization::WriteVarInt(aWriter, OwnershipEpoch);
     CurrentActorData.Serialize(aWriter);
+    LeveledNpcPickId.Serialize(aWriter);
 }
 
 void NotifyOwnershipTransfer::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -16,4 +17,5 @@ void NotifyOwnershipTransfer::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     OwnerPlayerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     OwnershipEpoch = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     CurrentActorData.Deserialize(aReader);
+    LeveledNpcPickId.Deserialize(aReader);
 }

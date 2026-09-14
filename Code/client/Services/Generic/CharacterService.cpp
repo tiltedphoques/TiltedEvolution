@@ -11,6 +11,7 @@
 #include <Games/Misc/SubtitleManager.h>
 
 #include <Forms/TESNPC.h>
+#include <Interface/UI.h>
 #include <Forms/TESQuest.h>
 
 #include <BranchInfo.h>
@@ -20,6 +21,7 @@
 #include <Systems/AnimationSystem.h>
 #include <Systems/CacheSystem.h>
 #include <Systems/FaceGenSystem.h>
+#include <Systems/LeveledNpcSystem.h>
 
 #include <Events/ActorAddedEvent.h>
 #include <Events/ActorRemovedEvent.h>
@@ -245,6 +247,11 @@ void CharacterService::OnActorAdded(const ActorAddedEvent& acEvent) noexcept
 
 void CharacterService::OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept
 {
+    if (auto* pActor = Cast<Actor>(TESForm::GetById(acEvent.FormId)))
+        pActor->GetExtension()->Reconciliation = ActorExtension::ReconciliationStage::None;
+
+    m_pendingLeveledConforms.erase(acEvent.FormId);
+
     auto view = m_world.view<FormIdComponent>();
     const auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.FormId](auto aEntity) { return view.get<FormIdComponent>(aEntity).Id == formId; });
 
@@ -278,6 +285,7 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     RunRemoteUpdates();
     RunExperienceUpdates();
     ApplyCachedWeaponDraws(acUpdateEvent);
+    ProcessLeveledConforms();
 }
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
@@ -321,6 +329,21 @@ void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEve
     }
 
     m_world.clear<WaitingForAssignmentComponent, LocalComponent, RemoteComponent>();
+
+    for (const auto& [formId, pickFormId] : m_pendingLeveledConforms)
+    {
+        if (auto* pActor = Cast<Actor>(TESForm::GetById(formId)))
+        {
+            auto& stage = pActor->GetExtension()->Reconciliation;
+            // Don't leave the actor disabled if we disconnect before re-enabling it.
+            if (stage == ActorExtension::ReconciliationStage::WaitingForDisable && !pActor->IsDeleted())
+                pActor->EnableImpl();
+
+            stage = ActorExtension::ReconciliationStage::None;
+        }
+    }
+
+    m_pendingLeveledConforms.clear();
 }
 
 void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessage) noexcept
@@ -439,6 +462,9 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         ReconcileActorData(cEntity, pActor, acMessage.OwnershipEpoch, actorData, true, false);
 
         MoveActor(pActor, acMessage.WorldSpaceId, acMessage.CellId, acMessage.Position);
+
+        // The owner's leveled pick rides the assignment response for actors we discovered ourselves
+        ApplyLeveledNpcPick(pActor, acMessage.LeveledNpcPickId);
     }
 }
 
@@ -472,14 +498,19 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
         if (acMessage.BaseId != GameId{})
         {
-            const auto cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
-            if (cNpcId == 0)
+            // Prefer the owner's resolved leveled pick over the lossy template base
+            if (acMessage.LeveledNpcPickId != GameId{})
+                pNpc = Cast<TESNPC>(TESForm::GetById(m_world.GetModSystem().GetGameId(acMessage.LeveledNpcPickId)));
+
+            if (!pNpc)
+                pNpc = Cast<TESNPC>(TESForm::GetById(m_world.GetModSystem().GetGameId(acMessage.BaseId)));
+
+            if (!pNpc)
             {
                 spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod, base: {:X}:{:X}, form: {:X}:{:X}", acMessage.BaseId.BaseId, acMessage.BaseId.ModId, acMessage.FormId.BaseId, acMessage.FormId.ModId);
                 return;
             }
 
-            pNpc = Cast<TESNPC>(TESForm::GetById(cNpcId));
             pNpc->Deserialize(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
         }
         else
@@ -531,7 +562,8 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     spdlog::info("CharacterSpawnRequest, server id: {:X}, form id: {:X}", acMessage.ServerId, pActor->formID);
 
-    if (pActor->IsDisabled())
+    // Pending reconciliation re-enables the actor after applying the owner's pick.
+    if (pActor->IsDisabled() && pActor->GetExtension()->Reconciliation != ActorExtension::ReconciliationStage::WaitingForDisable)
     {
         spdlog::warn("Disabled actor is being re-enabled: {:X}", pActor->formID);
         pActor->EnableImpl();
@@ -562,6 +594,10 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         // Prevents remote summons agroing other players.
         pActor->SetCommandingActor(PlayerCharacter::Get()->GetHandle());
     }
+
+    // Static references arrive with their own locally rolled leveled pick; conform to the owner's.
+    if (acMessage.FormId != GameId{})
+        ApplyLeveledNpcPick(pActor, acMessage.LeveledNpcPickId);
 
     m_world.emplace_or_replace<RemoteComponent>(*entity, acMessage.ServerId, pActor->formID, acMessage.OwnershipEpoch);
 
@@ -703,6 +739,10 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
     const auto* pFormIdComponent = m_world.try_get<FormIdComponent>(cEntity);
     Actor* pActor = pFormIdComponent ? Cast<Actor>(TESForm::GetById(pFormIdComponent->Id)) : nullptr;
 
+    // Preserve the accepted epoch's pick for actors that still need to be created.
+    if (auto* pWaitingFor3D = m_world.try_get<WaitingFor3D>(cEntity))
+        pWaitingFor3D->SpawnRequest.LeveledNpcPickId = acMessage.LeveledNpcPickId;
+
     if (isLocalOwner)
     {
         if (!pFormIdComponent || !pActor || !pActor->GetNiNode())
@@ -731,6 +771,7 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
         m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, pFormIdComponent->Id, acMessage.OwnershipEpoch);
 
         ReconcileActorData(cEntity, pActor, acMessage.OwnershipEpoch, acMessage.CurrentActorData, true, true);
+        ApplyLeveledNpcPick(pActor, acMessage.LeveledNpcPickId);
 
         DeleteRemoteEntityComponents(cEntity);
         CacheSystem::Setup(m_world, cEntity, pActor);
@@ -765,6 +806,8 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
     }
 
     ReconcileActorData(cEntity, pActor, acMessage.OwnershipEpoch, acMessage.CurrentActorData, pActor && pActor->GetNiNode(), false);
+    if (pActor)
+        ApplyLeveledNpcPick(pActor, acMessage.LeveledNpcPickId);
 
     spdlog::info("Actor {:X} is now owned by player {:X} at epoch {}", acMessage.ServerId, acMessage.OwnerPlayerId, acMessage.OwnershipEpoch);
 }
@@ -1302,6 +1345,19 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
     message.IsMount = pActor->IsMount();
     message.IsPlayerSummon = pActor->GetCommandingActor() && pActor->GetCommandingActor()->formID == 0x14;
 
+    if (const TESNPC* pPick = pActor->GetLeveledPick())
+    {
+        const uint32_t pickFormId = pPick->formID;
+        if (m_world.GetModSystem().GetServerModId(pickFormId, message.LeveledNpcPickId))
+            spdlog::info("Captured leveled NPC pick {:X} for actor {:X} (base {:X})", pickFormId, pActor->formID, pNpc->formID);
+        else
+            spdlog::warn("Leveled NPC pick {:X} has no server id, identity sync skipped", pickFormId);
+    }
+    else if (pNpc->IsTemporary())
+    {
+        spdlog::info("No leveled pick recoverable for temp base {:X} (actor {:X}), identity sync unavailable", pNpc->formID, pActor->formID);
+    }
+
     if (pNpc->IsTemporary())
         pNpc = pNpc->GetTemplateBase();
 
@@ -1383,7 +1439,7 @@ void CharacterService::CancelServerAssignment(const entt::entity aEntity, const 
                         spdlog::error("World space id not found, despite having a world space, {:X}", pWorldSpace->formID);
                 }
 
-                if (TESObjectCELL* pCell = pActor->GetParentCell())
+                if (TESObjectCELL* pCell = pActor->GetParentCellEx())
                 {
                     if (!modSystem.GetServerModId(pCell->formID, request.CellId))
                         spdlog::error("Cell id not found, despite having a cell, {:X}", pCell->formID);
@@ -1426,14 +1482,19 @@ Actor* CharacterService::CreateCharacterForEntity(entt::entity aEntity) const no
 
         if (acMessage.BaseId != GameId{})
         {
-            const uint32_t cNpcId = World::Get().GetModSystem().GetGameId(acMessage.BaseId);
-            if (cNpcId == 0)
+            // Prefer the owner's resolved leveled pick over the lossy template base
+            if (acMessage.LeveledNpcPickId != GameId{})
+                pNpc = Cast<TESNPC>(TESForm::GetById(m_world.GetModSystem().GetGameId(acMessage.LeveledNpcPickId)));
+
+            if (!pNpc)
+                pNpc = Cast<TESNPC>(TESForm::GetById(m_world.GetModSystem().GetGameId(acMessage.BaseId)));
+
+            if (!pNpc)
             {
                 spdlog::error("Failed to retrieve NPC, it will not be spawned, possibly missing mod");
                 return nullptr;
             }
 
-            pNpc = Cast<TESNPC>(TESForm::GetById(cNpcId));
             pNpc->Deserialize(acMessage.AppearanceBuffer, acMessage.ChangeFlags);
         }
         else
@@ -1484,6 +1545,159 @@ ActorData CharacterService::BuildActorData(Actor* apActor) const noexcept
     actorData.IsWeaponDrawn = apActor->actorState.IsWeaponFullyDrawn();
 
     return actorData;
+}
+
+void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickId) const noexcept
+{
+    if (acPickId == GameId{})
+        return;
+
+    TESNPC* pBase = Cast<TESNPC>(apActor->baseForm);
+    if (!pBase)
+        return;
+
+    if (!pBase->IsTemporary())
+    {
+        // Conforming a shell is exactly what resolution would have done; any
+        // other static base is an already conformed actor.
+        if (!LeveledNpcSystem::IsUnresolvedLeveledShell(pBase))
+        {
+            spdlog::info("Leveled pick {:x}:{:x} received for actor {:X} whose base is not a leveled temp, skipping", acPickId.ModId, acPickId.BaseId, apActor->formID);
+            return;
+        }
+
+        spdlog::debug("Actor {:X} still carries unresolved shell base {:X}, conforming to owner's pick", apActor->formID, pBase->formID);
+    }
+
+    const uint32_t cPickId = World::Get().GetModSystem().GetGameId(acPickId);
+    if (cPickId == 0)
+    {
+        spdlog::warn("Leveled NPC pick {:X}:{:X} not resolvable, possibly missing mod, keeping local pick", acPickId.ModId, acPickId.BaseId);
+        return;
+    }
+
+    TESNPC* pPick = Cast<TESNPC>(TESForm::GetById(cPickId));
+    if (!pPick)
+    {
+        spdlog::warn("Leveled NPC pick {:X} is not an NPC, keeping local pick", cPickId);
+        return;
+    }
+
+    const TESNPC* pLocalPick = apActor->GetLeveledPick();
+    const uint32_t localPickId = pLocalPick ? pLocalPick->formID : 0;
+
+    if (localPickId == cPickId)
+    {
+        spdlog::info("Leveled actor {:X} already matches owner's pick {:X}", apActor->formID, cPickId);
+        return;
+    }
+
+    spdlog::info("Queued leveled NPC reconciliation for actor {:X}, base: {:X}, local pick: {:X}, owner's pick: {:X}",
+        apActor->formID, pBase->formID, localPickId, cPickId);
+
+    // Defer reference changes to the service update: cell attach may still own the actor here.
+    // Queueing to the runner from a drained task would re-lock its drain mutex.
+    // Preserve the stage when a newer pick arrives during a disable or rebuild.
+    m_pendingLeveledConforms[apActor->formID] = cPickId;
+}
+
+void CharacterService::ProcessLeveledConforms() noexcept
+{
+    using ReconciliationStage = ActorExtension::ReconciliationStage;
+
+    if (m_pendingLeveledConforms.empty())
+        return;
+
+    // Never touch references while the loading screen is up - the cell attach
+    // owns them and mutating mid-stream crashes the loader
+    UI* pUI = UI::Get();
+    if (pUI && pUI->GetMenuOpen(BSFixedString("Loading Menu")))
+        return;
+
+    for (auto it = m_pendingLeveledConforms.begin(); it != m_pendingLeveledConforms.end();)
+    {
+        const uint32_t cPickFormId = it->second;
+
+        Actor* pActor = Cast<Actor>(TESForm::GetById(it->first));
+        TESNPC* pPick = Cast<TESNPC>(TESForm::GetById(cPickFormId));
+        if (!pActor || pActor->IsDeleted() || !pPick)
+        {
+            if (pActor)
+                pActor->GetExtension()->Reconciliation = ReconciliationStage::None;
+
+            it = m_pendingLeveledConforms.erase(it);
+            continue;
+        }
+
+        auto& stage = pActor->GetExtension()->Reconciliation;
+        if (stage == ReconciliationStage::WaitingFor3D)
+        {
+            const auto* pCell = pActor->GetParentCellEx();
+            if (!pCell || !pCell->IsAttached())
+            {
+                spdlog::info("Abandoning leveled NPC reconciliation for actor {:X} because its cell is not attached, pick: {:X}, cell state: {}, disabled: {}",
+                    it->first, cPickFormId, pCell ? static_cast<int>(pCell->cellState) : -1, pActor->IsDisabled());
+                stage = ReconciliationStage::None;
+                it = m_pendingLeveledConforms.erase(it);
+                continue;
+            }
+
+            if (pActor->IsDisabled() || !pActor->GetNiNode())
+            {
+                ++it;
+                continue;
+            }
+
+            if (pActor->baseForm == pPick)
+            {
+                spdlog::info("Completed leveled NPC reconciliation for actor {:X}, base: {:X}", it->first, cPickFormId);
+                stage = ReconciliationStage::None;
+                it = m_pendingLeveledConforms.erase(it);
+                continue;
+            }
+
+            // A newer pick arrived during the rebuild; start its disable now.
+            stage = ReconciliationStage::None;
+        }
+
+        if (stage == ReconciliationStage::WaitingForDisable)
+        {
+            if (!pActor->IsDisabled() || pActor->GetNiNode())
+            {
+                spdlog::debug("Waiting for leveled actor {:X} to finish disabling before applying pick {:X}, disabled: {}, has 3D: {}",
+                    it->first, cPickFormId, pActor->IsDisabled(), pActor->GetNiNode() != nullptr);
+                ++it;
+                continue;
+            }
+
+            // Disable and 3D teardown have completed; rebuild from the pick.
+            pActor->baseForm = pPick;
+            pActor->EnableImpl();
+
+            // Recompute the graph descriptor after changing picks; stale variable indices can cause out-of-bounds writes.
+            pActor->GetExtension()->GraphDescriptorHash = 0;
+
+            // Enable can return before the rebuilt 3D is available to discovery.
+            stage = ReconciliationStage::WaitingFor3D;
+            spdlog::info("Re-enabled conformed leveled actor {:X}, base: {:X}, waiting for 3D", it->first, cPickFormId);
+            ++it;
+            continue;
+        }
+
+        if (!pActor->loadedState && !LeveledNpcSystem::IsUnresolvedLeveledShell(Cast<TESNPC>(pActor->baseForm)))
+        {
+            // Wait for distant actors to load 3D; newer picks replace pending work and disconnects clear it.
+            // Unresolved shells bypass this wait because they need a pick before they can load a model.
+            ++it;
+            continue;
+        }
+
+        // DisableImpl() is asynchronous: it only queues a request to disable this actor.
+        // Wait for the disabled flag and old 3D removal before changing the base.
+        pActor->DisableImpl();
+        stage = ReconciliationStage::WaitingForDisable;
+        ++it;
+    }
 }
 
 void CharacterService::RunLocalUpdates() const noexcept

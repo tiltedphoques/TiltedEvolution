@@ -110,6 +110,11 @@ void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, Charact
         apSpawnRequest->BaseId = characterComponent.BaseId.Id;
     }
 
+    if (characterComponent.LeveledNpcPickId)
+    {
+        apSpawnRequest->LeveledNpcPickId = characterComponent.LeveledNpcPickId.Id;
+    }
+
     const auto* pMovementComponent = aRegistry.try_get<MovementComponent>(aEntity);
     if (pMovementComponent)
     {
@@ -206,8 +211,20 @@ void CharacterService::OnAssignCharacterRequest(const PacketEvent<AssignCharacte
             spdlog::debug("FormId: {:x}:{:x} is already managed", refId.ModId, refId.BaseId);
 
             auto& ownerComponent = view.get<OwnerComponent>(*itor);
+            auto& characterComponent = view.get<CharacterComponent>(*itor);
             const bool isOwner = ownerComponent.GetOwner() == acMessage.pPlayer;
             const bool transferToLeader = !isOwner && CanClaimOwnership(acMessage.pPlayer, *itor, ownerComponent.OwnershipEpoch, OwnershipTransferReason::LeaderAssignment);
+
+            if (!characterComponent.LeveledNpcPickId && message.LeveledNpcPickId != GameId{})
+            {
+                characterComponent.LeveledNpcPickId = FormIdComponent(message.LeveledNpcPickId);
+                spdlog::debug(
+                    "Stored previously unknown leveled NPC pick {:x}:{:x} for FormId {:x}:{:x}",
+                    message.LeveledNpcPickId.ModId,
+                    message.LeveledNpcPickId.BaseId,
+                    refId.ModId,
+                    refId.BaseId);
+            }
 
             AssignCharacterResponse response{};
             response.Cookie = message.Cookie;
@@ -602,6 +619,12 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     characterComponent.ChangeFlags = message.ChangeFlags;
     characterComponent.SaveBuffer = std::move(message.AppearanceBuffer);
     characterComponent.BaseId = FormIdComponent(message.FormId);
+    // Client-authoritative like BaseId; worst case a forged id changes which NPC identity renders.
+    if (message.LeveledNpcPickId != GameId{})
+        characterComponent.LeveledNpcPickId = FormIdComponent(message.LeveledNpcPickId);
+
+    if (characterComponent.LeveledNpcPickId)
+        spdlog::debug("Stored leveled NPC pick {:x}:{:x} for FormId {:x}:{:x}", message.LeveledNpcPickId.ModId, message.LeveledNpcPickId.BaseId, gameId.ModId, gameId.BaseId);
     characterComponent.FaceTints = message.FaceTints;
     characterComponent.FactionsContent = message.FactionsContent;
     characterComponent.SetDead(message.CurrentActorData.IsDead);
@@ -669,6 +692,18 @@ void CharacterService::PopulateAssignmentResponse(const entt::entity aEntity, As
         aResponse.PlayerId = pCharacterComponent->PlayerId;
         aResponse.IsDead = pCharacterComponent->IsDead();
         aResponse.IsWeaponDrawn = pCharacterComponent->IsWeaponDrawn();
+        aResponse.LeveledNpcPickId = pCharacterComponent->LeveledNpcPickId.Id;
+
+        if (pCharacterComponent->LeveledNpcPickId)
+        {
+            spdlog::debug(
+                "Including leveled NPC pick in assignment response for actor {:X}, pick: {:x}:{:x}, owner: {}, epoch: {}",
+                aResponse.ServerId,
+                aResponse.LeveledNpcPickId.ModId,
+                aResponse.LeveledNpcPickId.BaseId,
+                aResponse.Owner,
+                aResponse.OwnershipEpoch);
+        }
     }
 
     if (const auto* pMovementComponent = m_world.try_get<MovementComponent>(aEntity))
@@ -779,6 +814,7 @@ bool CharacterService::TransferOwnership(Player* apPlayer, const entt::entity aE
     notify.OwnerPlayerId = apPlayer->GetId();
     notify.OwnershipEpoch = newEpoch;
     notify.CurrentActorData = BuildActorData(aEntity);
+    notify.LeveledNpcPickId = view.get<CharacterComponent>(*it).LeveledNpcPickId.Id;
 
     ownerComponent.SetOwner(apPlayer);
     ownerComponent.OwnershipEpoch = newEpoch;
