@@ -57,23 +57,6 @@ void MagicService::OnUpdate(const UpdateEvent& acEvent) noexcept
     UpdateRevealOtherPlayersEffect();
 }
 
-// Summoned creatures are replicated by their owning client (see IsPlayerSummon); replaying the
-// summon cast elsewhere spawns a duplicate, unowned creature that fights the real one. Summon spells avoid
-// this via projectile sync, but summon EnchantmentItems (Sanguine Rose, Staff of the Familiar) didn't (#791).
-static bool HasSummonEffect(const MagicItem* apMagicItem) noexcept
-{
-    if (!apMagicItem)
-        return false;
-
-    for (const EffectItem* pEffect : apMagicItem->listOfEffects)
-    {
-        if (pEffect && pEffect->pEffectSetting && pEffect->IsSummonEffect())
-            return true;
-    }
-
-    return false;
-}
-
 void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcept
 {
     if (!m_transport.IsConnected())
@@ -87,7 +70,10 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
 
     TESForm* pMagicForm = TESForm::GetById(acEvent.SpellId);
 
-    if (HasSummonEffect(Cast<MagicItem>(pMagicForm)))
+    // Summoned creatures are replicated by their owning client (see IsPlayerSummon); replaying the
+    // summon cast elsewhere spawns a duplicate, unowned creature that fights the real one. Summon spells avoid
+    // this via projectile sync, but summon EnchantmentItems (Sanguine Rose, Staff of the Familiar) didn't (#791).
+    if (const MagicItem* pMagicItem = Cast<MagicItem>(pMagicForm); pMagicItem && pMagicItem->HasSummonEffect())
     {
         spdlog::debug("{}: not syncing summon cast {:X}, the summoned actor is synced by its owner", __FUNCTION__, acEvent.SpellId);
         return;
@@ -203,8 +189,8 @@ void MagicService::OnNotifySpellCast(const NotifySpellCast& acMessage) const noe
     }
 
     // Never replay a summon locally, whatever the sender decided: the creature arrives as a
-    // replicated actor from its owner (see HasSummonEffect above).
-    if (HasSummonEffect(pSpell))
+    // replicated actor from its owner.
+    if (pSpell->HasSummonEffect())
     {
         spdlog::debug("{}: ignoring remote summon cast {:X} from caster {:X}", __FUNCTION__, pSpell->formID, acMessage.CasterId);
         return;
