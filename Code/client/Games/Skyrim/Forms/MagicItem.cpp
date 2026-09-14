@@ -99,6 +99,17 @@ bool MagicItem::IsBoundWeaponSpell() noexcept
     return false;
 }
 
+bool MagicItem::HasSummonEffect() const noexcept
+{
+    for (const EffectItem* pEffect : listOfEffects)
+    {
+        if (pEffect && pEffect->pEffectSetting && pEffect->IsSummonEffect())
+            return true;
+    }
+
+    return false;
+}
+
 EffectItem* MagicItem::GetEffect(const uint32_t aEffectId) noexcept
 {
     for (EffectItem* pEffect : listOfEffects)
