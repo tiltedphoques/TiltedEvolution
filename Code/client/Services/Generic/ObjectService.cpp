@@ -1,4 +1,5 @@
 #include <Services/ObjectService.h>
+#include <Systems/ObjectSystem.h>
 
 #include <World.h>
 #include <Events/DisconnectedEvent.h>
@@ -16,6 +17,7 @@
 #include <Messages/NotifyLockChange.h>
 #include <Messages/ScriptAnimationRequest.h>
 #include <Messages/NotifyScriptAnimation.h>
+#include <Messages/NotifyRemoveObjects.h>
 
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
@@ -35,6 +37,7 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_lockChangeConnection = aDispatcher.sink<LockChangeEvent>().connect<&ObjectService::OnLockChange>(this);
     m_lockChangeNotifyConnection = aDispatcher.sink<NotifyLockChange>().connect<&ObjectService::OnLockChangeNotify>(this);
     m_assignObjectConnection = aDispatcher.sink<AssignObjectsResponse>().connect<&ObjectService::OnAssignObjectsResponse>(this);
+    m_removeObjectsConnection = aDispatcher.sink<NotifyRemoveObjects>().connect<&ObjectService::OnRemoveObjects>(this);
     m_scriptAnimationConnection = aDispatcher.sink<ScriptAnimationEvent>().connect<&ObjectService::OnScriptAnimationEvent>(this);
     m_scriptAnimationNotifyConnection = aDispatcher.sink<NotifyScriptAnimation>().connect<&ObjectService::OnNotifyScriptAnimation>(this);
 
@@ -78,7 +81,7 @@ bool ShouldSyncObject(const TESObjectREFR* apObject) noexcept
 
 void ObjectService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
-    // TODO(cosideci): clear object components
+    ObjectSystem::Clear(m_world);
 }
 
 void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
@@ -196,22 +199,16 @@ void ObjectService::OnAssignObjectsResponse(const AssignObjectsResponse& acMessa
     }
 }
 
+void ObjectService::OnRemoveObjects(const NotifyRemoveObjects& acMessage) noexcept
+{
+    // Only remove ECS bindings; the corresponding Skyrim references still exist.
+    ObjectSystem::Remove(m_world, acMessage.ServerIds);
+}
+
 entt::entity ObjectService::CreateObjectEntity(const uint32_t acFormId, const uint32_t acServerId) noexcept
 {
-    const auto view = m_world.view<FormIdComponent, ObjectComponent>();
-
-    auto it = std::find_if(view.begin(), view.end(), [acServerId, view](entt::entity entity) { return view.get<ObjectComponent>(entity).Id == acServerId; });
-
-    if (it != view.end())
-        return *it;
-
-    entt::entity entity = m_world.create();
-    spdlog::info("Created object entity, server id: {:X}, form id {:X}", acServerId, acFormId);
-
-    m_world.emplace<FormIdComponent>(entity, acFormId);
-    m_world.emplace<ObjectComponent>(entity, acServerId);
-
-    return entity;
+    spdlog::debug("Assigning object form id {:X} to server id {:X}", acFormId, acServerId);
+    return ObjectSystem::Setup(m_world, acFormId, acServerId);
 }
 
 void ObjectService::OnActivate(const ActivateEvent& acEvent) noexcept
