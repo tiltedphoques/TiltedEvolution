@@ -5,6 +5,7 @@ struct TESObjectCELL;
 struct TESWorldSpace;
 struct NiPoint3;
 struct TESForm;
+struct TESFaction;
 struct Actor;
 struct ImageSpaceModifierInstance;
 
@@ -109,12 +110,17 @@ struct ModManager
     Mod* GetByName(const char* acpName) const noexcept;
     TESObjectCELL* GetCellFromCoordinates(int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept;
 
-    uint8_t pad0[0x748];
+    // Form arrays start at 0x10 and are indexed by FormType, 0x18 bytes each.
+    uint8_t pad0[0x118];
+    GameArray<TESFaction*> factions;
+    uint8_t pad130[0x748 - 0x130];
     GameArray<TESQuest*> quests;
     uint8_t pad760[0xD60 - 0x760];
     GameList<Mod> mods;
 };
 
+static_assert(offsetof(ModManager, factions) == 0x118);
+static_assert(offsetof(ModManager, quests) == 0x748);
 static_assert(offsetof(ModManager, mods) == 0xD60);
 
 struct Setting
