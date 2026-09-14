@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { PartyInvite } from '../models/party-invite';
 import { Player } from '../models/player';
 import { PlayerList } from '../models/player-list';
 import { PlayerManagerTab } from '../models/player-manager-tab.enum';
@@ -22,6 +23,17 @@ export class PlayerListService implements OnDestroy {
   private memberKickedSubscription: Subscription;
   private cellSubscription: Subscription;
   private partyInviteReceivedSubscription: Subscription;
+  private partyInfoSubscription: Subscription;
+  private partyLeftSubscription: Subscription;
+
+  private readonly inviteCooldownMs = 3000;
+  private readonly sentInviteTimers = new Map<number, number>();
+  private readonly receivedInvites = new Map<
+    number,
+    { expiresAt: number; timer: number }
+  >();
+  private partyLeaderId: number | undefined;
+  private partyMemberIds: number[] = [];
 
   private isConnect = false;
 
@@ -38,15 +50,21 @@ export class PlayerListService implements OnDestroy {
     this.onMemberKicked();
     this.onCellChange();
     this.onPartyInviteReceived();
+    this.onPartyInfo();
+    this.onPartyLeft();
   }
 
   ngOnDestroy() {
+    this.resetPartyInvitations();
     this.debugSubscription.unsubscribe();
     this.connectionSubscription.unsubscribe();
     this.playerConnectedSubscription.unsubscribe();
     this.playerDisconnectedSubscription.unsubscribe();
+    this.memberKickedSubscription.unsubscribe();
     this.cellSubscription.unsubscribe();
     this.partyInviteReceivedSubscription.unsubscribe();
+    this.partyInfoSubscription.unsubscribe();
+    this.partyLeftSubscription.unsubscribe();
   }
 
   private onDebug() {
@@ -62,6 +80,7 @@ export class PlayerListService implements OnDestroy {
           return;
         }
         this.isConnect = connect;
+        this.resetPartyState();
         this.playerList.next(undefined);
 
         this.updatePlayerList();
@@ -85,6 +104,8 @@ export class PlayerListService implements OnDestroy {
     this.playerDisconnectedSubscription =
       this.clientService.playerDisconnectedChange.subscribe(
         (playerDisco: Player) => {
+          this.clearSentInvite(playerDisco.id);
+          this.clearReceivedInvite(playerDisco.id);
           const playerList = this.getPlayerList();
 
           if (playerList) {
@@ -127,20 +148,67 @@ export class PlayerListService implements OnDestroy {
   private onPartyInviteReceived() {
     this.partyInviteReceivedSubscription =
       this.clientService.partyInviteReceivedChange.subscribe(
-        async (inviterId: number) => {
-          const playerList = this.getPlayerList();
-
-          if (playerList) {
-            const invitingPlayer = this.getPlayerById(inviterId);
-            invitingPlayer.hasInvitedLocalPlayer = true;
-            this.playerList.next(playerList);
-            this.popupNotificationService.addPartyInvite(
-              invitingPlayer.name,
-              () => this.acceptPartyInvite(inviterId),
-            );
+        ({ inviterId, expiresInMs }: PartyInvite) => {
+          const invitingPlayer = this.getPlayerById(inviterId);
+          if (
+            !this.isConnect ||
+            this.partyLeaderId !== undefined ||
+            !invitingPlayer ||
+            inviterId === this.clientService.localPlayerId
+          ) {
+            return;
           }
+
+          this.clearReceivedInvite(inviterId);
+          if (!Number.isFinite(expiresInMs) || expiresInMs <= 0) {
+            this.updatePlayerList();
+            return;
+          }
+
+          const invitation = {
+            expiresAt: performance.now() + expiresInMs,
+            timer: setTimeout(() => {
+              this.clearReceivedInvite(inviterId);
+              this.updatePlayerList();
+            }, expiresInMs),
+          };
+          this.receivedInvites.set(inviterId, invitation);
+          invitingPlayer.hasInvitedLocalPlayer = true;
+          this.updatePlayerList();
+          this.popupNotificationService.addPartyInvite(
+            invitingPlayer.name,
+            () => {
+              // A popup for a replaced invite must not accept the newer one.
+              if (this.receivedInvites.get(inviterId) === invitation) {
+                this.acceptPartyInvite(inviterId);
+              }
+            },
+          );
         },
       );
+  }
+
+  private onPartyInfo() {
+    this.partyInfoSubscription = this.clientService.partyInfoChange.subscribe(
+      partyInfo => {
+        if (this.partyLeaderId !== partyInfo.leaderId) {
+          this.resetHasBeenInvitedFlags();
+        }
+        this.partyLeaderId = partyInfo.leaderId;
+        this.partyMemberIds = partyInfo.playerIds;
+        this.clearReceivedInvites();
+        for (const playerId of partyInfo.playerIds) {
+          this.clearSentInvite(playerId);
+        }
+        this.updatePlayerList();
+      },
+    );
+  }
+
+  private onPartyLeft() {
+    this.partyLeftSubscription = this.clientService.partyLeftChange.subscribe(
+      () => this.resetPartyState(),
+    );
   }
 
   public getLocalPlayer(): Player {
@@ -169,27 +237,51 @@ export class PlayerListService implements OnDestroy {
   }
 
   public sendPartyInvite(inviteeId: number) {
-    const playerList = this.getPlayerList();
-
-    if (playerList) {
-      this.getPlayerById(inviteeId).hasBeenInvited = true;
-
-      this.updatePlayerList();
-
-      this.clientService.createPartyInvite(inviteeId);
+    const player = this.getPlayerById(inviteeId);
+    if (
+      !this.isConnect ||
+      !player ||
+      this.partyLeaderId !== this.clientService.localPlayerId ||
+      inviteeId === this.clientService.localPlayerId ||
+      this.partyMemberIds.includes(inviteeId) ||
+      this.sentInviteTimers.has(inviteeId)
+    ) {
+      return;
     }
+
+    player.hasBeenInvited = true;
+    this.sentInviteTimers.set(
+      inviteeId,
+      setTimeout(() => {
+        this.clearSentInvite(inviteeId);
+        this.updatePlayerList();
+      }, this.inviteCooldownMs),
+    );
+    this.updatePlayerList();
+    this.clientService.createPartyInvite(inviteeId);
   }
 
   public acceptPartyInvite(inviterId: number) {
-    const playerList = this.getPlayerList();
-
-    if (playerList) {
-      this.getPlayerById(inviterId).hasInvitedLocalPlayer = false;
-
-      this.clientService.acceptPartyInvite(inviterId);
-
-      this.playerList.next(playerList);
+    const invitation = this.receivedInvites.get(inviterId);
+    if (
+      !this.isConnect ||
+      this.partyLeaderId !== undefined ||
+      !this.getPlayerById(inviterId) ||
+      !invitation
+    ) {
+      return;
     }
+    if (performance.now() >= invitation.expiresAt) {
+      this.clearReceivedInvite(inviterId);
+      this.updatePlayerList();
+      return;
+    }
+
+    // The server can reject this invite. Keep other invitations until partyInfo
+    // confirms a successful join, and consume this one before the bridge call.
+    this.clearReceivedInvite(inviterId);
+    this.updatePlayerList();
+    this.clientService.acceptPartyInvite(inviterId);
   }
 
   public getPlayerById(playerId: number): Player {
@@ -197,7 +289,11 @@ export class PlayerListService implements OnDestroy {
   }
 
   public resetHasBeenInvitedFlags() {
-    const playerList = this.getPlayerList();
+    for (const timer of this.sentInviteTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.sentInviteTimers.clear();
+    const playerList = this.playerList.getValue();
 
     if (playerList) {
       for (const player of playerList.players) {
@@ -205,6 +301,46 @@ export class PlayerListService implements OnDestroy {
       }
 
       this.updatePlayerList();
+    }
+  }
+
+  public resetPartyInvitations() {
+    this.resetHasBeenInvitedFlags();
+    this.clearReceivedInvites();
+    this.updatePlayerList();
+  }
+
+  public resetPartyState() {
+    this.partyLeaderId = undefined;
+    this.partyMemberIds = [];
+    this.resetPartyInvitations();
+  }
+
+  private clearSentInvite(playerId: number) {
+    clearTimeout(this.sentInviteTimers.get(playerId));
+    this.sentInviteTimers.delete(playerId);
+    const player = this.playerList
+      .getValue()
+      ?.players.find(player => player.id === playerId);
+    if (player) {
+      player.hasBeenInvited = false;
+    }
+  }
+
+  private clearReceivedInvite(playerId: number) {
+    clearTimeout(this.receivedInvites.get(playerId)?.timer);
+    this.receivedInvites.delete(playerId);
+    const player = this.playerList
+      .getValue()
+      ?.players.find(player => player.id === playerId);
+    if (player) {
+      player.hasInvitedLocalPlayer = false;
+    }
+  }
+
+  private clearReceivedInvites() {
+    for (const playerId of this.receivedInvites.keys()) {
+      this.clearReceivedInvite(playerId);
     }
   }
 }
