@@ -177,6 +177,8 @@ const Set<std::string_view> AnimationEventLists::kIgnore = {
     {"idleChairVar2"},
     {"idleChairArmsCrossedVar1"},
     {"idleChairArmsCrossedVar2"},
+    // See `Actor::FixVampireLordModel`
+    {"LevitationToggle"},
     // Weapon drawing is handled separately in CharacterService
     {"WeapEquip"},
     {"WeapSoloEquip"},

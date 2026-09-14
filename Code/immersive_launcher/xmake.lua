@@ -5,15 +5,6 @@ local function build_launcher()
     set_group("Client")
     set_symbols("debug", "hidden")
 
-    after_install(function(target)
-        local linkdir = target:pkg("sentry-native"):get("linkdirs")
-        if istable(linkdir) then
-            linkdir = linkdir[1] -- Yes lua index starts at 1
-        end
-        local bindir = path.join(linkdir, "..", "bin")
-        os.cp(bindir, target:installdir())
-    end)
-
     add_ldflags(
         "/FORCE:MULTIPLE",
         "/IGNORE:4254,4006",
@@ -38,8 +29,7 @@ local function build_launcher()
         "TiltedHooks",
         "TiltedUi",
         "ImGuiImpl",
-        "CommonLib",
-        "CrashHandler")
+        "CommonLib")
     add_links("ntdll_x64")
     add_linkdirs(".")
     add_syslinks(
@@ -65,8 +55,7 @@ local function build_launcher()
         "cryptopp",
         "glm",
         "cef",
-        "mem",
-        "sentry-native")
+        "mem")
 end
 
 target("SkyrimImmersiveLauncher")

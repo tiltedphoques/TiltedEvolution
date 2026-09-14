@@ -13,7 +13,7 @@ void BindPlayer(sol::state_view aState)
     playerType["GetId"] = &Player::GetId;
     playerType["GetConnectionId"] = &Player::GetConnectionId;
     playerType["GetCharacter"] = &Player::GetCharacter;
-    playerType["GetParty"] = &Player::GetParty;
+    playerType["GetParty"] = [](Player& aSelf) -> PartyComponent& { return aSelf.GetParty(); };
     playerType["GetUsername"] = &Player::GetUsername;
     playerType["GetEndPoint"] = &Player::GetEndPoint;
     playerType["GetDiscordId"] = &Player::GetDiscordId;

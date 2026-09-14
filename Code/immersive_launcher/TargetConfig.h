@@ -10,20 +10,14 @@
 
 struct TargetConfig
 {
-    const wchar_t* dllClientName;
     const wchar_t* fullGameName;
     uint32_t steamAppId;
     uint32_t exeLoadSz;
-    // Needs to be kept up to date.
-    uint32_t exeDiskSz;
 };
 
 // clang-format off
 
-static constexpr TargetConfig CurrentTarget{
-    L"SkyrimTogether.dll", 
-    L"Skyrim Special Edition", 
-    489830, 0x40000000, 35410264};
+static constexpr TargetConfig CurrentTarget{ L"Skyrim Special Edition", 489830, 0x40000000 };
 #define TARGET_NAME L"SkyrimSE"
 #define TARGET_NAME_A "SkyrimSE"
 #define PRODUCT_NAME L"Skyrim Together"

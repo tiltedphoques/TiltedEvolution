@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Message.h"
-#include "Structs/ActorData.h"
 
 struct RequestOwnershipClaim final : ClientMessage
 {
@@ -17,8 +16,8 @@ struct RequestOwnershipClaim final : ClientMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const RequestOwnershipClaim& achRhs) const noexcept { return ServerId == achRhs.ServerId && GetOpcode() == achRhs.GetOpcode(); }
+    bool operator==(const RequestOwnershipClaim& achRhs) const noexcept { return ServerId == achRhs.ServerId && ExpectedOwnershipEpoch == achRhs.ExpectedOwnershipEpoch && GetOpcode() == achRhs.GetOpcode(); }
 
     uint32_t ServerId{};
-    ActorData NewActorData{};
+    uint32_t ExpectedOwnershipEpoch{};
 };

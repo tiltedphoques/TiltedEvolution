@@ -25,6 +25,8 @@ public:
 
     const Vector<ActionEvent>& GetActions() const noexcept { return m_actions; };
 
+    void Clear() noexcept;
+
 private:
     // Returns true if clients should reset the animation graph of the Actor before replaying
     bool RefineReplayCache() noexcept;

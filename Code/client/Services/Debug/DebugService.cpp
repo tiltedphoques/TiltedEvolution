@@ -39,6 +39,8 @@
 
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>
+#include <Forms/ImageSpaceModifierInstanceForm.h>
+#include <NetImmerse/ImageSpaceModifierInstance.h>
 #include <Games/TES.h>
 
 #include <AI/AIProcess.h>
@@ -288,6 +290,21 @@ void DebugService::OnDraw() noexcept
                     if (pRefr && pRefr->GetNiNode())
                         pRefr->StopCombat();
                 }
+            }
+        }
+
+        if (ImGui::Button("Clear stuck screen effects"))
+        {
+            Vector<ImageSpaceModifierInstance*> modifiers;
+            for (const auto& modifier : TES::Get()->activeImageSpaceModifiers)
+            {
+                if (modifier.object)
+                    modifiers.push_back(modifier.object);
+            }
+
+            for (auto* pModifier : modifiers)
+            {
+                ImageSpaceModifierInstance::Stop(pModifier);
             }
         }
         ImGui::EndMenu();

@@ -18,7 +18,7 @@ const uiStore = createStore(
   { name: 'auth' },
   withProps<UiProps>({
     view: null,
-    playerManagerTab: PlayerManagerTab.PLAYER_LIST,
+    playerManagerTab: PlayerManagerTab.PARTY_MENU,
     connectIp: null,
     connectPort: null,
     connectName: null,

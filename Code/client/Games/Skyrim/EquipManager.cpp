@@ -46,6 +46,20 @@ struct ShoutEquipData
 };
 static_assert(sizeof(MagicEquipData) == 0x10);
 
+namespace
+{
+void QueueEquipmentChange(Actor* apActor, EquipmentChangeEvent aEvent)
+{
+    const auto ownershipToken = Utils::GetLocalOwnershipToken(apActor->formID);
+    if (!ownershipToken)
+        return;
+
+    aEvent.ServerId = ownershipToken->ServerId;
+    aEvent.OwnershipEpoch = ownershipToken->OwnershipEpoch;
+    World::Get().GetRunner().Trigger(std::move(aEvent));
+}
+}
+
 TP_THIS_FUNCTION(TEquip, void*, EquipManager, Actor* apActor, TESForm* apItem, EquipData* apData);
 TP_THIS_FUNCTION(TUnEquip, void*, EquipManager, Actor* apActor, TESForm* apItem, EquipData* apData);
 TP_THIS_FUNCTION(TEquipSpell, void*, EquipManager, Actor* apActor, TESForm* apSpell, MagicEquipData* apData);
@@ -166,7 +180,7 @@ void* TP_MAKE_THISCALL(EquipHook, EquipManager, Actor* apActor, TESForm* apItem,
         evt.EquipSlotId = apData->pSlot ? apData->pSlot->formID : 0;
         evt.IsAmmo = apItem->formType == FormType::Ammo;
 
-        World::Get().GetRunner().Trigger(evt);
+        QueueEquipmentChange(apActor, std::move(evt));
     }
 
     ScopedUnequipOverride _;
@@ -199,7 +213,7 @@ void* TP_MAKE_THISCALL(UnEquipHook, EquipManager, Actor* apActor, TESForm* apIte
         evt.Unequip = true;
         evt.IsAmmo = apItem->formType == FormType::Ammo;
 
-        World::Get().GetRunner().Trigger(evt);
+        QueueEquipmentChange(apActor, std::move(evt));
     }
 
     spdlog::debug("UnEquipHook, actor: {:X}", apActor->formID);
@@ -224,7 +238,7 @@ void* TP_MAKE_THISCALL(EquipSpellHook, EquipManager, Actor* apActor, TESForm* ap
         evt.EquipSlotId = apData->pEquipSlot->formID;
         evt.IsSpell = true;
 
-        World::Get().GetRunner().Trigger(evt);
+        QueueEquipmentChange(apActor, std::move(evt));
     }
 
     ScopedUnequipOverride _;
@@ -250,7 +264,7 @@ void* TP_MAKE_THISCALL(UnEquipSpellHook, EquipManager, Actor* apActor, TESForm* 
         evt.Unequip = true;
         evt.IsSpell = true;
 
-        World::Get().GetRunner().Trigger(evt);
+        QueueEquipmentChange(apActor, std::move(evt));
     }
 
     return TiltedPhoques::ThisCall(RealUnEquipSpell, apThis, apActor, apSpell, apData);
@@ -273,7 +287,7 @@ void* TP_MAKE_THISCALL(EquipShoutHook, EquipManager, Actor* apActor, TESForm* ap
         evt.ItemId = apShout->formID;
         evt.IsShout = true;
 
-        World::Get().GetRunner().Trigger(evt);
+        QueueEquipmentChange(apActor, std::move(evt));
     }
 
     ScopedUnequipOverride _;
@@ -299,7 +313,7 @@ void* TP_MAKE_THISCALL(UnEquipShoutHook, EquipManager, Actor* apActor, TESForm* 
         evt.Unequip = true;
         evt.IsShout = true;
 
-        World::Get().GetRunner().Trigger(evt);
+        QueueEquipmentChange(apActor, std::move(evt));
     }
 
     return TiltedPhoques::ThisCall(RealUnEquipShout, apThis, apActor, apShout, apData);

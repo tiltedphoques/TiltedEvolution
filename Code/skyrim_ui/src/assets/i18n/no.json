@@ -167,7 +167,7 @@
         "NO_REASON": "Serveren avviste tilkoblingen.",
         "SERVER_FULL": "Denne serveren er full.",
         "BAD_UGRIDSTOLOAD": "Det ser ut som Skyrim.ini har en feil verdi for 'uGridsToLoad'. DETTE ER EN VELDIG DÅRLIG IDE, og vil mest sannsynling knekke denne modden. Sett denne tilbake til (5), eller fjern Skyrim.ini filen and kjør Skyrim vanilla en gang for en ny fil. Instillingen 'uExterior Cell Buffer' og 'uInterior Cell Buffer' bør også bli værende på standardinnstillingen. Hvis du trenger hjelp med dette kan du spør på Discord, Reddit eller wikien.",
-        "NON_DEFAULT_INSTALL": "Det ser ut som innstallasjonen din ikke er vanilla. Creation Club mods (inkluderte de fra Anniversary oppdateringen) eller andre mods bør unngås .\nVi anbefaller IKKE å spille med mods.\nDu bør avinstallere og skru av disse (instruksjoner kan finnes på wikien).\n\nFor den beste opplevelsen bør du ha følgene mods:<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp</strong>"
+        "NON_DEFAULT_INSTALL": "Det ser ut som innstallasjonen din ikke er vanilla. Creation Club mods (inkluderte de fra Anniversary oppdateringen) eller andre mods bør unngås .\nVi anbefaller IKKE å spille med mods.\nDu bør avinstallere og skru av disse (instruksjoner kan finnes på wikien).\n\nFor den beste opplevelsen bør du ha følgene mods:<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp\nSkyrimTogetherQuestPatches.esp</strong>"
       }
     },
     "PLAYER_LIST": {

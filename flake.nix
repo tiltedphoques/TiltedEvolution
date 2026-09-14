@@ -1,27 +1,35 @@
 {
-  description = "Tilted C++ development environment";
+  description = "Skyrim Together Reborn linux server build environment";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
-  };
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-        };
-      in
-      {
-        devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
+  outputs = { self, nixpkgs }:
+    let
+      systems = [ "x86_64-linux" "aarch64-linux" ];
+      forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
+    in
+    {
+      devShells = forAllSystems (pkgs: {
+        default = pkgs.mkShell {
+          packages = with pkgs; [
+            # gcc 15 rejects sol2 v3.3.0, which xmake.lua pins
             gcc14
             gdb
-            libclang
-            cmake
             xmake
+
+            # xmake builds most of its dependencies from source
+            cmake
             gnumake
+            ninja
+            pkg-config
+            perl
+            python3
+
+            # BuildInfo.h is generated from the git history
+            git
+
+            curl
+            unzip
           ];
 
           shellHook = ''
@@ -37,8 +45,10 @@
             unset CFLAGS
             unset CXXFLAGS
             unset LDFLAGS
-            echo "C++ development environment loaded"
+
+            echo "Linux server build environment loaded, run: xmake config -m releasedbg && xmake"
           '';
         };
       });
+    };
 }

@@ -81,6 +81,7 @@ struct CharacterComponent
     uint32_t ChangeFlags{0};
     String SaveBuffer{};
     FormIdComponent BaseId{};
+    FormIdComponent LeveledNpcPickId{};
     Tints FaceTints{};
     Factions FactionsContent{};
     uint16_t Flags{};

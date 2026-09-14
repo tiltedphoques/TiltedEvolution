@@ -17,12 +17,30 @@
   }
 }
 
-.save-password {
+.password-options {
   width: 100%;
   display: flex;
-  justify-items: start;
   align-items: center;
-  gap: 0.5em;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+
+  span + span {
+    margin-left: 1.5em;
+  }
+
+  input[type='checkbox'] {
+    flex: 0 0 $scrollbar;
+    min-width: $scrollbar;
+    min-height: $scrollbar;
+  }
+
+  label {
+    white-space: nowrap;
+  }
 }
 
 .instructions > * {
@@ -33,6 +51,10 @@
 
 input {
   width: 100%;
+
+  &[type='password'] {
+    border: 3px solid #808081;
+  }
 }
 
 .warning {

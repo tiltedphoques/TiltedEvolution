@@ -26,6 +26,7 @@ export class ConnectComponent implements OnDestroy, AfterViewInit {
   public address = '';
   public password = '';
   public savePassword = false;
+  public hidePassword = true;
 
   public connecting = false;
 

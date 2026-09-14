@@ -4,6 +4,7 @@
 void RequestEquipmentChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
     Serialization::WriteVarInt(aWriter, ServerId);
+    Serialization::WriteVarInt(aWriter, OwnershipEpoch);
     ItemId.Serialize(aWriter);
     EquipSlotId.Serialize(aWriter);
     Serialization::WriteVarInt(aWriter, Count);
@@ -19,6 +20,7 @@ void RequestEquipmentChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     ClientMessage::DeserializeRaw(aReader);
 
     ServerId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    OwnershipEpoch = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     ItemId.Deserialize(aReader);
     EquipSlotId.Deserialize(aReader);
     Count = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;

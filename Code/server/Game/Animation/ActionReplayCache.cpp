@@ -94,3 +94,8 @@ std::optional<std::string_view> ActionReplayCache::FindInstantCounterpartForActi
     }
     return std::nullopt;
 }
+
+void ActionReplayCache::Clear() noexcept
+{
+    m_actions.clear();
+}

@@ -158,6 +158,73 @@ template <class T> struct GameList
     Iterator end() { return Iterator(nullptr); }
 };
 
+// NOTE: `GameValueList` is a corrected version of `GameList` that matches the game's actual memory layout.
+// GameList stores T* (pointer to value) in each entry, but the game embeds
+// T directly (see CommonLibSSE's `BSSimpleList`, which is actually implemented correctly).
+// This mismatch causes silent data misinterpretation: iterators return T* when the bytes are actually T.
+// TODO: Migrate from GameList to this (and rename)
+template <class T> struct GameValueList
+{
+    struct Entry
+    {
+        T data;
+        Entry* next;
+    };
+
+    Entry entry{};
+
+    inline bool Empty() const noexcept
+    {
+        return !entry.next && !static_cast<bool>(entry.data);
+    }
+
+    inline size_t Size() const noexcept
+    {
+        if (Empty())
+            return 0;
+
+        size_t size = 0;
+        for (const Entry* current = &entry; current; current = current->next)
+            size++;
+
+        return size;
+    }
+
+    // Range for loop compatibility
+    struct Iterator
+    {
+        Iterator(Entry* apEntry) : m_pEntry(apEntry)
+        {
+        }
+        Iterator& operator++()
+        {
+            m_pEntry = m_pEntry->next;
+            return *this;
+        }
+        bool operator!=(const Iterator& acRhs) const
+        {
+            return m_pEntry != acRhs.m_pEntry;
+        }
+        T& operator*() const
+        {
+            return m_pEntry->data;
+        }
+
+      private:
+        Entry* m_pEntry;
+    };
+
+    Iterator begin()
+    {
+        return Empty() ? end() : Iterator(&entry);
+    }
+
+    Iterator end()
+    {
+        return Iterator(nullptr);
+    }
+};
+
 #if TP_PLATFORM_64
 static_assert(offsetof(GameArray<int>, length) == 0x10);
 static_assert(sizeof(GameArray<int>) == 0x18);

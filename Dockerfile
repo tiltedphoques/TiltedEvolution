@@ -11,6 +11,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV XMAKE_ROOT=y
 SHELL ["/bin/bash", "-c"]
 
+# Passed from the workflow; needed so that xmake always picks github.com as host
+ARG GITHUB_ACTIONS
+
 # Get packages and xmake
 
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential curl pkg-config git ca-certificates unzip libssl-dev && \
@@ -22,18 +25,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 WORKDIR /src
 COPY . /src
 
-RUN source ~/.xmake/profile && \
-    xmake config -y -m release && xmake -y && xmake install -y -o package
+RUN --mount=type=cache,target=/root/.xmake/packages \
+    --mount=type=cache,target=/root/.xmake/repositories \
+    source ~/.xmake/profile && \
+    xmake config -y -m release && \
+    xmake -y && \
+    xmake install -y -o package
 
-# Actual server runtime image; distroless for small footprint
+# Actual server runtime image; (todo: maybe reconsider 'distroless' in the future)
 
-FROM gcr.io/distroless/cc-debian12 AS runtime
+FROM debian:12-slim AS runtime
 
 WORKDIR /st-server
 
 COPY --from=builder \
     /src/package/lib/libSTServer.so \
-    /src/package/bin/crashpad_handler \
     /src/package/bin/SkyrimTogetherServer \
     /st-server/
 

@@ -7,8 +7,9 @@
 struct Player;
 struct OwnerComponent
 {
-    OwnerComponent(Player* apPlayer)
+    OwnerComponent(Player* apPlayer, uint32_t aOwnershipEpoch = 1)
         : pOwner(apPlayer)
+        , OwnershipEpoch(aOwnershipEpoch)
     {
     }
 
@@ -16,6 +17,12 @@ struct OwnerComponent
 
     void SetOwner(Player* apPlayer) { pOwner = apPlayer; }
 
+    bool IsCurrentOwner(const Player* apPlayer, uint32_t aOwnershipEpoch) const noexcept
+    {
+        return apPlayer && GetOwner() == apPlayer && aOwnershipEpoch != 0 && OwnershipEpoch == aOwnershipEpoch;
+    }
+
     Player* pOwner;
+    uint32_t OwnershipEpoch;
     Vector<const Player*> InvalidOwners{};
 };

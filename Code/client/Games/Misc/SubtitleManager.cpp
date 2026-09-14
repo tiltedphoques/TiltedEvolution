@@ -1,4 +1,5 @@
 #include "SubtitleManager.h"
+#include "MenuTopicManager.h"
 
 #include <Events/SubtitleEvent.h>
 
@@ -34,7 +35,9 @@ void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeake
     // spdlog::debug("Subtitle for actor {:X} (bool {}):\n\t{}", apSpeaker ? apSpeaker->formID : 0, aIsInDialogue, apSubtitleText);
 
     Actor* pActor = Cast<Actor>(apSpeaker);
-    if (apSubtitleText && pActor && pActor->GetExtension()->IsLocal() && !pActor->GetExtension()->IsPlayer())
+    const bool isNpc = pActor && !pActor->GetExtension()->IsPlayer();
+    const bool shouldSyncSubtitle = apSubtitleText && isNpc && (pActor->GetExtension()->IsLocal() || MenuTopicManager::IsPlayerDialogueSpeaker(pActor));
+    if (shouldSyncSubtitle)
         World::Get().GetRunner().Trigger(SubtitleEvent(apSpeaker->formID, apSubtitleText));
 
     TiltedPhoques::ThisCall(RealShowSubtitle, apThis, apSpeaker, apSubtitleText, aIsInDialogue);

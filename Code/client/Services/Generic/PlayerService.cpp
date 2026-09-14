@@ -50,10 +50,10 @@ PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher, Trans
     m_partyLeftConnection = aDispatcher.sink<PartyLeftEvent>().connect<&PlayerService::OnPartyLeftEvent>(this);
 }
 
-void PlayerService::OnUpdate(const UpdateEvent& acEvent) noexcept
+void PlayerService::OnUpdate(const UpdateEvent&) noexcept
 {
-    RunRespawnUpdates(acEvent.Delta);
-    RunPostDeathUpdates(acEvent.Delta);
+    RunRespawnUpdates();
+    RunPostDeathUpdates();
     RunDifficultyUpdates();
     RunLevelUpdates();
     RunBeastFormDetection();
@@ -193,7 +193,7 @@ void PlayerService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
     }
 }
 
-void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
+void PlayerService::RunRespawnUpdates() noexcept
 {
     if (!m_isDeathSystemEnabled)
         return;
@@ -214,7 +214,7 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
     if (!s_startTimer)
     {
         s_startTimer = true;
-        m_respawnTimer = 5.0;
+        m_respawnDeadline = std::chrono::steady_clock::now() + 5s;
         FadeOutGame(true, true, 3.0f, true, 2.0f);
 
         // If a player dies not by its health reaching 0, getting it up from its bleedout state isn't possible
@@ -225,14 +225,10 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
         pPlayer->PayCrimeGoldToAllFactions();
     }
 
-    m_respawnTimer -= acDeltaTime;
-
-    if (m_respawnTimer <= 0.0)
+    const auto cNow = std::chrono::steady_clock::now();
+    if (cNow >= m_respawnDeadline)
     {
         pPlayer->RespawnPlayer();
-
-        m_knockdownTimer = 1.5;
-        m_knockdownStart = true;
 
         m_transport.Send(PlayerRespawnRequest());
 
@@ -248,45 +244,42 @@ void PlayerService::RunRespawnUpdates(const double acDeltaTime) noexcept
         pSpell = TESForm::GetById(m_cachedPowerId);
         if (pSpell)
             pEquipManager->EquipShout(pPlayer, pSpell);
+
+        m_knockdownDeadline = std::chrono::steady_clock::now() + 1500ms;
+        m_knockdownStart = true;
     }
 }
 
 // Doesn't seem to respawn quite yet
-void PlayerService::RunPostDeathUpdates(const double acDeltaTime) noexcept
+void PlayerService::RunPostDeathUpdates() noexcept
 {
     if (!m_isDeathSystemEnabled)
         return;
 
     // If a player dies in ragdoll, it gets stuck.
     // This code ragdolls the player again upon respawning.
-    // It also makes the player invincible for 5 seconds.
-    if (m_knockdownStart)
+    // It also makes the player invincible for 10 seconds.
+    const auto cNow = std::chrono::steady_clock::now();
+    if (m_knockdownStart && cNow >= m_knockdownDeadline)
     {
-        m_knockdownTimer -= acDeltaTime;
-        if (m_knockdownTimer <= 0.0)
-        {
-            PlayerCharacter::SetGodMode(true);
-            m_godmodeStart = true;
-            m_godmodeTimer = 10.0;
+        PlayerCharacter* pPlayer = PlayerCharacter::Get();
 
-            PlayerCharacter* pPlayer = PlayerCharacter::Get();
-            pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
+        PlayerCharacter::SetGodMode(true);
+        m_godmodeStart = true;
 
-            FadeOutGame(false, true, 0.5f, true, 2.f);
+        pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
 
-            m_knockdownStart = false;
-        }
+        FadeOutGame(false, true, 0.5f, true, 2.f);
+
+        m_godmodeDeadline = std::chrono::steady_clock::now() + 10s;
+        m_knockdownStart = false;
     }
 
-    if (m_godmodeStart)
+    if (m_godmodeStart && cNow >= m_godmodeDeadline)
     {
-        m_godmodeTimer -= acDeltaTime;
-        if (m_godmodeTimer <= 0.0)
-        {
-            PlayerCharacter::SetGodMode(false);
+        PlayerCharacter::SetGodMode(false);
 
-            m_godmodeStart = false;
-        }
+        m_godmodeStart = false;
     }
 }
 
@@ -340,7 +333,7 @@ void PlayerService::RunBeastFormDetection() const noexcept
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     if (!pPlayer->race)
         return;
-    
+
     if (pPlayer->race->formID == lastRaceFormID)
         return;
 

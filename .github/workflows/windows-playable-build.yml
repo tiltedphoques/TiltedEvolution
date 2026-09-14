@@ -8,47 +8,12 @@ on:
   push:
     branches:
       - master
-    tags:
-      - 'v[0-9]+\.[0-9]+\.[0-9]+'
+  workflow_call:
 
 jobs:
   build-windows:
     if: ${{ github.repository_owner == 'tiltedphoques' || github.event_name != 'schedule' }} # Disable cron runs in forks
     uses: ./.github/workflows/windows.yml
     with:
-      build-mode: 'release'
+      build-mode: release
       upload-build-for-next-job: true
-
-  package-and-upload:
-    runs-on: windows-latest
-    needs: build-windows
-    steps:
-      - name: Download artifact from the previous job
-        uses: actions/download-artifact@v5
-        with:
-          name: internal-job-files
-
-      - name: Package build and organize directories
-        run: |
-          mkdir -p str-build/SkyrimTogetherReborn
-          mv build/windows/x64/release/* str-build/SkyrimTogetherReborn
-          cp -r GameFiles/Skyrim/* str-build/
-
-      - name: Remove unnecessary build files, keep .pdb
-        run: |
-          mkdir str-pdb
-          mv str-build/SkyrimTogetherReborn/SkyrimTogether.pdb, str-build/SkyrimTogetherReborn/SkyrimTogetherServer.pdb str-pdb
-          rm str-build/SkyrimTogetherReborn/*.pdb, str-build/SkyrimTogetherReborn/*.lib, str-build/SkyrimTogetherReborn/*.exp
-          rm str-build/SkyrimTogetherReborn/*Tests.exe
-
-      - name: Upload playable build
-        uses: actions/upload-artifact@v4
-        with:
-          name: Skyrim Together Build (${{ needs.build-windows.outputs.str-version }})
-          path: str-build/
-
-      - name: Upload debug symbols
-        uses: actions/upload-artifact@v4
-        with:
-          name: Debug Symbols (${{ needs.build-windows.outputs.str-version }})
-          path: str-pdb/

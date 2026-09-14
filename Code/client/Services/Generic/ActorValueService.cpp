@@ -121,8 +121,10 @@ void ActorValueService::BroadcastActorValues() noexcept
 
         RequestActorValueChanges requestValueChanges;
         requestValueChanges.Id = localComponent.Id;
+        requestValueChanges.OwnershipEpoch = localComponent.OwnershipEpoch;
         RequestActorMaxValueChanges requestMaxValueChanges;
         requestMaxValueChanges.Id = localComponent.Id;
+        requestMaxValueChanges.OwnershipEpoch = localComponent.OwnershipEpoch;
 
         bool isPlayer = pActor->GetExtension() && pActor->GetExtension()->IsPlayer();
 
@@ -259,6 +261,7 @@ void ActorValueService::RunDeathStateUpdates() noexcept
 
             RequestDeathStateChange requestChange;
             requestChange.Id = localComponent.Id;
+            requestChange.OwnershipEpoch = localComponent.OwnershipEpoch;
             requestChange.IsDead = isDead;
 
             m_transport.Send(requestChange);
@@ -312,7 +315,11 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) { return view.get<RemoteComponent>(entity).Id == id; });
+    const auto itor = std::find_if(std::begin(view), std::end(view), [&acMessage, view](entt::entity entity)
+    {
+        const auto& remote = view.get<RemoteComponent>(entity);
+        return remote.Id == acMessage.Id && acMessage.OwnershipEpoch != 0 && remote.OwnershipEpoch == acMessage.OwnershipEpoch;
+    });
 
     if (itor == std::end(view))
         return;
@@ -344,7 +351,11 @@ void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges&
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
-    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) { return view.get<RemoteComponent>(entity).Id == id; });
+    const auto it = std::find_if(std::begin(view), std::end(view), [&acMessage, view](entt::entity entity)
+    {
+        const auto& remote = view.get<RemoteComponent>(entity);
+        return remote.Id == acMessage.Id && acMessage.OwnershipEpoch != 0 && remote.OwnershipEpoch == acMessage.OwnershipEpoch;
+    });
 
     if (it == std::end(view))
         return;
@@ -370,7 +381,11 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
 {
     auto view = m_world.view<FormIdComponent, RemoteComponent>();
 
-    const auto it = std::find_if(std::begin(view), std::end(view), [id = acMessage.Id, view](entt::entity entity) { return view.get<RemoteComponent>(entity).Id == id; });
+    const auto it = std::find_if(std::begin(view), std::end(view), [&acMessage, view](entt::entity entity)
+    {
+        const auto& remote = view.get<RemoteComponent>(entity);
+        return remote.Id == acMessage.Id && acMessage.OwnershipEpoch != 0 && remote.OwnershipEpoch == acMessage.OwnershipEpoch;
+    });
 
     if (it == std::end(view))
         return;

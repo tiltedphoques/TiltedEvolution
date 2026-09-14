@@ -71,19 +71,20 @@ struct RendererData
     uint32_t uiNewWidth;           // 0x0028
     uint32_t uiNewHeight;          // 0x002C
     uint32_t uiPresentInterval;    // 0x0030
-    ID3D11Device* pDevice;         // 0x0038
+    ID3D11Device* pForwarder;      // 0x0038
     ID3D11DeviceContext* pContext; // 0x0040
 
-    // UNSURE starting from here...
     BSGraphics::RendererWindow RenderWindowA[32]; // V
-    BSGraphics::RenderTarget pRenderTargetsA[101];
-    BSGraphics::DepthStencilTarget pDepthStencilTargetsA[13];
-    BSGraphics::CubeMapRenderTarget pCubeMapRenderTargetsA[2];
-    BSCriticalSection RendererLock;
-    // Invalid...
-    const char* pClassName;
-    HINSTANCE__* hInstance;
+    BSGraphics::RenderTarget pRenderTargetsA[114];
+    BSGraphics::DepthStencilTarget pDepthStencilTargetsA[12];
+    BSGraphics::CubeMapRenderTarget pCubeMapRenderTargetsA[1];
 };
+
+static_assert(offsetof(RendererData, pForwarder) == 0x38);
+static_assert(offsetof(RendererData, RenderWindowA) == 0x48);
+static_assert(offsetof(RendererData, pRenderTargetsA) == 0xA48);
+static_assert(offsetof(RendererData, pDepthStencilTargetsA) == 0x1FA8);
+static_assert(offsetof(RendererData, pCubeMapRenderTargetsA) == 0x26C8);
 
 struct Renderer
 {
@@ -96,8 +97,6 @@ struct RendererInitReturn
 {
     HWND hwnd;
 };
-
-static_assert(offsetof(RendererData, pDevice) == 56);
 
 // former ViewportConfig
 struct RendererInitOSData

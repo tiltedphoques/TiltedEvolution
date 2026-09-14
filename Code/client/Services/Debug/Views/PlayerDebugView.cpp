@@ -57,7 +57,7 @@ void DebugService::DrawPlayerDebugView()
         auto worldFormId = pWorldSpace->formID;
         ImGui::InputScalar("Worldspace", ImGuiDataType_U32, (void*)&worldFormId, nullptr, nullptr, "%" PRIx32, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
     }
-    if (auto pCell = pPlayer->GetParentCell())
+    if (auto pCell = pPlayer->GetSaveParentCell())
     {
         auto cellFormId = pCell->formID;
         ImGui::InputScalar("Cell Id", ImGuiDataType_U32, (void*)&cellFormId, nullptr, nullptr, "%" PRIx32, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);

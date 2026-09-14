@@ -20,6 +20,31 @@
 
 #include <World.h>
 
+namespace
+{
+bool IsDefaultModlist(GameList<Mod>& aCurrentModlist) noexcept
+{
+    static const auto s_defaultModlist = std::to_array<TiltedPhoques::String>(
+        {"Skyrim.esm", "Update.esm", "Dawnguard.esm", "HearthFires.esm", 
+        "Dragonborn.esm", "_ResourcePack.esl", "SkyrimTogether.esp", "SkyrimTogetherQuestPatches.esp"}
+    );
+
+    if (aCurrentModlist.Size() != s_defaultModlist.size())
+        return false;
+
+    auto expectedMod = s_defaultModlist.begin();
+    for (const auto* pCurrentMod : aCurrentModlist)
+    {
+        if (pCurrentMod->filename != *expectedMod)
+            return false;
+
+        ++expectedMod;
+    }
+
+    return true;
+}
+} // namespace
+
 DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
     , m_dispatcher(aDispatcher)
@@ -38,7 +63,7 @@ void DiscoveryService::VisitCell(bool aForceTrigger) noexcept
 
     if (pPlayer->GetWorldSpace())
         VisitExteriorCell(aForceTrigger);
-    else if (pPlayer->GetParentCell())
+    else if (pPlayer->GetParentCellEx())
         VisitInteriorCell(aForceTrigger);
 
     // exactly how the game does it too
@@ -104,7 +129,7 @@ void DiscoveryService::VisitInteriorCell(bool aForceTrigger) noexcept
 {
     ResetCachedCellData();
 
-    const uint32_t cellId = PlayerCharacter::Get()->GetParentCell()->formID;
+    const uint32_t cellId = PlayerCharacter::Get()->GetParentCellEx()->formID;
     if (m_interiorCellId != cellId || aForceTrigger)
     {
         CellChangeEvent cellChangeEvent{};
@@ -219,6 +244,22 @@ void DiscoveryService::VisitForms() noexcept
     // We dispatch removal events first to prevent needless reallocations
     for (uint32_t formId : s_previousForms)
     {
+        // A conform can remove both the 3D and the high-process handle. Keep the
+        // existing discovery entry so rebuilding it does not cancel its assignment.
+        // TODO: GetById performance in loop?
+        if (auto* pActor = Cast<Actor>(TESForm::GetById(formId)); pActor && !pActor->IsDeleted())
+        {
+            using ReconciliationStage = ActorExtension::ReconciliationStage;
+            const auto cStage = pActor->GetExtension()->Reconciliation;
+            const auto* pCell = pActor->GetParentCellEx();
+            // Finish the disable/enable pair even if the cell starts unloading.
+            // Once enabled, an unloaded cell is a real removal.
+            if (cStage == ReconciliationStage::WaitingForDisable || (cStage == ReconciliationStage::WaitingFor3D && pCell && pCell->IsAttached()))
+            {
+                continue;
+            }
+        }
+
         m_dispatcher.trigger(ActorRemovedEvent(formId));
         m_forms.erase(formId);
     }
@@ -254,30 +295,7 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
 {
     spdlog::info("Finished loading, triggering visit cell");
 
-    const TiltedPhoques::String defaultModlist[7] = {"Skyrim.esm",        "Update.esm",     "Dawnguard.esm",
-                                                    "HearthFires.esm",   "Dragonborn.esm", "_ResourcePack.esl",
-                                                    "SkyrimTogether.esp"};
-
-    auto& currentModlist = ModManager::Get()->mods;
-
-    bool isModlistEqual = currentModlist.Size() == 7;
-
-    if (isModlistEqual)
-    {
-        int i = 0;
-        for (const auto& currentMod : currentModlist)
-        {
-            if (currentMod->filename != defaultModlist[i])
-            {
-                isModlistEqual = false;
-                break;
-            }
-
-            i++;
-        }
-    }
-
-    if (!isModlistEqual)
+    if (!IsDefaultModlist(ModManager::Get()->mods))
     {
         ConnectionErrorEvent errorEvent{};
         errorEvent.ErrorDetail = "{\"error\": \"non_default_install\"}";
