@@ -6,6 +6,7 @@
 
 #include <Messages/SetTimeCommandRequest.h>
 #include <Messages/NotifySetTimeResult.h>
+#include <Messages/RequestTimeSkip.h>
 #include <Messages/TeleportCommandRequest.h>
 #include <Messages/TeleportCommandResponse.h>
 
@@ -21,6 +22,37 @@ CommandService::CommandService(World& aWorld, entt::dispatcher& aDispatcher) noe
 {
     m_setTimeConnection = aDispatcher.sink<PacketEvent<SetTimeCommandRequest>>().connect<&CommandService::OnSetTimeCommand>(this);
     m_teleportConnection = aDispatcher.sink<PacketEvent<TeleportCommandRequest>>().connect<&CommandService::OnTeleportCommandRequest>(this);
+    m_timeSkipConnection = aDispatcher.sink<PacketEvent<RequestTimeSkip>>().connect<&CommandService::OnTimeSkipRequest>(this);
+}
+
+bool CommandService::CanChangeTime(const Player* apPlayer) const noexcept
+{
+    // Admin override: always allowed
+    for (const auto session : GameServer::Get()->GetAdminSessions())
+    {
+        const Player* pAdmin = PlayerManager::Get()->GetByConnectionId(session);
+        if (pAdmin && pAdmin->GetId() == apPlayer->GetId())
+            return true;
+    }
+
+    // Party leader allowed on private servers only
+    return m_world.GetPartyService().IsPlayerLeader(apPlayer) && !bAnnounceServer;
+}
+
+void CommandService::OnTimeSkipRequest(const PacketEvent<RequestTimeSkip>& acMessage) const noexcept
+{
+    const float cHours = acMessage.Packet.Hours;
+
+    if (!CanChangeTime(acMessage.pPlayer))
+    {
+        spdlog::debug("Ignoring time skip of {} hours from player {:X}: no permission", cHours, acMessage.pPlayer->GetId());
+        return;
+    }
+
+    if (m_world.GetCalendarService().AdvanceTime(cHours))
+        spdlog::info("Player {:X} slept or waited: advanced the shared time by {} hours", acMessage.pPlayer->GetId(), cHours);
+    else
+        spdlog::warn("Rejected time skip of {} hours from player {:X}", cHours, acMessage.pPlayer->GetId());
 }
 
 void CommandService::OnSetTimeCommand(const PacketEvent<SetTimeCommandRequest>& acMessage) const noexcept
