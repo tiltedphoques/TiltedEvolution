@@ -281,21 +281,37 @@ ExPlayerCharacter* Actor::AsExPlayerCharacter() noexcept
 }
 
 extern thread_local bool g_forceAnimation;
+extern thread_local int g_forcedActionResult;
 
 void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
 {
     spdlog::debug("Setting weapon drawn: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
 
-    if (actorState.IsWeaponDrawn() == aDraw)
+    // When the actor already reports the requested state, the internal weapon state is flipped so that
+    // the native call re-issues the draw/sheathe action and the animation is forced again.
+    const bool alreadyMatching = actorState.IsWeaponDrawn() == aDraw;
+    if (alreadyMatching)
     {
         actorState.SetWeaponDrawn(!aDraw);
 
         spdlog::debug("Setting weapon drawn after update: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
     }
 
+    g_forcedActionResult = -1;
     g_forceAnimation = true;
     SetWeaponDrawn(aDraw);
     g_forceAnimation = false;
+
+    if (alreadyMatching && g_forcedActionResult != 1)
+    {
+        // The behavior graph refused the forced action (for example "Unequip" while already sheathed), or
+        // no action was issued. Without this the actor stays in a transitional state (wants to sheathe /
+        // wants to draw) that the graph never completes, and once it gains ownership its AI can no longer
+        // draw the weapon (#810). Restore the stable state that was requested instead.
+        actorState.SetWeaponDrawn(aDraw);
+
+        spdlog::debug("Forced weapon draw action refused, restoring state: {:X}:{}, current state: {}", formID, aDraw, actorState.IsWeaponDrawn());
+    }
 }
 
 static thread_local bool s_execInitPackage = false;
