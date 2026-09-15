@@ -204,12 +204,27 @@ struct TESSellEvent
 {
 };
 
+// Times are game time in days, like GameDaysPassed.
 struct TESSleepStartEvent
 {
+    float sleepStartTime;
+    float desiredSleepEndTime;
 };
 
 struct TESSleepStopEvent
 {
+    bool interrupted;
+};
+
+struct TESWaitStartEvent
+{
+    float waitStartTime;
+    float desiredWaitEndTime;
+};
+
+struct TESWaitStopEvent
+{
+    bool interrupted;
 };
 
 struct TESSpellCastEvent
@@ -310,7 +325,7 @@ struct EventDispatcherManager
     EventDispatcher<TESSceneActionEvent> sceneActionEvent;
     EventDispatcher<TESScenePhaseEvent> scenePhaseEvent;
     EventDispatcher<TESSellEvent> sellEvent;
-    EventDispatcher<TESSleepStartEvent> unknownDispatcher39;
+    EventDispatcher<TESSleepStartEvent> sleepStartEvent;
     EventDispatcher<TESSleepStopEvent> sleepStopEvent;
     EventDispatcher<TESSpellCastEvent> spellCastEvent;
     EventDispatcher<TESPlayerBowShotEvent> unknownDispatcher42;
@@ -321,8 +336,8 @@ struct EventDispatcherManager
     EventDispatcher<TESTriggerEnterEvent> triggerEnterEvent;
     EventDispatcher<TESTriggerLeaveEvent> triggerLeaveEvent;
     EventDispatcher<TESUniqueIDChangeEvent> uniqueIDChangeEvent;
-    EventDispatcher<UnknownEvent> unknownDispatcher50; // waitevent
-    EventDispatcher<UnknownEvent> unknownDispatcher51; // TESWaitStopEvent
+    EventDispatcher<TESWaitStartEvent> waitStartEvent;
+    EventDispatcher<TESWaitStopEvent> waitStopEvent;
     EventDispatcher<TESSwitchRaceCompleteEvent> switchRaceCompleteEvent;
     EventDispatcher<TESFastTravelEndEvent> fastTravelEndEvent;
 };
