@@ -64,7 +64,14 @@ void UI::DebugLogAllMenus()
 static void UnfreezeMenu(IMenu* apEntry)
 {
     if (apEntry->PausesGame())
+    {
         apEntry->ClearFlag(IMenu::kPausesGame);
+#if TP_SKYRIMVR
+        // VR only shows its menu panel (PlayerCharacter's UINode) while a menu pauses the game or has
+        // this flag. MessageBoxMenu and Console lack it, so without it they open invisibly.
+        apEntry->SetFlag(IMenu::kUpdateUsesCursor);
+#endif
+    }
 
     if (apEntry->FreezesBackground())
         apEntry->ClearFlag(IMenu::kFreezeFrameBackground);
