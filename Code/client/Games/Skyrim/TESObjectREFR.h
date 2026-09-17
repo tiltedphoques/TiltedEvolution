@@ -16,6 +16,7 @@
 struct AnimationVariables;
 struct TESWorldSpace;
 struct TESBoundObject;
+struct TESActorBase;
 struct TESContainer;
 
 enum class ITEM_REMOVE_REASON
@@ -136,7 +137,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_81();
     virtual void sub_82();
     virtual void sub_83();
-    virtual void SetBaseForm(TESBoundObject* apForm); // "void SetObjectReference(...)"?
+    virtual void SetObjectReference(TESBoundObject* apObject);
     virtual void sub_85();
     virtual void sub_86();
     virtual void sub_87();
@@ -164,6 +165,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_9B();
 
     void SetRotation(float aX, float aY, float aZ) noexcept;
+    void SetLeveledCreature(TESActorBase* apOriginalBase, TESActorBase* apTemplateA) noexcept;
 
     BSPointerHandle<TESObjectREFR> GetHandle() const noexcept;
     uint32_t GetCellId() const noexcept;
