@@ -212,7 +212,7 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
     pActor->SetLevelMod(4);
     pActor->MarkChanged(0x40000000);
     pActor->SetParentCell(pCell);
-    pActor->SetBaseForm(apBaseForm);
+    pActor->SetObjectReference(apBaseForm);
 
     auto position = pPlayer->position;
     auto rotation = pPlayer->rotation;
