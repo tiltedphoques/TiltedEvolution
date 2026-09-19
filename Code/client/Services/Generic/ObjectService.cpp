@@ -62,12 +62,9 @@ bool IsPlayerHome(const TESObjectCELL* pCell) noexcept
     return false;
 }
 
-// Containers where the game stashes an arrested player's belongings, taken from the crime data of every
-// loaded faction. Sending a player to jail moves their whole inventory into the faction's player inventory
-// container (stolen goods go to the stolen goods container) and hands it back on release, so these are
-// per-player storage: if they were synced, the first player to enter the jail cell would overwrite the
-// stash of everyone who follows, and the others would walk out with the wrong inventory (#700).
-// Only pointers are compared here; the crime data itself is never dereferenced.
+// Find each loaded faction's containers for a jailed player's belongings and stolen items.
+// Do not sync them: each player's items must stay separate (#700).
+// Only compare the container pointers; never read through them.
 Set<const TESObjectREFR*> GetPlayerStashContainers() noexcept
 {
     Set<const TESObjectREFR*> containers{};
