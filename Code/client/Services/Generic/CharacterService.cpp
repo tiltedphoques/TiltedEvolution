@@ -11,6 +11,7 @@
 #include <Games/Misc/SubtitleManager.h>
 
 #include <Forms/TESNPC.h>
+#include <Misc/GarbageCollector.h>
 #include <Interface/UI.h>
 #include <Forms/TESQuest.h>
 
@@ -1556,18 +1557,11 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
     if (!pBase)
         return;
 
-    if (!pBase->IsTemporary())
-    {
-        // Conforming a shell is exactly what resolution would have done; any
-        // other static base is an already conformed actor.
-        if (!LeveledNpcSystem::IsUnresolvedLeveledShell(pBase))
+    if (!LeveledNpcSystem::GetOriginalBase(apActor))
         {
-            spdlog::info("Leveled pick {:x}:{:x} received for actor {:X} whose base is not a leveled temp, skipping", acPickId.ModId, acPickId.BaseId, apActor->formID);
+        spdlog::warn("Leveled pick {:x}:{:x} received for actor {:X} without an original leveled base, keeping local base", acPickId.ModId, acPickId.BaseId, apActor->formID);
             return;
         }
-
-        spdlog::debug("Actor {:X} still carries unresolved shell base {:X}, conforming to owner's pick", apActor->formID, pBase->formID);
-    }
 
     const uint32_t cPickId = World::Get().GetModSystem().GetGameId(acPickId);
     if (cPickId == 0)
@@ -1586,7 +1580,8 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
     const TESNPC* pLocalPick = apActor->GetLeveledPick();
     const uint32_t localPickId = pLocalPick ? pLocalPick->formID : 0;
 
-    if (localPickId == cPickId)
+    // Even a pick matching the current base must supersede pending work.
+    if (pBase->IsTemporary() && localPickId == cPickId && m_pendingLeveledConforms.find(apActor->formID) == m_pendingLeveledConforms.end())
     {
         spdlog::info("Leveled actor {:X} already matches owner's pick {:X}", apActor->formID, cPickId);
         return;
@@ -1648,9 +1643,9 @@ void CharacterService::ProcessLeveledConforms() noexcept
                 continue;
             }
 
-            if (pActor->baseForm == pPick)
+            if (pActor->baseForm && pActor->baseForm->IsTemporary() && pActor->GetLeveledPick() == pPick)
             {
-                spdlog::info("Completed leveled NPC reconciliation for actor {:X}, base: {:X}", it->first, cPickFormId);
+                spdlog::info("Completed leveled NPC reconciliation for actor {:X}, base: {:X}, pick: {:X}", it->first, pActor->baseForm->formID, cPickFormId);
                 stage = ReconciliationStage::None;
                 it = m_pendingLeveledConforms.erase(it);
                 continue;
@@ -1670,21 +1665,42 @@ void CharacterService::ProcessLeveledConforms() noexcept
                 continue;
             }
 
-            // Disable and 3D teardown have completed; rebuild from the pick.
-            pActor->baseForm = pPick;
+            // Skyrim resolves a leveled NPC by copying the original base, then
+            // applying the pick according to that base's template flags. Using
+            // the pick itself discards data such as a hold guard's name/outfit.
+            auto* pOriginalBase = LeveledNpcSystem::GetOriginalBase(pActor);
+            auto* pResolvedBase = pOriginalBase ? TESActorBaseData::CreateTemplateActorBase(pOriginalBase, pPick) : nullptr;
+            if (!pResolvedBase)
+            {
+                spdlog::warn("Could not rebuild leveled actor {:X} from its original base and pick {:X}, keeping local base", it->first, cPickFormId);
             pActor->EnableImpl();
+                stage = ReconciliationStage::None;
+                it = m_pendingLeveledConforms.erase(it);
+                continue;
+            }
+
+            auto* pOldBase = Cast<TESNPC>(pActor->baseForm);
+            pActor->SetLeveledCreature(pOriginalBase, pPick);
+            pActor->SetObjectReference(pResolvedBase);
+
+            // Match RecalcLeveledActor's disposal policy, but never dispose of
+            // a static pick left by the old reconciliation implementation.
+            if (pOldBase && pOldBase->IsTemporary() && pOldBase != pOriginalBase && pOldBase != pPick)
+                GarbageCollector::Get()->Add(pOldBase);
 
             // Recompute the graph descriptor after changing picks; stale variable indices can cause out-of-bounds writes.
             pActor->GetExtension()->GraphDescriptorHash = 0;
 
             // Enable can return before the rebuilt 3D is available to discovery.
             stage = ReconciliationStage::WaitingFor3D;
-            spdlog::info("Re-enabled conformed leveled actor {:X}, base: {:X}, waiting for 3D", it->first, cPickFormId);
+            pActor->EnableImpl();
+            spdlog::info("Re-enabled conformed leveled actor {:X}, original base: {:X}, base: {:X}, pick: {:X}, waiting for 3D",
+                it->first, pOriginalBase->formID, pResolvedBase->formID, cPickFormId);
             ++it;
             continue;
         }
 
-        if (!pActor->loadedState && !LeveledNpcSystem::IsUnresolvedLeveledShell(Cast<TESNPC>(pActor->baseForm)))
+        if (!pActor->loadedState && !LeveledNpcSystem::IsLeveledNpcBase(Cast<TESNPC>(pActor->baseForm)))
         {
             // Wait for distant actors to load 3D; newer picks replace pending work and disconnects clear it.
             // Unresolved shells bypass this wait because they need a pick before they can load a model.
