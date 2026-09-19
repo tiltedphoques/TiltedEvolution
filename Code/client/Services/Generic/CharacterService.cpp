@@ -11,7 +11,6 @@
 #include <Games/Misc/SubtitleManager.h>
 
 #include <Forms/TESNPC.h>
-#include <Misc/GarbageCollector.h>
 #include <Interface/UI.h>
 #include <Forms/TESQuest.h>
 
@@ -1665,12 +1664,7 @@ void CharacterService::ProcessLeveledConforms() noexcept
                 continue;
             }
 
-            // Skyrim resolves a leveled NPC by copying the original base, then
-            // applying the pick according to that base's template flags. Using
-            // the pick itself discards data such as a hold guard's name/outfit.
-            auto* pOriginalBase = LeveledNpcSystem::GetOriginalBase(pActor);
-            auto* pResolvedBase = pOriginalBase ? TESActorBaseData::CreateTemplateActorBase(pOriginalBase, pPick) : nullptr;
-            if (!pResolvedBase)
+            if (!LeveledNpcSystem::ApplyPick(pActor, pPick))
             {
                 spdlog::warn("Could not rebuild leveled actor {:X} from its original base and pick {:X}, keeping local base", it->first, cPickFormId);
             pActor->EnableImpl();
@@ -1679,23 +1673,14 @@ void CharacterService::ProcessLeveledConforms() noexcept
                 continue;
             }
 
-            auto* pOldBase = Cast<TESNPC>(pActor->baseForm);
-            pActor->SetLeveledCreature(pOriginalBase, pPick);
-            pActor->SetObjectReference(pResolvedBase);
-
-            // Match RecalcLeveledActor's disposal policy, but never dispose of
-            // a static pick left by the old reconciliation implementation.
-            if (pOldBase && pOldBase->IsTemporary() && pOldBase != pOriginalBase && pOldBase != pPick)
-                GarbageCollector::Get()->Add(pOldBase);
-
             // Recompute the graph descriptor after changing picks; stale variable indices can cause out-of-bounds writes.
             pActor->GetExtension()->GraphDescriptorHash = 0;
 
             // Enable can return before the rebuilt 3D is available to discovery.
             stage = ReconciliationStage::WaitingFor3D;
             pActor->EnableImpl();
-            spdlog::info("Re-enabled conformed leveled actor {:X}, original base: {:X}, base: {:X}, pick: {:X}, waiting for 3D",
-                it->first, pOriginalBase->formID, pResolvedBase->formID, cPickFormId);
+            spdlog::info("Re-enabled conformed leveled actor {:X}, base: {:X}, pick: {:X}, waiting for 3D",
+                it->first, pActor->baseForm->formID, cPickFormId);
             ++it;
             continue;
         }
