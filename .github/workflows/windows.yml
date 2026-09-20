@@ -135,6 +135,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}
+          # Direct downloads should receive the existing zip without another zip layer
+          archive: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
           retention-days: 7
           if-no-files-found: error
           path: release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}.zip
@@ -144,6 +146,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}-debug-symbols
+          # Direct downloads should receive the existing zip without another zip layer
+          archive: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
           retention-days: 7
           if-no-files-found: error
           path: release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}-debug-symbols.zip
