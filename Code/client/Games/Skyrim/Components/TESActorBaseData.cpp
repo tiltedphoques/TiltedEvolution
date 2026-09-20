@@ -21,6 +21,13 @@ TESActorBase* HookCreateTemplateActorBase(TESActorBase* apOriginalBase, TESActor
     return pResult;
 }
 
+TESActorBase* TESActorBaseData::CreateTemplateActorBase(TESActorBase* apOriginalBase, TESActorBase* apTemplateBase) noexcept
+{
+    using TCreateTemplateActorBase = decltype(TESActorBaseData::CreateTemplateActorBase);
+    POINTER_SKYRIMSE(TCreateTemplateActorBase, s_CreateTemplateActorBase, 14375);
+    return s_CreateTemplateActorBase.Get()(apOriginalBase, apTemplateBase);
+}
+
 static TiltedPhoques::Initializer s_actorBaseDataInitHooks(
     []()
     {
