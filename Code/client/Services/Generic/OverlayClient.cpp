@@ -10,6 +10,7 @@
 #include <Messages/TeleportRequest.h>
 
 #include <Events/SetTimeCommandEvent.h>
+#include <Events/WaveCommandEvent.h>
 
 #include <World.h>
 
@@ -51,6 +52,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessChatMessage(eventArgs);
         else if (eventName == "setTime")
             ProcessSetTimeCommand(eventArgs);
+        else if (eventName == "wave")
+            ProcessWaveCommand();
         else if (eventName == "launchParty")
             World::Get().GetPartyService().CreateParty();
         else if (eventName == "leaveParty")
@@ -135,6 +138,11 @@ void OverlayClient::ProcessSetTimeCommand(CefRefPtr<CefListValue> aEventArgs)
     const uint8_t minutes = static_cast<uint8_t>(aEventArgs->GetInt(1));
     const uint32_t senderId = m_transport.GetLocalPlayerId();
     World::Get().GetDispatcher().trigger(SetTimeCommandEvent(hours, minutes, senderId));
+}
+
+void OverlayClient::ProcessWaveCommand()
+{
+    World::Get().GetRunner().Trigger(WaveCommandEvent());
 }
 
 void OverlayClient::ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs)
