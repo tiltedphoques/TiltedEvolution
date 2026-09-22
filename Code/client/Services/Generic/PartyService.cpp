@@ -58,7 +58,8 @@ void PartyService::CreateInvite(const uint32_t aPlayerId) const noexcept
 
 void PartyService::AcceptInvite(const uint32_t aInviterId) const noexcept
 {
-    if (!m_invitations.contains(aInviterId))
+    const auto itor = m_invitations.find(aInviterId);
+    if (!m_transport.IsConnected() || m_inParty || itor == m_invitations.end() || itor->second <= m_transport.GetClock().GetCurrentTick())
         return;
 
     PartyAcceptInviteRequest request;
@@ -92,7 +93,7 @@ void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
     auto itor = std::begin(m_invitations);
     while (itor != std::end(m_invitations))
     {
-        if (itor->second < cCurrentTick)
+        if (itor->second <= cCurrentTick)
             itor = m_invitations.erase(itor);
         else
             ++itor;
@@ -140,12 +141,17 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
 
 void PartyService::OnPartyInvite(const NotifyPartyInvite& acPartyInvite) noexcept
 {
+    const auto cCurrentTick = m_transport.GetClock().GetCurrentTick();
+    if (m_inParty || acPartyInvite.ExpiryTick <= cCurrentTick)
+        return;
+
     spdlog::debug("[PartyService]: Got party invite from {}", acPartyInvite.InviterId);
 
     m_invitations[acPartyInvite.InviterId] = acPartyInvite.ExpiryTick;
 
     auto pArguments = CefListValue::Create();
     pArguments->SetInt(0, acPartyInvite.InviterId);
+    pArguments->SetDouble(1, static_cast<double>(acPartyInvite.ExpiryTick - cCurrentTick));
     m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("partyInviteReceived", pArguments);
 }
 
@@ -157,6 +163,7 @@ void PartyService::OnPartyJoined(const NotifyPartyJoined& acPartyJoined) noexcep
     m_isLeader = acPartyJoined.IsLeader;
     m_leaderPlayerId = acPartyJoined.LeaderPlayerId;
     m_partyMembers = acPartyJoined.PlayerIds;
+    m_invitations.clear();
 
     m_world.GetDispatcher().trigger(PartyJoinedEvent(m_isLeader));
 }
@@ -176,4 +183,5 @@ void PartyService::DestroyParty() noexcept
     m_isLeader = false;
     m_leaderPlayerId = -1;
     m_partyMembers.clear();
+    m_invitations.clear();
 }

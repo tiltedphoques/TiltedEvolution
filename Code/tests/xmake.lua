@@ -13,3 +13,13 @@ target("TPTests")
         "catch2",
         "mimalloc",
         "glm")
+
+option("server_tests")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Build isolated server component tests")
+option_end()
+
+if has_config("server_tests") then
+    includes("server")
+end
