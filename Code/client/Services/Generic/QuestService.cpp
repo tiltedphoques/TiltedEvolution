@@ -57,7 +57,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
     if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsInParty())
         return BSTEventResult::kOk;
 
-    spdlog::info("Quest start/stop event: {:X}", apEvent->formId);
+    spdlog::info(__FUNCTION__ ": quest start/stop event formId: {:X}", apEvent->formId);
 
     if (TESQuest* pQuest = Cast<TESQuest>(TESForm::GetById(apEvent->formId)))
     {
@@ -105,7 +105,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const Ev
     if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsInParty())
         return BSTEventResult::kOk;
 
-    spdlog::info("Quest stage event: {:X}, stage: {}", apEvent->formId, apEvent->stageId);
+    spdlog::info(__FUNCTION__ ": quest stage formId: {:X}, stage: {}", apEvent->formId, apEvent->stageId);
 
     // there is no reason to even fetch the quest object, since the event provides everything already....
     if (TESQuest* pQuest = Cast<TESQuest>(TESForm::GetById(apEvent->formId)))
@@ -157,13 +157,13 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
     TESQuest* pQuest = Cast<TESQuest>(TESForm::GetById(formId));
     if (!pQuest)
     {
-        spdlog::error("Failed to find quest, base id: {:X}, mod id: {:X}", aUpdate.Id.BaseId, aUpdate.Id.ModId);
+        spdlog::error(__FUNCTION__ ": failed to find quest, gameId: {:X}, stage: {}", aUpdate.Id.LogFormat(), aUpdate.Stage);
         return;
     }
 
     if (pQuest->type == TESQuest::Type::None || pQuest->type == TESQuest::Type::Miscellaneous)
     {
-        spdlog::info(__FUNCTION__ ": receiving type none/misc quest update gameId {:X} questStage {} questStatus {} questType {} formId {:X} name {}",
+        spdlog::info(__FUNCTION__ ": receiving type none/misc quest update gameId: {:X}, questStage: {}, questStatus: {}, questType: {}, formId: {:X}, name: {}",
                      aUpdate.Id.LogFormat(), aUpdate.Stage, aUpdate.Status,
                      aUpdate.ClientQuestType, formId, pQuest->fullName.value.AsAscii());
     }
@@ -172,27 +172,46 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
     switch (aUpdate.Status)
     {
     case NotifyQuestUpdate::Started:
-    {
-        pQuest->ScriptSetStage(aUpdate.Stage);
-        pQuest->SetActive(true);
+        if (pQuest->getState() == TESQuest::State::Running) // Supress duplicate or loopback quest starts
+        {
+            spdlog::info(__FUNCTION__ ": suppressing duplicate quest start gameId: {:X}, questStage: {}, questStatus: {}, questType: {}, formId: {:X}, name: {}",
+                         aUpdate.Id.LogFormat(), aUpdate.Stage, aUpdate.Status, aUpdate.ClientQuestType, formId, pQuest->fullName.value.AsAscii());
+        }
+        else
+        {
+            pQuest->ScriptSetStage(aUpdate.Stage);
+            pQuest->SetActive(true);
+            spdlog::info(__FUNCTION__ ": remote quest started gameId: {:X}, questStage: {}, questStatus: {}, questType: {}, formId: {:X}, name: {}",
+                         aUpdate.Id.LogFormat(), aUpdate.Stage, aUpdate.Status, aUpdate.ClientQuestType, formId, pQuest->fullName.value.AsAscii());
+        }
         bResult = true;
-        spdlog::info("Remote quest started: {:X}, stage: {}", formId, aUpdate.Stage);
         break;
-    }
     case NotifyQuestUpdate::StageUpdate:
         pQuest->ScriptSetStage(aUpdate.Stage);
         bResult = true;
-        spdlog::info("Remote quest updated: {:X}, stage: {}", formId, aUpdate.Stage);
+        spdlog::info(__FUNCTION__ ": remote quest updated gameId: {:X}, questStage: {}, questStatus: {}, questType: {}, formId: {:X}, name: {}",
+                     aUpdate.Id.LogFormat(), aUpdate.Stage, aUpdate.Status, aUpdate.ClientQuestType, formId, pQuest->fullName.value.AsAscii());
         break;
     case NotifyQuestUpdate::Stopped:
-        bResult = StopQuest(formId);
-        spdlog::info("Remote quest stopped: {:X}, stage: {}", formId, aUpdate.Stage);
+        if (pQuest->getState() == TESQuest::State::Stopped) // Supress duplicate or loopback quest stop
+        {
+            spdlog::info(__FUNCTION__ ": suppressing duplicate quest stop gameId: {:X}, questStage: {}, questStatus: {}, questType: {}, formId: {:X}, name: {}",
+                         aUpdate.Id.LogFormat(), aUpdate.Stage, aUpdate.Status, aUpdate.ClientQuestType, formId, pQuest->fullName.value.AsAscii());
+        }
+        else
+        {
+            bResult = StopQuest(formId);
+            spdlog::info(__FUNCTION__ ": remote quest stopped gameId: {:X}, questStage: {}, questStatus: {}, questType: {}, formId: {:X}, name: {}",
+                         aUpdate.Id.LogFormat(), aUpdate.Stage, aUpdate.Status, aUpdate.ClientQuestType, formId, pQuest->fullName.value.AsAscii());
+        }
+        bResult = true;
         break;
     default: break;
     }
 
     if (!bResult)
-        spdlog::error("Failed to update the client quest state, quest: {:X}, stage: {}, status: {}", formId, aUpdate.Stage, aUpdate.Status);
+        spdlog::error(__FUNCTION__ ": failed to update the client quest state gameId: {:X}, questStage: {}, questStatus: {}, questType: {}, formId: {:X}, name: {}",
+                      aUpdate.Id.LogFormat(), aUpdate.Stage, aUpdate.Status, aUpdate.ClientQuestType, formId, pQuest->fullName.value.AsAscii());
 }
 
 bool QuestService::StopQuest(uint32_t aformId)
@@ -200,8 +219,17 @@ bool QuestService::StopQuest(uint32_t aformId)
     TESQuest* pQuest = Cast<TESQuest>(TESForm::GetById(aformId));
     if (pQuest)
     {
-        pQuest->SetActive(false);
-        pQuest->SetStopped();
+        if (pQuest->getState() == TESQuest::State::Stopped) // Supress duplicate or loopback quest stop
+        {
+            spdlog::info(__FUNCTION__ ": suppressing duplicate quest stop formId: {:X}, questStage: {}, questFlags: {:X}, questType: {}, formId: {:X}, name: {}",
+                         aformId, pQuest->currentStage, static_cast<uint8_t>(pQuest->flags), static_cast<uint16_t>(pQuest->type), aformId, pQuest->fullName.value.AsAscii());
+        }
+        else
+        {
+            pQuest->SetActive(false);
+            pQuest->SetStopped();
+        }
+
         return true;
     }
 
