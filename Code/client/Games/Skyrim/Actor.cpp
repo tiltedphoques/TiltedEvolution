@@ -51,6 +51,7 @@
 #include <Games/Skyrim/BSAnimationGraphManager.h>
 #include <Havok/hkbStateMachine.h>
 #include <Havok/hkbBehaviorGraph.h>
+#include <Havok/bhkCharacterController.h>
 
 #include <ModCompat/BehaviorVar.h>
 
@@ -180,8 +181,20 @@ void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
 {
     ScopedReferencesOverride recursionGuard;
 
-    // It just works TM
-    SetPosition(acPosition, true);
+    bool updateController = true;
+    if (GetExtension()->IsRemote() && currentProcess)
+    {
+        if (auto* pController = currentProcess->GetCharController())
+        {
+            // A newly created controller may be positioned before ActorProcess.
+            // Both SetPositionImpl and the following velocity reset need a step
+            updateController = pController->UpdateStepTiming();
+        }
+    }
+
+    // With no usable step yet, update the reference/3D now; interpolation will
+    // catch the controller up once physics timing becomes available
+    SetPosition(acPosition, updateController);
 }
 
 void Actor::QueueUpdate() noexcept
@@ -1216,14 +1229,20 @@ void Actor::SpeakSound(const char* pFile)
     TiltedPhoques::ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
 }
 
-char TP_MAKE_THISCALL(HookActorProcess, Actor, float a2)
+char TP_MAKE_THISCALL(HookActorProcess, Actor, float aDeltaTime)
 {
-    // Don't process AI if we own the actor
-
+    // Suppress local movement for remote actors, but preserve controller timing.
     if (apThis->GetExtension()->IsRemote())
+    {
+        if (apThis->currentProcess)
+        {
+            if (auto* pController = apThis->currentProcess->GetCharController())
+                pController->UpdateStepTiming(aDeltaTime);
+        }
         return 0;
+    }
 
-    return TiltedPhoques::ThisCall(RealActorProcess, apThis, a2);
+    return TiltedPhoques::ThisCall(RealActorProcess, apThis, aDeltaTime);
 }
 
 TP_THIS_FUNCTION(TAddDeathItems, void, Actor);
