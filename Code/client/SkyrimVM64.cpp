@@ -14,6 +14,10 @@ static TVMUpdate* VMUpdate = nullptr;
 static TMainLoop* MainLoop = nullptr;
 static TVMDestructor* VMDestructor = nullptr;
 
+#if TP_SKYRIMVR
+void RunDeferredSkillsTreeUpdate(); // Interface/Menus/SkillsMenu.cpp
+#endif
+
 int TP_MAKE_THISCALL(HookVMUpdate, GameVM, float a2)
 {
     if (apThis->inactive == 0)
@@ -25,6 +29,10 @@ int TP_MAKE_THISCALL(HookVMUpdate, GameVM, float a2)
 short TP_MAKE_THISCALL(HookMainLoop, Main)
 {
     TP_EMPTY_HOOK_PLACEHOLDER
+
+#if TP_SKYRIMVR
+    RunDeferredSkillsTreeUpdate();
+#endif
 
     return TiltedPhoques::ThisCall(MainLoop, apThis);
 }

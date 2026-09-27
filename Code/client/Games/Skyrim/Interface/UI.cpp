@@ -82,10 +82,67 @@ static void UnfreezeMenu(IMenu* apEntry)
 
 static constexpr const char* kAllowList[] = {
     "TweenMenu",     "MagicMenu",     "StatsMenu",     "InventoryMenu", "MessageBoxMenu",
-    "ContainerMenu", "FavoritesMenu", "Tutorial Menu", "Console"
+    "ContainerMenu", "FavoritesMenu", "Tutorial Menu", "Console",
+#if TP_SKYRIMVR
+    // Unpaused in VR only. Menus/MapMenu.cpp fixes what that breaks: fog, fade and laser pointer.
+    "MapMenu",
+#endif
     //"MapMenu", // MapMenu is disabled till we find a proper fix for first person.
     //"Journal Menu", // Journal menu, aka pause menu, is disabled until we find a fix for manual save crashing while unpaused.
 };
+
+#if TP_SKYRIMVR
+// Built on first use: the game's string table does not exist yet when static initializers run.
+static bool IsAllowListMenuOpen(const UI* apUI)
+{
+    static const auto* s_names = []()
+    {
+        auto* pNames = new std::vector<BSFixedString>();
+        for (const char* pName : kAllowList)
+            pNames->emplace_back(pName);
+        return pNames;
+    }();
+
+    for (const auto& name : *s_names)
+    {
+        if (apUI->GetMenuOpen(name))
+            return true;
+    }
+    return false;
+}
+
+// VR melee is physics driven: a hit lands when a swing is detected (0x1406B9300 area, player update). While a
+// menu paused the game nothing moved, but the menus unpaused above leave it running, so swinging a drawn
+// weapon in them hits. The swing detector already cancels the swing while either of two menus is open
+// (UI::IsMenuOpen calls at 0x1406B93BB and 0x1406B93D9). Make the second one also report the menus above.
+constexpr uintptr_t kMeleeSwingMenuCheck = 0x6B93D9;
+
+using TIsMenuOpen = bool(const UI*, const BSFixedString&);
+static TIsMenuOpen* RealMeleeSwingMenuCheck;
+
+static bool HookMeleeSwingMenuCheck(const UI* apUI, const BSFixedString& acName)
+{
+    return RealMeleeSwingMenuCheck(apUI, acName) || IsAllowListMenuOpen(apUI);
+}
+
+// PlayerControls' can-process check (0x14072DB00, only caller PlayerControls::ProcessEvent) returns false
+// while the pause count is non-zero, which is how a paused menu stops gameplay input. In VR the menus
+// unpaused above still let some of it through (jump and sneak in all of them; walking and turning in
+// MapMenu, which pushes its own input context). Fail the check while one of them is open. Menu navigation
+// lives in MenuControls, and the map's pan, zoom and rotate keep working.
+constexpr uintptr_t kPlayerControlsCanProcess = 0x72DB00;
+
+TP_THIS_FUNCTION(TPlayerControlsCanProcess, bool, void);
+static TPlayerControlsCanProcess* RealPlayerControlsCanProcess;
+
+static bool HookPlayerControlsCanProcess(void* apControls)
+{
+    if (IsAllowListMenuOpen(UI::Get()))
+        return false;
+
+    return TiltedPhoques::ThisCall(RealPlayerControlsCanProcess, apControls);
+}
+#endif
 
 static void* (*UI_AddToActiveQueue)(UI*, IMenu*, void*);
 
@@ -150,6 +207,13 @@ static TiltedPhoques::Initializer s_s(
         // Allows the favorites menu to be numbered during connect.
         VersionDbPtr<uint8_t> FavoritesCanProcess(51538);
         TiltedPhoques::Put<uint16_t>(FavoritesCanProcess.Get() + 0x15, 0x9090);
+
+#if TP_SKYRIMVR
+        const auto exe = reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
+        TiltedPhoques::SwapCall(reinterpret_cast<uint8_t*>(exe + kMeleeSwingMenuCheck), RealMeleeSwingMenuCheck, &HookMeleeSwingMenuCheck);
+        RealPlayerControlsCanProcess = reinterpret_cast<TPlayerControlsCanProcess*>(exe + kPlayerControlsCanProcess);
+        TP_HOOK(&RealPlayerControlsCanProcess, HookPlayerControlsCanProcess);
+#endif
 
         // Some experiments:
         // POINTER_SKYRIMSE(TCallback, s_start, 13631);
