@@ -73,31 +73,7 @@ ActorMediator* ActorMediator::Get() noexcept
 
 bool ActorMediator::PerformAction(TESActionData* apAction) noexcept
 {
-    if (apAction->actor->formID == 0x13482)
-    {
-        /*static Set<uint32_t> s_ids;
-
-        spdlog::error("New frame");
-        for(auto i = 0; i < action.Variables.size(); ++i)
-        {
-            auto& oldVars = pExtension->LatestVariables.Variables;
-            auto& newVars = action.Variables;
-            if(oldVars[i] != newVars[i] && s_ids.count(i) == 0)
-            {
-                //s_ids.insert(i);
-                spdlog::info("Var {} changed from {} to {}", i, oldVars[i], newVars[i]);
-            }
-        }*/
-        // spdlog::info("Play animation name: {} with idle {:X} and target {:X} and unk {:X}", apAction->action->keyword.AsAscii(), (apAction->idleForm ? apAction->idleForm->formID : 0), (apAction->target ? apAction->target->formID : 0), apAction->unkInput);
-    }
-
     const auto res = TiltedPhoques::ThisCall(RealPerformAction, this, apAction);
-    // const auto res = RePerformAction(apAction, aValue);
-
-    if (res && apAction->actor->formID == 0x13482)
-    {
-        //    spdlog::info("Passed !");
-    }
 
     return res != 0;
 }
