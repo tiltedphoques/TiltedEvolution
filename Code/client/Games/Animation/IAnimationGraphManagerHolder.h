@@ -33,6 +33,4 @@ struct IAnimationGraphManagerHolder
     bool SetVariableBool(BSFixedString* apVariable, bool aValue);
     bool IsReady();
     bool RevertAnimationGraphManager();
-
-    bool ReSendAnimationEvent(BSFixedString* apAnimEvent);
 };
