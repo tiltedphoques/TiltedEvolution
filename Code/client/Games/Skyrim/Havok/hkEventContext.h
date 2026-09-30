@@ -11,8 +11,8 @@ struct hkEventContext
     CharacterContext* characterContext;
     void* unk20;
     void* unk28;
-    uint8_t byte30 {};
-    uint8_t pad31[0x38 - 0x31] {};
+    uint8_t byte30;
+    uint8_t pad31[0x38 - 0x31];
     ahkpWorld* hkpWorld;
     void* unk40;
     void* unk48;
