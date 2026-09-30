@@ -5,8 +5,6 @@ struct CharacterContext;
 
 struct hkEventContext
 {
-    hkEventContext(hkbCharacter* apCharacter, ahkpWorld* apWorld);
-
     hkbCharacter* character;
     struct hkbBehaviorGraph* behaviorGraph;
     void* unk10;

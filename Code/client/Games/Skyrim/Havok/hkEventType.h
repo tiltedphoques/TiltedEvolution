@@ -4,8 +4,13 @@ struct hkbBehaviorGraph;
 
 struct hkEventType
 {
-    hkEventType(int32_t aType);
-    hkEventType(const hkEventType&) = default;
+    explicit hkEventType(int32_t aType)
+        : type(aType)
+        , pad4(0)
+        , behaviorGraph(nullptr)
+        , pointer10(nullptr)
+    {
+    }
 
     int32_t type;
     uint32_t pad4;

@@ -11,8 +11,6 @@ struct TESActionData final : BGSActionData
 {
     TESActionData(uint32_t aParam1, Actor* apActor, BGSAction* apAction, TESObjectREFR* apTarget); // pass 2 for aParam1
     ~TESActionData();
-
-    bool ComputeResult();
 };
 
 #if TP_PLATFORM_64
