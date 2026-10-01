@@ -15,6 +15,7 @@ struct CellChangeEvent;
 struct ScriptAnimationEvent;
 struct AssignObjectsResponse;
 struct NotifyScriptAnimation;
+struct NotifyRemoveObjects;
 
 /**
  * @brief Handles objects in the environment.
@@ -28,6 +29,7 @@ private:
     void OnDisconnected(const DisconnectedEvent&) noexcept;
     void OnCellChange(const CellChangeEvent&) noexcept;
     void OnAssignObjectsResponse(const AssignObjectsResponse&) noexcept;
+    void OnRemoveObjects(const NotifyRemoveObjects&) noexcept;
     void OnActivate(const ActivateEvent&) noexcept;
     void OnActivateNotify(const NotifyActivate&) noexcept;
     void OnLockChange(const LockChangeEvent&) noexcept;
@@ -49,6 +51,7 @@ private:
     entt::scoped_connection m_lockChangeConnection;
     entt::scoped_connection m_lockChangeNotifyConnection;
     entt::scoped_connection m_assignObjectConnection;
+    entt::scoped_connection m_removeObjectsConnection;
     entt::scoped_connection m_scriptAnimationConnection;
     entt::scoped_connection m_scriptAnimationNotifyConnection;
 };
