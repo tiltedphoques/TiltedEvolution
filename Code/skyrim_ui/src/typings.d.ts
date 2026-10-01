@@ -93,7 +93,10 @@ declare namespace SkyrimTogetherTypes {
 
   type PartyLeftCallback = (inviterId: number) => void;
 
-  type PartyInviteReceivedCallback = (inviterId: number) => void;
+  type PartyInviteReceivedCallback = (
+    inviterId: number,
+    expiresInMs?: number,
+  ) => void;
 }
 
 /** Global Skyrim: Together object. */

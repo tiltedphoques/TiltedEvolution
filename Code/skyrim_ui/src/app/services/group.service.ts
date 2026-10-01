@@ -122,13 +122,6 @@ export class GroupService implements OnDestroy {
 
           for (let id of partyInfo.playerIds) {
             group.members.push(id);
-
-            for (const player of playerList.players) {
-              if (player.id === id) {
-                player.hasBeenInvited = false;
-                break;
-              }
-            }
           }
 
           group.owner = partyInfo.leaderId;
@@ -147,8 +140,6 @@ export class GroupService implements OnDestroy {
         const group = this.createGroup(this.group.getValue());
 
         if (group) {
-          this.playerListService.resetHasBeenInvitedFlags();
-
           group.isEnabled = false;
           group.owner = undefined;
           group.members.splice(0);
@@ -232,6 +223,7 @@ export class GroupService implements OnDestroy {
     if (group) {
       this.soundService.play(Sound.Focus);
       this.loadingService.setLoading(true);
+      this.playerListService.resetPartyInvitations();
       this.clientService.launchParty();
 
       group.isEnabled = true;
@@ -248,6 +240,7 @@ export class GroupService implements OnDestroy {
       }
 
       this.soundService.play(Sound.Ok);
+      this.playerListService.resetPartyState();
       this.clientService.leaveParty();
 
       group.isEnabled = false;
@@ -260,7 +253,7 @@ export class GroupService implements OnDestroy {
 
   public invite(playerId: number) {
     this.soundService.play(Sound.Ok);
-    this.clientService.createPartyInvite(playerId);
+    this.playerListService.sendPartyInvite(playerId);
   }
 
   async accept(inviterId: number) {
@@ -279,7 +272,7 @@ export class GroupService implements OnDestroy {
 
       this.soundService.play(Sound.Ok);
 
-      this.clientService.acceptPartyInvite(inviterId);
+      this.playerListService.acceptPartyInvite(inviterId);
     }
   }
 

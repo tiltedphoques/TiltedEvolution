@@ -310,9 +310,9 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     );
   }
 
-  inviteToPlayerMockParty(playerId: number) {
+  inviteToPlayerMockParty(playerId: number, expiresInMs = 60000) {
     playerStore.update(updateEntities(playerId, { invitedLocalPlayer: true }));
-    this.emit('partyInviteReceived', playerId);
+    this.emit('partyInviteReceived', playerId, expiresInMs);
   }
 
   startPlayerMockParty(playerId: number) {
