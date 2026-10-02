@@ -127,7 +127,7 @@ struct TESQuest : BGSStoryManagerTreeForm
     bool EnsureQuestStarted(bool& succeded, bool force);
 
     bool SetStage(uint16_t stage);
-    void ScriptSetStage(uint16_t stage);
+    void ScriptSetStage(uint16_t stage, bool bForce = false);
     void SetStopped();
 };
 
