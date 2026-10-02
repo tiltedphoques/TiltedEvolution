@@ -259,6 +259,8 @@ void ActorValueService::RunDeathStateUpdates() noexcept
         {
             localComponent.IsDead = isDead;
 
+            spdlog::info("Sending death state {} for local actor {:X}, server id: {:X}", isDead, pActor->formID, localComponent.Id);
+
             RequestDeathStateChange requestChange;
             requestChange.Id = localComponent.Id;
             requestChange.OwnershipEpoch = localComponent.OwnershipEpoch;
@@ -388,7 +390,13 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
     });
 
     if (it == std::end(view))
+    {
+        const auto cEntity = Utils::FindEntityByServerId(acMessage.Id);
+        spdlog::info(
+            "Dropped death state {} for server id {:X} at epoch {}, entity found: {}, has form id: {}, waiting for 3D: {}", acMessage.IsDead, acMessage.Id, acMessage.OwnershipEpoch,
+            cEntity.has_value(), cEntity && m_world.all_of<FormIdComponent>(*cEntity), cEntity && m_world.all_of<WaitingFor3D>(*cEntity));
         return;
+    }
 
     auto& formIdComponent = view.get<FormIdComponent>(*it);
     Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
@@ -402,5 +410,8 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
         return;
 
     if (pActor->IsDead() != acMessage.IsDead)
+    {
+        spdlog::info("Applying death state {} to remote actor {:X}, server id: {:X}", acMessage.IsDead, pActor->formID, acMessage.Id);
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+    }
 }

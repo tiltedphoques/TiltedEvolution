@@ -149,7 +149,22 @@ void CharacterService::ReconcileActorData(
     }
 
     if (apActor->IsDead() != acActorData.IsDead)
-        acActorData.IsDead ? apActor->Kill() : apActor->Respawn();
+    {
+        if (acActorData.IsDead)
+        {
+            spdlog::info("Killing actor {:X} to match server state, local owner: {}", apActor->formID, aIsLocalOwner);
+            apActor->Kill();
+        }
+        // Respawn resets the reference, which re-rolls leveled actors and reloads their 3D. The owner would
+        // rediscover it as a new actor, so keep the local death and let the death state sync report it.
+        else if (aIsLocalOwner)
+            spdlog::warn("Keeping actor {:X} dead although the server has it alive", apActor->formID);
+        else
+        {
+            spdlog::info("Respawning actor {:X} to match server state", apActor->formID);
+            apActor->Respawn();
+        }
+    }
 
     if (aIsLocalOwner)
     {
@@ -423,8 +438,14 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
     {
         spdlog::info("Received local actor, form id: {:X}", pActor->formID);
 
-        pActor->GetExtension()->SetRemote(true);
-        ReconcileActorData(cEntity, pActor, acMessage.OwnershipEpoch, actorData, true, true);
+        // We are the authority, and the server's data is only an echo of our own request snapshot, which can already be stale.
+        // Applying it would e.g. Respawn() (Resurrect + Reset) an actor that was killed while the request was in flight,
+        // which re-rolls leveled temporary actors, removes them, and makes them get rediscovered as new entities endlessly.
+        // Any local change since the request (e.g. death) is picked up by the usual LocalComponent diffing instead.
+        if (pActor->IsDead() != acMessage.IsDead)
+            spdlog::info("Local actor {:X} death state changed while its assignment was in flight (server: {}, local: {}), keeping local state", pActor->formID, acMessage.IsDead, pActor->IsDead());
+
+        m_weaponDrawUpdates.erase(pActor->formID);
 
         auto& localAnimationComponent = m_world.emplace_or_replace<LocalAnimationComponent>(cEntity);
 
@@ -560,7 +581,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         return;
     }
 
-    spdlog::info("CharacterSpawnRequest, server id: {:X}, form id: {:X}", acMessage.ServerId, pActor->formID);
+    spdlog::info("CharacterSpawnRequest, server id: {:X}, form id: {:X}, dead: {}", acMessage.ServerId, pActor->formID, acMessage.IsDead);
 
     // Pending reconciliation re-enables the actor after applying the owner's pick.
     if (pActor->IsDisabled() && pActor->GetExtension()->Reconciliation != ActorExtension::ReconciliationStage::WaitingForDisable)
@@ -1814,7 +1835,7 @@ void CharacterService::RunRemoteUpdates() noexcept
 
         readyEntities.push_back(entity);
 
-        spdlog::info("Applied 3D for actor, form id: {:X}", pActor->formID);
+        spdlog::info("Applied 3D for actor, form id: {:X}, dead: {}", pActor->formID, pActor->IsDead());
     }
 
     for (auto entity : readyEntities)
