@@ -581,7 +581,7 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
         return;
     }
 
-    spdlog::info("CharacterSpawnRequest, server id: {:X}, form id: {:X}", acMessage.ServerId, pActor->formID);
+    spdlog::info("CharacterSpawnRequest, server id: {:X}, form id: {:X}, dead: {}", acMessage.ServerId, pActor->formID, acMessage.IsDead);
 
     // Pending reconciliation re-enables the actor after applying the owner's pick.
     if (pActor->IsDisabled() && pActor->GetExtension()->Reconciliation != ActorExtension::ReconciliationStage::WaitingForDisable)
@@ -1835,7 +1835,7 @@ void CharacterService::RunRemoteUpdates() noexcept
 
         readyEntities.push_back(entity);
 
-        spdlog::info("Applied 3D for actor, form id: {:X}", pActor->formID);
+        spdlog::info("Applied 3D for actor, form id: {:X}, dead: {}", pActor->formID, pActor->IsDead());
     }
 
     for (auto entity : readyEntities)

@@ -390,7 +390,13 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
     });
 
     if (it == std::end(view))
+    {
+        const auto cEntity = Utils::FindEntityByServerId(acMessage.Id);
+        spdlog::info(
+            "Dropped death state {} for server id {:X} at epoch {}, entity found: {}, has form id: {}, waiting for 3D: {}", acMessage.IsDead, acMessage.Id, acMessage.OwnershipEpoch,
+            cEntity.has_value(), cEntity && m_world.all_of<FormIdComponent>(*cEntity), cEntity && m_world.all_of<WaitingFor3D>(*cEntity));
         return;
+    }
 
     auto& formIdComponent = view.get<FormIdComponent>(*it);
     Actor* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
