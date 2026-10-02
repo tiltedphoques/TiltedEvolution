@@ -220,6 +220,9 @@ int main(int argc, char** argv)
 
     // Keep stack free.
     const auto cpRunner{std::make_unique<DediRunner>(argc, argv)};
+    if (!cpRunner->IsValid())
+        return 0;
+
     if (bConsole)
     {
         cpRunner->StartTerminalIO();

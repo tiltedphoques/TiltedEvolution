@@ -34,10 +34,14 @@ struct DediRunner
     void RequestKill();
     void HandleConsole(const TiltedPhoques::String& acCommand);
 
+    // false if the server wasn't created, e.g. with --generate-config
+    bool IsValid() const noexcept { return m_pServerInstance != nullptr; }
+
 private:
     static void PrintExecutorArrowHack();
 
-    void LoadSettings(int argc, char** argv);
+    // returns false if the server shouldn't be started
+    bool LoadSettings(int argc, char** argv);
 
     static void ReadStdin(uv_stream_t* apStream, ssize_t aRead, const uv_buf_t* acpBuffer);
     static void AllocateBuffer(uv_handle_t* apHandle, size_t aSuggestedSize, uv_buf_t* apBuffer);
