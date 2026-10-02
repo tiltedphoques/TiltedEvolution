@@ -259,6 +259,8 @@ void ActorValueService::RunDeathStateUpdates() noexcept
         {
             localComponent.IsDead = isDead;
 
+            spdlog::info("Sending death state {} for local actor {:X}, server id: {:X}", isDead, pActor->formID, localComponent.Id);
+
             RequestDeathStateChange requestChange;
             requestChange.Id = localComponent.Id;
             requestChange.OwnershipEpoch = localComponent.OwnershipEpoch;
@@ -402,5 +404,8 @@ void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessa
         return;
 
     if (pActor->IsDead() != acMessage.IsDead)
+    {
+        spdlog::info("Applying death state {} to remote actor {:X}, server id: {:X}", acMessage.IsDead, pActor->formID, acMessage.Id);
         acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+    }
 }
