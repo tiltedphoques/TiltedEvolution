@@ -102,6 +102,8 @@ void PartyService::OnUpdate(const UpdateEvent& acEvent) noexcept
 void PartyService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
     DestroyParty();
+    m_invitations.clear();
+    m_nextUpdate = 0;
 }
 
 void PartyService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept
