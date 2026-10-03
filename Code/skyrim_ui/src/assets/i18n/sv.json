@@ -95,7 +95,7 @@
       "NO_SERVERS": "Inga publika servrar matchar",
       "HIDE_MISMATCHED_SERVERS": "Göm servrar med inkompatibel version",
       "HIDE_FULL_SERVERS": "Göm fulla servrar",
-      "HIDE_PASSWORD_PROTECTED_SERVERS": "Dölj lösenordsskyddare servrar",
+      "HIDE_PASSWORD_PROTECTED_SERVERS": "Dölj lösenordsskyddade servrar",
       "SERVER_COUNT": "Visar {{filteredCount}} av {{count}} servrar",
       "TABLE_HEADERS": {
         "NAME": "Servernamn",
