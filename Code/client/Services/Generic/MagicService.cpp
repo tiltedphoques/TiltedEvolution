@@ -104,6 +104,7 @@ void MagicService::OnSpellCastEvent(const SpellCastEvent& acEvent) const noexcep
     request.CasterId = localComponent.Id;
     request.CastingSource = acEvent.pCaster->GetCastingSource();
     request.IsDualCasting = acEvent.pCaster->GetIsDualCasting();
+    request.DesiredTarget = 0;
 
     if (!m_world.GetModSystem().GetServerModId(acEvent.SpellId, request.SpellFormId))
     {
