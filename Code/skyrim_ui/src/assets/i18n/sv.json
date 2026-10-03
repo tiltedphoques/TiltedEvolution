@@ -1,0 +1,181 @@
+{
+  "COMPONENT": {
+    "CHAT": {
+      "SEND": "Skicka",
+      "MESSAGE": "Meddelande",
+      "MESSAGE_TOO_LONG": "Du kan inte skicka meddelanden längre än {{chatMessageLengthLimit}} tecken.",
+      "SET_TIME_ARGUMENT_COUNT": "Fel argument, använd: /settime HH MM, example: /settime 15 32.",
+      "SET_TIME_INVALID_ARGUMENTS": "Timmarna måste vara mellan 0 och 23, och minuterna mellan 0 och 59."
+    },
+    "CONNECT": {
+      "INFO": {
+        "SERVER_ADDRESS": "Anslut till en server med hela adressen. Använd formatet <strong>address:port</strong>. Standardporten är <strong>10578</strong>.",
+        "HELGEN": "Anslut INTE till någon server om du fortfarande är i Helgen eller introsekvensen. Kontrollera att du flytt från Helgen och är utanför grottan."
+      },
+      "ADDRESS": "Adress",
+      "PASSWORD": "Lösenord",
+      "SAVE_PASSWORD": "Spara Lösenord?",
+      "HIDE_PASSWORD": "Dölj Lösenord?",
+      "CONNECT": "Anslut",
+      "CANCEL": "Avbryt",
+      "PUBLIC_SERVERS": "Publika servrar",
+      "ERROR": {
+        "CONNECTION": "Kunde inte ansluta till den specifika servern. Kontrollera att du skrivit in korrekt adress och att du inte har nätverksproblem för tillfället.",
+        "VERSION_MISMATCH": "Du kan inte ansluta till servern för att den har inte samma version av Skyrim Together som du.",
+        "INVALID_ADDRESS": "Adressen har felaktigt format."
+      }
+    },
+    "DISCONNECT": {
+      "PROMPT": "Är du säker på att du vill logga ut?",
+      "PROCEED": "Fortsätt",
+      "CANCEL": "Avbryt"
+    },
+    "ERROR": {
+      "OK": "Ok"
+    },
+    "NOTIFICATIONS": {
+      "MESSAGE_FROM": "Meddelande från",
+      "ACCEPT": "Acceptera",
+      "DECLINE": "Neka"
+    },
+    "PARTY_MENU": {
+      "ACCEPT_INVITE": "Acceptera inbjudan från {{name}}",
+      "LAUNCH_PARTY": "Starta party",
+      "INVITES": "Inbjudningar",
+      "NO_INVITES": "Du har inga inbjudningar",
+      "EXPERIENCE_WARNING": "För den bästa Quest-upplevelsen, läs igenom vår playguide på vår wiki, som du hittar via vår hemsida, <b>skyrim-together.com</b>. Här är en summering av riktlinjerna:",
+      "GUIDELINES": {
+        "PARTY": "Genom att starta ett party, blir du dess \"host\", eller partyledare.",
+        "PARTY_LEADER_TALK": "Bara partyledaren kan prata med NPCs för att höra quest-dialog.",
+        "PARTY_LEADER_LOOT_QUESTITEMS": "Partyledare och partymedlemmar kan ta emot quest-föremål.",
+        "KEEP_PARTY_LEADER": "Behåll samma partyledare per genomspelning.",
+        "ONE_PARTY_PER_SERVER": "Skapa endast ett party per server."
+      },
+      "NO_PLAYERS_IN_PARTY": "Det finns ingen i ditt party än. Bjud in dem via spelarlistan!",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Namn",
+        "LOCATION": "Plats"
+      },
+      "ACTIONS": {
+        "KICK": "Släng ut",
+        "TELEPORT": "Teleportera",
+        "MAKE_LEADER": "Gör till ledare"
+      },
+      "LEAVE_PARTY": "Lämna party"
+    },
+    "PARTY_LIST": {
+      "NO_OTHER_PLAYERS": "Inte en kotte här, bara hönorna",
+      "TABLE_HEADERS": {
+        "LEVEL": "Lv.",
+        "NAME": "Namn",
+        "LOCATION": "Plats"
+      },
+      "INVITE": "Bjud in"
+    },
+    "PLAYER_MANAGER": {
+      "PLAYER_LIST": "Spelarlista",
+      "PARTY_MENU": "Partymeny",
+      "BACK": "Tillbaka"
+    },
+    "ROOT": {
+      "CONNECT": "Anslut",
+      "DISCONNECT": "Logga ut",
+      "REVEAL_PLAYERS": "Lys upp spelare",
+      "RECONNECT": "Återanslut",
+      "PLAYER_MANAGER": "Spelarhanterare",
+      "SETTINGS": "Inställningar",
+      "CONNECTION_IN_PROGRESS": "Anslutning pågår..."
+    },
+    "SERVER_LIST": {
+      "SEARCH": "Sök...",
+      "REFRESH": "Uppdatera",
+      "BACK": "Tillbaka",
+      "LOADING": "Laddar...",
+      "NO_SERVERS": "Inga publika servrar matchar",
+      "HIDE_MISMATCHED_SERVERS": "Göm servrar med inkompatibel version",
+      "HIDE_FULL_SERVERS": "Göm fulla servrar",
+      "HIDE_PASSWORD_PROTECTED_SERVERS": "Dölj lösenordsskyddare servrar",
+      "SERVER_COUNT": "Visar {{filteredCount}} av {{count}} servrar",
+      "TABLE_HEADERS": {
+        "NAME": "Servernamn",
+        "PLAYERS": "Spelare / Max.",
+        "COUNTRY": "Land",
+        "FAVORITE": "Favorit"
+      },
+      "JOIN": "Anslut"
+    },
+    "SETTINGS": {
+      "VERSION": {
+        "HEADER": "Version",
+        "INFO": "Nuvarande installation:",
+        "OUTDATED": "Versionen är gammal. Var snäll och uppdatera."
+      },
+      "AUDIO": "Ljud",
+      "MUTE_UI": "Tysta ljud i menyer",
+      "UI_VOLUME": "Ljudvolym i menyer",
+      "PARTY": "Party",
+      "SHOW_PARTY": "Visa Party",
+      "AUTO_HIDE_PARTY": "Auto-Dölj Party",
+      "AUTO_HIDE_PARTY_LENGTH": "Auto-Dölj Timerlängd",
+      "PARTY_ANCHOR": "Position",
+      "PARTY_ANCHOR_POSITION": {
+        "TOP_LEFT": "Uppe till vänster",
+        "TOP_RIGHT": "Uppe till höger",
+        "BOTTOM_RIGHT": "Nere till höger",
+        "BOTTOM_LEFT": "Nere till vänster"
+      },
+      "PARTY_ANCHOR_OFFSET_X": "Horizontell Justering",
+      "PARTY_ANCHOR_OFFSET_Y": "Vertikal Justering",
+      "LENGTH": "{{length}}s",
+      "UI": "Menygränssnitt",
+      "LANGUAGE": "Språk",
+      "DEBUG": "Debugg",
+      "SHOW_DEBUG_INFO": "Visa Debugginformation",
+      "FONT_SIZE": "Teckenstorlek",
+      "FONT_SIZES": {
+        "XS": "Minst",
+        "S": "Mindre",
+        "M": "Mellan",
+        "L": "Större",
+        "XL": "Störst"
+      },
+      "BACK": "Tillbaka"
+    }
+  },
+  "SERVICE": {
+    "CLIENT": {
+      "CONNECTION_LOST": "Anslutning förlorad, försöker återansluta. {{remainingReconnectionAttempt}} försök kvar.",
+      "CONNECTED": "Lyckades ansluta till servern.",
+      "DISCONNECTED": "Loggade ut från servern."
+    },
+    "COMMANDS": {
+      "AVAILABLE_COMMANDS": "Tillgängliga chattkommandon: {{cmds}}",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' är inte ett erkänt kommando.",
+      "NOT_ADMIN": "Du måste ansluta som admin för att använda kommandot."
+    },
+    "GROUP": {
+      "LEVEL_UP": "{{name}} har nått nivå {{level}}.",
+      "ALREADY_IN_GROUP": "Du är redan i ett party. För att gå med i ett annat party, lämna ditt nuvarande party.",
+      "KICK_NO_PARTY_LEADER": "Du kan inte slänga ut andra medlemmar då du inte är partyledaren.",
+      "MAKE_LEADER_NO_PARTY_LEADER": "Du kan inte göra någon annan medlem till ledare då du inte är partyledaren."
+    },
+    "ERROR": {
+      "ERRORS": {
+        "WRONG_VERSION": "Servern förväntar sig version {{expectedVersion}} men du kör version {{version}}.",
+        "MODS_MISMATCH": "Servern har ModPolicy aktiverad.{{mods}}",
+        "MODS_MISMATCH_REMOVE": "Ta bort följande mods för att ansluta:\n{{mods}}",
+        "MODS_MISMATCH_INSTALL": "Installera följande mods för att ansluta:\n{{mods}}",
+        "CLIENT_MODS_DISALLOWED": "Servern tillåter inte {{mods}}. Ta bort dem för att ansluta.",
+        "WRONG_PASSWORD": "Lösenordet du angav är inkorrekt.",
+        "NO_REASON": "Servern nekade din anslutning utan känd anledning.",
+        "SERVER_FULL": "Servern är full.",
+        "BAD_UGRIDSTOLOAD": "Det verkar som din Skyrim.ini fil inte har standardvärdet för 'uGridsToLoad'. DET ÄR INTE BRA, och kommer troligen skapa problem. Var vänlig och återställ den till standardvärdet (5), eller radera Skyrim.ini filen och starta Skyrim en gång utan mods för att generera en ny fil. Inställningen 'uExterior Cell Buffer' och 'uInterior Cell Buffer' ska också lämnas på standardvärdena. Om du inte vet hur man ändrar det, läs mer på vår wiki eller kontakta vår Discordserver/Reddit för att få hjälp.",
+        "NON_DEFAULT_INSTALL": "Det verksar som din installation inte är Skyrim utan mods, dvs. den har Creation Club plugins (Anniversary Update eller CC) eller andra mods.\nVi rekommenderar INTE att spela med mods.\nVi rekommenderar att du avinstallerar eller avaktiverar dessa mods (instruktioner finns på vår wiki).\n\nFör en stabil upplevelse ska du ha följande plugins eller modlista:<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp\nSkyrimTogetherQuestPatches.esp</strong>"
+      }
+    },
+    "PLAYER_LIST": {
+      "PARTY_INVITE": "{{from}} bjöd in dig till ett party"
+    }
+  }
+}
