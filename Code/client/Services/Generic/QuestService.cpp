@@ -4,6 +4,10 @@
 
 #include <Services/QuestService.h>
 #include <Services/ImguiService.h>
+#include <Services/OverlayService.h>
+#include <Services/TransportService.h>
+
+#include <OverlayApp.hpp>
 
 #include <PlayerCharacter.h>
 #include <Forms/TESQuest.h>
@@ -54,8 +58,14 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
 {
-    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsInParty())
+    if (ScopedQuestOverride::IsOverriden())
         return BSTEventResult::kOk;
+
+    if (!m_world.Get().GetPartyService().IsInParty())
+    {
+        NotifyOverlayOfQuestUpdate(apEvent->formId);
+        return BSTEventResult::kOk;
+    }
 
     spdlog::info("Quest start/stop event: {:X}", apEvent->formId);
 
@@ -102,8 +112,14 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
 
 BSTEventResult QuestService::OnEvent(const TESQuestStageEvent* apEvent, const EventDispatcher<TESQuestStageEvent>*)
 {
-    if (ScopedQuestOverride::IsOverriden() || !m_world.Get().GetPartyService().IsInParty())
+    if (ScopedQuestOverride::IsOverriden())
         return BSTEventResult::kOk;
+
+    if (!m_world.Get().GetPartyService().IsInParty())
+    {
+        NotifyOverlayOfQuestUpdate(apEvent->formId);
+        return BSTEventResult::kOk;
+    }
 
     spdlog::info("Quest stage event: {:X}, stage: {}", apEvent->formId, apEvent->stageId);
 
@@ -193,6 +209,22 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
 
     if (!bResult)
         spdlog::error("Failed to update the client quest state, quest: {:X}, stage: {}, status: {}", formId, aUpdate.Stage, aUpdate.Status);
+}
+
+void QuestService::NotifyOverlayOfQuestUpdate(uint32_t aFormId) noexcept
+{
+    if (!m_world.GetTransport().IsOnline())
+        return;
+
+    TESQuest* pQuest = Cast<TESQuest>(TESForm::GetById(aFormId));
+    if (!pQuest || IsNonSyncableQuest(pQuest))
+        return;
+
+    // Hidden background quests and minor misc tasks are too noisy to prompt about
+    if (pQuest->type == TESQuest::Type::None || pQuest->type == TESQuest::Type::Miscellaneous)
+        return;
+
+    m_world.GetOverlayService().GetOverlayApp()->ExecuteAsync("questUpdated");
 }
 
 bool QuestService::StopQuest(uint32_t aformId)

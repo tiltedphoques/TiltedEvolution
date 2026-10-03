@@ -11,6 +11,7 @@
   <div *ngIf="visible | async" class="debug-helper-content">
     <div class="separator">Players</div>
     <button (click)="addMockPlayer()">Add Player</button>
+    <button (click)="mockQuestUpdate()">Quest Update</button>
     <div class="player-actions">
       <div *ngFor="let player of players$ | async">
         <hr />
