@@ -178,6 +178,9 @@ void ObjectService::OnScriptAnimationRequest(const PacketEvent<ScriptAnimationRe
 
     for (Player* pPlayer : m_world.GetPlayerManager())
     {
+        if (pPlayer == acMessage.pPlayer)
+            continue;
+
         pPlayer->Send(message);
     }
 }

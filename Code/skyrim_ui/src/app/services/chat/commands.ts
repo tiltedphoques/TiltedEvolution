@@ -18,12 +18,12 @@ export class CommandHandler {
   }
   
   private SetTime: Command = {
-    name: 'settime', 
+    name: 'settime',
     executor: async (args) => {
       const cmds = [...this.commands.keys()].join(', ');
       if (args.length != 2) {
         this.chatService.pushSystemMessage(
-          'COMPONENT.CHAT.SET_TIME_ARGUMENT_COUNT', 
+          'COMPONENT.CHAT.SET_TIME_ARGUMENT_COUNT',
           { cmds },
         );
         return;
@@ -43,11 +43,19 @@ export class CommandHandler {
     },
   }
 
+  private Wave: Command = {
+    name: 'wave',
+    executor: async () => {
+      skyrimtogether.wave();
+    },
+  }
+
   private readonly commands = new Map<string, Command>();
 
   public constructor(private readonly chatService: ChatService) {
     this.register(this.Help);
     this.register(this.SetTime);
+    this.register(this.Wave);
   }
 
   public readonly COMMAND_PREFIX = '/';
