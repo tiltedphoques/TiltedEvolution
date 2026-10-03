@@ -1,90 +1,47 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Injectable } from '@angular/core';
 import { ChatService } from './chat.service';
 import { ClientService } from './client.service';
-import { GroupService } from './group.service';
-import { PlayerListService } from './player-list.service';
 import { PopupNotificationService } from './popup-notification.service';
 
 /** Minimum time between two party hints, in milliseconds. */
 const PARTY_HINT_COOLDOWN = 15 * 60 * 1000;
 
-/**
- * Suggests forming a party when the player progresses quests alone
- * while other players are on the server.
- */
+/** Suggests forming a party when the player progresses quests alone.
+ *  The client decides when `questUpdated` is worth a hint. */
 @Injectable({
   providedIn: 'root',
 })
-export class PartyHintService implements OnDestroy {
-  private questUpdatedSubscription: Subscription;
-
+export class PartyHintService {
   /** Set by "Don't show", lasts for the current session only. */
   private disabled = false;
-  private lastShownAt?: number;
+  private lastShownAt = -Infinity;
 
   constructor(
-    private readonly chatService: ChatService,
-    private readonly clientService: ClientService,
-    private readonly groupService: GroupService,
-    private readonly playerListService: PlayerListService,
-    private readonly popupNotificationService: PopupNotificationService,
+    chatService: ChatService,
+    clientService: ClientService,
+    popupNotificationService: PopupNotificationService,
   ) {
-    this.questUpdatedSubscription =
-      this.clientService.questUpdatedChange.subscribe(() => {
-        if (this.shouldShow()) {
-          this.show();
-        }
-      });
+    clientService.questUpdatedChange.subscribe(() => {
+      const now = Date.now();
+      if (this.disabled || now - this.lastShownAt < PARTY_HINT_COOLDOWN) {
+        return;
+      }
+      this.lastShownAt = now;
+      popupNotificationService.addPartyHint(
+        () => clientService.openPlayGuide(),
+        () => (this.disabled = true),
+      );
+    });
 
     // Debug helper for testing the hint without waiting out the cooldown
-    this.chatService.registerCommand({
+    chatService.registerCommand({
       name: 'resetpartyhint',
       hidden: true,
       executor: async () => {
-        this.lastShownAt = undefined;
+        this.lastShownAt = -Infinity;
         this.disabled = false;
-        this.chatService.pushSystemMessage('Party hint timer has been reset.');
+        chatService.pushSystemMessage('Party hint timer has been reset.');
       },
     });
-  }
-
-  ngOnDestroy() {
-    this.questUpdatedSubscription.unsubscribe();
-  }
-
-  private shouldShow(): boolean {
-    if (this.disabled) {
-      return false;
-    }
-
-    if (
-      this.lastShownAt !== undefined &&
-      Date.now() - this.lastShownAt < PARTY_HINT_COOLDOWN
-    ) {
-      return false;
-    }
-
-    if (!this.clientService.connectionStateChange.getValue()) {
-      return false;
-    }
-
-    if (this.groupService.isPartyEnabled()) {
-      return false;
-    }
-
-    const otherPlayers = (
-      this.playerListService.getPlayerList()?.players ?? []
-    ).filter(player => player.id !== this.clientService.localPlayerId);
-
-    return otherPlayers.length > 0;
-  }
-
-  private show() {
-    this.lastShownAt = Date.now();
-    this.popupNotificationService.addPartyHint(
-      () => this.clientService.openPlayGuide(),
-      () => (this.disabled = true),
-    );
   }
 }
