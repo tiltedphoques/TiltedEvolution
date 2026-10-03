@@ -2,6 +2,8 @@ import { ChatService } from '../chat.service';
 
 export interface Command {
   readonly name: string;
+  /** Not listed by /help */
+  readonly hidden?: boolean;
   readonly executor: (args: string[]) => Promise<void>;
 }
 
@@ -9,7 +11,10 @@ export class CommandHandler {
   private Help: Command = {
     name: 'help',
     executor: async () => {
-      const cmds = [...this.commands.keys()].join(', ');
+      const cmds = [...this.commands.values()]
+        .filter(cmd => !cmd.hidden)
+        .map(cmd => cmd.name)
+        .join(', ');
       this.chatService.pushSystemMessage(
         'SERVICE.COMMANDS.AVAILABLE_COMMANDS',
         { cmds },

@@ -76,6 +76,10 @@ export class ChatService {
     this.messageList.next({ type, content, senderName });
   }
 
+  public registerCommand(cmd: Command) {
+    this.CommandHandler.register(cmd);
+  }
+
   private CommandHandler: CommandHandler;
 
   private LocalChat: Command = {

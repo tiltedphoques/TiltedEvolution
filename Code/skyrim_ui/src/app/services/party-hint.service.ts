@@ -1,5 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { ChatService } from './chat.service';
 import { ClientService } from './client.service';
 import { GroupService } from './group.service';
 import { PlayerListService } from './player-list.service';
@@ -23,6 +24,7 @@ export class PartyHintService implements OnDestroy {
   private lastShownAt?: number;
 
   constructor(
+    private readonly chatService: ChatService,
     private readonly clientService: ClientService,
     private readonly groupService: GroupService,
     private readonly playerListService: PlayerListService,
@@ -34,6 +36,17 @@ export class PartyHintService implements OnDestroy {
           this.show();
         }
       });
+
+    // Debug helper for testing the hint without waiting out the cooldown
+    this.chatService.registerCommand({
+      name: 'resetpartyhint',
+      hidden: true,
+      executor: async () => {
+        this.lastShownAt = undefined;
+        this.disabled = false;
+        this.chatService.pushSystemMessage('Party hint timer has been reset.');
+      },
+    });
   }
 
   ngOnDestroy() {
