@@ -21,5 +21,5 @@ struct SpellCastRequest final : ClientMessage
     GameId SpellFormId{};
     int32_t CastingSource;
     bool IsDualCasting;
-    uint32_t DesiredTarget;
+    uint32_t DesiredTarget{};
 };
