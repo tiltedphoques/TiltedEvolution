@@ -34,10 +34,6 @@ struct hkbBehaviorGraph
     virtual void sub_05();
     virtual void SendEvent(hkEventContext& aContext, hkEventType& aType);
 
-    // Reverse engineering do not use
-    void ReSendEvent(hkEventContext& aContext, hkEventType& aType);
-    void ReHandleEvent(hkEventContext& aContext, hkEventType& aType);
-
     struct Struct98
     {
         SomeData* data;

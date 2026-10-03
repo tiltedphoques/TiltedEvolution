@@ -9,6 +9,7 @@ import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';
 import { PopupNotification } from '../../models/popup-notification';
 import { DestroyService } from '../../services/destroy.service';
 import { GroupService } from '../../services/group.service';
+import { PartyHintService } from '../../services/party-hint.service';
 import { PopupNotificationService } from '../../services/popup-notification.service';
 
 @Component({
@@ -25,6 +26,7 @@ export class NotificationPopupContainerComponent implements OnInit {
   constructor(
     private readonly destroy$: DestroyService,
     private readonly groupService: GroupService,
+    private readonly partyHintService: PartyHintService,
     private readonly popupNotificationService: PopupNotificationService,
     private readonly cdr: ChangeDetectorRef,
   ) {}

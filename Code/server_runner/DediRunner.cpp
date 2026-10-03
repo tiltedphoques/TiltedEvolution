@@ -4,18 +4,21 @@
 #include <console/CommandSettingsProvider.h>
 
 #include <chrono>
+#include <cstring>
 #include <iostream>
 #include <base/threading/ThreadUtils.h>
 
 namespace
 {
 constexpr char kSettingsFileName[] = "STServer.ini";
+constexpr char kGenerateConfigArg[] = "--generate-config";
 
 DediRunner* s_pRunner{nullptr};
 } // namespace
 
 // imports
-GS_IMPORT TiltedPhoques::UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& conReg, const std::function<void()>& aCallback);
+GS_IMPORT void RegisterServerSettings(Console::ConsoleRegistry& conReg);
+GS_IMPORT TiltedPhoques::UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& conReg);
 // needs to be global
 Console::Setting bConsole{"bConsole", "Enable the console", true};
 
@@ -31,7 +34,12 @@ DediRunner::DediRunner(int argc, char** argv)
 
     uv_loop_init(&m_loop);
 
-    m_pServerInstance = std::move(CreateGameServer(m_console, [this, argc, argv]() { LoadSettings(argc, argv); }));
+    // settings must be registered before they can be loaded
+    RegisterServerSettings(m_console);
+    if (!LoadSettings(argc, argv))
+        return;
+
+    m_pServerInstance = CreateGameServer(m_console);
 
     // it is here for now..
     m_pServerInstance->Initialize();
@@ -45,8 +53,19 @@ DediRunner::~DediRunner()
     uv_loop_close(&m_loop);
 }
 
-void DediRunner::LoadSettings(int argc, char** argv)
+bool DediRunner::LoadSettings(int argc, char** argv)
 {
+    // --generate-config [path]: write the default settings and don't start the server
+    if (argc > 1 && std::strcmp(argv[1], kGenerateConfigArg) == 0)
+    {
+        const fs::path path = argc > 2 ? fs::path(argv[2]) : fs::current_path() / kConfigPathName / kSettingsFileName;
+        if (path.has_parent_path())
+            create_directories(path.parent_path());
+        SaveSettingsToIni(m_console, path);
+        spdlog::info("Generated {}", path.string());
+        return false;
+    }
+
     // If we have line args load, don't use the ini
     if (argc > 1)
     {
@@ -58,14 +77,14 @@ void DediRunner::LoadSettings(int argc, char** argv)
         m_SettingsPath = fs::current_path() / kConfigPathName / kSettingsFileName;
         if (!exists(m_SettingsPath))
         {
-            // there is a bug in here... waiting to be found
-            // since we dont register our settings till later, so the server settings might be... missing??
             create_directory(fs::current_path() / kConfigPathName);
             SaveSettingsToIni(m_console, m_SettingsPath);
-            return;
+            return true;
         }
         LoadSettingsFromIni(m_console, m_SettingsPath);
     }
+
+    return true;
 }
 
 struct Context

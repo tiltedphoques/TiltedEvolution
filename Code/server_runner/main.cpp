@@ -36,7 +36,7 @@ constexpr char kEULATextTrue[] = "bConfirmEULA=true";
 
 namespace fs = std::filesystem;
 
-Console::StringSetting sLogLevel{"sLogLevel", "Log level to print", "info"};
+Console::StringSetting sLogLevel{"sLogLevel", "How much detail the server log shows: trace, debug, info, warn or error", "info"};
 using namespace std::chrono_literals;
 } // namespace
 
@@ -220,6 +220,9 @@ int main(int argc, char** argv)
 
     // Keep stack free.
     const auto cpRunner{std::make_unique<DediRunner>(argc, argv)};
+    if (!cpRunner->IsValid())
+        return 0;
+
     if (bConsole)
     {
         cpRunner->StartTerminalIO();

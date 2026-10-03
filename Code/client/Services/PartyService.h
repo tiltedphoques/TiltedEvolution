@@ -28,6 +28,7 @@ struct PartyService
     const Vector<uint32_t>& GetPartyMembers() const noexcept { return m_partyMembers; }
     const Map<uint32_t, String>& GetPlayers() const noexcept { return m_players; }
     Map<uint32_t, uint64_t>& GetInvitations() noexcept { return m_invitations; }
+    [[nodiscard]] bool HasPendingInvitations() const noexcept { return !m_invitations.empty(); }
 
     void CreateParty() const noexcept;
     void LeaveParty() const noexcept;

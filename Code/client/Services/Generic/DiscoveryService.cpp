@@ -19,7 +19,9 @@
 #include <Events/ConnectionErrorEvent.h>
 
 #include <World.h>
+#include <BranchInfo.h>
 
+#if (IS_MASTER)
 namespace
 {
 bool IsDefaultModlist(GameList<Mod>& aCurrentModlist) noexcept
@@ -44,6 +46,7 @@ bool IsDefaultModlist(GameList<Mod>& aCurrentModlist) noexcept
     return true;
 }
 } // namespace
+#endif
 
 DiscoveryService::DiscoveryService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
     : m_world(aWorld)
@@ -295,6 +298,7 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
 {
     spdlog::info("Finished loading, triggering visit cell");
 
+#if (IS_MASTER)
     if (!IsDefaultModlist(ModManager::Get()->mods))
     {
         ConnectionErrorEvent errorEvent{};
@@ -302,6 +306,7 @@ BSTEventResult DiscoveryService::OnEvent(const TESLoadGameEvent*, const EventDis
 
         m_world.GetRunner().Trigger(errorEvent);
     }
+#endif
 
     VisitCell(true);
 

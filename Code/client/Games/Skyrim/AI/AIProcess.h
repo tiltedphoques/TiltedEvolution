@@ -3,9 +3,11 @@
 struct TESForm;
 struct MiddleProcess;
 struct TESAmmo;
+struct bhkCharacterController;
 
 struct AIProcess
 {
+    bhkCharacterController* GetCharController() noexcept;
     bool SetCurrentAmmo(TESAmmo* apAmmo) noexcept;
 
     void KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, float afMagnitude);

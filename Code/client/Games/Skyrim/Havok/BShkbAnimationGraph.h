@@ -18,7 +18,4 @@ struct BShkbAnimationGraph
     hkbBehaviorGraph* behaviorGraph; // 208
     uint8_t pad210[0x238 - 0x210];
     bhkWorldM* hkWorldM; // 238
-
-    // Re do not use
-    bool ReSendEvent(BSFixedString* apEventName);
 };

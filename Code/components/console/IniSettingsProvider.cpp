@@ -71,16 +71,19 @@ void SaveSettingsToIni(ConsoleRegistry& aReg, const std::filesystem::path& aPath
             auto items = SplitSection(setting);
             auto& section = items.first;
             auto& name = items.second;
+            // SimpleIni requires comments to start with a comment character
+            const std::string comment = std::string("; ") + setting->desc;
+            const char* pComment = comment.c_str();
 
             switch (setting->type)
             {
-            case SettingBase::Type::kBoolean: error = ini.SetBoolValue(section.c_str(), name.c_str(), setting->data.as_boolean); break;
-            case SettingBase::Type::kInt: error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_int32); break;
-            case SettingBase::Type::kUInt: error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_uint32); break;
-            case SettingBase::Type::kInt64: error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_int64); break;
-            case SettingBase::Type::kUInt64: error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_uint64); break;
-            case SettingBase::Type::kFloat: error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_float); break;
-            case SettingBase::Type::kString: error = ini.SetValue(section.c_str(), name.c_str(), setting->c_str()); break;
+            case SettingBase::Type::kBoolean: error = ini.SetBoolValue(section.c_str(), name.c_str(), setting->data.as_boolean, pComment); break;
+            case SettingBase::Type::kInt: error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_int32, pComment); break;
+            case SettingBase::Type::kUInt: error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_uint32, pComment); break;
+            case SettingBase::Type::kInt64: error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_int64, pComment); break;
+            case SettingBase::Type::kUInt64: error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_uint64, pComment); break;
+            case SettingBase::Type::kFloat: error = SetIniValue(ini, section.c_str(), name.c_str(), setting->data.as_float, pComment); break;
+            case SettingBase::Type::kString: error = ini.SetValue(section.c_str(), name.c_str(), setting->c_str(), pComment); break;
             default: BASE_ASSERT(true, "SaveSettingsToIni(): Unknown type index for {}", setting->name); break;
             }
 

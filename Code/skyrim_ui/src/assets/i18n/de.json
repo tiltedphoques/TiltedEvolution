@@ -34,7 +34,10 @@
     "NOTIFICATIONS": {
       "MESSAGE_FROM": "Nachricht von",
       "ACCEPT": "Akzeptieren",
-      "DECLINE": "Ablehnen"
+      "DECLINE": "Ablehnen",
+      "OPEN_GUIDE": "Leitfaden öffnen",
+      "DISMISS": "Schließen",
+      "DONT_SHOW": "Nicht mehr anzeigen"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Einladung von {{name}} akzeptieren",
@@ -171,6 +174,9 @@
     },
     "PLAYER_LIST": {
       "PARTY_INVITE": "{{from}} hat dich in eine Gruppe eingeladen"
+    },
+    "PARTY_HINT": {
+      "MESSAGE": "Willst du gemeinsam questen? Erstelle eine Gruppe und bleib in der Nähe, um euren Quest-Fortschritt zu teilen! Mehr dazu in unserem Spielleitfaden."
     }
   }
 }

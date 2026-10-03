@@ -72,16 +72,14 @@ GS_EXPORT bool CheckBuildTag(const char* apBuildTag)
     return std::strcmp(apBuildTag, kBuildTag) == 0;
 }
 
-GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg, const std::function<void()>& aCallback)
+// Registers the server's static settings, must be called before loading any settings
+GS_EXPORT void RegisterServerSettings(Console::ConsoleRegistry& aConReg)
 {
-    BASE_ASSERT(aCallback, "CreateGameServer(): Callback was not provided");
-
-    // register static variables before they become available to the server
     aConReg.BindStaticItems();
+}
 
-    // this is a special callback to notify the runner once all settings become available
-    aCallback();
-
+GS_EXPORT UniquePtr<IGameServerInstance> CreateGameServer(Console::ConsoleRegistry& aConReg)
+{
     return TiltedPhoques::CastUnique<IGameServerInstance>(TiltedPhoques::MakeUnique<GameServerInstance>(aConReg));
 }
 

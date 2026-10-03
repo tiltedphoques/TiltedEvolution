@@ -85,6 +85,11 @@ jobs:
             arm64) file release-stage/SkyrimTogetherServer | grep -Eqi 'aarch64|arm64' ;;
           esac
 
+      - name: Generate default server config
+        run: |
+          ./release-stage/SkyrimTogetherServer --generate-config release-stage/config/STServer.ini
+          cat release-stage/config/STServer.ini
+
       - name: Create Linux release archive
         if: ${{ inputs.upload-build-for-next-job }}
         run: |

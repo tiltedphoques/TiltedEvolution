@@ -9,11 +9,20 @@
   <div *ngIf="notification.icon" class="icon">
     <fa-icon [icon]="notification.icon"></fa-icon>
   </div>
-  <p>{{ t(notification.messageKey, notification.messageParams) }}</p>
-  <button
-    *ngFor="let action of notification.actions"
-    (click)="action.callback()"
-  >
-    {{ t(action.nameKey) }}
-  </button>
+  <div class="content">
+    <p>{{ t(notification.messageKey, notification.messageParams) }}</p>
+    <div *ngIf="notification.actions?.length" class="actions">
+      <button
+        *ngFor="let action of notification.actions"
+        (click)="action.callback()"
+      >
+        {{ t(action.nameKey) }}
+      </button>
+    </div>
+  </div>
+  <div
+    *ngIf="duration !== 0"
+    class="expiration-line"
+    [style.animation-duration.ms]="duration"
+  ></div>
 </div>

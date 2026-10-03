@@ -310,6 +310,17 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     );
   }
 
+  openPlayGuide(): void {
+    window.open(
+      'https://wiki.tiltedphoques.com/tilted-online/general-information/playguide',
+      '_blank',
+    );
+  }
+
+  mockQuestUpdate() {
+    this.emit('questUpdated');
+  }
+
   inviteToPlayerMockParty(playerId: number) {
     playerStore.update(updateEntities(playerId, { invitedLocalPlayer: true }));
     this.emit('partyInviteReceived', playerId);
