@@ -217,6 +217,10 @@ void QuestService::NotifyOverlayOfQuestUpdate(uint32_t aFormId) noexcept
     if (!m_world.GetTransport().IsOnline())
         return;
 
+    // The invite toast already prompts the player to join a party
+    if (m_world.GetPartyService().HasPendingInvitations())
+        return;
+
     TESQuest* pQuest = Cast<TESQuest>(TESForm::GetById(aFormId));
     if (!pQuest || IsNonSyncableQuest(pQuest))
         return;
