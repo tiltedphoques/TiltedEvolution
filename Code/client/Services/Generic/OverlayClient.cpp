@@ -80,6 +80,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessTeleportMessage(eventArgs);
         else if (eventName == "toggleDebugUI")
             ProcessToggleDebugUI();
+        else if (eventName == "openPlayGuide")
+            ProcessOpenPlayGuide();
 
         return true;
     }
@@ -148,6 +150,11 @@ void OverlayClient::ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs)
 void OverlayClient::ProcessToggleDebugUI()
 {
     World::Get().GetDebugService().m_showDebugStuff = !World::Get().GetDebugService().m_showDebugStuff;
+}
+
+void OverlayClient::ProcessOpenPlayGuide()
+{
+    ShellExecuteW(nullptr, L"open", LR"(https://wiki.tiltedphoques.com/tilted-online/general-information/playguide)", nullptr, nullptr, SW_SHOWNORMAL);
 }
 
 void OverlayClient::SetUIVisible(bool aVisible) noexcept

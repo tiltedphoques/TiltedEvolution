@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
-import { faHandshakeSimple } from '@fortawesome/free-solid-svg-icons';
+import {
+  faHandshakeSimple,
+  faUserGroup,
+} from '@fortawesome/free-solid-svg-icons';
 import { Subject } from 'rxjs';
 import { PopupNotification } from '../models/popup-notification';
 import { Sound, SoundService } from './sound.service';
@@ -30,6 +33,29 @@ export class PopupNotificationService {
         {
           nameKey: 'COMPONENT.NOTIFICATIONS.ACCEPT',
           callback,
+        },
+      ],
+    });
+  }
+
+  public addPartyHint(onOpenGuide: () => void, onDontShow: () => void) {
+    this.addMessage({
+      messageKey: 'SERVICE.PARTY_HINT.MESSAGE',
+      icon: faUserGroup,
+      duration: 15000,
+      actions: [
+        {
+          nameKey: 'COMPONENT.NOTIFICATIONS.OPEN_GUIDE',
+          callback: onOpenGuide,
+        },
+        {
+          nameKey: 'COMPONENT.NOTIFICATIONS.DISMISS',
+          // Clicking anywhere on the popup removes it
+          callback: () => {},
+        },
+        {
+          nameKey: 'COMPONENT.NOTIFICATIONS.DONT_SHOW',
+          callback: onDontShow,
         },
       ],
     });

@@ -94,6 +94,8 @@ declare namespace SkyrimTogetherTypes {
   type PartyLeftCallback = (inviterId: number) => void;
 
   type PartyInviteReceivedCallback = (inviterId: number) => void;
+
+  type QuestUpdatedCallback = () => void;
 }
 
 /** Global Skyrim: Together object. */
@@ -217,6 +219,11 @@ interface SkyrimTogether {
   on(
     event: 'partyInviteReceived',
     callback: SkyrimTogetherTypes.PartyInviteReceivedCallback,
+  ): void;
+
+  on(
+    event: 'questUpdated',
+    callback: SkyrimTogetherTypes.QuestUpdatedCallback,
   ): void;
 
   /** Remove listener from when the application is first initialized. */
@@ -349,6 +356,11 @@ interface SkyrimTogether {
     callback?: SkyrimTogetherTypes.PartyInviteReceivedCallback,
   ): void;
 
+  off(
+    event: 'questUpdated',
+    callback?: SkyrimTogetherTypes.QuestUpdatedCallback,
+  ): void;
+
   /**
    * Connect to server at given address and port.
    *
@@ -432,4 +444,9 @@ interface SkyrimTogether {
    * @param playerId Id of the new leader.
    */
   changePartyLeader(playerId: number): void;
+
+  /**
+   * Open the play guide on the wiki in the default browser.
+   */
+  openPlayGuide(): void;
 }

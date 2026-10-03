@@ -16,6 +16,7 @@ import { DestroyService } from '../../services/destroy.service';
   providers: [DestroyService],
 })
 export class NotificationPopupComponent implements OnInit, OnDestroy {
+  duration: number;
   eraseTimer: number | null = null;
   eraseTimingStart?: number;
   eraseTTL: number;
@@ -24,7 +25,8 @@ export class NotificationPopupComponent implements OnInit, OnDestroy {
   @Output() remove = new EventEmitter<boolean>();
 
   ngOnInit() {
-    this.eraseTTL = this.notification.duration ?? 5000;
+    this.duration = this.notification.duration ?? 5000;
+    this.eraseTTL = this.duration;
     if (this.eraseTTL !== 0) {
       this.startTimer();
     }

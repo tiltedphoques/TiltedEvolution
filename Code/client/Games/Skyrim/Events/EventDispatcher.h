@@ -171,6 +171,8 @@ struct TESQuestStageEvent
 struct TESQuestStartStopEvent
 {
     uint32_t formId;
+    bool started;
+    bool failed;
 };
 
 struct TESQuestStageItemDoneEvent

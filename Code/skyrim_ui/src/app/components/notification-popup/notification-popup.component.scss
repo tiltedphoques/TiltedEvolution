@@ -17,10 +17,15 @@
 }
 
 .notification-popup {
+  position: relative;
   display: flex;
   align-items: center;
   background-color: rgba($color: #000000, $alpha: 0.7);
   padding: 0.5em;
+
+  &:hover .expiration-line {
+    animation-play-state: paused;
+  }
 }
 
 .notification-popup:first-child {
@@ -52,6 +57,36 @@ p {
   max-width: 25em;
 }
 
+.actions {
+  display: flex;
+  gap: 0.5em;
+  margin-bottom: 0.5em;
+}
+
 button {
   font-size: 1em;
+}
+
+.expiration-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  height: 2px;
+  background-color: white;
+  transform-origin: left;
+  animation-name: expire;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes expire {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
 }

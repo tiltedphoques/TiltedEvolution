@@ -55,6 +55,9 @@ export class ClientService implements OnDestroy {
   /** Connect party invite received. */
   public partyInviteReceivedChange = new Subject<number>();
 
+  /** Local quest started or updated while not in a party. */
+  public questUpdatedChange = new Subject<void>();
+
   /** Disconnect player to server change. */
   public playerDisconnectedChange = new Subject<Player>();
 
@@ -151,6 +154,7 @@ export class ClientService implements OnDestroy {
       'partyInviteReceived',
       this.onPartyInviteReceived.bind(this),
     );
+    skyrimtogether.on('questUpdated', this.onQuestUpdated.bind(this));
   }
 
   /**
@@ -184,6 +188,7 @@ export class ClientService implements OnDestroy {
     skyrimtogether.off('partyCreated');
     skyrimtogether.off('partyLeft');
     skyrimtogether.off('partyInviteReceived');
+    skyrimtogether.off('questUpdated');
   }
 
   /**
@@ -256,6 +261,13 @@ export class ClientService implements OnDestroy {
    */
   public changePartyLeader(playerId: number): void {
     skyrimtogether.changePartyLeader(playerId);
+  }
+
+  /**
+   * Open the play guide on the wiki in the default browser.
+   */
+  public openPlayGuide(): void {
+    skyrimtogether.openPlayGuide();
   }
 
   /**
@@ -629,6 +641,12 @@ export class ClientService implements OnDestroy {
     }
     this.zone.run(() => {
       this.partyInviteReceivedChange.next(inviterId);
+    });
+  }
+
+  private onQuestUpdated() {
+    this.zone.run(() => {
+      this.questUpdatedChange.next();
     });
   }
 }

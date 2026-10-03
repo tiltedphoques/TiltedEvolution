@@ -32,6 +32,7 @@ private:
     BSTEventResult OnEvent(const TESQuestStageEvent*, const EventDispatcher<TESQuestStageEvent>*) override;
 
     void OnQuestUpdate(const NotifyQuestUpdate&) noexcept;
+    void NotifyOverlayOfQuestUpdate(uint32_t aFormId) noexcept;
 
     World& m_world;
 
