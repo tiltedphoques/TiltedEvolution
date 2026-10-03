@@ -4,7 +4,7 @@
       "SEND": "Skicka",
       "MESSAGE": "Meddelande",
       "MESSAGE_TOO_LONG": "Du kan inte skicka meddelanden längre än {{chatMessageLengthLimit}} tecken.",
-      "SET_TIME_ARGUMENT_COUNT": "Fel argument, använd: /settime HH MM, example: /settime 15 32.",
+      "SET_TIME_ARGUMENT_COUNT": "Fel argument, använd: /settime HH MM, exempel: /settime 15 32.",
       "SET_TIME_INVALID_ARGUMENTS": "Timmarna måste vara mellan 0 och 23, och minuterna mellan 0 och 59."
     },
     "CONNECT": {
@@ -14,14 +14,14 @@
       },
       "ADDRESS": "Adress",
       "PASSWORD": "Lösenord",
-      "SAVE_PASSWORD": "Spara Lösenord?",
-      "HIDE_PASSWORD": "Dölj Lösenord?",
+      "SAVE_PASSWORD": "Spara lösenord?",
+      "HIDE_PASSWORD": "Dölj lösenord?",
       "CONNECT": "Anslut",
       "CANCEL": "Avbryt",
       "PUBLIC_SERVERS": "Publika servrar",
       "ERROR": {
         "CONNECTION": "Kunde inte ansluta till den specifika servern. Kontrollera att du skrivit in korrekt adress och att du inte har nätverksproblem för tillfället.",
-        "VERSION_MISMATCH": "Du kan inte ansluta till servern för att den har inte samma version av Skyrim Together som du.",
+        "VERSION_MISMATCH": "Du kan inte ansluta till servern eftersom den inte har samma version av Skyrim Together som du.",
         "INVALID_ADDRESS": "Adressen har felaktigt format."
       }
     },
@@ -36,14 +36,17 @@
     "NOTIFICATIONS": {
       "MESSAGE_FROM": "Meddelande från",
       "ACCEPT": "Acceptera",
-      "DECLINE": "Neka"
+      "DECLINE": "Neka",
+      "OPEN_GUIDE": "Öppna guide",
+      "DISMISS": "Ignorera",
+      "DONT_SHOW": "Sluta visa"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Acceptera inbjudan från {{name}}",
       "LAUNCH_PARTY": "Starta party",
       "INVITES": "Inbjudningar",
       "NO_INVITES": "Du har inga inbjudningar",
-      "EXPERIENCE_WARNING": "För den bästa Quest-upplevelsen, läs igenom vår playguide på vår wiki, som du hittar via vår hemsida, <b>skyrim-together.com</b>. Här är en summering av riktlinjerna:",
+      "EXPERIENCE_WARNING": "För bästa quest-upplevelse, läs igenom vår playguide på vår wiki, som du hittar via vår hemsida, <b>skyrim-together.com</b>. Här är en summering av riktlinjerna:",
       "GUIDELINES": {
         "PARTY": "Genom att starta ett party, blir du dess \"host\", eller partyledare.",
         "PARTY_LEADER_TALK": "Bara partyledaren kan prata med NPCs för att höra quest-dialog.",
@@ -125,8 +128,8 @@
         "BOTTOM_RIGHT": "Nere till höger",
         "BOTTOM_LEFT": "Nere till vänster"
       },
-      "PARTY_ANCHOR_OFFSET_X": "Horizontell Justering",
-      "PARTY_ANCHOR_OFFSET_Y": "Vertikal Justering",
+      "PARTY_ANCHOR_OFFSET_X": "Horisontell justering",
+      "PARTY_ANCHOR_OFFSET_Y": "Vertikal justering",
       "LENGTH": "{{length}}s",
       "UI": "Menygränssnitt",
       "LANGUAGE": "Språk",
@@ -145,20 +148,20 @@
   },
   "SERVICE": {
     "CLIENT": {
-      "CONNECTION_LOST": "Anslutning förlorad, försöker återansluta. {{remainingReconnectionAttempt}} försök kvar.",
+      "CONNECTION_LOST": "Anslutning tappades, försöker återansluta. {{remainingReconnectionAttempt}} försök kvar.",
       "CONNECTED": "Lyckades ansluta till servern.",
       "DISCONNECTED": "Loggade ut från servern."
     },
     "COMMANDS": {
       "AVAILABLE_COMMANDS": "Tillgängliga chattkommandon: {{cmds}}",
-      "COMMAND_NOT_FOUND": "'{{cmd}}' är inte ett erkänt kommando.",
+      "COMMAND_NOT_FOUND": "'{{cmd}}' är inte ett känt kommando.",
       "NOT_ADMIN": "Du måste ansluta som admin för att använda kommandot."
     },
     "GROUP": {
-      "LEVEL_UP": "{{name}} har nått nivå {{level}}.",
+      "LEVEL_UP": "{{name}} har nått level {{level}}.",
       "ALREADY_IN_GROUP": "Du är redan i ett party. För att gå med i ett annat party, lämna ditt nuvarande party.",
       "KICK_NO_PARTY_LEADER": "Du kan inte slänga ut andra medlemmar då du inte är partyledaren.",
-      "MAKE_LEADER_NO_PARTY_LEADER": "Du kan inte göra någon annan medlem till ledare då du inte är partyledaren."
+      "MAKE_LEADER_NO_PARTY_LEADER": "Du kan inte göra en annan medlem till ledare då du inte är partyledaren."
     },
     "ERROR": {
       "ERRORS": {
@@ -170,12 +173,15 @@
         "WRONG_PASSWORD": "Lösenordet du angav är inkorrekt.",
         "NO_REASON": "Servern nekade din anslutning utan känd anledning.",
         "SERVER_FULL": "Servern är full.",
-        "BAD_UGRIDSTOLOAD": "Det verkar som din Skyrim.ini fil inte har standardvärdet för 'uGridsToLoad'. DET ÄR INTE BRA, och kommer troligen skapa problem. Var vänlig och återställ den till standardvärdet (5), eller radera Skyrim.ini filen och starta Skyrim en gång utan mods för att generera en ny fil. Inställningen 'uExterior Cell Buffer' och 'uInterior Cell Buffer' ska också lämnas på standardvärdena. Om du inte vet hur man ändrar det, läs mer på vår wiki eller kontakta vår Discordserver/Reddit för att få hjälp.",
-        "NON_DEFAULT_INSTALL": "Det verksar som din installation inte är Skyrim utan mods, dvs. den har Creation Club plugins (Anniversary Update eller CC) eller andra mods.\nVi rekommenderar INTE att spela med mods.\nVi rekommenderar att du avinstallerar eller avaktiverar dessa mods (instruktioner finns på vår wiki).\n\nFör en stabil upplevelse ska du ha följande plugins eller modlista:<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp\nSkyrimTogetherQuestPatches.esp</strong>"
+        "BAD_UGRIDSTOLOAD": "Det verkar som din Skyrim.ini inte har standardvärdet för 'uGridsToLoad'. DET ÄR INTE BRA, och kommer troligen skapa problem. Var vänlig och återställ den till standardvärdet (5), eller radera Skyrim.ini och starta Skyrim en gång utan mods för att generera en ny fil. Inställningen 'uExterior Cell Buffer' och 'uInterior Cell Buffer' ska också lämnas på standardvärdena. Om du inte vet hur man ändrar det, läs mer på vår wiki eller kontakta vår Discordserver/Reddit för att få hjälp.",
+        "NON_DEFAULT_INSTALL": "Det verkar som din installation inte är Skyrim utan mods, dvs. den har Creation Club-plugins (Anniversary Update eller CC) eller andra mods.\nVi rekommenderar INTE att spela med mods.\nVi rekommenderar att du avinstallerar eller avaktiverar dessa mods (instruktioner finns på vår wiki).\n\nFör en stabil upplevelse ska du ha följande plugins eller modlista:<strong>\nSkyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp\nSkyrimTogetherQuestPatches.esp</strong>"
       }
     },
     "PLAYER_LIST": {
       "PARTY_INVITE": "{{from}} bjöd in dig till ett party"
+    },
+    "PARTY_HINT": {
+      "MESSAGE": "Vill du göra en quest tillsammans? Gå med i samma party och håll er nära varandra för att dela framsteg! Läs vår playguide för att lära er mer."
     }
   }
 }
