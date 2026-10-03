@@ -63,7 +63,8 @@ BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, cons
 
     if (!m_world.Get().GetPartyService().IsInParty())
     {
-        NotifyOverlayOfQuestUpdate(apEvent->formId);
+        if (apEvent->started)
+            NotifyOverlayOfQuestUpdate(apEvent->formId);
         return BSTEventResult::kOk;
     }
 

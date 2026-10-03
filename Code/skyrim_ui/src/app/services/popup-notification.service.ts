@@ -42,7 +42,7 @@ export class PopupNotificationService {
     this.addMessage({
       messageKey: 'SERVICE.PARTY_HINT.MESSAGE',
       icon: faUserGroup,
-      duration: 10000,
+      duration: 15000,
       actions: [
         {
           nameKey: 'COMPONENT.NOTIFICATIONS.OPEN_GUIDE',
