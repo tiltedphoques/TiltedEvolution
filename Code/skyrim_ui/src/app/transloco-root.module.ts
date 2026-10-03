@@ -34,6 +34,7 @@ export class TranslocoHttpLoader implements TranslocoLoader {
           { id: 'ja', label: '日本語' },
           { id: 'nl', label: 'Nederlands' },
           { id: 'no', label: 'Norsk' },
+          { id: 'sv', label: 'Svenska' },
           { id: 'es', label: 'Español' },
           { id: 'ko', label: '한국어' },
           { id: 'tr', label: 'Türkçe' },
