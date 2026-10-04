@@ -47,8 +47,8 @@ struct PlayerCharacter : Actor
     // FO4 PlayerCharacter: 0xB58. objectives at 0x7D8 per libxse.
     uint8_t pad1[0x7D8 - sizeof(Actor)];
     GameArray<ObjectiveInstance> objectives; // 0x7D8
-    uint8_t pad588[0xB60 - 0x7F0];
+    uint8_t pad588[0xB58 - 0x7F0];
 };
 
 static_assert(offsetof(PlayerCharacter, objectives) == 0x7D8);
-static_assert(sizeof(PlayerCharacter) == 0xB60);
+static_assert(sizeof(PlayerCharacter) == 0xB58);

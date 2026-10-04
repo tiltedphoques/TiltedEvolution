@@ -289,7 +289,10 @@ struct TESObjectREFR : TESForm
     uint8_t pad30[0xB8 - 0x30];        // event sinks, graph holder, keyword form, AV owner, AV event source
 
     TESObjectCELL* parentCell;         // 0xB8
-    OBJ_REFR data;                     // 0xC0: rotation, position, base form
+    NiPoint3A rotation;                // 0xC0 (OBJ_REFR::angle)
+    NiPoint3A position;                // 0xD0 (OBJ_REFR::location)
+    TESBoundObject* baseForm;          // 0xE0 (OBJ_REFR::objectReference)
+    uint8_t padE8[8];                  // OBJ_REFR tail padding (16-byte align)
     LOADED_REF_DATA* loadedState;      // 0xF0
     BGSInventoryList* inventoryList;   // 0xF8
     BSTSmartPointer<ExtraDataList> extraData; // 0x100

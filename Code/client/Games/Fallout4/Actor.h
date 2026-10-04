@@ -198,10 +198,6 @@ struct Actor
     ExActor* AsExActor() noexcept;
     ExPlayerCharacter* AsExPlayerCharacter() noexcept;
 
-    // Generic client code accesses the state through this; in FO4 the
-    // ActorState is a base subobject at 0x128, in Skyrim a member.
-    ActorState* GetActorState() noexcept { return static_cast<ActorState*>(this); }
-
     // Getters
     float GetSpeed() noexcept;
     TESForm* GetEquippedWeapon(uint32_t aSlotId) const noexcept;
