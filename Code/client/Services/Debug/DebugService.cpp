@@ -346,7 +346,9 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Entities", nullptr, &g_enableEntitiesWindow);
         ImGui::MenuItem("Server", nullptr, &g_enableServerWindow);
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
+#if !defined(TP_FALLOUT4)
         ImGui::MenuItem("Dragon spawner", nullptr, &g_enableDragonSpawnerWindow);
+#endif
 
 #if (!IS_MASTER)
         ImGui::MenuItem("Network", nullptr, &g_enableNetworkWindow);
@@ -354,7 +356,9 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Inventory", nullptr, &g_enableInventoryWindow);
         ImGui::MenuItem("Animations", nullptr, &g_enableAnimWindow);
         ImGui::MenuItem("Player", nullptr, &g_enablePlayerWindow);
+#if !defined(TP_FALLOUT4)
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
+#endif
         ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
         ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
         ImGui::MenuItem("Weather", nullptr, &g_enableWeatherWindow);
@@ -391,8 +395,10 @@ void DebugService::OnDraw() noexcept
         DrawServerView();
     if (g_enablePartyWindow)
         DrawPartyView();
+#if !defined(TP_FALLOUT4)
     if (g_enableDragonSpawnerWindow)
         DrawDragonSpawnerView();
+#endif
 
 #if (!IS_MASTER)
     if (g_enableNetworkWindow)
@@ -405,8 +411,10 @@ void DebugService::OnDraw() noexcept
         DrawAnimDebugView();
     if (g_enablePlayerWindow)
         DrawPlayerDebugView();
+#if !defined(TP_FALLOUT4)
     if (g_enableSkillsWindow)
         DrawSkillView();
+#endif
     if (g_enableActorValuesWindow)
         DrawActorValuesView();
     if (g_enableCellWindow)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Games/Primitives.h>
+#include <Games/Magic/MagicSystem.h>
 
 struct ActiveEffect;
 struct MagicItem;
@@ -8,13 +9,28 @@ struct EffectItem;
 struct TESBoundObject;
 struct Actor;
 struct TESObjectREFR;
-struct AddTargetData;
 struct SpellDispelData;
 struct ActiveEffectList;
 
 // Fallout 4 MagicTarget: 0x18. Virtuals 0x00-0x0C.
 struct MagicTarget
 {
+    struct AddTargetData
+    {
+        Actor* pCaster;                               // 00
+        MagicItem* pSpell;                            // 08
+        EffectItem* pEffectItem;                      // 10
+        TESBoundObject* pSource;                      // 18
+        void* pCallback;                              // 20
+        void* pResultsCollector;                      // 28
+        NiPoint3 ExplosionLocation;                   // 30
+        float fMagnitude;                             // 3C
+        MagicSystem::CastingSource eCastingSource;    // 40
+        bool bAreaTarget;                             // 44
+        bool bDualCast;                               // 45
+    };
+    static_assert(sizeof(AddTargetData) == 0x48);
+
     virtual ~MagicTarget();
 
     virtual bool AddTarget(AddTargetData& arData);

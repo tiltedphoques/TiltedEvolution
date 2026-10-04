@@ -1311,6 +1311,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
         pNpc->Serialize(&message.AppearanceBuffer);
     }
 
+#if !defined(TP_FALLOUT4)
     if (isPlayer)
     {
         auto& entries = message.FaceTints.Entries;
@@ -1329,6 +1330,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
                 entries[i].Name = tints[i]->texture->name.AsAscii();
         }
     }
+#endif
 
     if (isPlayer)
     {
@@ -1572,6 +1574,11 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
 {
     if (acPickId == GameId{})
         return;
+
+#if defined(TP_FALLOUT4)
+    // LeveledNpcSystem::ApplyPick is not implemented for Fallout 4; keep the local pick.
+    return;
+#endif
 
     TESNPC* pBase = Cast<TESNPC>(apActor->baseForm);
     if (!pBase)
@@ -1830,8 +1837,10 @@ void CharacterService::RunRemoteUpdates() noexcept
         if (pActor->IsDead() != waitingFor3D.SpawnRequest.IsDead)
             waitingFor3D.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
 
+#if !defined(TP_FALLOUT4)
         if (pActor->IsVampireLord())
             pActor->FixVampireLordModel();
+#endif
 
         readyEntities.push_back(entity);
 

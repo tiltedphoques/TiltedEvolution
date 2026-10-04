@@ -66,7 +66,7 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
 
 ActorMediator* ActorMediator::Get() noexcept
 {
-    POINTER_SKYRIMSE(ActorMediator*, s_actorMediator, 403567);
+    POINTER_GAME(ActorMediator*, s_actorMediator, 403567, 2698109);
 
     return *(s_actorMediator.Get());
 }
@@ -80,6 +80,12 @@ bool ActorMediator::PerformAction(TESActionData* apAction) noexcept
 
 bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
 {
+#if defined(TP_FALLOUT4)
+    // Fallout 4 inlines the event lookup and run into DoAction; kSkip bypasses
+    // the lookup so the replicated event name is played as is.
+    apAction->someFlag |= BGSActionData::kSkip;
+    return TiltedPhoques::ThisCall(RealPerformAction, this, apAction) != 0;
+#else
     TP_THIS_FUNCTION(TAnimationStep, uint8_t, ActorMediator, TESActionData*);
     using TApplyAnimationVariables = void*(void*, TESActionData*);
 
@@ -98,6 +104,7 @@ bool ActorMediator::ForceAction(TESActionData* apAction) noexcept
     }
 
     return result;
+#endif
 }
 
 ActionInput::ActionInput(uint32_t aParam1, Actor* apActor, BGSAction* apAction, TESObjectREFR* apTarget)
@@ -143,7 +150,7 @@ BGSActionData::BGSActionData(uint32_t aParam1, Actor* apActor, BGSAction* apActi
 TESActionData::TESActionData(uint32_t aParam1, Actor* apActor, BGSAction* apAction, TESObjectREFR* apTarget)
     : BGSActionData(aParam1, apActor, apAction, apTarget)
 {
-    POINTER_SKYRIMSE(void*, s_vtbl, 188603);
+    POINTER_GAME(void*, s_vtbl, 188603, 780200);
 
     someFlag = false;
 
@@ -159,7 +166,7 @@ TESActionData::~TESActionData()
 static TiltedPhoques::Initializer s_animationHook(
     []()
     {
-        POINTER_SKYRIMSE(TPerformAction, performAction, 38949);
+        POINTER_GAME(TPerformAction, performAction, 38949, 2231428);
 
         RealPerformAction = performAction.Get();
 

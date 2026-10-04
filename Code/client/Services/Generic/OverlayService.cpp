@@ -37,6 +37,7 @@
 #include <PlayerCharacter.h>
 #include <Forms/TESWorldSpace.h>
 #include <Forms/TESObjectCELL.h>
+#include <Forms/ActorValueInfo.h>
 #include <Games/ActorExtension.h>
 
 using TiltedPhoques::OverlayRenderHandler;

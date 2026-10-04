@@ -13,6 +13,7 @@ struct Projectile;
 struct MagicCaster
 {
     virtual ~MagicCaster();
+    virtual void Update(float afDelta);
     virtual uint64_t CastSpellImmediate(MagicItem* apSpell, bool abLoadCast, TESObjectREFR* apDesiredTarget, float afEffectivenessMult, bool abAdjustOnlyHostileEffectiveness, float afMagnitudeOverride);
     virtual uint64_t FindTouchTarget();
     virtual char RequestCastImpl();

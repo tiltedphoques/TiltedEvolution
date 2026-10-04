@@ -3,7 +3,6 @@
 #include <Actor.h>
 
 struct TESQuest;
-struct TintMask;
 
 struct PlayerCharacter : Actor
 {
@@ -21,7 +20,6 @@ struct PlayerCharacter : Actor
     virtual void sub_135();
     virtual void sub_136();
 
-    const GameArray<TintMask*>& GetTints() const noexcept;
 
     void SetDifficulty(const int32_t aDifficulty, bool aForceUpdate = true, bool aExpectGameDataLoaded = true) noexcept;
 
@@ -48,8 +46,11 @@ struct PlayerCharacter : Actor
 
     uint8_t pad1[0x7D8 - sizeof(Actor)];
     GameArray<ObjectiveInstance> objectives; // 0x7D8
-    uint8_t pad7F0[0xE10 - 0x7F0];
+    uint8_t pad7F0[0xCC8 - 0x7F0];
+    TESForm* locationForm; // 0xCC8 BGSLocation
+    uint8_t padCD0[0xE10 - 0xCD0];
 };
 
 static_assert(offsetof(PlayerCharacter, objectives) == 0x7D8);
+static_assert(offsetof(PlayerCharacter, locationForm) == 0xCC8);
 static_assert(sizeof(PlayerCharacter) == 0xE10);

@@ -12,13 +12,21 @@
 
 #include <Structs/Tints.h>
 
+#if !defined(TP_FALLOUT4)
 #include <Games/Skyrim/NetImmerse/NiTriBasedGeom.h>
 #include <Games/Skyrim/NetImmerse/NiRenderedTexture.h>
 #include <Games/Skyrim/NetImmerse/BSShaderProperty.h>
 #include <Games/Skyrim/NetImmerse/BSLightingShaderProperty.h>
 #include <Games/Skyrim/NetImmerse/BSMaskedShaderMaterial.h>
 #include <Games/Memory.h>
+#endif
 
+#if defined(TP_FALLOUT4)
+// Fallout 4 tints live in BGSCharacterTint entries; remote face tints are not applied yet.
+void FaceGenSystem::Update(World&, Actor*, FaceGenComponent&) noexcept
+{
+}
+#else
 __declspec(noinline) NiTriBasedGeom* GetHeadTriBasedGeom(Actor* apActor, uint32_t aPartType)
 {
     using TGetObjectByName = NiAVObject*(BSFaceGenNiNode*, const char**, char);
@@ -130,6 +138,7 @@ void FaceGenSystem::Update(World& aWorld, Actor* apActor, FaceGenComponent& aFac
 
     pShaderProperty->DecRef();
 }
+#endif
 
 void FaceGenSystem::Setup(World& aWorld, const entt::entity aEntity, const Tints& acTints) noexcept
 {

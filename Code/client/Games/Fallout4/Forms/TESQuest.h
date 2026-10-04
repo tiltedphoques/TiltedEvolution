@@ -5,12 +5,18 @@
 #include <Components/TESFullName.h>
 #include <Forms/BGSStoryManagerTree.h>
 
+// Fallout 4 BGSScene: 0xE8.
 struct BGSScene : TESForm
 {
-    GameArray<void*> phases;
-    GameArray<uint32_t> actorIds;
+    uint8_t pad20[0x30 - 0x20];
+    GameArray<void*> phases;      // 0x30
+    GameArray<uint32_t> actorIds; // 0x48
+    uint8_t pad60[0xE8 - 0x60];
 };
+static_assert(offsetof(BGSScene, actorIds) == 0x48);
+static_assert(sizeof(BGSScene) == 0xE8);
 
+// Fallout 4 TESQuest: 0x2F0.
 struct TESQuest : BGSStoryManagerTreeForm
 {
     enum class State : uint8_t
@@ -47,94 +53,67 @@ struct TESQuest : BGSStoryManagerTreeForm
     {
         None = 0,
         MainQuest = 1,
-        MagesGuild = 2,
-        ThievesGuild = 3,
-        DarkBrotherhood = 4,
-        CompanionsQuest = 5,
+        BrotherhoodOfSteel = 2,
+        Institute = 3,
+        Minutemen = 4,
+        Railroad = 5,
         Miscellaneous = 6,
-        Daedric = 7,
-        SideQuest = 8,
-        CivilWar = 9,
-        DLC01_Vampire = 10,
-        DLC02_Dragonborn = 11
+        SideQuest = 7,
     };
 
-    struct Objective
-    {
-        BSFixedString nameRef; // 0x0000
-        TESQuest* parent;      // 0x0008
-        char pad10[12];        // 0x0010
-        uint16_t stageId;
-        uint8_t pad30;
-        uint8_t state;
-    };
-
-    static_assert(offsetof(Objective, state) == 31);
-
+    // TESQuestStage
     struct Stage
     {
-        uint16_t stageIndex;
-        uint8_t flags;
+        GameArray<void*> items; // 0x00
+        uint16_t stageIndex;    // 0x18
+        uint8_t flags;          // 0x1A
 
         inline bool IsDone() { return flags & 1; }
     };
+    static_assert(offsetof(Stage, stageIndex) == 0x18);
 
-    TESFullName fullName;
-    GameArray<void*> instanceData;
-    uint32_t currentInstanceID;
-    GameArray<void*> aliases; // 0x0058
-    char pad70[0xD8 - 0x70];
-    float questDelay;     // 0x00D8
-    uint16_t flags;       // 0x00DC default init: 256
-    uint8_t priority;     // 0x00DE
-    Type type;            // 0x00DF
-    int32_t scopedStatus; // 0x00E0 default init: -1, if not -1 outside of story manager scope
-    uint32_t padE4;
-    GameList<Stage> stages;
-    /*
-    GameList<Stage>* pExecutedStages;  // 0x00E8
-    GameList<Stage>* pWaitingStages;   // 0x00F0
-    */
-    GameList<Objective> objectives; // 0x00F8
-    char pad108[0x100];             // 0x0108
-    GameArray<BGSScene*> scenes;    // 0x0208
-    char pad210[8];                 // 0x0210
-    uint16_t currentStage;          // 0x0228
-    bool alreadyRun;                // 0x022A
-    char pad22B[2];
-    BSString idName; // < this is the proper quest ID
-    void* pStartEventData;
-    uint64_t unkFlags;
-    char pad250[24];
+    TESFullName fullName;          // 0x28
+    uint8_t pad38[0x70 - 0x38];
+    GameArray<void*> aliases;      // 0x70
+    uint8_t pad88[0xF0 - 0x88];
+    float questDelay;              // 0xF0 QUEST_DATA
+    uint16_t flags;                // 0xF4
+    uint8_t priority;              // 0xF6
+    Type type;                     // 0xF7
+    uint32_t eventID;              // 0xF8
+    GameArray<Stage*> stages;      // 0x100
+    GameArray<void*> objectives;   // 0x118
+    uint8_t pad130[0x290 - 0x130];
+    GameArray<BGSScene*> scenes;   // 0x290
+    uint8_t pad2A8[0x2B4 - 0x2A8];
+    uint16_t currentStage;         // 0x2B4
+    bool alreadyRun;               // 0x2B6
+    BSString idName;               // 0x2B8
+    void* pStartEventData;         // 0x2C8
+    uint8_t pad2D0[0x2F0 - 0x2D0];
 
     TESObjectREFR* GetAliasedRef(uint32_t aiAliasID) noexcept;
 
     bool IsStageDone(uint16_t stageIndex);
-    void SetCompleted(bool force);
 
-    void CompleteAllObjectives(); // completes all objectives + stages
-    void SetActive(bool toggle);  // < is the quest selected in journal and followed?
-
-    inline void Disable() { flags &= ~Flags::Enabled; };
+    void SetActive(bool toggle);
 
     inline bool IsEnabled() const { return flags & Flags::Enabled; }
     inline bool IsActive() const { return flags & Flags::Active; }
-    inline bool IsStopped() const { return (flags & (Flags::Enabled | Flags::StageWait)) == 0; } // & 0x81
+    inline bool IsStopped() const { return (flags & (Flags::Enabled | Flags::StageWait)) == 0; }
 
-    bool Kill();
-    State getState();
-
-    bool EnsureQuestStarted(bool& succeded, bool force);
+    bool EnsureQuestStarted(bool& aStartDelayed, bool aImmediate);
 
     bool SetStage(uint16_t stage);
     void ScriptSetStage(uint16_t stage);
     void SetStopped();
 };
 
-static_assert(sizeof(TESQuest) == 0x268);
 static_assert(offsetof(TESQuest, fullName) == 0x28);
-static_assert(offsetof(TESQuest, flags) == 0xDC);
-static_assert(offsetof(TESQuest, stages) == 0xE8);
-static_assert(offsetof(TESQuest, objectives) == 0xF8);
-static_assert(offsetof(TESQuest, currentStage) == 0x228);
-static_assert(offsetof(TESQuest, unkFlags) == 0x248);
+static_assert(offsetof(TESQuest, flags) == 0xF4);
+static_assert(offsetof(TESQuest, type) == 0xF7);
+static_assert(offsetof(TESQuest, stages) == 0x100);
+static_assert(offsetof(TESQuest, scenes) == 0x290);
+static_assert(offsetof(TESQuest, currentStage) == 0x2B4);
+static_assert(offsetof(TESQuest, idName) == 0x2B8);
+static_assert(sizeof(TESQuest) == 0x2F0);

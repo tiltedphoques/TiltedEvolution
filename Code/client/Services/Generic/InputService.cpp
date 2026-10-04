@@ -13,15 +13,19 @@
 #include <Services/DiscordService.h>
 #include <World.h>
 
+#if !defined(TP_FALLOUT4)
 #include "Games/Skyrim/Interface/MenuControls.h"
+#endif
 
 static OverlayService* s_pOverlay = nullptr;
 static UINT s_currentACP = CP_ACP;
 
+#if !defined(TP_FALLOUT4)
 void ForceKillAllInput()
 {
     MenuControls::GetInstance()->SetToggle(false);
 }
+#endif
 
 uint32_t GetCefModifiers(uint16_t aVirtualKey)
 {

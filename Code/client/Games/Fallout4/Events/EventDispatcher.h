@@ -165,7 +165,7 @@ struct TESQuestStageEvent
     void* callback;
     uint32_t formId;
     uint16_t stageId;
-    bool bUnk;
+    uint8_t itemId;
 };
 
 struct TESQuestStartStopEvent
@@ -269,78 +269,36 @@ struct TESFastTravelEndEvent
 {
 };
 
-struct EventDispatcherManager
+// Fallout 4 keeps one static BSTEventSource per event type. TESObjectREFR_Events
+// exposes RegisterFor*/UnregisterFor* helpers that take only the sink.
+template <class T> struct GlobalEventSource
 {
-    static EventDispatcherManager* Get() noexcept;
+    using TSinkHelper = void(BSTEventSink<T>*);
 
-    EventDispatcher<BGSEventProcessedEvent> eventProcessedEvent;
-    EventDispatcher<TESActivateEvent> activateEvent;
-    EventDispatcher<TESActiveEffectApplyRemove> activeEffectApplyRemove;
-    EventDispatcher<TESActorLocationChangeEvent> actorLocationChangeEvent;
-    EventDispatcher<TESBookReadEvent> bookReadEvent;
-    EventDispatcher<TESCellAttachDetachEvent> cellAttachDetachEvent;
-    EventDispatcher<TESCellFullyLoadedEvent> cellFullyLoadedEvent;
-    EventDispatcher<UnknownEvent> unknownDispatcher8; // apply decals event
-    EventDispatcher<TESCombatEvent> combatEvent;
-    EventDispatcher<TESContainerChangedEvent> containerChangedEvent;
-    EventDispatcher<TESDeathEvent> deathEvent;
-    EventDispatcher<TESDestructionStageChangedEvent> destructionStageChangedEventDispatcher;
-    EventDispatcher<TESEnterBleedoutEvent> enterBleedoutEvent;
-    EventDispatcher<TESEquipEvent> equipEvent;
-    EventDispatcher<TESFormDeleteEvent> formDeleteEvent;
-    EventDispatcher<TESFurnitureEvent> furnitureEvent;
-    EventDispatcher<TESGrabReleaseEvent> grabReleaseEvent;
-    EventDispatcher<TESHitEvent> hitEvent; // validated
-    EventDispatcher<TESInitScriptEvent> initScriptEvent;
-    EventDispatcher<TESLoadGameEvent> loadGameEvent;
-    EventDispatcher<TESLockChangedEvent> lockChangedEvent;
-    EventDispatcher<TESMagicEffectApplyEvent> magicEffectApplyEvent;
-    EventDispatcher<TESMagicWardHitEvent> magicWardHitEvent;
-    EventDispatcher<TESMoveAttachDetachEvent> moveAttachDetachEvent;
-    EventDispatcher<TESObjectLoadedEvent> objectLoadedEvent;
-    EventDispatcher<TESObjectREFRTranslationEvent> objectREFRTranslationEvent;
-    EventDispatcher<TESOpenCloseEvent> openCloseEvent;
-    EventDispatcher<TESPackageEvent> packageEvent;
-    EventDispatcher<TESPerkEntryRunEvent> perkEntryRunEvent;
-    EventDispatcher<TESQuestInitEvent> questInitEvent; // 9F8
-    EventDispatcher<TESQuestStageEvent> questStageEvent;
-    EventDispatcher<TESQuestStageItemDoneEvent> questStageItemDoneEvent; // AA8, validated StageItemFinishedCallback::TriggerItemDoneEvent
-    EventDispatcher<TESQuestStartStopEvent> questStartStopEvent;         // TESResolveNPCTemplatesEvent
-    EventDispatcher<TESResetEvent> resetEvent;                           // validated 0xB58
-    EventDispatcher<TESResolveNPCTemplatesEvent> resolveNPCTemplatesEvent;
-    EventDispatcher<TESSceneEvent> sceneEvent;
-    EventDispatcher<TESSceneActionEvent> sceneActionEvent;
-    EventDispatcher<TESScenePhaseEvent> scenePhaseEvent;
-    EventDispatcher<TESSellEvent> sellEvent;
-    EventDispatcher<TESSleepStartEvent> unknownDispatcher39;
-    EventDispatcher<TESSleepStopEvent> sleepStopEvent;
-    EventDispatcher<TESSpellCastEvent> spellCastEvent;
-    EventDispatcher<TESPlayerBowShotEvent> unknownDispatcher42;
-    EventDispatcher<TESTopicInfoEvent> topicInfoEvent;
-    EventDispatcher<TESTrackedStatsEvent> trackedStatsEvent;
-    EventDispatcher<TESTrapHitEvent> trapHitEvent;
-    EventDispatcher<TESTriggerEvent> triggerEvent;
-    EventDispatcher<TESTriggerEnterEvent> triggerEnterEvent;
-    EventDispatcher<TESTriggerLeaveEvent> triggerLeaveEvent;
-    EventDispatcher<TESUniqueIDChangeEvent> uniqueIDChangeEvent;
-    EventDispatcher<UnknownEvent> unknownDispatcher50; // waitevent
-    EventDispatcher<UnknownEvent> unknownDispatcher51; // TESWaitStopEvent
-    EventDispatcher<TESSwitchRaceCompleteEvent> switchRaceCompleteEvent;
-    EventDispatcher<TESFastTravelEndEvent> fastTravelEndEvent;
+    uint32_t RegisterId;
+    uint32_t UnregisterId;
+
+    void RegisterSink(BSTEventSink<T>* apSink) const noexcept { Call(RegisterId, apSink); }
+    void UnRegisterSink(BSTEventSink<T>* apSink) const noexcept { Call(UnregisterId, apSink); }
+
+private:
+    static void Call(uint32_t aId, BSTEventSink<T>* apSink) noexcept
+    {
+        if (auto* pHelper = static_cast<TSinkHelper*>(VersionDb::Get().FindAddressById(aId)))
+            pHelper(apSink);
+    }
 };
 
-// constexpr auto x = offsetof(EventDispatcherManager, unkx);
+struct EventDispatcherManager
+{
+    static EventDispatcherManager* Get() noexcept
+    {
+        static EventDispatcherManager s_manager;
+        return &s_manager;
+    }
 
-static_assert(sizeof(EventDispatcherManager) == 4752);
-static_assert(offsetof(EventDispatcherManager, activateEvent) == 88);
-static_assert(offsetof(EventDispatcherManager, deathEvent) == 880);
-static_assert(offsetof(EventDispatcherManager, lockChangedEvent) == 1760);
-static_assert(offsetof(EventDispatcherManager, furnitureEvent) == 1320);
-static_assert(offsetof(EventDispatcherManager, resetEvent) == 2904);
-static_assert(offsetof(EventDispatcherManager, trackedStatsEvent) == 3872);
-static_assert(offsetof(EventDispatcherManager, triggerEvent) == 4048);
-static_assert(offsetof(EventDispatcherManager, switchRaceCompleteEvent) == 4576);
-static_assert(offsetof(EventDispatcherManager, fastTravelEndEvent) == 4664);
-static_assert(offsetof(EventDispatcherManager, questInitEvent) == 0x9F8);
-static_assert(offsetof(EventDispatcherManager, questStageEvent) == 0xA50);
-static_assert(offsetof(EventDispatcherManager, questStartStopEvent) == 0xB00);
+    GlobalEventSource<TESActivateEvent> activateEvent{2201553, 2201554};
+    GlobalEventSource<TESLoadGameEvent> loadGameEvent{2201657, 2201658};
+    GlobalEventSource<TESQuestStageEvent> questStageEvent{2201684, 2201685};
+    GlobalEventSource<TESQuestStartStopEvent> questStartStopEvent{2201690, 2201691};
+};

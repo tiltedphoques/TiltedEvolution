@@ -31,8 +31,14 @@ struct BSExtraData
 {
     inline static constexpr auto eExtraData = ExtraDataType::None;
 
-    virtual ~BSExtraData() = 0;
-    virtual ExtraDataType GetType() const noexcept = 0;
+    virtual ~BSExtraData();
+    virtual bool CompareImpl(const BSExtraData& acOther) const;
+    virtual bool CompareForUI(const BSExtraData* apOther) const;
 
-    BSExtraData* next{};
+    ExtraDataType GetType() const noexcept { return static_cast<ExtraDataType>(type); }
+
+    BSExtraData* next{}; // 08
+    uint16_t flags{};    // 10
+    uint8_t type{};      // 12
 };
+static_assert(sizeof(BSExtraData) == 0x18);

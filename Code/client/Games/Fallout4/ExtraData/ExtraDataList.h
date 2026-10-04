@@ -2,7 +2,6 @@
 
 #include "ExtraData.h"
 
-#include <ExtraData/ExtraSoul.h>
 
 struct AlchemyItem;
 struct EnchantmentItem;
@@ -22,23 +21,30 @@ struct ExtraDataList
     void SetType(ExtraDataType aType, bool aClear);
     BSExtraData* GetByType(ExtraDataType type) const;
 
-    void SetSoulData(SOUL_LEVEL aSoulLevel) noexcept;
-    void SetChargeData(float aCharge) noexcept;
-    void SetWorn(bool aWornLeft) noexcept;
-    void SetPoison(AlchemyItem* apItem, uint32_t aCount) noexcept;
-    void SetHealth(float aHealth) noexcept;
-    void SetEnchantmentData(EnchantmentItem* apItem, uint16_t aCharge, bool aRemoveOnUnequip) noexcept;
 
     [[nodiscard]] bool HasQuestObjectAlias() noexcept;
 
-    virtual ~ExtraDataList();
-    BSExtraData* data = nullptr;
+    // Fallout 4 BaseExtraList: singly linked extras plus a presence bitfield.
+    BSExtraData* GetHead() const noexcept { return head; }
 
-    struct Bitfield
-    {
-        uint8_t data[0x18];
-    };
-
-    Bitfield* bitfield{};
-    mutable BSRecursiveLock lock{};
+    uint32_t refCount;        // 00 BSIntrusiveRefCounted
+    BSExtraData* head{};      // 08
+    BSExtraData** tail{};     // 10
+    uint8_t* presence{};      // 18
+    mutable BSReadWriteLock lock{}; // 20
 };
+static_assert(offsetof(ExtraDataList, head) == 0x8);
+static_assert(sizeof(ExtraDataList) == 0x28);
+
+inline BSExtraData* ExtraDataList::GetByType(ExtraDataType aType) const
+{
+    const auto type = static_cast<uint32_t>(aType);
+    if (!presence || !(presence[type / 8] & (1 << (type % 8))))
+        return nullptr;
+    for (auto* pData = head; pData; pData = pData->next)
+    {
+        if (pData->GetType() == aType)
+            return pData;
+    }
+    return nullptr;
+}

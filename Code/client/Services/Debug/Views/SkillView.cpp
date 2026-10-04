@@ -4,6 +4,8 @@
 
 #include <PlayerCharacter.h>
 
+#if !defined(TP_FALLOUT4)
+
 void DebugService::DrawSkillView()
 {
     ImGui::Begin("Skills");
@@ -31,3 +33,4 @@ void DebugService::DrawSkillView()
 
     ImGui::End();
 }
+#endif

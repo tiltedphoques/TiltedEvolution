@@ -347,10 +347,10 @@ public:
     uint32_t intimidateBribeDayStamp; // 0x3A8
     float equippedWeight;             // 0x3AC
     BSTSmallArray<SpellItem*> addedSpells; // 0x3B0
-    ActorMagicCaster* magicCasters[4]; // 0x3C8
-    MagicItem* selectedSpell[4];      // 0x3E8
+    ActorMagicCaster* casters[4];     // 0x3C8
+    MagicItem* magicItems[4];         // 0x3E8 selected spells
     void* castPowerItems;             // 0x408
-    TESForm* selectedPower;           // 0x410
+    TESForm* equippedShout;           // 0x410 selected power
     TESRace* race;                    // 0x418
     void* perks;                      // 0x420
     void* biped;                      // 0x428 BSTSmartPointer<BipedAnim>

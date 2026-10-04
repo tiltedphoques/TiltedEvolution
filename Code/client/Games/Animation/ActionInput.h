@@ -20,4 +20,5 @@ struct ActionInput
     GamePtr<TESObjectREFR> target; // 10
     BGSAction* action;             // 18
     uint32_t unkInput;             // 20
+    uint32_t actionData{};         // 24
 };

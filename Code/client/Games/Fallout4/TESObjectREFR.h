@@ -15,7 +15,6 @@ template <class T> struct BSTSmartPointer
 };
 #include <NetImmerse/BSFaceGenNiNode.h>
 #include "ExtraData.h"
-#include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
 #include <Misc/ActorValueOwner.h>
 #include <Games/Misc/Lock.h>
@@ -74,7 +73,38 @@ struct RemoveItemData
 };
 static_assert(sizeof(RemoveItemData) == 0x48);
 
-struct BGSInventoryList;
+// Fallout 4 inventory: one item per base object, each with a stack list.
+struct BGSInventoryItem
+{
+    struct Stack
+    {
+        virtual ~Stack();
+
+        bool IsEquipped() const noexcept { return flags & 7; }
+
+        uint32_t refCount;    // 08
+        Stack* next;          // 10
+        ExtraDataList* extra; // 18
+        uint32_t count;       // 20
+        uint16_t flags;       // 24
+    };
+    static_assert(sizeof(Stack) == 0x28);
+
+    TESBoundObject* object; // 00
+    Stack* stack;           // 08
+};
+static_assert(sizeof(BGSInventoryItem) == 0x10);
+
+struct BGSInventoryList
+{
+    uint8_t eventSource[0x58];
+    GameArray<BGSInventoryItem> items; // 58
+    float cachedWeight;                // 70
+    uint32_t owner;                    // 74
+    BSReadWriteLock lock;              // 78
+};
+static_assert(offsetof(BGSInventoryList, items) == 0x58);
+static_assert(sizeof(BGSInventoryList) == 0x80);
 
 struct TESObjectREFR : TESForm
 {
@@ -159,7 +189,8 @@ struct TESObjectREFR : TESForm
     virtual void sub_77();
     virtual void sub_78();
     virtual void sub_79();
-    virtual void AddObjectToContainer(TESBoundObject* apObj, ExtraDataList* apExtra, int32_t aCount, TESObjectREFR* apOldContainer);
+    // apExtra points to a BSTSmartPointer<ExtraDataList> passed by value.
+    virtual void AddObjectToContainer(TESBoundObject* apObj, ExtraDataList** apExtra, int32_t aCount, TESObjectREFR* apOldContainer, ITEM_REMOVE_REASON aReason);
     virtual void sub_7B();
     virtual MagicCaster* GetMagicCaster(MagicSystem::CastingSource aeSource);
     virtual MagicTarget* GetMagicTarget();
@@ -215,7 +246,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_AD();
     virtual void sub_AE();
     virtual void sub_AF();
-    virtual void Disable();
+    virtual void DisableImpl(); // Disable; actors queue the request
     virtual void ResetInventory(bool abLeveledOnly);
     virtual void sub_B2();
     virtual void sub_B4();
@@ -244,7 +275,6 @@ struct TESObjectREFR : TESForm
     BSPointerHandle<TESObjectREFR> GetHandle() const noexcept;
     uint32_t GetCellId() const noexcept;
     TESWorldSpace* GetWorldSpace() const noexcept;
-    ExtraContainerChanges::Data* GetContainerChanges() const noexcept;
     ExtraDataList* GetExtraDataList() noexcept;
     Lock* GetLock() const noexcept;
     TESContainer* GetContainer() const noexcept;

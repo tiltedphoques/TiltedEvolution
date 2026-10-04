@@ -8,12 +8,9 @@ struct ExtraLeveledCreature : BSExtraData
 {
     inline static constexpr auto eExtraData = ExtraDataType::LeveledCreature;
 
-    virtual ~ExtraLeveledCreature();
-
-    TESActorBase* originalBase;
-    TESActorBase* templateBase;
+    TESActorBase* originalBase;      // 18
+    TESActorBase* templateBases[13]; // 20 one per template use flag
 };
 
-static_assert(sizeof(ExtraLeveledCreature) == 0x20);
-static_assert(offsetof(ExtraLeveledCreature, originalBase) == 0x10);
-static_assert(offsetof(ExtraLeveledCreature, templateBase) == 0x18);
+static_assert(offsetof(ExtraLeveledCreature, originalBase) == 0x18);
+static_assert(sizeof(ExtraLeveledCreature) == 0x88);
