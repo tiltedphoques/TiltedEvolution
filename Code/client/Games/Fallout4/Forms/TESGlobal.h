@@ -6,8 +6,6 @@
 struct TESGlobal : TESForm
 {
     BSString unk14;
-    uint8_t unk1C;
-    uint8_t pad[3];
     union
     {
         uint32_t i;
@@ -15,4 +13,6 @@ struct TESGlobal : TESForm
     };
 };
 
-static_assert(offsetof(TESGlobal, f) == 0x34);
+static_assert(offsetof(TESGlobal, f) == 0x30);
+
+static_assert(sizeof(TESGlobal) == 0x38);

@@ -2,6 +2,10 @@
 #include <TiltedOnlineApp.h>
 #include <TiltedOnlinePCH.h>
 #include <ScriptExtender.h>
+#include <immersive_launcher/TargetConfig.h>
+#if defined(TP_FALLOUT4)
+#include <Offsets.h>
+#endif
 
 #include <Commctrl.h>
 #include <Windows.h>
@@ -60,8 +64,9 @@ static void ShowIncompatibleVersionError(const char* apDetectedGameVersion, cons
     const auto [steamVer, gogVer] = kSupportedGameVersions;
 
     std::string supportedVersions = steamVer != gogVer ? fmt::format("{} (or {} if GOG)", steamVer, gogVer) : std::string{steamVer};
-    std::string message = fmt::format("{} {} requires {} {}, but your installed version is {}\n\nUpdate or downgrade to match, then relaunch", PRODUCT_NAME_A, BUILD_COMMIT + 1, SHORT_NAME_A, supportedVersions, apDetectedGameVersion);
-    std::wstring wideMessage(message.begin(), message.end());
+    const std::string commit = BUILD_COMMIT + 1;
+    const std::string detectedVersion = apDetectedGameVersion;
+    const auto wideMessage = fmt::format(L"{} {} requires {} {}, but your installed version is {}\n\nUpdate or downgrade to match, then relaunch", PRODUCT_NAME, std::wstring(commit.begin(), commit.end()), SHORT_NAME, std::wstring(supportedVersions.begin(), supportedVersions.end()), std::wstring(detectedVersion.begin(), detectedVersion.end()));
 
     const auto optionalDetails = fmt::format(L"Installed here: {}", apGamePath);
 
@@ -77,15 +82,25 @@ static void ShowIncompatibleVersionError(const char* apDetectedGameVersion, cons
 
 void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVersion)
 {
-    if (!VersionDb::Get().Load(acGamePath, aExeVersion))
-    {
-        ShowAddressLibraryError(acGamePath.c_str());
-    }
-
     auto [steamVer, gogVer] = kSupportedGameVersions;
     if (aExeVersion != steamVer && aExeVersion != gogVer)
     {
         ShowIncompatibleVersionError(aExeVersion.c_str(), acGamePath.c_str());
+    }
+
+#if defined(TP_FALLOUT4)
+    if (!fo4::ValidateImage(acGamePath / "Fallout4.exe"))
+    {
+        Base::TaskDialog dia(g_SharedWindowIcon, L"Error", L"Unsupported Fallout 4 executable",
+                             L"This build requires the Steam Fallout 4 1.11.240 executable.", nullptr);
+        dia.Show();
+        exit(4);
+    }
+#endif
+
+    if (!VersionDb::Get().Load(acGamePath, aExeVersion))
+    {
+        ShowAddressLibraryError(acGamePath.c_str());
     }
 
     g_appInstance = std::make_unique<TiltedOnlineApp>();

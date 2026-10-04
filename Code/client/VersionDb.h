@@ -25,7 +25,7 @@ private:
 
     template <typename T> static T read(std::ifstream& file)
     {
-        T v;
+        T v{};
         file.read((char*)&v, sizeof(T));
         return v;
     }
@@ -150,6 +150,7 @@ public:
         for (int i = 0; i < 4; i++)
             _ver[i] = 0;
         _moduleName = std::string();
+        _verStr.clear();
         _base = 0;
     }
 
@@ -312,12 +313,27 @@ public:
     // { u64 id, u64 offset }. Used by Fallout4 1.10.980+ and all 1.11.x.
     bool LoadF4SE(std::ifstream& file)
     {
+        const auto start = file.tellg();
+        file.seekg(0, std::ios::end);
+        const auto length = file.tellg() - start;
+        file.seekg(start);
         const auto count = read<std::uint64_t>(file);
+        if (!file || count == 0 || length < 8 || count != static_cast<std::uint64_t>((length - 8) / 16) || (length - 8) % 16)
+            return false;
+
+        const auto* pDos = reinterpret_cast<const IMAGE_DOS_HEADER*>(_base);
+        const auto* pNt = reinterpret_cast<const IMAGE_NT_HEADERS64*>(_base + pDos->e_lfanew);
+        const auto imageSize = pNt->OptionalHeader.SizeOfImage;
 
         for (std::uint64_t i = 0; i < count; ++i)
         {
             const auto id = read<std::uint64_t>(file);
             const auto offset = read<std::uint64_t>(file);
+            if (!file || offset >= imageSize || _data.contains(id))
+            {
+                Clear();
+                return false;
+            }
 
             if (offset == 0)
                 continue;

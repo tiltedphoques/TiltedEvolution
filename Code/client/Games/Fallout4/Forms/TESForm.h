@@ -5,20 +5,20 @@
 
 enum class FormType : uint8_t
 {
-    Armor = 26,
-    Book = 27,
-    Container = 28,
-    Door = 29,
-    Ingredient = 30,
-    Weapon = 41,
-    Ammo = 42,
-    Npc = 43,
-    LeveledCharacter = 44,
-    Alchemy = 46,
-    LeveledItem = 53,
-    Character = 62,
-    QuestItem = 77,
-    Count = 0x87
+    Armor = 0x1D,
+    Book = 0x1E,
+    Container = 0x1F,
+    Door = 0x20,
+    Ingredient = 0x21,
+    Weapon = 0x2B,
+    Ammo = 0x2C,
+    Npc = 0x2D,
+    LeveledCharacter = 0x2E,
+    Alchemy = 0x30,
+    LeveledItem = 0x38,
+    Character = 0x41,
+    QuestItem = 0x50,
+    Count = 0x9F
 };
 
 struct BGSSaveFormBuffer;
@@ -42,28 +42,25 @@ struct TESForm : BaseFormComponent
 
     static TESForm* GetById(uint32_t aId);
 
-    virtual void sub_4();
-    virtual void sub_5();
-    virtual void sub_6();
     virtual void sub_7();
     virtual void sub_8();
     virtual void sub_9();
-    virtual bool MarkChanged(uint32_t aChangeFlag);
-    virtual bool UnsetChanged(uint32_t aChangeFlag);
+    virtual void sub_A();
+    virtual void sub_B();
     virtual void sub_C();
-    virtual void sub_D();
+    virtual bool MarkChanged(uint32_t aChangeFlag);
+    virtual void UnsetChanged(uint32_t aChangeFlag);
+    virtual void sub_F();
+    virtual void sub_10();
     virtual void Save(BGSSaveFormBuffer* apBuffer) const noexcept;
     virtual void Load(BGSLoadFormBuffer* apBuffer);
-    virtual void sub_10();
-    virtual void sub_11();
-    virtual void sub_12();
-    virtual void InitializeComponents(); // Called after Load
+    virtual void sub_13();
     virtual void sub_14();
-    virtual FormType GetFormType();
-    virtual void sub_16();
+    virtual void sub_15();
+    virtual void InitializeComponents();
     virtual void sub_17();
     virtual void sub_18();
-    virtual void sub_19();
+    virtual FormType GetFormType();
     virtual void sub_1A();
     virtual void sub_1B();
     virtual void sub_1C();
@@ -84,20 +81,34 @@ struct TESForm : BaseFormComponent
     virtual void sub_2B();
     virtual void sub_2C();
     virtual void sub_2D();
-    // Actual function name is `GetTextForParsedSubTag`; passing an empty tag gets the full name of this form
-    virtual const char* GetName(const BSFixedString& acTag = {}) const noexcept;
-    virtual void CopyFrom(TESForm* apForm);
+    virtual void sub_2E();
+    virtual void sub_2F();
     virtual void sub_30();
     virtual void sub_31();
-    virtual const char* GetFormEditorID();
+    virtual void sub_32();
     virtual void sub_33();
     virtual void sub_34();
-    virtual void sub_35();
-    virtual void sub_36();
-    virtual void ActivateReference();
+    virtual const char* GetName(const BSFixedString& acTag = {}) const noexcept;
+    virtual void CopyFrom(TESForm* apForm);
+    virtual void sub_37();
     virtual void sub_38();
-    virtual void unk_39();
-    virtual void unk_3A();
+    virtual void sub_39();
+    virtual const char* GetFormEditorID();
+    virtual void sub_3B();
+    virtual void sub_3C();
+    virtual void sub_3D();
+    virtual void sub_3E();
+    virtual void sub_3F();
+    virtual void ActivateReference();
+    virtual void sub_41();
+    virtual void sub_42();
+    virtual void sub_43();
+    virtual void sub_44();
+    virtual void sub_45();
+    virtual void sub_46();
+    virtual void sub_47();
+    virtual void sub_48();
+    virtual void sub_49();
 
     // void CopyFromEx(TESForm* rhs);
     void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);

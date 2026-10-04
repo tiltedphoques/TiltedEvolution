@@ -35,24 +35,20 @@ struct BGSRenderer
     static BGSRenderer* Get();
     static ID3D11Device* GetDevice();
 
-    char pad[28];
-    DWORD unk;
-    bool unk2;
-    bool isWindowedMode;
-    char pad0[4];
+    char pad[0x40];
     DWORD syncInterval;
-    char pad1[14];
+    char pad44[4];
     ID3D11Device* pD3dDevice;
     ID3D11DeviceContext* pD3dContext;
     HWND windowHandle;
-    char pad2[8];
+    char pad60[8];
     DWORD windowWidth;
     DWORD windowHeight;
     IDXGISwapChain* pSwapChain;
 };
 
 static_assert(sizeof(ViewportConfig) == 40);
-static_assert(offsetof(BGSRenderer, pD3dDevice) == 56);
-static_assert(offsetof(BGSRenderer, pSwapChain) == 96);
+static_assert(offsetof(BGSRenderer, pD3dDevice) == 0x48);
+static_assert(offsetof(BGSRenderer, pSwapChain) == 0x70);
 
 #pragma pack(pop)

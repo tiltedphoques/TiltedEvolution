@@ -35,7 +35,7 @@ struct BGSSaveLoadManager
 
 static_assert(offsetof(BGSSaveLoadManager::SaveData, someFunction) == 0x18);
 
-struct BGSSaveFormBuffer
+struct alignas(8) BGSSaveFormBuffer
 {
     BGSSaveFormBuffer();
     virtual ~BGSSaveFormBuffer() {}
@@ -48,11 +48,16 @@ struct BGSSaveFormBuffer
     uint8_t formId[3];    // 10 - 18 For some reason the flags start at 0x13 on oldrim
     uint32_t changeFlags; // 13 - 1B
 
-    uint8_t pad[0x100]; // Ensure we have enough space as we don't know the exact size
+    uint8_t formInfo;
+    uint8_t version;
+    uint8_t pad21[7];
+    TESForm* form;
 };
 
 static_assert(offsetof(BGSSaveFormBuffer, formId) == 0x18);
 static_assert(offsetof(BGSSaveFormBuffer, changeFlags) == 0x1B);
+static_assert(offsetof(BGSSaveFormBuffer, version) == 0x20);
+static_assert(sizeof(BGSSaveFormBuffer) == 0x30);
 
 struct BGSSaveLoadBuffer
 {
@@ -112,7 +117,7 @@ struct BGSSaveFormBufferReal : BGSSaveGameBuffer
 
 static_assert(sizeof(BGSSaveFormBufferReal) == 0x30);
 
-struct BGSLoadFormBuffer
+struct alignas(8) BGSLoadFormBuffer
 {
     BGSLoadFormBuffer(uint32_t aChangeFlags);
     virtual ~BGSLoadFormBuffer() {}
@@ -120,8 +125,8 @@ struct BGSLoadFormBuffer
     void SetSize(const uint32_t aSize) noexcept { capacity = size1 = size2 = aSize; }
 
     const char* buffer;      // 8
-    size_t capacity;         // 10
-    uint32_t unk18;          // 18 - 0x459 ? version maybe
+    void* scrapHeap;         // 10
+    uint32_t capacity;       // 18
     int32_t unk1C;           // 1C - set to -1
     uint32_t size1;          // 20
     uint32_t position;       // 24
@@ -138,6 +143,9 @@ struct BGSLoadFormBuffer
     uint8_t loadFlag;
 };
 
+static_assert(offsetof(BGSLoadFormBuffer, capacity) == 0x18);
+static_assert(offsetof(BGSLoadFormBuffer, position) == 0x24);
+static_assert(sizeof(BGSLoadFormBuffer) == 0x50);
 static_assert(offsetof(BGSLoadFormBuffer, changeFlags) == 0x40);
 static_assert(offsetof(BGSLoadFormBuffer, loadFlag) == 0x4B);
 

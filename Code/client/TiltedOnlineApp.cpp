@@ -7,6 +7,7 @@
 #include <WindowsHook.hpp>
 
 #include <World.h>
+#include <Games/TES.h>
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
@@ -80,7 +81,7 @@ TiltedOnlineApp::~TiltedOnlineApp() = default;
 
 void* TiltedOnlineApp::GetMainAddress() const
 {
-    POINTER_SKYRIMSE(void, winMain, 36544);
+    POINTER_GAME(void, winMain, 36544, 4812562);
 
     return winMain.GetPtr();
 }
@@ -121,9 +122,13 @@ void TiltedOnlineApp::Update()
     // 
  
     // Make sure the window stays active
+#ifdef TP_FALLOUT4
+    if (auto* pSetting = INISettingCollection::Get()->GetSetting("bAlwaysActive:General"))
+        pSetting->data = 1;
+#else
     POINTER_SKYRIMSE(uint32_t, bAlwaysActive, 380768);
-
     *bAlwaysActive = 1;
+#endif
 
     World::Get().Update();
 }

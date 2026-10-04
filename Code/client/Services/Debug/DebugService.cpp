@@ -60,12 +60,10 @@
 
 #include <Combat/CombatController.h>
 #include <Camera/PlayerCamera.h>
-#include <AI/Movement/PlayerControls.h>
 #include <Interface/IMenu.h>
 #include <Camera/PlayerCamera.h>
 #include <DefaultObjectManager.h>
 #include <Misc/InventoryEntry.h>
-#include <Misc/MiddleProcess.h>
 
 #include <imgui.h>
 #include <inttypes.h>
@@ -322,11 +320,16 @@ void DebugService::OnDraw() noexcept
         if (ImGui::Button("Log all open windows"))
         {
             UI* pUI = UI::Get();
+#if defined(TP_FALLOUT4)
+            if (pUI)
+                pUI->DebugLogAllMenus();
+#else
             for (const auto& it : pUI->menuMap)
             {
                 if (pUI->GetMenuOpen(it.key))
                     spdlog::info("{}", it.key.AsAscii());
             }
+#endif
         }
 
         if (ImGui::Button("Close all menus"))

@@ -171,17 +171,33 @@ struct ActorValueInfo : TESForm
         kGrabbed = 161,
         kDEPRECATED05 = 162,
         kReflectDamage = 163,
-        kActorValueCount = 164,
+        kStrength = 164,
+        kPerception = 165,
+        kEndurance = 166,
+        kCharisma = 167,
+        kIntelligence = 168,
+        kAgility = 169,
+        kLuck = 170,
+        kActionPoints = 171,
+        kRads = 172,
+        kRadHealthMax = 173,
+        kFatigue = 174,
+        kFatigueAPMax = 175,
+        kPowerArmorBattery = 176,
+        kActorValueCount = 177,
     };
 
-    static uint32_t Resolve(uint32_t aId) noexcept;
+    static ActorValueInfo* Resolve(uint32_t aId) noexcept;
+    static ActorValueInfo* GetHealth() noexcept;
 
     virtual ~ActorValueInfo();
 
     TESFullName name;
-    uint8_t pad30[0x50 - 0x30];
-    BSFixedString key;
+    uint8_t pad30[0x1A8 - 0x30];
+    int32_t oldActorValue;
+    uint8_t pad1AC[0x1D0 - 0x1AC];
 };
 
 static_assert(offsetof(ActorValueInfo, name) == 0x20);
-static_assert(offsetof(ActorValueInfo, key) == 0x50);
+static_assert(offsetof(ActorValueInfo, oldActorValue) == 0x1A8);
+static_assert(sizeof(ActorValueInfo) == 0x1D0);

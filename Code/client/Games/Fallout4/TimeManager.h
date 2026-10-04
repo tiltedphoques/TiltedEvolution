@@ -13,7 +13,8 @@ struct TimeData
     TESGlobal* GameHour;       // 0x0020
     TESGlobal* GameDaysPassed; // 0x0028
     TESGlobal* TimeScale;      // 0x0030
-    float unk1;                // 0x0038
+    uint32_t midnightsPassed;   // 0x0038
     float rawDaysPassed;       // 0x003C
-    char pad_40[0x88];         // 0x0040
 };
+
+static_assert(sizeof(TimeData) == 0x40);

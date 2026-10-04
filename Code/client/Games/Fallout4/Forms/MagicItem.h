@@ -27,4 +27,5 @@ struct MagicItem : TESBoundObject
     void* pPreloadItem;
 };
 
-static_assert(sizeof(MagicItem) == 0x90);
+static_assert(offsetof(MagicItem, listOfEffects) == 0x98);
+static_assert(sizeof(MagicItem) == 0xD0);

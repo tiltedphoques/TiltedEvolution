@@ -2,8 +2,12 @@
 
 #include <Forms/TESForm.h>
 #include <Components/TESFullName.h>
-#include <BSCore/BSTHashMap.h>
 #include <Games/Primitives.h>
+
+namespace creation
+{
+template <class Key, class Value> class BSTHashMap;
+}
 
 struct TESObjectREFR;
 struct BGSListForm;

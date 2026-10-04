@@ -7,10 +7,9 @@
 
 #include <BSGraphics/BSGraphicsRenderer.h>
 #include <Camera/PlayerCamera.h>
-#include <Games/Skyrim/Forms/TESForm.h>
-#include <Games/Skyrim/Interface/Menus/HUDMenuUtils.h>
-#include <Games/Skyrim/NetImmerse/NiCamera.h>
-#include <Games/Skyrim/TESObjectREFR.h>
+#include <Forms/TESForm.h>
+#include <Interface/Menus/HUDMenuUtils.h>
+#include <TESObjectREFR.h>
 #include <NetImmerse/NiCamera.h>
 
 namespace

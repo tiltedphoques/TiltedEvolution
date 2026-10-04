@@ -30,65 +30,55 @@ struct TESNPC : TESActorBase
         return pTemplate;
     }
 
-    struct FaceMorphs
-    {
-        float option[19];
-        uint32_t presets[4];
-
-        void CopyFrom(const FaceMorphs& acRhs)
-        {
-            std::copy(std::begin(acRhs.option), std::end(acRhs.option), std::begin(option));
-            std::copy(std::begin(acRhs.presets), std::end(acRhs.presets), std::begin(presets));
-        }
-    };
-
     struct HeadData
     {
         BGSColorForm* hairColor;
+        BGSColorForm* facialHairColor;
         BGSTextureSet* headTexture;
     };
 
     TESRaceForm raceForm;
     BGSOverridePackCollection overridePacks;
-    void* unkDC;
-    uint8_t unk0E0[0x24];
-    uint8_t pad1B4[0x6];
-    uint16_t unk10A;
+    uint8_t forcedLocRefType[0x10];
+    uint8_t nativeTerminalForm[0x10];
+    void* menuEventSink;
+    uint8_t attachParents[0x18];
+    uint8_t npcData[8];
     TESClass* npcClass;
-
     HeadData* headData;
-    uintptr_t unk114;
+    TESForm* giftFilter;
     TESCombatStyle* combatStyle;
-    size_t unk11C;
+    uint32_t fileOffset;
+    uint32_t pad264;
     TESRace* originalRace;
     TESNPC* faceNPC;
+    NiPoint3 morphWeight;
     float height;
-    float weight;
+    float heightMax;
+    uint32_t pad28C;
     void* sounds;
     BSFixedString shortName;
     TESObjectARMO* farSkin;
+    TESForm* powerArmorFurniture;
     BGSOutfit* defaultOutfit;
     BGSOutfit* sleepOutfit;
-    uintptr_t unk144;
+    TESForm* defaultPackList;
     TESFaction* faction;
-
     BGSHeadPart** headparts;
+    GameArray<float>* morphRegionSliderValues;
+    void* facialBoneRegionSliderValues;
     uint8_t headpartsCount;
-
-#if TP_PLATFORM_64
-    uint8_t pad241[5];
-#else
-    uint8_t pad151[3];
-#endif
+    uint8_t soundLevel;
 
     struct Color
     {
-        uint8_t red, green, blue;
+        uint8_t red, green, blue, alpha;
     } color;
+    uint16_t pad2EE;
 
     GameArray<BGSRelationship*>* relationships;
-    FaceMorphs* faceMorphs;
-    uintptr_t unk160;
+    void* morphSliderValues;
+    void* tintingData;
 
     BGSHeadPart* GetHeadPart(uint32_t aType);
     void Serialize(String* apSaveBuffer) const noexcept;
@@ -96,7 +86,10 @@ struct TESNPC : TESActorBase
     void Initialize() noexcept;
 };
 
-static_assert(offsetof(TESNPC, npcClass) == 0x1C0);
-static_assert(offsetof(TESNPC, faceNPC) == 0x1F0);
-static_assert(offsetof(TESNPC, color) == 0x246);
-static_assert(offsetof(TESNPC, relationships) == 0x250);
+static_assert(offsetof(TESNPC, npcClass) == 0x240);
+static_assert(offsetof(TESNPC, faceNPC) == 0x270);
+static_assert(offsetof(TESNPC, morphWeight) == 0x278);
+static_assert(offsetof(TESNPC, headparts) == 0x2D0);
+static_assert(offsetof(TESNPC, color) == 0x2EA);
+static_assert(offsetof(TESNPC, relationships) == 0x2F0);
+static_assert(sizeof(TESNPC) == 0x308);

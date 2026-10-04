@@ -93,6 +93,10 @@ packaged/*
 # Fallout4 offline artifacts: derived data, local tooling and notes stay out
 # of the repo. Regenerate with the local tooling when the game updates.
 GameFiles/Fallout4/
-Tools/fallout4/
+Tools/fallout4/*
+!Tools/fallout4/pe.py
+!Tools/fallout4/gen_fo4_offsets.py
+!Tools/fallout4/bridge.py
+!Tools/fallout4/verify_bindings.py
+!Tools/fallout4/xrefs.py
 PARITY-FALLOUT4.md
-Code/client/Games/Fallout4/OffsetsData.h

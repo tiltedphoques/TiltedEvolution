@@ -4,5 +4,7 @@
 
 struct BGSOverridePackCollection : BaseFormComponent
 {
-    void* unk04[4];
+    void* packages[6];
 };
+
+static_assert(sizeof(BGSOverridePackCollection) == 0x38);

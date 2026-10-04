@@ -2,21 +2,23 @@
 
 #include <Forms/TESForm.h>
 #include <Components/TESFullName.h>
-#include <Components/TESModelTri.h>
-#include <Components/TESModelTextureSwap.h>
 
 struct BGSTextureSet;
 
 struct BGSHeadPart : TESForm
 {
     TESFullName fullName;
-    TESModelTextureSwap modelTextureSwap;
-    uint8_t pad38[4];
+    uint8_t pad30[0x40];
+    uint8_t flags;
+    uint8_t pad71[3];
     uint32_t type;
-    GameArray<void*> unk40;
+    GameArray<BGSHeadPart*> extraParts;
     BGSTextureSet* textureSet;
-    TESModelTri models[3];
-    uint32_t unk8C;
-    void* unk90;
+    uint8_t pad98[0xD8];
     BSFixedString name;
 };
+
+static_assert(offsetof(BGSHeadPart, type) == 0x74);
+static_assert(offsetof(BGSHeadPart, textureSet) == 0x90);
+static_assert(offsetof(BGSHeadPart, name) == 0x170);
+static_assert(sizeof(BGSHeadPart) == 0x178);

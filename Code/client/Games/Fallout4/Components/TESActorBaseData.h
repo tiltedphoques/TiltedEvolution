@@ -5,6 +5,7 @@
 struct BGSVoiceType;
 struct TESFaction;
 struct TESLevItem;
+struct TESGlobal;
 
 struct TESActorBaseData : BaseFormComponent
 {
@@ -14,21 +15,21 @@ struct TESActorBaseData : BaseFormComponent
     };
 
     uint32_t actorBaseFlags;
-    int16_t magickaOffset;
-    int16_t staminaOffset;
+    int16_t xpValueOffset;
     uint16_t level;
     uint16_t calcLevelMin;
     uint16_t calcLevelMax;
-    uint16_t speedMult;
     uint16_t baseDisposition;
     uint16_t templateUseFlags;
-    int16_t healthOffset;
     int16_t bleedoutOverride;
+    uint16_t pad1A;
+    uint32_t changeFlags;
     TESLevItem* deathItem;
     BGSVoiceType* voiceType;
     TESForm* baseTemplateForm;
-    uint32_t changeFlags;
-    uint32_t pad3C;
+    TESForm** templateForms;
+    TESGlobal* legendChance;
+    TESForm* legendTemplate;
 
     struct FactionRank
     {
@@ -56,5 +57,6 @@ struct TESActorBaseData : BaseFormComponent
 
 static_assert(offsetof(TESActorBaseData, deathItem) == 0x20);
 static_assert(offsetof(TESActorBaseData, baseTemplateForm) == 0x30);
-static_assert(offsetof(TESActorBaseData, factions) == 0x40);
-static_assert(sizeof(TESActorBaseData) == 0x58);
+static_assert(offsetof(TESActorBaseData, changeFlags) == 0x1C);
+static_assert(offsetof(TESActorBaseData, factions) == 0x50);
+static_assert(sizeof(TESActorBaseData) == 0x68);

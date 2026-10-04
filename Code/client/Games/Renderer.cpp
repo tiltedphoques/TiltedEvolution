@@ -18,16 +18,21 @@ static TRenderPresent* RealRenderPresent = nullptr;
 
 BGSRenderer* BGSRenderer::Get()
 {
-    POINTER_SKYRIMSE(BGSRenderer*, s_instance, 411347);
+    POINTER_GAME(BGSRenderer*, s_instance, 411347, 2704429);
 
     return *(s_instance.Get());
 }
 
 ID3D11Device* BGSRenderer::GetDevice()
 {
+#if defined(TP_FALLOUT4)
+    const auto* pRenderer = Get();
+    return pRenderer ? pRenderer->pD3dDevice : nullptr;
+#else
     POINTER_SKYRIMSE(ID3D11Device*, s_device, 411348);
 
     return *(s_device.Get());
+#endif
 }
 
 // unused, never hooked

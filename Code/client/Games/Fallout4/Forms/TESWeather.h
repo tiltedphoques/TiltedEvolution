@@ -1,6 +1,6 @@
 #pragma once
 
-#include <forms/TESForm.h>
+#include <Forms/TESForm.h>
 
 struct TESWeather : TESForm
 {

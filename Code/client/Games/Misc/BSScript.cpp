@@ -10,6 +10,8 @@
 #include <Games/ActorExtension.h>
 #include <Games/PapyrusFunctions.h>
 
+#ifndef TP_FALLOUT4
+// Fallout 4 defers all Papyrus VM integration until the F4SE bridge exists.
 TP_THIS_FUNCTION(TRegisterPapyrusFunction, void, BSScript::IVirtualMachine, NativeFunction*);
 TP_THIS_FUNCTION(TBindEverythingToScript, void, BSScript::IVirtualMachine*);
 TP_THIS_FUNCTION(TSignaturesMatch, bool, BSScript::NativeFunction, BSScript::NativeFunction*);
@@ -111,3 +113,4 @@ static TiltedPhoques::Initializer s_vmHooks(
         TP_HOOK(&RealSignaturesMatch, HookSignaturesMatch);
         // TP_HOOK(&RealCompareVariables, HookCompareVariables);
     });
+#endif

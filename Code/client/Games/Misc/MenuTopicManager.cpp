@@ -3,12 +3,14 @@
 #include <Events/PlayerDialogueEvent.h>
 #include <TESObjectREFR.h>
 
+#ifndef TP_FALLOUT4
 TP_THIS_FUNCTION(TPlayDialogueOption, bool, MenuTopicManager, int32_t aIndex);
 static TPlayDialogueOption* RealPlayDialogueOption = nullptr;
+#endif
 
 MenuTopicManager* MenuTopicManager::Get() noexcept
 {
-    POINTER_SKYRIMSE(MenuTopicManager*, s_singleton, 401099);
+    POINTER_GAME(MenuTopicManager*, s_singleton, 401099, 4796375);
     return *s_singleton.Get();
 }
 
@@ -23,6 +25,7 @@ bool MenuTopicManager::IsPlayerDialogueSpeaker(const TESObjectREFR* apSpeaker) n
     return pManager && pManager->IsCurrentSpeaker(apSpeaker->GetHandle());
 }
 
+#ifndef TP_FALLOUT4
 bool TP_MAKE_THISCALL(HookPlayDialogueOption, MenuTopicManager, int32_t aIndex)
 {
     if (apThis->pOptions)
@@ -55,3 +58,5 @@ static TiltedPhoques::Initializer s_menuTopicHooks(
 
         TP_HOOK(&RealPlayDialogueOption, HookPlayDialogueOption);
     });
+
+#endif

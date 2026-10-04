@@ -4,6 +4,27 @@
 
 extern std::unique_ptr<TiltedOnlineApp> g_appInstance;
 
+#ifdef TP_FALLOUT4
+TP_THIS_FUNCTION(TVMUpdate, void, GameVM, float);
+
+static TVMUpdate* VMUpdate = nullptr;
+
+void TP_MAKE_THISCALL(HookVMUpdate, GameVM, float aDelta)
+{
+    if (!apThis->frozen)
+        g_appInstance->Update();
+
+    TiltedPhoques::ThisCall(VMUpdate, apThis, aDelta);
+}
+
+static TiltedPhoques::Initializer s_mainHooks(
+    []()
+    {
+        static VersionDbPtr<TVMUpdate> cVMUpdate(2251303);
+        VMUpdate = cVMUpdate.Get();
+        TP_HOOK(&VMUpdate, HookVMUpdate);
+    });
+#else
 struct Main;
 
 TP_THIS_FUNCTION(TVMUpdate, int, GameVM, float);
@@ -52,3 +73,4 @@ static TiltedPhoques::Initializer s_mainHooks(
         TP_HOOK(&VMDestructor, HookVMDestructor);
     });
 
+#endif

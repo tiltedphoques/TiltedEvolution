@@ -12,13 +12,23 @@ struct GameHeap
 {
     static GameHeap* Get()
     {
+#if defined(TP_FALLOUT4)
+        using TGetHeap = GameHeap&();
+        static VersionDbPtr<TGetHeap> s_getHeap(4471522);
+        return &s_getHeap.Get()();
+#else
         POINTER_SKYRIMSE(GameHeap, s_gameHeap, 400188);
 
         return s_gameHeap.Get();
+#endif
     }
 };
 
+#if defined(TP_FALLOUT4)
+TP_THIS_FUNCTION(TFormAllocate, void*, GameHeap, size_t aSize, uint32_t aAlignment, bool aAligned);
+#else
 TP_THIS_FUNCTION(TFormAllocate, void*, GameHeap, size_t aSize, size_t aAlignment, bool aAligned);
+#endif
 TP_THIS_FUNCTION(TFormFree, void, GameHeap, void* apPtr, bool aAligned);
 
 TFormAllocate* RealFormAllocate = nullptr;
@@ -26,7 +36,11 @@ TFormFree* RealFormFree = nullptr;
 
 static TiltedPhoques::MimallocAllocator s_allocator;
 
+#if defined(TP_FALLOUT4)
+void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, uint32_t aAlignment, bool aAligned)
+#else
 void* TP_MAKE_THISCALL(HookFormAllocate, GameHeap, size_t aSize, size_t aAlignment, bool aAligned)
+#endif
 {
     switch (aSize)
     {
@@ -67,6 +81,7 @@ void Memory::Free(void* apData) noexcept
     TiltedPhoques::ThisCall(RealFormFree, GameHeap::Get(), apData, false);
 }
 
+#if !defined(TP_FALLOUT4)
 static bool IsFormAllocateReplacedByEF(TFormAllocate** appOutEngineFixesAlloc) noexcept
 {
     POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
@@ -99,6 +114,7 @@ static void RehookFormAllocate(TFormAllocate* apEngineFixesAllocate) noexcept
     RealFormAllocate = apEngineFixesAllocate;
     TP_HOOK_IMMEDIATE(&RealFormAllocate, HookFormAllocate);
 }
+#endif
 
 size_t Hook_msize(void* apData)
 {
@@ -133,13 +149,14 @@ void* Hook_aligned_malloc(size_t aSize, size_t aAlignment)
 static TiltedPhoques::Initializer s_memoryHooks(
     []()
     {
-        POINTER_SKYRIMSE(TFormAllocate, s_formAllocate, 68115);
+        POINTER_GAME(TFormAllocate, s_formAllocate, 68115, 2267872);
 
-        POINTER_SKYRIMSE(TFormFree, s_formFree, 68117);
+        POINTER_GAME(TFormFree, s_formFree, 68117, 2267874);
 
         RealFormAllocate = s_formAllocate.Get();
         RealFormFree = s_formFree.Get();
 
+#if !defined(TP_FALLOUT4)
         using T_msize = decltype(&Hook_msize);
         using Tfree = decltype(&Hookfree);
         using Tcalloc = decltype(&Hookcalloc);
@@ -161,10 +178,12 @@ static TiltedPhoques::Initializer s_memoryHooks(
         TP_HOOK_IAT(malloc, cModuleName);
         TP_HOOK_IAT(_aligned_malloc, cModuleName);
         TP_HOOK_IAT(_aligned_free, cModuleName);
+#endif
 
         TP_HOOK(&RealFormAllocate, HookFormAllocate);
     });
 
+#if !defined(TP_FALLOUT4)
 using T_initterm_e = decltype(&_initterm_e);
 T_initterm_e Real_initterm_e = nullptr;
 
@@ -187,4 +206,9 @@ void HookFormAllocateSentinelInit()
 {
     TP_HOOK_IAT(_initterm_e, "api-ms-win-crt-runtime-l1-1-0.dll");
 }
+#else
+void HookFormAllocateSentinelInit()
+{
+}
+#endif
 #pragma optimize("", on)

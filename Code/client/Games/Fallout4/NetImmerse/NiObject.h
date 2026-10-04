@@ -46,4 +46,6 @@ struct NiObject : NiRefObject
     virtual void sub_23();
     virtual void sub_24();
     virtual void sub_25();
+    virtual void sub_26();
+    virtual void sub_27();
 };

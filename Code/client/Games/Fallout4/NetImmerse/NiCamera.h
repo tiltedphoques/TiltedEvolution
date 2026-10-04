@@ -12,7 +12,7 @@ template <typename T> struct NiRect
     T bottom;
 };
 
-struct NiCamera : public NiAVObject
+struct alignas(16) NiCamera : public NiAVObject
 {
     virtual ~NiCamera() = default;
 
@@ -20,6 +20,14 @@ struct NiCamera : public NiAVObject
 
     static bool WorldPtToScreenPt3(float* matrix, const NiRect<float>* port, const NiPoint3* p_in, float* x_out, float* y_out, float* z_out, float zeroTolerance = 1e-5f);
 
-    NiNode* parent;
-    NiAVObject* unk;
+    float worldToCam[4][4];
+    uint8_t viewFrustum[0x1C];
+    float minNearPlaneDist;
+    float maxFarNearRatio;
+    NiRect<float> port;
+    float lodAdjust;
 };
+
+static_assert(offsetof(NiCamera, worldToCam) == 0x120);
+static_assert(offsetof(NiCamera, port) == 0x184);
+static_assert(sizeof(NiCamera) == 0x1A0);

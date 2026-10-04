@@ -17,6 +17,7 @@ template <class T> struct BSTSmartPointer
 #include "ExtraData.h"
 #include <ExtraData/ExtraContainerChanges.h>
 #include <Games/Animation/IAnimationGraphManagerHolder.h>
+#include <Misc/ActorValueOwner.h>
 #include <Games/Misc/Lock.h>
 #include <Games/Magic/MagicSystem.h>
 #include <Magic/MagicCaster.h>
@@ -177,14 +178,16 @@ struct TESObjectREFR : TESForm
     virtual void sub_8A();
     virtual NiAVObject* Get3D() const;
     virtual NiAVObject* Get3D(bool aFirstPerson) const;
+
+    NiNode* GetNiNode() const { return reinterpret_cast<NiNode*>(Get3D()); }
     virtual void sub_8D();
     virtual void sub_8E();
     virtual void sub_8F();
     virtual void sub_90();
     virtual void sub_91();
     virtual void sub_92();
-    virtual void sub_93();
-    virtual void sub_94();
+    virtual NiPoint3 GetBoundMin() const;
+    virtual NiPoint3 GetBoundMax() const;
     virtual void sub_95();
     virtual void sub_96();
     virtual void sub_97();
@@ -286,7 +289,11 @@ struct TESObjectREFR : TESForm
     void UpdateItemList(TESForm* pUnkForm) noexcept;
 
     BSHandleRefObject handleRefObject; // 0x20
-    uint8_t pad30[0xB8 - 0x30];        // event sinks, graph holder, keyword form, AV owner, AV event source
+    uint8_t eventSinks[0x18];
+    IAnimationGraphManagerHolder animationGraphHolder;
+    void* keywordForm;
+    ActorValueOwner actorValueOwner;
+    uint8_t actorValueEvents[0x58];
 
     TESObjectCELL* parentCell;         // 0xB8
     NiPoint3A rotation;                // 0xC0 (OBJ_REFR::angle)
@@ -306,3 +313,6 @@ static_assert(sizeof(TESObjectREFR) == 0x110);
 static_assert(offsetof(TESObjectREFR, parentCell) == 0xB8);
 static_assert(offsetof(TESObjectREFR, loadedState) == 0xF0);
 static_assert(offsetof(TESObjectREFR, extraData) == 0x100);
+
+static_assert(offsetof(TESObjectREFR, animationGraphHolder) == 0x48);
+static_assert(offsetof(TESObjectREFR, actorValueOwner) == 0x58);

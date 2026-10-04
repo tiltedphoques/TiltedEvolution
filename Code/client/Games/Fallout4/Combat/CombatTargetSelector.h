@@ -6,26 +6,20 @@ struct CombatController;
 
 struct CombatTargetSelector
 {
-    virtual ~CombatTargetSelector();
-    virtual void Unk1();
-    virtual void Unk2();
-    virtual void Unk3();
-    virtual void Unk4();
-    virtual void Update();
-    virtual BSPointerHandle<Actor> SelectTarget();
-
-    void *vftable_NiRefObject_8;
+    uint8_t combatObject[0x10];
     CombatController* pCombatController;
     BSPointerHandle<Actor> hTarget;
     uint32_t ePriority;
     uint32_t flags;
-    uint8_t pad24[4];
+    uint32_t pad24;
 };
-static_assert(offsetof(CombatTargetSelector, ePriority) == 0x1C);
-static_assert(sizeof(CombatTargetSelector) == 0x28);
 
-struct CombatTargetSelectorStandard : public CombatTargetSelector
+struct CombatTargetSelectorStandard : CombatTargetSelector
 {
     AITimer updateTimer;
 };
+
+static_assert(offsetof(CombatTargetSelector, pCombatController) == 0x10);
+static_assert(offsetof(CombatTargetSelector, ePriority) == 0x1C);
+static_assert(sizeof(CombatTargetSelector) == 0x28);
 static_assert(sizeof(CombatTargetSelectorStandard) == 0x30);

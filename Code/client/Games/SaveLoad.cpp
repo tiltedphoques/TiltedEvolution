@@ -17,11 +17,16 @@ BGSSaveFormBuffer::BGSSaveFormBuffer()
 {
     TP_THIS_FUNCTION(CtorT, BGSSaveFormBuffer*, BGSSaveFormBuffer);
 
-    POINTER_SKYRIMSE(CtorT, ctor, 36035);
+    POINTER_GAME(CtorT, ctor, 36035, 2228301);
 
     TiltedPhoques::ThisCall(ctor, this);
 
     position = 0;
+#ifdef TP_FALLOUT4
+    using TGetVersion = uint8_t();
+    static VersionDbPtr<TGetVersion> getVersion(2228051);
+    version = getVersion.Get()();
+#endif
 }
 
 void BGSSaveFormBuffer::WriteId(uint32_t aId) noexcept
@@ -44,14 +49,29 @@ void BGSSaveFormBuffer::WriteId(uint32_t aId) noexcept
 
 BGSLoadFormBuffer::BGSLoadFormBuffer(const uint32_t aChangeFlags)
 {
+#ifdef TP_FALLOUT4
+    TP_THIS_FUNCTION(TConstructGameBuffer, BGSLoadFormBuffer*, BGSLoadFormBuffer);
+    TP_THIS_FUNCTION(TConstructFormData, void*, void);
+    static VersionDbPtr<TConstructGameBuffer> constructGameBuffer(2228258);
+    static VersionDbPtr<TConstructFormData> constructFormData(2228249);
+    static VersionDbPtr<void> vtable(950365);
+    TiltedPhoques::ThisCall(constructGameBuffer, this);
+    TiltedPhoques::ThisCall(constructFormData, reinterpret_cast<uint8_t*>(this) + 0x28);
+    *reinterpret_cast<void**>(this) = vtable.Get();
+#else
     TP_THIS_FUNCTION(CtorT, BGSLoadFormBuffer*, BGSLoadFormBuffer);
-
     POINTER_SKYRIMSE(CtorT, ctor, 35993);
-
     TiltedPhoques::ThisCall(ctor, this);
+#endif
 
     changeFlags = aChangeFlags;
+#ifdef TP_FALLOUT4
+    using TGetVersion = uint8_t();
+    static VersionDbPtr<TGetVersion> getVersion(2228051);
+    loadFlag = getVersion.Get()();
+#else
     loadFlag = 0x40;
+#endif
     position = 0;
     maybeMoreFlags = 0;
 
@@ -59,29 +79,50 @@ BGSLoadFormBuffer::BGSLoadFormBuffer(const uint32_t aChangeFlags)
 }
 
 TP_THIS_FUNCTION(TBGSLoadFormBuffer_ReadFormId, bool, BGSLoadFormBuffer, uint32_t&);
+#ifdef TP_FALLOUT4
+TP_THIS_FUNCTION(TBGSSaveFormBuffer_WriteFormId, void, BGSSaveFormBuffer, const TESForm*, uint32_t);
+TP_THIS_FUNCTION(TBGSSaveFormBuffer_WriteId, void, BGSSaveFormBuffer, uint32_t, uint32_t);
+#else
 TP_THIS_FUNCTION(TBGSSaveFormBuffer_WriteFormId, void, BGSSaveFormBuffer, TESForm*);
 TP_THIS_FUNCTION(TBGSSaveFormBuffer_WriteId, void, BGSSaveFormBuffer, uint64_t);
+#endif
 
 static TBGSSaveFormBuffer_WriteFormId* RealBGSSaveFormBuffer_WriteFormId = nullptr;
 static TBGSLoadFormBuffer_ReadFormId* RealBGSLoadFormBuffer_ReadFormId = nullptr;
 static TBGSSaveFormBuffer_WriteId* RealBGSSaveFormBuffer_WriteId = nullptr;
 
+#ifdef TP_FALLOUT4
+void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteFormId, BGSSaveFormBuffer, const TESForm* apForm, uint32_t aPosition)
+#else
 void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteFormId, BGSSaveFormBuffer, TESForm* apForm)
+#endif
 {
     if (!ScopedSaveLoadOverride::IsOverriden())
     {
+#ifdef TP_FALLOUT4
+        TiltedPhoques::ThisCall(RealBGSSaveFormBuffer_WriteFormId, apThis, apForm, aPosition);
+#else
         TiltedPhoques::ThisCall(RealBGSSaveFormBuffer_WriteFormId, apThis, apForm);
+#endif
         return;
     }
 
     apThis->WriteId(apForm ? apForm->formID : 0);
 }
 
+#ifdef TP_FALLOUT4
+void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteId, BGSSaveFormBuffer, uint32_t aId, uint32_t aPosition)
+#else
 void TP_MAKE_THISCALL(BGSSaveFormBuffer_WriteId, BGSSaveFormBuffer, uint64_t aId)
+#endif
 {
     if (!ScopedSaveLoadOverride::IsOverriden())
     {
+#ifdef TP_FALLOUT4
+        TiltedPhoques::ThisCall(RealBGSSaveFormBuffer_WriteId, apThis, aId, aPosition);
+#else
         TiltedPhoques::ThisCall(RealBGSSaveFormBuffer_WriteId, apThis, aId);
+#endif
         return;
     }
 
@@ -116,9 +157,9 @@ bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t&
 static TiltedPhoques::Initializer s_saveLoadHooks(
     []()
     {
-        POINTER_SKYRIMSE(TBGSLoadFormBuffer_ReadFormId, s_readFormId, 36000);
-        POINTER_SKYRIMSE(TBGSSaveFormBuffer_WriteFormId, s_writeFormId, 36048);
-        POINTER_SKYRIMSE(TBGSSaveFormBuffer_WriteId, s_writeId, 36047);
+        POINTER_GAME(TBGSLoadFormBuffer_ReadFormId, s_readFormId, 36000, 2228265);
+        POINTER_GAME(TBGSSaveFormBuffer_WriteFormId, s_writeFormId, 36048, 2228314);
+        POINTER_GAME(TBGSSaveFormBuffer_WriteId, s_writeId, 36047, 2228313);
 
         RealBGSLoadFormBuffer_ReadFormId = s_readFormId.Get();
         RealBGSSaveFormBuffer_WriteFormId = s_writeFormId.Get();

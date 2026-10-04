@@ -10,6 +10,47 @@
 
 #include <math.h>
 
+#if defined(TP_FALLOUT4)
+void DebugService::DrawCombatView()
+{
+    if (!m_formId)
+        return;
+
+    ImGui::Begin("Combat");
+    ImGui::InputScalar("Form ID", ImGuiDataType_U32, &m_formId, nullptr, nullptr, "%" PRIx32, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_CharsHexadecimal);
+
+    auto* pActor = Cast<Actor>(TESForm::GetById(m_formId));
+    auto* pController = pActor ? pActor->combatController : nullptr;
+    if (pController)
+    {
+        auto* pTarget = TESObjectREFR::GetByHandle(pController->targetHandle);
+        if (pTarget)
+            ImGui::Text("Current target: %08X", pTarget->formID);
+        ImGui::Text("Stopped: %s, paused: %s, inactive: %s", pController->stoppedCombat ? "yes" : "no", pController->paused ? "yes" : "no", pController->inactive ? "yes" : "no");
+
+        if (pController->pActiveTargetSelector)
+            ImGui::Text("Selector priority: %u", pController->pActiveTargetSelector->ePriority);
+
+        if (pController->pCombatGroup)
+        {
+            ImGui::BeginChild("Potential targets", ImVec2(0, 200), true);
+            for (const auto& target : pController->pCombatGroup->targets)
+            {
+                auto* pReference = TESObjectREFR::GetByHandle(target.targetHandle);
+                if (pReference)
+                {
+                    ImGui::Text("Target: %08X", pReference->formID);
+                    ImGui::Text("Detection: %d, stealth: %.3f", target.detectLevel, target.stealthPoints);
+                    ImGui::Text("Attackers: %u, DPS: %.3f", target.attackerCount, target.weightedDPS);
+                    ImGui::Separator();
+                }
+            }
+            ImGui::EndChild();
+        }
+    }
+    ImGui::End();
+}
+#else
 namespace
 {
 struct DetectionState : public NiRefObject
@@ -223,3 +264,5 @@ void DebugService::DrawCombatView()
 
     ImGui::End();
 }
+
+#endif

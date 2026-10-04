@@ -1,6 +1,7 @@
 #pragma once
 
-struct CombatTargetSelector;
+#include <AI/AITimer.h>
+
 struct CombatGroup;
 struct CombatState;
 struct CombatInventory;
@@ -12,42 +13,49 @@ struct CombatController
     void SetTarget(Actor* apTarget);
     void UpdateTarget();
 
-    CombatGroup *pCombatGroup;
-    CombatState *pState;
-    CombatInventory *pInventory;
-    void *pCombatBlackboard;
-    void *pBehaviorController;
+    uint8_t eventSource[0x40];
+    CombatGroup* pCombatGroup;
+    CombatState* pState;
+    CombatInventory* pInventory;
+    void* pCombatBlackboard;
+    void* pBehaviorController;
     uint32_t attackerHandle;
     uint32_t targetHandle;
     uint32_t previousTargetHandle;
-    uint8_t unk34;
-    bool startedCombat;
-    uint8_t unk36;
-    uint8_t unk37;
-    TESCombatStyle *pCombatStyle;
-    bool stoppedCombat;
-    bool unk41;
-    bool ignoringCombat;
-    bool inactive;
-    float unk44;
-    float unk4C;
+    uint32_t currentStance;
+    uint32_t desiredStance;
+    uint32_t pad7C;
+    TESCombatStyle* pCombatStyle;
+    AITimer updateTimer;
+    float lowMovementDelta;
+    uint32_t pad94;
     GameArray<void*> aimControllers;
-    uint64_t aimControllerLock;
-    CombatAimController *pCurrentAimController;
-    CombatAimController *pPreviousAimController;
+    CombatAimController* pActiveAimController;
+    CombatAimController* pCurrentAimController;
+    GameArray<void*> viewControllers;
+    void* pActiveViewController;
     GameArray<void*> areas;
-    CombatAreaStandard *pCurrentArea;
+    CombatAreaStandard* pCurrentArea;
     GameArray<CombatTargetSelector*> targetSelectors;
-    CombatTargetSelector *pActiveTargetSelector;
-    CombatTargetSelector *pPreviousTargetSelector;
+    CombatTargetSelector* pDefaultTargetSelector;
+    CombatTargetSelector* pActiveTargetSelector;
+    GameArray<void*> combatObjects;
+    uint8_t behaviorTreeMap[0x30];
     uint32_t handleCount;
-    int32_t unkCC;
+    uint32_t pad174;
     NiPointer<Actor> pCachedAttacker;
     NiPointer<Actor> pCachedTarget;
+    bool firstUpdate;
+    bool stoppedCombat;
+    bool stoppingCombat;
+    bool paused;
+    bool inactive;
+    uint8_t pad18D[3];
 };
 
-static_assert(offsetof(CombatController, targetHandle) == 0x2C);
-static_assert(offsetof(CombatController, startedCombat) == 0x35);
-static_assert(offsetof(CombatController, targetSelectors) == 0xA0);
-static_assert(offsetof(CombatController, pActiveTargetSelector) == 0xB8);
-static_assert(sizeof(CombatController) == 0xE0);
+static_assert(offsetof(CombatController, pCombatGroup) == 0x40);
+static_assert(offsetof(CombatController, targetHandle) == 0x6C);
+static_assert(offsetof(CombatController, targetSelectors) == 0x100);
+static_assert(offsetof(CombatController, pActiveTargetSelector) == 0x120);
+static_assert(offsetof(CombatController, pCachedAttacker) == 0x178);
+static_assert(sizeof(CombatController) == 0x190);

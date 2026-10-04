@@ -11,25 +11,18 @@ struct EffectSetting : TESForm
     TESFullName fullName;
     BGSMenuDisplayObject menuDisplayObject;
     BGSKeywordForm keywordForm;
-    uintptr_t unk30;
-    uintptr_t unk34;
+    void* filterValidationFunction;
+    void* filterValidationItem;
     uint32_t flags;
-    uint32_t unk3C;
-    void* unk40;
-    uint32_t unk44;
-    uint32_t unk48;
-    uint16_t unk4C;
-    uint8_t pad4E[2];
-    void* unk50;
-    uint32_t unk54;
-    void* unk58;
-    void* unk5C;
-    uint8_t unk60[0x18];
+    uint8_t pad74[0xD0 - 0x74];
     EffectArchetypes::ArchetypeID eArchetype;
-    void* unk80[2];
+    uint8_t padD4[0xF0 - 0xD4];
     uint32_t castType;
     uint32_t deliveryType;
-    // more stuff
+    uint8_t padF8[0x1B0 - 0xF8];
 };
 
-static_assert(offsetof(EffectSetting, eArchetype) == 0xC0);
+static_assert(offsetof(EffectSetting, flags) == 0x70);
+static_assert(offsetof(EffectSetting, eArchetype) == 0xD0);
+static_assert(offsetof(EffectSetting, castType) == 0xF0);
+static_assert(sizeof(EffectSetting) == 0x1B0);

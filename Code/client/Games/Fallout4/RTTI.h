@@ -4,10 +4,10 @@ namespace internal
 {
 template <class T> struct RttiLocator
 {
-    RttiLocator(uint32_t aId);
+    RttiLocator(uint32_t aRva);
     static const void* Get();
 
-    static inline UniquePtr<VersionDbPtr<void*>> m_pRtti;
+    static inline uint32_t m_rva = 0;
 };
 
 using TDynamicCast = void*(void* apThis, uint32_t a1, const void* acpBaseRTTI, const void* acpTargetRTTI, uint32_t a4);
@@ -16,7 +16,13 @@ extern const VersionDbPtr<TDynamicCast> DynamicCast;
 
 template <class T, class U> T* Cast(U* apPtr)
 {
-    return reinterpret_cast<T*>(internal::DynamicCast.Get()((void*)apPtr, 0, internal::RttiLocator<std::remove_cv_t<U>>::Get(), internal::RttiLocator<std::remove_cv_t<T>>::Get(), 0));
+    if (!apPtr)
+        return nullptr;
+    const void* pSource = internal::RttiLocator<std::remove_cv_t<U>>::Get();
+    const void* pTarget = internal::RttiLocator<std::remove_cv_t<T>>::Get();
+    if (!pSource || !pTarget)
+        return nullptr;
+    return reinterpret_cast<T*>(internal::DynamicCast.Get()((void*)apPtr, 0, pSource, pTarget, 0));
 }
 
 struct IFormFactory;
