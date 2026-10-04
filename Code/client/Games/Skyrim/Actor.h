@@ -273,6 +273,8 @@ struct Actor : TESObjectREFR
 
     bool IsCommandedActor() const noexcept { return flags2 & ActorFlags::IS_COMMANDED_ACTOR; }
 
+    ActorState* GetActorState() noexcept { return &actorState; }
+
 public:
     enum ChangeFlags : uint32_t
     {

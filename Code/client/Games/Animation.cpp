@@ -28,8 +28,8 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
     if (!pExtension->IsRemote() || g_forceAnimation)
     {
         ActionEvent action;
-        action.State1 = pActor->actorState.flags1;
-        action.State2 = pActor->actorState.flags2;
+        action.State1 = pActor->GetActorState()->flags1;
+        action.State2 = pActor->GetActorState()->flags2;
         action.Type = apAction->unkInput | (apAction->someFlag ? 0x4 : 0);
         action.Tick = World::Get().GetTick();
         action.ActorId = pActor->formID;

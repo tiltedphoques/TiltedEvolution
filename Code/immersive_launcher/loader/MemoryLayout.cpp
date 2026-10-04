@@ -32,7 +32,9 @@ namespace
 {
 extern "C" const IMAGE_DOS_HEADER __ImageBase;
 
-constinit const uint8_t* pBasePtr = reinterpret_cast<const uint8_t*>(&__ImageBase);
+// MSVC 14.44 rejects constinit here: &__ImageBase is a link-time, not
+// compile-time, constant. Plain const in .data reads the same.
+const uint8_t* pBasePtr = reinterpret_cast<const uint8_t*>(&__ImageBase);
 const uint8_t* kpImageEnd{pBasePtr + ((PIMAGE_NT_HEADERS)(pBasePtr + __ImageBase.e_lfanew))->OptionalHeader.SizeOfImage};
 
 bool InRange(const uint8_t* apObj, const uint8_t* apLo, const uint8_t* apHi)

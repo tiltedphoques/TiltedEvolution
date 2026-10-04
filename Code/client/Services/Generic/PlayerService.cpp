@@ -201,7 +201,7 @@ void PlayerService::RunRespawnUpdates() noexcept
     static bool s_startTimer = false;
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
-    if (!pPlayer->actorState.IsBleedingOut())
+    if (!pPlayer->GetActorState()->IsBleedingOut())
     {
         m_cachedMainSpellId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
         m_cachedSecondarySpellId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;

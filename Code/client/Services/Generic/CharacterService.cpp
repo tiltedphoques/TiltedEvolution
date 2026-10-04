@@ -171,7 +171,7 @@ void CharacterService::ReconcileActorData(
         // A remote draw correction may still be queued when an ownership grant arrives.
         m_weaponDrawUpdates.erase(apActor->formID);
 
-        if (apActor->actorState.IsWeaponDrawn() != acActorData.IsWeaponDrawn)
+        if (apActor->GetActorState()->IsWeaponDrawn() != acActorData.IsWeaponDrawn)
             apActor->SetWeaponDrawnEx(acActorData.IsWeaponDrawn);
     }
     else
@@ -1563,7 +1563,7 @@ ActorData CharacterService::BuildActorData(Actor* apActor) const noexcept
     actorData.InitialActorValues = apActor->GetEssentialActorValues();
     actorData.InitialInventory = apActor->GetActorInventory();
     actorData.IsDead = apActor->IsDead();
-    actorData.IsWeaponDrawn = apActor->actorState.IsWeaponFullyDrawn();
+    actorData.IsWeaponDrawn = apActor->GetActorState()->IsWeaponFullyDrawn();
 
     return actorData;
 }

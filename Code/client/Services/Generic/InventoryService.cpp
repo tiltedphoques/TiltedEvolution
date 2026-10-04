@@ -309,7 +309,7 @@ void InventoryService::RunWeaponStateUpdates() noexcept
         Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
         auto& localComponent = view.get<LocalComponent>(entity);
 
-        bool isWeaponDrawn = pActor->actorState.IsWeaponDrawn();
+        bool isWeaponDrawn = pActor->GetActorState()->IsWeaponDrawn();
         if (isWeaponDrawn != localComponent.IsWeaponDrawn)
         {
             localComponent.IsWeaponDrawn = isWeaponDrawn;

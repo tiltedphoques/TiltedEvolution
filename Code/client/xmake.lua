@@ -6,9 +6,12 @@ target(name)
     add_includedirs(".","../../Libraries/")
     set_pcxxheader("TiltedOnlinePCH.h")
 
+    local kGame = get_config("game") or "skyrim"
+    local kGameDir = kGame == "fallout4" and "Games/Fallout4" or "Games/Skyrim"
+
     -- exclude game specifc stuff
-    add_headerfiles("**.h|Games/Skyrim/**|Services/Vivox/**")
-    add_files("**.cpp|Games/Skyrim/**|Services/Vivox/**")
+    add_headerfiles("**.h|Games/Skyrim/**|Games/Fallout4/**|Services/Vivox/**")
+    add_files("**.cpp|Games/Skyrim/**|Games/Fallout4/**|Services/Vivox/**")
 
     after_install(function(target)
         -- copy dlls
@@ -24,10 +27,10 @@ target(name)
         os.rm(path.join(target:installdir(), "bin", "**Tests.exe"))
     end)
 
-    add_files("Games/Skyrim/**.cpp")
-    add_headerfiles("Games/Skyrim/**.h")
+    add_files(kGameDir .. "/**.cpp")
+    add_headerfiles(kGameDir .. "/**.h")
     -- rather hacky:
-    add_includedirs("Games/Skyrim")
+    add_includedirs(kGameDir)
     add_deps("SkyrimEncoding")
     add_deps(
         "UiProcess",
@@ -74,4 +77,5 @@ end
 
 add_requires("tiltedcore")
 
-build_client("SkyrimTogetherClient")
+local kGame = get_config("game") or "skyrim"
+build_client(kGame == "fallout4" and "Fallout4TogetherClient" or "SkyrimTogetherClient")
