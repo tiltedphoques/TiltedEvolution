@@ -9,6 +9,7 @@ export const environment = {
   overwriteVersion: "",
   chatMessageLengthLimit: 512,
   nbReconnectionAttempts: 5,
+  textReplacements: [] as [string, string][],
 
   providers: [] as Provider[],
 };

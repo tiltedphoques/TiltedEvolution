@@ -8,14 +8,29 @@ import {
   TranslocoLoader,
   TranslocoModule,
 } from '@ngneat/transloco';
+import { map } from 'rxjs/operators';
 import { environment } from '../environments/environment';
+
+/** Applies the build's game specific text replacements to every string. */
+function replaceText(translation: Translation, replacements: [string, string][]): Translation {
+  const result: Translation = {};
+  for (const [key, value] of Object.entries(translation)) {
+    result[key] =
+      typeof value === 'string'
+        ? replacements.reduce((text, [from, to]) => text.split(from).join(to), value)
+        : replaceText(value, replacements);
+  }
+  return result;
+}
 
 @Injectable({ providedIn: 'root' })
 export class TranslocoHttpLoader implements TranslocoLoader {
   constructor(private readonly http: HttpClient) {}
 
   getTranslation(lang: string) {
-    return this.http.get<Translation>(`assets/i18n/${lang}.json`);
+    return this.http
+      .get<Translation>(`assets/i18n/${lang}.json`)
+      .pipe(map(translation => replaceText(translation, environment.textReplacements)));
   }
 }
 

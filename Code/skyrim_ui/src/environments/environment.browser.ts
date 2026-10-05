@@ -13,6 +13,7 @@ export const environment = {
   overwriteVersion: "v1.3.2",
   chatMessageLengthLimit: 512,
   nbReconnectionAttempts: 5,
+  textReplacements: [] as [string, string][],
 
   providers: [
     {

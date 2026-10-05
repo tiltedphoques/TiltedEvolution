@@ -29,6 +29,7 @@
             "namedChunks": true,
             "stylePreprocessorOptions": {
               "includePaths": [
+                "src/themes/skyrim",
                 "src",
                 "src/styles"
               ]
@@ -98,6 +99,54 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.e2e.ts"
+                }
+              ]
+            },
+            "fallout": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.fallout.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ],
+              "stylePreprocessorOptions": {
+                "includePaths": [
+                  "src/themes/fallout",
+                  "src",
+                  "src/styles"
+                ]
+              },
+              "index": {
+                "input": "src/themes/fallout/index.html",
+                "output": "index.html"
+              },
+              "assets": [
+                "src/favicon.ico",
+                "src/assets/sounds/",
+                "src/assets/i18n/",
+                {
+                  "glob": "**/*",
+                  "input": "src/themes/fallout/assets",
+                  "output": "assets"
                 }
               ]
             }

@@ -7,6 +7,7 @@
     "build": "ng build",
     "deploy:develop": "ng build --output-hashing none --configuration=develop --base-href ./ --resources-output-path ./assets/",
     "deploy:production": "ng build --output-hashing none --configuration=production --base-href ./ --resources-output-path ./assets/",
+    "deploy:fallout": "ng build --output-hashing none --configuration=fallout --base-href ./ --resources-output-path ./assets/",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "format": "prettier -w ./src/**/*.{ts,json,css,scss,html}"

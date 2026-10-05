@@ -1,0 +1,26 @@
+import { Provider } from '@angular/core';
+
+export const environment = {
+  production: true,
+  game: true,
+  urlProtocol: 'https',
+  // Fallout Together has no public server list yet; connect by address.
+  url: '',
+  githubUrl: 'https://api.github.com/repos/tiltedphoques/TiltedEvolution/tags',
+  overwriteVersion: "",
+  chatMessageLengthLimit: 512,
+  nbReconnectionAttempts: 5,
+  // Most specific first; translations are written for Skyrim Together.
+  textReplacements: [
+    [
+      'Skyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp\nSkyrimTogetherQuestPatches.esp',
+      'Fallout4.esm\nDLCRobot.esm\nDLCworkshop01.esm\nDLCCoast.esm\nDLCworkshop02.esm\nDLCworkshop03.esm\nDLCNukaWorld.esm',
+    ],
+    ['Anniversary Update', 'Creations'],
+    ['Skyrim.ini', 'Fallout4.ini'],
+    ['Skyrim Together', 'Fallout Together'],
+    ['Skyrim', 'Fallout 4'],
+  ] as [string, string][],
+
+  providers: [] as Provider[],
+};
