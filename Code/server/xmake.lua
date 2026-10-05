@@ -40,7 +40,7 @@ local function build_server()
 end
 
 target("SkyrimTogetherServer")
-    set_basename("STServer")
+    set_basename(get_config("game") == "fallout4" and "FTServer" or "STServer")
     add_defines("TARGET_PREFIX=\"st\"")
     add_deps("SkyrimEncoding")
     build_server()

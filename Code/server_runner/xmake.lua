@@ -27,7 +27,7 @@ local function build_runner()
 end
 
 target("SkyrimServerRunner")
-    set_basename("SkyrimTogetherServer")
+    set_basename(get_config("game") == "fallout4" and "FalloutTogetherServer" or "SkyrimTogetherServer")
     add_defines("TARGET_PREFIX=\"st\"")
     -- we want uniform names for both runner and dll under windows for
     -- scripting/ux reasons

@@ -3,6 +3,9 @@ local function build_client(name)
 target(name)
     set_kind("static")
     set_group("Client")
+    if get_config("game") == "fallout4" then
+        set_basename("FTClient")
+    end
     add_includedirs(".","../../Libraries/")
     set_pcxxheader("TiltedOnlinePCH.h")
 

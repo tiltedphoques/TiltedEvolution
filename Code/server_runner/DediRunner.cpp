@@ -10,7 +10,11 @@
 
 namespace
 {
+#if defined(TP_FALLOUT4)
+constexpr char kSettingsFileName[] = "FTServer.ini";
+#else
 constexpr char kSettingsFileName[] = "STServer.ini";
+#endif
 constexpr char kGenerateConfigArg[] = "--generate-config";
 
 DediRunner* s_pRunner{nullptr};
