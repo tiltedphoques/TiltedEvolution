@@ -227,9 +227,45 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveItem, Actor, BSPointe
     return TiltedPhoques::ThisCall(s_removeItem, apThis, apResult, apData);
 }
 
+TP_THIS_FUNCTION(TPickUpObject, void, Actor, TESObjectREFR*, int32_t, bool);
+TP_THIS_FUNCTION(TPlayerPickUpObject, bool, Actor, TESObjectREFR*, int32_t, bool);
+TPickUpObject* s_pickUpObject = nullptr;
+TPlayerPickUpObject* s_playerPickUpObject = nullptr;
+
+// Non temporary objects exist on every client and are removed there through activation sync.
+void QueuePickUp(Actor* apActor, TESObjectREFR* apObject, int32_t aCount)
+{
+    if (!apObject || !apObject->baseForm || aCount <= 0 || ScopedInventoryOverride::IsOverriden())
+        return;
+
+    const bool updateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
+    QueueActorInventoryChange(apActor, InventoryChangeEvent(apActor->formID, MakeInventoryEntry(apObject->baseForm, aCount), false, updateClients), nullptr);
+}
+
+void TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t aCount, bool aPlaySounds)
+{
+    QueuePickUp(apThis, apObject, aCount);
+    ScopedInventoryOverride _;
+    TiltedPhoques::ThisCall(s_pickUpObject, apThis, apObject, aCount, aPlaySounds);
+}
+
+bool TP_MAKE_THISCALL(HookPlayerPickUpObject, Actor, TESObjectREFR* apObject, int32_t aCount, bool aPlaySounds)
+{
+    QueuePickUp(apThis, apObject, aCount);
+    ScopedInventoryOverride _;
+    return TiltedPhoques::ThisCall(s_playerPickUpObject, apThis, apObject, aCount, aPlaySounds);
+}
+
 TiltedPhoques::Initializer s_actorHooks(
     []()
     {
+        static VersionDbPtr<TPickUpObject> pickUpObject(2229956);
+        static VersionDbPtr<TPlayerPickUpObject> playerPickUpObject(2233019);
+        s_pickUpObject = pickUpObject.Get();
+        s_playerPickUpObject = playerPickUpObject.Get();
+        TP_HOOK(&s_pickUpObject, HookPickUpObject);
+        TP_HOOK(&s_playerPickUpObject, HookPlayerPickUpObject);
+
         static VersionDbPtr<TAddObjectToContainer> addObjectToContainer(2229960);
         s_addObjectToContainer = addObjectToContainer.Get();
         TP_HOOK(&s_addObjectToContainer, HookAddObjectToContainer);
