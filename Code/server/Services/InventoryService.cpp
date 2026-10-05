@@ -129,6 +129,14 @@ void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChan
 
     auto& inventoryComponent = view.get<InventoryComponent>(*it);
     inventoryComponent.Content.UpdateEquipment(message.CurrentInventory);
+    if (!message.Unequip && !message.Mods.empty())
+    {
+        for (auto& entry : inventoryComponent.Content.Entries)
+        {
+            if (entry.BaseId == message.ItemId)
+                entry.Mods = message.Mods;
+        }
+    }
 
     NotifyEquipmentChanges notify;
     notify.ServerId = message.ServerId;
@@ -139,6 +147,7 @@ void InventoryService::OnEquipmentChanges(const PacketEvent<RequestEquipmentChan
     notify.Unequip = message.Unequip;
     notify.IsSpell = message.IsSpell;
     notify.IsShout = message.IsShout;
+    notify.Mods = message.Mods;
 
     const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
     if (!GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender()))

@@ -316,6 +316,11 @@ struct TESObjectREFR : TESForm
     void SetInventory(const Inventory& acContainer) noexcept;
     void SetInventoryRetainingQuestItems(Inventory& aCurrentInventory, const Inventory& acSourceInventory) noexcept;
     void AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSettingInventory = false) noexcept;
+
+    // Object mods (OMODs) of an inventory stack, and attaching mods to a single carried item.
+    static Vector<uint32_t> GetStackMods(const BGSInventoryItem::Stack* apStack) noexcept;
+    Vector<uint32_t> GetItemMods(const TESForm* apItem, uint32_t aStackId) const noexcept;
+    void AttachItemMods(TESBoundObject* apItem, const Vector<GameId>& acMods) noexcept;
     void UpdateItemList(TESForm* pUnkForm) noexcept;
 
     BSHandleRefObject handleRefObject; // 0x20

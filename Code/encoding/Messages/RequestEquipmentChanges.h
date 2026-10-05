@@ -21,7 +21,7 @@ struct RequestEquipmentChanges final : ClientMessage
     bool operator==(const RequestEquipmentChanges& acRhs) const noexcept
     {
         return GetOpcode() == acRhs.GetOpcode() && ServerId == acRhs.ServerId && OwnershipEpoch == acRhs.OwnershipEpoch && ItemId == acRhs.ItemId && EquipSlotId == acRhs.EquipSlotId && Count == acRhs.Count && Unequip == acRhs.Unequip && IsSpell == acRhs.IsSpell && IsShout == acRhs.IsShout && IsAmmo == acRhs.IsAmmo &&
-               CurrentInventory == acRhs.CurrentInventory;
+               CurrentInventory == acRhs.CurrentInventory && Mods == acRhs.Mods;
     }
 
     uint32_t ServerId{};
@@ -35,4 +35,5 @@ struct RequestEquipmentChanges final : ClientMessage
     bool IsAmmo = false;
 
     Inventory CurrentInventory{};
+    TiltedPhoques::Vector<GameId> Mods{};
 };

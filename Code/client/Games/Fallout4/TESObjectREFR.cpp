@@ -280,6 +280,8 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
             modSystem.GetServerModId(item.object->formID, entry.BaseId);
             entry.Count = static_cast<int32_t>(pStack->count);
             entry.ExtraWorn = pStack->IsEquipped();
+            for (const uint32_t modId : GetStackMods(pStack))
+                modSystem.GetServerModId(modId, entry.Mods.emplace_back());
             inventory.Entries.push_back(std::move(entry));
         }
     }
@@ -377,6 +379,7 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool) noexc
     {
         ExtraDataList* pExtra = nullptr;
         AddObjectToContainer(pObject, &pExtra, arEntry.Count, nullptr, ITEM_REMOVE_REASON::kRemove);
+        AttachItemMods(pObject, arEntry.Mods);
 
         if (arEntry.IsWorn())
         {
@@ -393,6 +396,81 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool) noexc
         data.count = -arEntry.Count;
         data.reason = ITEM_REMOVE_REASON::kRemove;
         RemoveItem(data);
+    }
+}
+
+Vector<uint32_t> TESObjectREFR::GetStackMods(const BGSInventoryItem::Stack* apStack) noexcept
+{
+    // BGSObjectInstanceExtra: a buffer of BGSMod::ObjectIndexData { formId, index, rank, disabled }.
+    struct ObjectIndexData
+    {
+        uint32_t formId;
+        uint8_t index;
+        uint8_t rank;
+        uint8_t disabled;
+    };
+    struct DataBuffer
+    {
+        const ObjectIndexData* data;
+        uint32_t size;
+    };
+
+    Vector<uint32_t> mods;
+    if (!apStack || !apStack->extra)
+        return mods;
+
+    const auto* pInstance = apStack->extra->GetByType(ExtraDataType::ObjectInstance);
+    if (!pInstance)
+        return mods;
+
+    const auto* pValues = *reinterpret_cast<DataBuffer* const*>(reinterpret_cast<const uint8_t*>(pInstance) + 0x18);
+    if (!pValues || !pValues->data)
+        return mods;
+
+    for (uint32_t i = 0; i < pValues->size / sizeof(ObjectIndexData); ++i)
+    {
+        if (!pValues->data[i].disabled)
+            mods.push_back(pValues->data[i].formId);
+    }
+    return mods;
+}
+
+Vector<uint32_t> TESObjectREFR::GetItemMods(const TESForm* apItem, uint32_t aStackId) const noexcept
+{
+    if (!inventoryList)
+        return {};
+
+    ScopedReadLock _{inventoryList->lock};
+    for (const auto& item : inventoryList->items)
+    {
+        if (item.object != apItem)
+            continue;
+
+        auto* pStack = item.stack;
+        for (uint32_t i = 0; pStack && i < aStackId; ++i)
+            pStack = pStack->next;
+        return GetStackMods(pStack);
+    }
+    return {};
+}
+
+// Same steps as Papyrus ObjectReference.AttachModToInventoryItem, which only mods singular items.
+void TESObjectREFR::AttachItemMods(TESBoundObject* apItem, const Vector<GameId>& acMods) noexcept
+{
+    if (!apItem || acMods.empty() || GetItemCountInInventory(apItem) != 1)
+        return;
+
+    using TModifyInventoryItemMod = bool(void*, uint32_t, TESObjectREFR*, TESBoundObject*, TESForm*, bool);
+    static VersionDbPtr<TModifyInventoryItemMod> modifyInventoryItemMod(2254249);
+
+    ScopedInventoryOverride inventoryOverride;
+    ScopedEquipOverride equipOverride;
+
+    auto& modSystem = World::Get().GetModSystem();
+    for (const auto& modId : acMods)
+    {
+        if (auto* pMod = TESForm::GetById(modSystem.GetGameId(modId)))
+            modifyInventoryItemMod.Get()(nullptr, 0, this, apItem, pMod, true);
     }
 }
 

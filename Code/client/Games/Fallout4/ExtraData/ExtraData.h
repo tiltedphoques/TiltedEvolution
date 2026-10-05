@@ -9,6 +9,7 @@ enum class ExtraDataType : uint32_t
 {
     None = 0,
     ContainerChanges = 0x15,
+    ObjectInstance = 0x35,
     Worn = 0x16,
     WornLeft = 0x17,
     ReferenceHandle = 0x1C,

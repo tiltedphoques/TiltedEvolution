@@ -13,6 +13,10 @@ void RequestEquipmentChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     Serialization::WriteBool(aWriter, IsShout);
     Serialization::WriteBool(aWriter, IsAmmo);
     CurrentInventory.Serialize(aWriter);
+
+    Serialization::WriteVarInt(aWriter, Mods.size());
+    for (const GameId& mod : Mods)
+        mod.Serialize(aWriter);
 }
 
 void RequestEquipmentChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -29,4 +33,8 @@ void RequestEquipmentChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     IsShout = Serialization::ReadBool(aReader);
     IsAmmo = Serialization::ReadBool(aReader);
     CurrentInventory.Deserialize(aReader);
+
+    Mods.resize(Serialization::ReadVarInt(aReader));
+    for (GameId& mod : Mods)
+        mod.Deserialize(aReader);
 }

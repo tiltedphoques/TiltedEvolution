@@ -130,6 +130,7 @@ bool TP_MAKE_THISCALL(HookEquipObject, EquipManager, Actor* apActor, const Objec
             evt.ItemId = pItem->formID;
             evt.EquipSlotId = apSlot ? apSlot->formID : 0;
             evt.IsAmmo = pItem->formType == FormType::Ammo;
+            evt.Mods = apActor->GetItemMods(pItem, aStackId);
 
             QueueEquipmentChange(apActor, std::move(evt));
         }

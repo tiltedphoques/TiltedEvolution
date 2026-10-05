@@ -15,4 +15,5 @@ struct EquipmentChangeEvent
     bool IsSpell = false;
     bool IsShout = false;
     bool IsAmmo = false;
+    Vector<uint32_t> Mods{};
 };
