@@ -829,7 +829,7 @@ bool CharacterService::TransferOwnership(Player* apPlayer, const entt::entity aE
     if (pOldOwner)
         pOldOwner->Send(notify);
 
-    spdlog::info(
+    spdlog::debug(
         "Transferred ownership of actor {:X} from player {:X} to player {:X} for {} (epoch {} to {})",
         notify.ServerId, oldOwnerId, notify.OwnerPlayerId, pReasonName, oldEpoch, newEpoch);
 
@@ -867,7 +867,7 @@ void CharacterService::TransferToNextOwner(const entt::entity aEntity, const Own
             return;
     }
 
-    spdlog::info("Removing actor {:X} after {} because no eligible owner remains", World::ToInteger(aEntity), pReasonName);
+    spdlog::debug("Removing actor {:X} after {} because no eligible owner remains", World::ToInteger(aEntity), pReasonName);
     m_world.GetDispatcher().trigger(CharacterRemoveEvent(World::ToInteger(aEntity)));
 }
 
