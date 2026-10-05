@@ -197,12 +197,20 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
 
     if (aType != KEYEVENT_CHAR && (IsToggleKey(aKey) || (IsDisableKey(aKey) && active)))
     {
+        // Only a release that follows a press toggles; some input stacks report a release twice.
+        static bool s_togglePressed = false;
+
         if (!overlay.GetInGame())
         {
             TiltedPhoques::DInputHook::Get().SetEnabled(false);
         }
-        else if (aType == KEYEVENT_KEYUP)
+        else if (aType == KEYEVENT_RAWKEYDOWN || aType == KEYEVENT_KEYDOWN)
         {
+            s_togglePressed = true;
+        }
+        else if (aType == KEYEVENT_KEYUP && s_togglePressed)
+        {
+            s_togglePressed = false;
             SetUIActive(overlay, pRenderer, !active);
         }
     }
