@@ -110,7 +110,7 @@
 
 .app-root-menu {
   display: flex;
-  height: 4rem;
+  height: $-size-menu-height;
   margin: 0 auto;
 
   > button {

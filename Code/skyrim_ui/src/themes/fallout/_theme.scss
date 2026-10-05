@@ -83,7 +83,7 @@ $-scanlines: repeating-linear-gradient(
       0 0.8rem 2.5rem rgba(0, 0, 0, 0.65);
 
     &::before {
-      content: 'ROBCO INDUSTRIES (TM) TERMLINK';
+      content: 'TOGETHER INDUSTRIES (TM) TERMLINK';
       position: absolute;
       top: 0.55rem;
       left: 1.75rem;
@@ -117,6 +117,7 @@ $-color-offline: rgba(#ff5a3c, 0.25);
 $-color-hud-text: pip(0.8);
 $-color-hud-text-strong: $-color-tint;
 $-color-notification-backdrop: transparent;
+$-size-menu-height: 2.6rem;
 
 @mixin notification-frame() {
   border-left: 3px solid $-color-tint;

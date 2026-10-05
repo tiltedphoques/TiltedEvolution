@@ -73,10 +73,10 @@ button {
 // that opens into the line below it.
 .app-root-menu > button {
   position: relative;
-  margin: 0.5rem 0 -2px;
+  margin: 0.3rem 0 -2px;
   padding: 0 0.3rem;
   font-size: 0.85rem;
-  line-height: 1.1;
+  white-space: nowrap;
   letter-spacing: 0.04em;
   border: 2px solid transparent;
   border-bottom: 0;
