@@ -13,7 +13,8 @@ namespace
 {
 // Behavior variables replicated between clients, matched by name so the first
 // person graph of a player maps onto the third person graph of their puppet.
-// Variables a graph does not have are skipped.
+// Variables a graph does not have are skipped. Aim pitch is left out: first
+// person values bend the third person body.
 constexpr const char* kSyncedBooleans[] = {
     "IsSprinting", "isJumping", "bInJumpState", "bInLandingState", "bAimActive", "bAimEnabled", "isSightedOver", "isFiring", "isReloading",
     "IsAttackReady", "isAttackNotReady", "bEquipOk", "bIsThrowing", "IsBlocking", "IsSneaking", "bIsSneaking", "IsStaggering"};
@@ -26,8 +27,8 @@ constexpr const char* kSyncedIntegers[] = {
 
 constexpr const char* kSyncedFloats[] = {
     "Speed", "Direction", "TurnDelta", "SpeedSmoothed", "DirectionSmoothed", "TurnDeltaSmoothed", "TurnDeltaDamped", "DirectionDamped",
-    "speedDamped", "SampledSpeed", "VelocityZ", "fSpeedWalk", "fSpeedRun", "DirectionDegrees", "Pitch", "PitchDelta", "PitchOffset",
-    "PitchDeltaSmoothed", "AimHeadingCurrent", "AimPitchCurrent", "weaponSpeedMult", "ReloadSpeedMult", "staggerMagnitude", "staggerDirection"};
+    "speedDamped", "SampledSpeed", "VelocityZ", "fSpeedWalk", "fSpeedRun", "DirectionDegrees", "weaponSpeedMult", "ReloadSpeedMult",
+    "staggerMagnitude", "staggerDirection"};
 
 struct GraphVariable
 {

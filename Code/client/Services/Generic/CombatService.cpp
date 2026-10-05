@@ -152,8 +152,13 @@ void CombatService::OnNotifyProjectileLaunch(const NotifyProjectileLaunch& acMes
     // always use origin, or it'll recalculate it and it desyncs
     launchData.bUseOrigin = true;
 
+#if defined(TP_FALLOUT4)
+    launchData.bTracer = acMessage.UnkBool1;
+    launchData.bPenetrates = acMessage.UnkBool2;
+#else
     launchData.bUnkBool1 = acMessage.UnkBool1;
     launchData.bUnkBool2 = acMessage.UnkBool2;
+#endif
 
     BSPointerHandle<Projectile> result;
 

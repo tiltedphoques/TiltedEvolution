@@ -14,6 +14,7 @@
 #include <World.h>
 #include <Events/HitEvent.h>
 #include <Events/HealthChangeEvent.h>
+#include <Events/InventoryChangeEvent.h>
 
 ActorExtension* Actor::GetExtension() noexcept
 {
@@ -172,9 +173,68 @@ void TP_MAKE_THISCALL(HookModActorValue, Actor, ActorValueOwner::ForceMode aMode
     }
 }
 
+void QueueActorInventoryChange(Actor* apActor, InventoryChangeEvent aEvent, TESObjectREFR* apTransferReference)
+{
+    auto ownershipToken = Utils::GetLocalOwnershipToken(apActor->formID);
+    if (!ownershipToken && apTransferReference == PlayerCharacter::Get())
+        ownershipToken = Utils::GetRemoteOwnershipToken(apActor->formID);
+
+    if (!ownershipToken)
+        return;
+
+    aEvent.ServerId = ownershipToken->ServerId;
+    aEvent.OwnershipEpoch = ownershipToken->OwnershipEpoch;
+    World::Get().GetRunner().Trigger(std::move(aEvent));
+}
+
+Inventory::Entry MakeInventoryEntry(const TESBoundObject* apObject, int32_t aCount)
+{
+    Inventory::Entry item{};
+    World::Get().GetModSystem().GetServerModId(apObject->formID, item.BaseId);
+    item.Count = aCount;
+    return item;
+}
+
+TP_THIS_FUNCTION(TAddObjectToContainer, void, Actor, TESBoundObject*, ExtraDataList**, int32_t, TESObjectREFR*, ITEM_REMOVE_REASON);
+TAddObjectToContainer* s_addObjectToContainer = nullptr;
+
+// Picking up, buying, crafting and transfers all end up here.
+void TP_MAKE_THISCALL(HookAddObjectToContainer, Actor, TESBoundObject* apObject, ExtraDataList** apExtra, int32_t aCount, TESObjectREFR* apOldContainer,
+                      ITEM_REMOVE_REASON aReason)
+{
+    if (apObject && aCount > 0 && !ScopedInventoryOverride::IsOverriden())
+        QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, MakeInventoryEntry(apObject, aCount)), apOldContainer);
+
+    TiltedPhoques::ThisCall(s_addObjectToContainer, apThis, apObject, apExtra, aCount, apOldContainer, aReason);
+}
+
+TP_THIS_FUNCTION(TRemoveItem, BSPointerHandle<TESObjectREFR>*, Actor, BSPointerHandle<TESObjectREFR>*, RemoveItemData*);
+TRemoveItem* s_removeItem = nullptr;
+
+BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveItem, Actor, BSPointerHandle<TESObjectREFR>* apResult, RemoveItemData* apData)
+{
+    if (apData && apData->object && apData->count > 0 && !ScopedInventoryOverride::IsOverriden())
+    {
+        const bool drop = apData->reason == ITEM_REMOVE_REASON::kDropping;
+        QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, MakeInventoryEntry(apData->object, -apData->count), drop), apData->a_otherContainer);
+    }
+
+    ScopedEquipOverride _;
+
+    return TiltedPhoques::ThisCall(s_removeItem, apThis, apResult, apData);
+}
+
 TiltedPhoques::Initializer s_actorHooks(
     []()
     {
+        static VersionDbPtr<TAddObjectToContainer> addObjectToContainer(2229960);
+        s_addObjectToContainer = addObjectToContainer.Get();
+        TP_HOOK(&s_addObjectToContainer, HookAddObjectToContainer);
+
+        static VersionDbPtr<TRemoveItem> removeItem(2230239);
+        s_removeItem = removeItem.Get();
+        TP_HOOK(&s_removeItem, HookRemoveItem);
+
         static VersionDbPtr<TDestructor> destructor(2229565);
         s_destructor = destructor.Get();
         TP_HOOK(&s_destructor, HookDestructor);
