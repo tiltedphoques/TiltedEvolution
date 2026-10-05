@@ -2,59 +2,56 @@
 
 #include <Havok/hkbVariableValueSet.h>
 
-struct hkEventContext;
-struct hkEventType;
-struct hkbGenerator;
-struct hkbSymbolIdMap;
 struct hkbStateMachine;
 
-struct SomeData
+// Fallout 4 hkbVariableInfo: role (4 bytes) then the variable type.
+struct hkbVariableInfo
 {
-    uint8_t pad0[0x58];
-    hkbGenerator* generator;                // 58
-    struct hkbBehaviorGraph* behaviorGraph; // 60
-    uint8_t pad68[0x84 - 0x68];
-    uint8_t byte84; // 84
-    uint8_t byte85; // 85
-    uint8_t pad86[0x90 - 0x86];
+    enum Type : int8_t
+    {
+        kBool = 0,
+        kInt8 = 1,
+        kInt16 = 2,
+        kInt32 = 3,
+        kReal = 4,
+        kPointer = 5,
+        kVector3 = 6,
+        kVector4 = 7,
+        kQuaternion = 8,
+    };
+
+    int16_t role;
+    int16_t roleFlags;
+    Type type;
+    uint8_t pad5;
 };
+static_assert(sizeof(hkbVariableInfo) == 0x6);
 
-static_assert(offsetof(SomeData, generator) == 0x58);
-static_assert(offsetof(SomeData, behaviorGraph) == 0x60);
-static_assert(offsetof(SomeData, byte84) == 0x84);
+// Fallout 4 hkbBehaviorGraphData: 0x70.
+struct hkbBehaviorGraphData
+{
+    virtual ~hkbBehaviorGraphData();
 
+    uint8_t pad8[0x20 - 0x8];
+    hkbVariableInfo* variableInfos; // 20
+    int32_t variableInfoCount;      // 28
+};
+static_assert(offsetof(hkbBehaviorGraphData, variableInfos) == 0x20);
+
+// Fallout 4 hkbBehaviorGraph: 0x1B0.
 struct hkbBehaviorGraph
 {
     virtual ~hkbBehaviorGraph();
 
-    virtual void sub_01();
-    virtual void sub_02();
-    virtual void sub_03();
-    virtual void sub_04();
-    virtual void sub_05();
-    virtual void SendEvent(hkEventContext& aContext, hkEventType& aType);
-
-    struct Struct98
-    {
-        SomeData* data;
-        int count;
-    };
-
-    uint8_t pad8[0x80 - 0x8];
-    hkbStateMachine* stateMachine;
-    uint8_t pad88[0x98 - 0x88];
-    Struct98* struct98; // 98
-    uint8_t padA0[0xB8 - 0xA0];
-    hkbSymbolIdMap* symbolIdMap; // B8
-    uint8_t padC0[0xD8 - 0xC0];
-    hkbVariableValueSet<uint32_t>* animationVariables; // D8
-    uint8_t padE0[0x12C - 0xE0];
-    uint8_t byte12C;
-    uint8_t byte12D;
-    uint8_t byte12E;
+    uint8_t pad8[0xC0 - 0x8];
+    hkbStateMachine* stateMachine;  // C0 m_rootGenerator
+    hkbBehaviorGraphData* data;     // C8
+    uint8_t padD0[0x110 - 0xD0];
+    hkbVariableValueSet<uint32_t>* animationVariables; // 110 m_variableValueSet
+    uint8_t pad118[0x1B0 - 0x118];
 };
 
-static_assert(offsetof(hkbBehaviorGraph, struct98) == 0x98);
-static_assert(offsetof(hkbBehaviorGraph, symbolIdMap) == 0xB8);
-static_assert(offsetof(hkbBehaviorGraph, animationVariables) == 0xD8);
-static_assert(offsetof(hkbBehaviorGraph, byte12C) == 0x12C);
+static_assert(offsetof(hkbBehaviorGraph, stateMachine) == 0xC0);
+static_assert(offsetof(hkbBehaviorGraph, data) == 0xC8);
+static_assert(offsetof(hkbBehaviorGraph, animationVariables) == 0x110);
+static_assert(sizeof(hkbBehaviorGraph) == 0x1B0);

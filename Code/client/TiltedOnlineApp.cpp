@@ -79,6 +79,16 @@ TiltedOnlineApp::TiltedOnlineApp()
 
 TiltedOnlineApp::~TiltedOnlineApp() = default;
 
+#ifdef TP_FALLOUT4
+// The main loop stops running frames while the window is inactive unless
+// bAlwaysActive:General is set; it is a bool setting.
+static void KeepWindowActive() noexcept
+{
+    static VersionDbPtr<uint8_t> s_alwaysActive(1420077);
+    *s_alwaysActive.Get() = 1;
+}
+#endif
+
 void* TiltedOnlineApp::GetMainAddress() const
 {
     POINTER_GAME(void, winMain, 36544, 4812562);
@@ -91,6 +101,10 @@ bool TiltedOnlineApp::BeginMain()
     World::Create();
     World::Get().ctx().at<DiscordService>().Init();
     World::Get().ctx().emplace<RenderSystemD3D11>(World::Get().ctx().at<OverlayService>(), World::Get().ctx().at<ImguiService>());
+
+#ifdef TP_FALLOUT4
+    KeepWindowActive();
+#endif
 
     // TODO: Figure out a way to un-blacklist NvCamera64.dll (see DllBlocklist.cpp). Then this hack can be removed
     if (IsNvidiaOverlayLoaded())
@@ -123,8 +137,7 @@ void TiltedOnlineApp::Update()
  
     // Make sure the window stays active
 #ifdef TP_FALLOUT4
-    if (auto* pSetting = INISettingCollection::Get()->GetSetting("bAlwaysActive:General"))
-        pSetting->data = 1;
+    KeepWindowActive();
 #else
     POINTER_SKYRIMSE(uint32_t, bAlwaysActive, 380768);
     *bAlwaysActive = 1;
@@ -151,7 +164,10 @@ void TiltedOnlineApp::InstallHooks2()
 {
     TiltedPhoques::Initializer::RunAll();
 
+#if !defined(TP_FALLOUT4)
+    // Fallout 4 1.11 does not import dinput8.
     TiltedPhoques::DInputHook::Install();
+#endif
     TiltedPhoques::DInputHook::Get().SetToggleKeys({DIK_F2, DIK_RCONTROL});
 }
 

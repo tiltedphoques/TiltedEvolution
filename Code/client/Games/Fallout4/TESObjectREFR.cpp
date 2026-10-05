@@ -236,15 +236,6 @@ void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) co
     TiltedPhoques::ThisCall(warpTo, pActor, acPosition, rotation.z, 0.f, apCell, pWorldSpace, true, false, true);
 }
 
-void TESObjectREFR::SaveAnimationVariables(AnimationVariables&) const noexcept
-{
-    // Fallout 4 behavior graph descriptors do not exist yet.
-}
-
-void TESObjectREFR::LoadAnimationVariables(const AnimationVariables&) const noexcept
-{
-}
-
 Inventory TESObjectREFR::GetInventory() const noexcept
 {
     return GetInventory([](TESForm&) { return true; });

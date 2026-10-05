@@ -150,6 +150,18 @@ extern thread_local bool g_forceAnimation;
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
+#if (!IS_MASTER)
+    // Development aid: TP_AUTOCONNECT=host:port connects once the player is in a cell.
+    static bool s_autoConnectChecked = false;
+    if (!s_autoConnectChecked && PlayerCharacter::Get() && PlayerCharacter::Get()->parentCell)
+    {
+        s_autoConnectChecked = true;
+        char address[256]{};
+        if (GetEnvironmentVariableA("TP_AUTOCONNECT", address, sizeof(address)) > 0 && !m_transport.IsOnline())
+            m_transport.Connect(address);
+    }
+#endif
+
     if (!BSGraphics::GetMainWindow()->IsForeground())
         return;
 

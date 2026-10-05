@@ -59,15 +59,14 @@ static_assert(offsetof(NewReferenceData, initializeScripts) == 0x6C);
 static_assert(sizeof(NewReferenceData) == 0x70);
 }
 
-uint32_t ModManager::Spawn(NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCELL* apParentCell, TESWorldSpace* apWorldSpace, Actor* apCharacter) noexcept
+uint32_t ModManager::Spawn(NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCELL* apParentCell, TESWorldSpace* apWorldSpace, TESBoundObject* apBaseForm) noexcept
 {
     NewReferenceData data;
     data.location = aPosition;
     data.direction = aRotation;
-    data.object = apCharacter->baseForm;
+    data.object = apBaseForm;
     data.interior = apParentCell;
     data.world = apWorldSpace;
-    data.reference = apCharacter;
 
     TP_THIS_FUNCTION(TCreateReference, uint32_t*, ModManager, uint32_t*, NewReferenceData&);
     static VersionDbPtr<TCreateReference> createReference(2192301);

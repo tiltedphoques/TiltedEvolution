@@ -152,3 +152,29 @@ BGSHeadPart* TESNPC::GetHeadPart(uint32_t aType)
 
     return nullptr;
 }
+
+#if defined(TP_FALLOUT4)
+using TUsePreprocessedHead = bool(TESNPC*);
+static TUsePreprocessedHead* RealUsePreprocessedHead = nullptr;
+
+// Remote player NPCs have no facegen files on disk, so build their heads at runtime.
+static bool HookUsePreprocessedHead(TESNPC* apNpc)
+{
+    TESNPC* pRoot = apNpc;
+    while (pRoot && pRoot->faceNPC)
+        pRoot = pRoot->faceNPC;
+
+    if (pRoot && pRoot->IsTemporary())
+        return false;
+
+    return RealUsePreprocessedHead(apNpc);
+}
+
+static TiltedPhoques::Initializer s_npcHooks(
+    []()
+    {
+        static VersionDbPtr<TUsePreprocessedHead> usePreprocessedHead(2209308);
+        RealUsePreprocessedHead = usePreprocessedHead.Get();
+        TP_HOOK(&RealUsePreprocessedHead, HookUsePreprocessedHead);
+    });
+#endif

@@ -75,7 +75,6 @@ struct Actor
 {
     static constexpr FormType Type = FormType::Character;
 
-    static GamePtr<Actor> New() noexcept;
     static GamePtr<Actor> Create(TESNPC* apBaseForm) noexcept;
     static GamePtr<Actor> Spawn(uint32_t aBaseFormId) noexcept;
 

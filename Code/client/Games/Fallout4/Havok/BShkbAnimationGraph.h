@@ -1,21 +1,19 @@
 #pragma once
 
-#include <Havok/hkbCharacter.h>
-
-struct BSFixedString;
 struct BShkbHkxDB;
 struct hkbBehaviorGraph;
-struct bhkWorldM;
 
+// Fallout 4 BShkbAnimationGraph: 0x3D0.
 struct BShkbAnimationGraph
 {
     virtual ~BShkbAnimationGraph(){};
 
-    uint8_t pad8[0xC0 - 0x8];
-    hkbCharacter character;
-    uint8_t pad160[0x200 - (0xC0 + sizeof(hkbCharacter))];
-    BShkbHkxDB* hkxDB;
-    hkbBehaviorGraph* behaviorGraph; // 208
-    uint8_t pad210[0x238 - 0x210];
-    bhkWorldM* hkWorldM; // 238
+    uint8_t pad8[0x370 - 0x8];
+    BShkbHkxDB* hkxDB;               // 370 BShkbHkxDB::ProjectDBData
+    hkbBehaviorGraph* behaviorGraph; // 378
+    uint8_t pad380[0x3D0 - 0x380];
 };
+
+static_assert(offsetof(BShkbAnimationGraph, hkxDB) == 0x370);
+static_assert(offsetof(BShkbAnimationGraph, behaviorGraph) == 0x378);
+static_assert(sizeof(BShkbAnimationGraph) == 0x3D0);

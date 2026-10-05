@@ -37,10 +37,10 @@ struct TES
 #if defined(TP_FALLOUT4)
     uint8_t pad[0x18];
     GridCellArray* cells;
-    uint8_t pad20[0x44 - 0x20];
-    int32_t currentGridX;
+    uint8_t pad20[0x48 - 0x20];
+    int32_t currentGridX; // 0x48 iCurrentGridX, center of the loaded grid
     int32_t currentGridY;
-    int32_t centerGridX;
+    int32_t centerGridX;  // 0x50 iCurrentQueuedX, center the grid is moving to
     int32_t centerGridY;
     TESObjectCELL* interiorCell;
     TESObjectCELL** interiorBuffer;
@@ -50,6 +50,7 @@ struct TES
 };
 
 static_assert(offsetof(TES, cells) == 0x18);
+static_assert(offsetof(TES, currentGridX) == 0x48);
 static_assert(offsetof(TES, interiorCell) == 0x58);
 static_assert(offsetof(TES, exteriorBuffer) == 0x68);
 static_assert(offsetof(TES, activeImageSpaceModifiers) == 0xA0);
@@ -164,7 +165,11 @@ struct ModManager
 {
     static ModManager* Get() noexcept;
 
+#if defined(TP_FALLOUT4)
+    uint32_t Spawn(NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCELL* apParentCell, TESWorldSpace* apWorldSpace, TESBoundObject* apBaseForm) noexcept;
+#else
     uint32_t Spawn(NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCELL* apParentCell, TESWorldSpace* apWorldSpace, Actor* apCharacter) noexcept;
+#endif
     Mod* GetByName(const char* acpName) const noexcept;
     TESObjectCELL* GetCellFromCoordinates(int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept;
 

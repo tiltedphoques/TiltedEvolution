@@ -13,6 +13,7 @@
 #include <Misc/BSFixedString.h>
 
 #include <World.h>
+#include <Games/FormIds.h>
 
 TP_THIS_FUNCTION(TPerformAction, uint8_t, ActorMediator, TESActionData* apAction);
 static TPerformAction* RealPerformAction;
@@ -60,6 +61,10 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
 
         return res;
     }
+
+    // Loaded graphs are put into their base state with this action; without it remote actors stay in bind pose.
+    if (apAction->action && apAction->action->formID == FormIds::ActionInstantInitializeGraphToBaseState)
+        return TiltedPhoques::ThisCall(RealPerformAction, apThis, apAction);
 
     return 0;
 }

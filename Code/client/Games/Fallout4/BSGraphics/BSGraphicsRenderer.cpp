@@ -5,6 +5,8 @@
 #include <Services/InputService.h>
 #include <Systems/RenderSystemD3D11.h>
 
+#include <d3d11.h>
+
 namespace BSGraphics
 {
 namespace
@@ -43,14 +45,37 @@ void TP_MAKE_THISCALL(HookRendererEnd, void)
             s_windowWidth = pData->windowWidth;
             s_windowHeight = pData->windowHeight;
         }
+        // The overlay's SpriteBatch needs a viewport; during loading the game may have none bound.
+        UINT viewportCount = 1;
+        D3D11_VIEWPORT viewport{};
+        pData->pD3dContext->RSGetViewports(&viewportCount, &viewport);
+        if (viewportCount == 0)
+        {
+            viewport = {0.f, 0.f, static_cast<float>(pData->windowWidth), static_cast<float>(pData->windowHeight), 0.f, 1.f};
+            pData->pD3dContext->RSSetViewports(1, &viewport);
+        }
         s_renderSystem->OnRender();
     }
     TiltedPhoques::ThisCall(s_rendererEnd, apThis);
 }
 
+// Fallout 4 quits at startup when a "Fallout4" window already exists. Hiding
+// other instances lets several clients run on one machine.
+using TFindWindowA = HWND(WINAPI)(LPCSTR, LPCSTR);
+TFindWindowA* s_findWindowA = nullptr;
+
+HWND WINAPI HookFindWindowA(LPCSTR apClassName, LPCSTR apWindowName)
+{
+    if (apClassName && !IS_INTRESOURCE(apClassName) && _stricmp(apClassName, "Fallout4") == 0)
+        return nullptr;
+    return s_findWindowA(apClassName, apWindowName);
+}
+
 TiltedPhoques::Initializer s_rendererHooks(
     []()
     {
+        s_findWindowA = static_cast<TFindWindowA*>(TP_HOOK_IAT2("USER32.dll", "FindWindowA", HookFindWindowA));
+
         static VersionDbPtr<TRendererEnd> rendererEnd(2276834);
         s_rendererEnd = rendererEnd.Get();
         TP_HOOK(&s_rendererEnd, HookRendererEnd);

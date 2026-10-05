@@ -32,17 +32,6 @@ ExPlayerCharacter* Actor::AsExPlayerCharacter() noexcept
     return this == PlayerCharacter::Get() ? static_cast<ExPlayerCharacter*>(this) : nullptr;
 }
 
-GamePtr<Actor> Actor::New() noexcept
-{
-    auto* pActor = Memory::Allocate<Actor>();
-    if (!pActor)
-        return {};
-    TP_THIS_FUNCTION(TConstructor, Actor*, Actor, bool);
-    static VersionDbPtr<TConstructor> constructor(2229563);
-    TiltedPhoques::ThisCall(constructor, pActor, false);
-    return {pActor};
-}
-
 GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
 {
     auto* pPlayer = PlayerCharacter::Get();
@@ -50,18 +39,18 @@ GamePtr<Actor> Actor::Create(TESNPC* apBaseForm) noexcept
     if (!apBaseForm || !pPlayer || !pManager)
         return {};
 
-    auto pActor = New();
-    if (!pActor)
-        return {};
-    pActor->SetSkipSaveFlag(true);
-    pActor->GetExtension()->SetRemote(true);
-    pActor->SetObjectReference(apBaseForm);
-    pActor->SetParentCell(pPlayer->parentCell);
-
+    // Let the engine allocate the actor: references handed to CreateReference skip
+    // parts of the setup, which leaves them without animation subgraphs (bind pose).
     auto position = pPlayer->position;
     auto rotation = pPlayer->rotation;
-    if (!pManager->Spawn(position, rotation, pPlayer->parentCell, pPlayer->GetWorldSpace(), pActor))
+    const uint32_t handle = pManager->Spawn(position, rotation, pPlayer->parentCell, pPlayer->GetWorldSpace(), apBaseForm);
+
+    GamePtr<Actor> pActor = Cast<Actor>(TESObjectREFR::GetByHandle(handle));
+    if (!pActor)
         return {};
+
+    pActor->SetSkipSaveFlag(true);
+    pActor->GetExtension()->SetRemote(true);
     return pActor;
 }
 
