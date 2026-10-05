@@ -35,7 +35,10 @@
     "NOTIFICATIONS": {
       "MESSAGE_FROM": "Wiadomość od",
       "ACCEPT": "Zaakceptuj",
-      "DECLINE": "Odrzuć"
+      "DECLINE": "Odrzuć",
+      "OPEN_GUIDE": "Otwórz przewodnik",
+      "DISMISS": "Zamknij",
+      "DONT_SHOW": "Nie pokazuj"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Zaakceptuj zaproszenie od {{name}}",
@@ -171,6 +174,9 @@
     },
     "PLAYER_LIST": {
       "PARTY_INVITE": "{{from}} Zaprosił cię do drużyny"
+    },
+    "PARTY_HINT": {
+      "MESSAGE": "Chcesz porobić wspólnie questy? Stwórz grupę i trzymaj się jej blisko, aby współdzielić postęp w questach! Przeczytaj nasz przewodnik, aby dowiedzieć się więcej."
     }
   }
 }
