@@ -63,6 +63,105 @@ TEST_CASE("Encoding factory", "[encoding.factory]")
         auto pRequest = CastUnique<PartyAcceptInviteRequest>(std::move(pMessage));
         REQUIRE(pRequest->InviterId == request.InviterId);
     }
+
+    {
+        DropItemRequest request;
+        request.LocalId = 0xFF001234;
+        request.Item.BaseId = GameId(0, 0x12EB7);
+        request.Item.Count = 3;
+        request.Item.ExtraHealth = 1.5f;
+        request.CellId = GameId(0, 0x3C);
+        request.WorldSpaceId = GameId(0, 0x3C);
+        request.Transform.Position = glm::vec3(1234.f, -5678.f, 90.f);
+        request.Transform.Rotation = glm::vec3(0.1f, -0.2f, 3.1f);
+
+        Buffer::Writer writer(&buff);
+        request.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        const ClientMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == request.GetOpcode());
+
+        auto pRequest = CastUnique<DropItemRequest>(std::move(pMessage));
+        REQUIRE(*pRequest == request);
+    }
+
+    {
+        NotifyDroppedItemsSpawn notify;
+
+        DroppedItemData item{};
+        item.ServerId = 42;
+        item.Item.BaseId = GameId(0, 0xF);
+        item.Item.Count = 100;
+        item.CellId = GameId(0, 0x165A7);
+        item.Transform.Position = glm::vec3(-12.f, 34.f, -56.f);
+        item.Transform.Rotation = glm::vec3(0.f, 0.f, 1.5f);
+        item.IsAtRest = true;
+        notify.Items.push_back(item);
+
+        item.ServerId = 43;
+        item.IsAtRest = false;
+        notify.Items.push_back(item);
+
+        Buffer::Writer writer(&buff);
+        notify.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        const ServerMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == notify.GetOpcode());
+
+        auto pNotify = CastUnique<NotifyDroppedItemsSpawn>(std::move(pMessage));
+        REQUIRE(*pNotify == notify);
+    }
+
+    {
+        DroppedItemMoveRequest request;
+        request.Move.ServerId = 0x1234;
+        request.Move.Transform.Position = glm::vec3(-100.f, 200.f, -300.f);
+        request.Move.Transform.Rotation = glm::vec3(1.f, 2.f, 3.f);
+        request.Move.IsAtRest = true;
+
+        Buffer::Writer writer(&buff);
+        request.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        const ClientMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == request.GetOpcode());
+
+        auto pRequest = CastUnique<DroppedItemMoveRequest>(std::move(pMessage));
+        REQUIRE(*pRequest == request);
+    }
+
+    {
+        NotifyDroppedItemsRemove notify;
+        notify.ServerIds = {1, 0x12345, 0xFFFFFFFF};
+
+        Buffer::Writer writer(&buff);
+        notify.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        const ServerMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == notify.GetOpcode());
+
+        auto pNotify = CastUnique<NotifyDroppedItemsRemove>(std::move(pMessage));
+        REQUIRE(*pNotify == notify);
+    }
 }
 
 TEST_CASE("Static structures", "[encoding.static]")

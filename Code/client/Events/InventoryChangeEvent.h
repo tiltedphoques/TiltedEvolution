@@ -5,8 +5,6 @@
 
 /**
  * @brief Dispatched when the contents of an object or actor inventory changes locally.
- *
- * The event has a Drop member variable, since dropped items need to be handled differently.
  */
 struct InventoryChangeEvent
 {
@@ -16,17 +14,9 @@ struct InventoryChangeEvent
     {
     }
 
-    InventoryChangeEvent(const uint32_t aFormId, Inventory::Entry arItem, bool aDrop)
+    InventoryChangeEvent(const uint32_t aFormId, Inventory::Entry arItem, bool aUpdateClients)
         : FormId(aFormId)
         , Item(std::move(arItem))
-        , Drop(aDrop)
-    {
-    }
-
-    InventoryChangeEvent(const uint32_t aFormId, Inventory::Entry arItem, bool aDrop, bool aUpdateClients)
-        : FormId(aFormId)
-        , Item(std::move(arItem))
-        , Drop(aDrop)
         , UpdateClients(aUpdateClients)
     {
     }
@@ -35,6 +25,5 @@ struct InventoryChangeEvent
     uint32_t ServerId{};
     uint32_t OwnershipEpoch{};
     Inventory::Entry Item{};
-    bool Drop = false;
     bool UpdateClients = true;
 };

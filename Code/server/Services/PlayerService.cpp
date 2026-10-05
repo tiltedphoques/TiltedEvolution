@@ -183,7 +183,6 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
             if (const auto* pOwnerComponent = m_world.try_get<OwnerComponent>(*character))
                 notifyInventoryChanges.OwnershipEpoch = pOwnerComponent->OwnershipEpoch;
             notifyInventoryChanges.Item = entry;
-            notifyInventoryChanges.Drop = false;
 
             // Exclude respawned player from inventory changes notification...
             if (!GameServer::Get()->SendToPlayersInRange(notifyInventoryChanges, *character, acMessage.GetSender()))

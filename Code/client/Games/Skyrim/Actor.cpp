@@ -14,6 +14,8 @@
 
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
+#include <Events/DropItemEvent.h>
+#include <Events/ReferencePickUpEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Games/Misc/MenuTopicManager.h>
@@ -1095,8 +1097,12 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
         // The inventory change event should always be sent to the server, otherwise the server inventory won't be updated.
         bool shouldUpdateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
 
-        QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item), false, shouldUpdateClients));
+        QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item), shouldUpdateClients));
     }
+
+    // A dropped item may be server-tracked; the other clients need to delete their copy.
+    if (apObject->IsTemporary() && apThis->GetExtension()->IsLocal())
+        World::Get().GetRunner().Trigger(ReferencePickUpEvent(apObject->formID));
 
     return TiltedPhoques::ThisCall(RealPickUpObject, apThis, apObject, aCount, aUnk1, aUnk2);
 }
@@ -1117,30 +1123,30 @@ void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* ap
     if (apExtraData)
         apThis->GetItemFromExtraData(item, apExtraData);
 
-    QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item), true));
+    // GetItemFromExtraData() overwrites the count with the stack's ExtraCount.
+    item.Count = -aCount;
 
-    ScopedInventoryOverride _;
+    // Other clients only remove the item from this actor's inventory.
+    // The reference placed in the world is synced separately by the DroppedItemService.
+    QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, item));
 
-    return TiltedPhoques::ThisCall(RealDropObject, apThis, apResult, apObject, apExtraData, aCount, apLocation, apRotation);
-}
-
-void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
-{
-    ExtraDataList* pExtraData = GetExtraDataFromItem(arEntry);
-
-    ModSystem& modSystem = World::Get().GetModSystem();
-
-    uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
-    TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
-    if (!pObject)
+    void* pResult = nullptr;
     {
-        spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
-        return;
+        ScopedInventoryOverride _;
+        pResult = TiltedPhoques::ThisCall(RealDropObject, apThis, apResult, apObject, apExtraData, aCount, apLocation, apRotation);
     }
 
-    if (arEntry.Count < 0)
-        DropObject(pObject, pExtraData, -arEntry.Count, apLocation, apRotation);
-    // TODO: pick up
+    if (apThis == PlayerCharacter::Get())
+    {
+        const auto* pHandle = static_cast<BSPointerHandle<TESObjectREFR>*>(apResult);
+        if (TESObjectREFR* pDropped = TESObjectREFR::GetByHandle(pHandle->handle.iBits))
+        {
+            item.Count = aCount;
+            World::Get().GetRunner().Trigger(DropItemEvent(pDropped->formID, std::move(item)));
+        }
+    }
+
+    return pResult;
 }
 
 void Actor::DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept

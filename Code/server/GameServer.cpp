@@ -44,6 +44,7 @@ Console::Setting bEnableDeathSystem{"Gameplay:bEnableDeathSystem", "Enables the 
 Console::Setting uTimeScale{"Gameplay:uTimeScale", "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
 Console::Setting bSyncPlayerCalendar{"Gameplay:bSyncPlayerCalendar", "Syncs up all player calendars to be the same day, month, and year. This uses the date of the player with the furthest ahead date at connection.", false};
 Console::Setting bAutoPartyJoin{"Gameplay:bAutoPartyJoin", "Join parties automatically, as long as there is only one party in the server", true};
+Console::Setting bEnableItemDrops{"Gameplay:bEnableItemDrops", "Syncs items dropped by players", true};
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Refuse clients whose mods do not match Data/loadorder.txt", false, Console::SettingsFlags::kLocked};
 Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow players using SKSE to join. Applies even when bEnableModCheck is off", true, Console::SettingsFlags::kLocked};
@@ -144,6 +145,7 @@ ServerSettings GetSettings()
     settings.DeathSystemEnabled = bEnableDeathSystem;
     settings.SyncPlayerCalendar = bSyncPlayerCalendar;
     settings.AutoPartyJoin = bAutoPartyJoin;
+    settings.ItemDropsEnabled = bEnableItemDrops;
     return settings;
 }
 
@@ -212,6 +214,11 @@ bool GameServer::IsPublicServer() const noexcept
 bool GameServer::AllowsAutoPartyJoin() const noexcept
 {
     return bAutoPartyJoin && !IsPublicServer();
+}
+
+bool GameServer::AllowsItemDrops() const noexcept
+{
+    return bEnableItemDrops;
 }
 
 void GameServer::Initialize()

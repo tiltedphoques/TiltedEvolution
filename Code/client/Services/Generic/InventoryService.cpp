@@ -91,7 +91,6 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     request.ServerId = serverId;
     request.OwnershipEpoch = acEvent.OwnershipEpoch;
     request.Item = acEvent.Item;
-    request.Drop = acEvent.Drop;
     request.UpdateClients = acEvent.UpdateClients;
 
     m_transport.Send(request);
@@ -180,11 +179,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
         }
 
         ScopedInventoryOverride _;
-
-        if (acMessage.Drop)
-            pActor->DropOrPickUpObject(acMessage.Item, nullptr, nullptr);
-        else
-            pActor->AddOrRemoveItem(acMessage.Item);
+        pActor->AddOrRemoveItem(acMessage.Item);
 
         return;
     }

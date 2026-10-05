@@ -166,6 +166,63 @@ void TESObjectREFR::SetRotation(float aX, float aY, float aZ) noexcept
     TiltedPhoques::ThisCall(RealRotateZ, this, aZ);
 }
 
+void TESObjectREFR::SetLocation(const NiPoint3& acPosition) noexcept
+{
+    TP_THIS_FUNCTION(TSetLocation, void, TESObjectREFR, const NiPoint3&);
+    POINTER_SKYRIMSE(TSetLocation, s_setLocation, 19790);
+    TiltedPhoques::ThisCall(s_setLocation, this, acPosition);
+}
+
+// Returns false while the reference has no 3D or collision yet.
+bool TESObjectREFR::SetMotionType(MotionType aMotionType) noexcept
+{
+    NiNode* pNode = GetNiNode();
+    if (!pNode)
+        return false;
+
+    TP_THIS_FUNCTION(TSetMotionType, bool, NiNode, uint32_t aMotionType, bool aRecurse, bool aForce, bool aAllowActivate);
+    POINTER_SKYRIMSE(TSetMotionType, s_setMotionType, 77866);
+
+    const bool result = TiltedPhoques::ThisCall(s_setMotionType, pNode, static_cast<uint32_t>(aMotionType), true, false, true);
+    if (result)
+        MarkChanged(CHANGE_REFR_HAVOK_MOVE);
+
+    return result;
+}
+
+// Moves a keyframed reference to the target over time, at the given speed in units per second.
+void TESObjectREFR::TranslateTo(const NiPoint3& acPosition, const NiPoint3& acRotation, float aSpeed) noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(void, ObjectReference, TranslateTo, float, float, float, float, float, float, float, float);
+
+    // Papyrus takes degrees; a max rotation speed of 0 means unlimited.
+    s_pTranslateTo(this, acPosition.x, acPosition.y, acPosition.z, glm::degrees(acRotation.x), glm::degrees(acRotation.y), glm::degrees(acRotation.z), aSpeed, 0.f);
+}
+
+void TESObjectREFR::StopTranslation() noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(void, ObjectReference, StopTranslation);
+
+    s_pStopTranslation(this);
+}
+
+// Gives a newly placed item reference the count and extra data of an inventory entry,
+// like the engine does when an actor drops an item.
+void TESObjectREFR::SetItemData(const Inventory::Entry& arEntry) noexcept
+{
+    // ExtraCount stores an int16, so larger stacks would wrap negative.
+    if (arEntry.Count > 1)
+        extraData.SetCount(static_cast<uint16_t>(std::min(arEntry.Count, static_cast<int32_t>(INT16_MAX))));
+
+    AddExtraDataFromItem(arEntry, extraData, false);
+
+    MarkChanged(CHANGE_REFR_ITEM_EXTRA_DATA);
+}
+
 void TESObjectREFR::SetLeveledCreature(TESActorBase* apOriginalBase, TESActorBase* apTemplateA) noexcept
 {
     TP_THIS_FUNCTION(TSetLeveledCreature, void, TESObjectREFR, TESActorBase*, TESActorBase*);
@@ -584,8 +641,6 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
 
 ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEntry) noexcept
 {
-    auto& modSystem = World::Get().GetModSystem();
-
     ExtraDataList* pExtraDataList = nullptr;
 
     if (!arEntry.ContainsExtraData())
@@ -593,9 +648,25 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
 
     pExtraDataList = ExtraDataList::New();
 
+    AddExtraDataFromItem(arEntry, *pExtraDataList, true);
+
+    if (pExtraDataList->data == nullptr)
+    {
+        Memory::Delete(pExtraDataList->bitfield);
+        Memory::Delete(pExtraDataList);
+        pExtraDataList = nullptr;
+    }
+
+    return pExtraDataList;
+}
+
+void TESObjectREFR::AddExtraDataFromItem(const Inventory::Entry& arEntry, ExtraDataList& aExtraDataList, bool aIncludeWorn) noexcept
+{
+    auto& modSystem = World::Get().GetModSystem();
+
     if (arEntry.ExtraCharge > 0.f)
     {
-        pExtraDataList->SetChargeData(arEntry.ExtraCharge);
+        aExtraDataList.SetChargeData(arEntry.ExtraCharge);
     }
 
     if (arEntry.ExtraEnchantId != 0)
@@ -613,7 +684,8 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
 
         TP_ASSERT(pEnchantment, "No Enchantment created or found.");
 
-        pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge, arEntry.ExtraEnchantRemoveUnequip);
+        if (pEnchantment)
+            aExtraDataList.SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge, arEntry.ExtraEnchantRemoveUnequip);
     }
 
     if (arEntry.ExtraPoisonId != 0)
@@ -625,28 +697,28 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
         uint32_t poisonId = modSystem.GetGameId(arEntry.ExtraPoisonId);
         if (AlchemyItem* pPoison = Cast<AlchemyItem>(TESForm::GetById(poisonId)))
         {
-            pExtraDataList->SetPoison(pPoison, arEntry.ExtraPoisonCount);
+            aExtraDataList.SetPoison(pPoison, arEntry.ExtraPoisonCount);
         }
     }
 
     if (arEntry.ExtraHealth > 0.f)
     {
-        pExtraDataList->SetHealth(arEntry.ExtraHealth);
+        aExtraDataList.SetHealth(arEntry.ExtraHealth);
     }
 
     if (arEntry.ExtraSoulLevel > 0 && arEntry.ExtraSoulLevel <= 5)
     {
-        pExtraDataList->SetSoulData(static_cast<SOUL_LEVEL>(arEntry.ExtraSoulLevel));
+        aExtraDataList.SetSoulData(static_cast<SOUL_LEVEL>(arEntry.ExtraSoulLevel));
     }
 
-    if (arEntry.ExtraWorn)
+    if (aIncludeWorn && arEntry.ExtraWorn)
     {
-        pExtraDataList->SetWorn(false);
+        aExtraDataList.SetWorn(false);
     }
 
-    if (arEntry.ExtraWornLeft)
+    if (aIncludeWorn && arEntry.ExtraWornLeft)
     {
-        pExtraDataList->SetWorn(true);
+        aExtraDataList.SetWorn(true);
     }
 
     // TODO: this is causing crashes
@@ -660,18 +732,9 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
         pExtraText->usCustomNameLength = arEntry.ExtraTextDisplayName.length();
         pExtraText->iOwnerInstance = -2;
         pExtraText->fTemperFactor = 1.0F;
-        pExtraDataList->Add(ExtraDataType::TextDisplayData, pExtraText);
+        aExtraDataList.Add(ExtraDataType::TextDisplayData, pExtraText);
     }
     */
-
-    if (pExtraDataList->data == nullptr)
-    {
-        Memory::Delete(pExtraDataList->bitfield);
-        Memory::Delete(pExtraDataList);
-        pExtraDataList = nullptr;
-    }
-
-    return pExtraDataList;
 }
 
 Inventory TESObjectREFR::GetInventory() const noexcept

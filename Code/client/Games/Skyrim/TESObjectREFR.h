@@ -40,6 +40,7 @@ struct TESObjectREFR : TESForm
         CHANGE_REFR_INVENTORY = 1 << 5,
         CHANGE_REFR_EXTRA_OWNERSHIP = 1 << 6,
         CHANGE_REFR_BASEOBJECT = 1 << 7,
+        CHANGE_REFR_ITEM_EXTRA_DATA = 1 << 10,
         CHANGE_REFR_PROMOTED = 1 << 25,
         CHANGE_REFR_EXTRA_ACTIVATING_CHILDREN = 1 << 26,
         CHANGE_REFR_LEVELED_INVENTORY = 1 << 27,
@@ -47,6 +48,13 @@ struct TESObjectREFR : TESForm
         CHANGE_REFR_EXTRA_ENCOUNTER_ZONE = 1 << 29,
         CHANGE_REFR_EXTRA_CREATED_ONLY = 1 << 30,
         CHANGE_REFR_EXTRA_GAME_ONLY = 1u << 31,
+    };
+
+    // hkpMotion::MotionType
+    enum class MotionType : uint32_t
+    {
+        kDynamic = 1,
+        kKeyframed = 4,
     };
 
     enum OpenState : uint8_t
@@ -63,6 +71,7 @@ struct TESObjectREFR : TESForm
 
     static void GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept;
     static ExtraDataList* GetExtraDataFromItem(const Inventory::Entry& arEntry) noexcept;
+    static void AddExtraDataFromItem(const Inventory::Entry& arEntry, ExtraDataList& aExtraDataList, bool aIncludeWorn) noexcept;
 
     virtual void sub_3B();
     virtual void sub_3C();
@@ -139,7 +148,8 @@ struct TESObjectREFR : TESForm
     virtual void sub_83();
     virtual void SetObjectReference(TESBoundObject* apObject);
     virtual void sub_85();
-    virtual void sub_86();
+    // Leaves the velocity at zero when there is no rigid body. The return value is not a reliable bool, so it is void here.
+    virtual void GetLinearVelocity(NiPoint3& aVelocity) const;
     virtual void sub_87();
     virtual void sub_88();
     virtual void DisableImpl();
@@ -165,6 +175,11 @@ struct TESObjectREFR : TESForm
     virtual void sub_9B();
 
     void SetRotation(float aX, float aY, float aZ) noexcept;
+    void SetLocation(const NiPoint3& acPosition) noexcept;
+    bool SetMotionType(MotionType aMotionType) noexcept;
+    void TranslateTo(const NiPoint3& acPosition, const NiPoint3& acRotation, float aSpeed) noexcept;
+    void StopTranslation() noexcept;
+    void SetItemData(const Inventory::Entry& arEntry) noexcept;
     void SetLeveledCreature(TESActorBase* apOriginalBase, TESActorBase* apTemplateA) noexcept;
 
     BSPointerHandle<TESObjectREFR> GetHandle() const noexcept;
