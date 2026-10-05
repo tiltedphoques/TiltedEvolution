@@ -127,11 +127,23 @@ void TESObjectREFR::EnableImpl() noexcept
     Enable();
 }
 
+// Same steps as the disable and markfordelete console commands.
 void TESObjectREFR::Delete() const noexcept
 {
-    // Papyrus Delete marks the reference deleted and queues its 3D for removal;
-    // Fallout 4 does not expose that path as a single native function yet.
-    spdlog::warn("TESObjectREFR::Delete is not implemented for Fallout 4, form id {:X}", formID);
+    auto* pThis = const_cast<TESObjectREFR*>(this);
+    if (IsDeleted() || pThis == PlayerCharacter::Get())
+        return;
+
+    if (!IsDisabled())
+        pThis->DisableImpl();
+    pThis->SetDelete(true);
+
+    if (IsTemporary() && (TESForm::flags & PERSISTENT) == 0)
+    {
+        TP_THIS_FUNCTION(TQueueDeletion, void, TESObjectREFR, bool);
+        static VersionDbPtr<TQueueDeletion> queueDeletion(2201199);
+        TiltedPhoques::ThisCall(queueDeletion, pThis, true);
+    }
 }
 
 bool TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept

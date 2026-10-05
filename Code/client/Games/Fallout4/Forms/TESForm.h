@@ -36,6 +36,7 @@ struct TESForm : BaseFormComponent
     enum FormFlags
     {
         DELETED = 1 << 5,
+        PERSISTENT = 1 << 0xA,
         DISABLED = 1 << 0xB,
         IGNORE_FRIENDLY_HITS = 1 << 0x14,
     };
@@ -75,7 +76,7 @@ struct TESForm : BaseFormComponent
     virtual void sub_25();
     virtual void sub_26();
     virtual void sub_27();
-    virtual void sub_28();
+    virtual void SetDelete(bool aSet);
     virtual void sub_29();
     virtual void sub_2A();
     virtual void sub_2B();

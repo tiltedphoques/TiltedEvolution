@@ -3,6 +3,8 @@
 #include <BSGraphics/BSGraphicsRenderer.h>
 #include <Renderer.h>
 #include <Services/InputService.h>
+#include <Services/OverlayService.h>
+#include <World.h>
 #include <Systems/RenderSystemD3D11.h>
 
 #include <d3d11.h>
@@ -20,6 +22,9 @@ LRESULT CALLBACK HookWndProc(HWND aWindow, UINT aMessage, WPARAM aWParam, LPARAM
 {
     if (InputService::WndProc(aWindow, aMessage, aWParam, aLParam) != 0)
         return 0;
+    // The game reads raw input here; keep it away from the game while the overlay has focus.
+    if (aMessage == WM_INPUT && World::Get().ctx().at<OverlayService>().GetActive())
+        return DefWindowProcW(aWindow, aMessage, aWParam, aLParam);
     return CallWindowProcW(s_originalWndProc, aWindow, aMessage, aWParam, aLParam);
 }
 
