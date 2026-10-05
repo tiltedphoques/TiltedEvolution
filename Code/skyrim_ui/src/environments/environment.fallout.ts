@@ -17,6 +17,10 @@ export const environment = {
       'Skyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp\nSkyrimTogetherQuestPatches.esp',
       'Fallout4.esm\nDLCRobot.esm\nDLCworkshop01.esm\nDLCCoast.esm\nDLCworkshop02.esm\nDLCworkshop03.esm\nDLCNukaWorld.esm',
     ],
+    [
+      'make sure to read the playguide on our wiki, which you can find through our website, <b>skyrim-together.com</b>.',
+      'keep in mind that this is an early experimental build.',
+    ],
     ['Anniversary Update', 'Creations'],
     ['Skyrim.ini', 'Fallout4.ini'],
     ['Skyrim Together', 'Fallout Together'],
