@@ -1,0 +1,84 @@
+// Theme contract shared by every game. src/themes/<game>/_theme.scss imports
+// this first and overrides what differs; components only use these names.
+// Image paths start with `~` so they resolve from the project root no matter
+// which stylesheet uses them.
+
+$-color-background: #000000;
+$-color-tint: #ffffff;
+
+$-font-default: 'futura-condensed-medium', 'Roboto Condensed', 'Trebutchet MS',
+  'Tahoma', 'Geneva', 'Verdana', 'sans-serif';
+$-font-mono: $-font-default;
+
+$-images: (
+  arrow-north: url('~src/assets/images/arrow/north.svg'),
+  arrow-east: url('~src/assets/images/arrow/east.svg'),
+  arrow-south: url('~src/assets/images/arrow/south.svg'),
+  arrow-west: url('~src/assets/images/arrow/west.svg'),
+  checkbox-checked: url('~src/assets/images/checkbox/checked.svg'),
+  checkbox-unchecked: url('~src/assets/images/checkbox/unchecked.svg'),
+  frame-simple: url('~src/assets/images/frame/simple.svg'),
+  frame-fancy: url('~src/assets/images/frame/fancy.svg'),
+  frame-strip: url('~src/assets/images/frame/strip.svg'),
+  group-crown: url('~src/assets/images/group/crown.svg'),
+  group-skull: url('~src/assets/images/group/skull.svg'),
+  group-healthbar: url('~src/assets/images/group/healthbar.svg'),
+  group-healthamount: url('~src/assets/images/group/healthamount.svg'),
+  scrollbar-north: url('~src/assets/images/scrollbar/button-north-inactive.svg'),
+  scrollbar-east: url('~src/assets/images/scrollbar/button-east-inactive.svg'),
+  scrollbar-south: url('~src/assets/images/scrollbar/button-south-inactive.svg'),
+  scrollbar-west: url('~src/assets/images/scrollbar/button-west-inactive.svg'),
+  separator: url('~src/assets/images/separator/single.svg'),
+  slider: url('~src/assets/images/slider.svg'),
+  loading: url('~src/assets/images/loading.gif'),
+);
+
+@function image($name) {
+  @if not map-has-key($-images, $name) {
+    @error 'Unknown theme image `#{$name}`.';
+  }
+  @return map-get($-images, $name);
+}
+
+// Shared component colors.
+$-color-text-strong: #ffffff;
+$-color-text-muted: #808080;
+$-color-line: #808080;
+$-color-line-strong: currentColor;
+$-color-input-border: #808081;
+$-color-surface: #292929;
+$-color-surface-alt: #151515;
+$-color-surface-menu: #0e0e0e;
+$-color-overlay: rgba(0, 0, 0, 0.7);
+$-color-notification-backdrop: $-color-background;
+$-color-success: #008000;
+$-color-error: #f73636;
+$-color-offline: #ff9494;
+$-color-hud-text: #c0c0c0;
+$-color-hud-text-strong: #dddddd;
+
+// Chat line colors by message type.
+$-color-chat-system: #9999ff;
+$-color-chat-dialogue: #00ff33;
+$-color-chat-party: #9affe6;
+$-color-chat-local: #eeff00;
+
+// Window frame for the `border` input of app-window: simple, fancy or strip.
+@mixin window-frame($border) {
+  @if $border == simple {
+    border: 5px solid;
+    border-image: image(frame-simple) 5 fill;
+  } @else if $border == fancy {
+    border: 26px solid;
+    border-image: image(frame-fancy) 26 fill;
+  } @else if $border == strip {
+    border: solid;
+    border-width: 7px 39px;
+    border-image: image(frame-strip) 7 39 fill;
+  }
+}
+
+// Card behind a notification popup.
+@mixin notification-frame() {
+  background-color: $-color-overlay;
+}

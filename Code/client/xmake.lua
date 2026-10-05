@@ -20,10 +20,12 @@ target(name)
             local bindir = path.join(linkdir, "..", "bin")
             os.cp(bindir, target:installdir())
         end
-        -- copy ui
+        -- copy the overlay cursor of the game's ui theme
         local uidir = path.join(target:scriptdir(), "..", "skyrim_ui", "src")
-        os.cp(path.join(uidir, "assets", "images", "cursor.dds"), path.join(target:installdir(), "bin", "assets", "images", "cursor.dds"))
-        os.cp(path.join(uidir, "assets", "images", "cursor.png"), path.join(target:installdir(), "bin", "assets", "images", "cursor.png"))
+        import("core.project.config")
+        local imagedir = config.get("game") == "fallout4" and path.join(uidir, "themes", "fallout", "assets", "images") or path.join(uidir, "assets", "images")
+        os.cp(path.join(imagedir, "cursor.dds"), path.join(target:installdir(), "bin", "assets", "images", "cursor.dds"))
+        os.cp(path.join(imagedir, "cursor.png"), path.join(target:installdir(), "bin", "assets", "images", "cursor.png"))
         os.rm(path.join(target:installdir(), "bin", "**Tests.exe"))
     end)
 

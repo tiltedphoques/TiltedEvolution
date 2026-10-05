@@ -1,6 +1,126 @@
-// Fallout Together look: Pip-Boy green on a dark terminal background.
+// Fallout Together look: a Pip-Boy screen. Phosphor green on dark glass,
+// scanlines, corner brackets and inverted highlights.
+@import 'theme/base';
+
 $-color-background: #000000;
 $-color-tint: #1aff80;
+$-color-amber: #ffb642;
+$-color-glass: rgba(3, 16, 8, 0.86);
 
 $-font-default: 'Roboto Condensed', 'futura-condensed-medium', 'Trebutchet MS',
   'Tahoma', 'Geneva', 'Verdana', 'sans-serif';
+$-font-mono: 'Share Tech Mono', 'Consolas', 'Courier New', monospace;
+
+$-images: map-merge(
+  $-images,
+  (
+    arrow-north: url('~src/themes/fallout/assets/images/arrow/north.svg'),
+    arrow-east: url('~src/themes/fallout/assets/images/arrow/east.svg'),
+    arrow-south: url('~src/themes/fallout/assets/images/arrow/south.svg'),
+    arrow-west: url('~src/themes/fallout/assets/images/arrow/west.svg'),
+    checkbox-checked: url('~src/themes/fallout/assets/images/checkbox/checked.svg'),
+    checkbox-unchecked: url('~src/themes/fallout/assets/images/checkbox/unchecked.svg'),
+    group-crown: url('~src/themes/fallout/assets/images/group/crown.svg'),
+    group-skull: url('~src/themes/fallout/assets/images/group/skull.svg'),
+    group-healthbar: url('~src/themes/fallout/assets/images/group/healthbar.svg'),
+    group-healthamount: url('~src/themes/fallout/assets/images/group/healthamount.svg'),
+    scrollbar-north: url('~src/themes/fallout/assets/images/scrollbar/button-north-inactive.svg'),
+    scrollbar-east: url('~src/themes/fallout/assets/images/scrollbar/button-east-inactive.svg'),
+    scrollbar-south: url('~src/themes/fallout/assets/images/scrollbar/button-south-inactive.svg'),
+    scrollbar-west: url('~src/themes/fallout/assets/images/scrollbar/button-west-inactive.svg'),
+    separator: url('~src/themes/fallout/assets/images/separator/single.svg'),
+  )
+);
+
+$-color-chat-system: $-color-amber;
+$-color-chat-dialogue: #c8ffdf;
+$-color-chat-party: #7dffc0;
+$-color-chat-local: #e9ff7a;
+
+@function pip($alpha: 1) {
+  @return rgba($-color-tint, $alpha);
+}
+
+// Bright L shaped brackets on the four corners of a box.
+@function corner-brackets($size: 0.75rem, $width: 2px, $color: pip(0.95)) {
+  $line: linear-gradient($color, $color);
+  @return $line top left / #{$size} #{$width} no-repeat,
+    $line top left / #{$width} #{$size} no-repeat,
+    $line top right / #{$size} #{$width} no-repeat,
+    $line top right / #{$width} #{$size} no-repeat,
+    $line bottom left / #{$size} #{$width} no-repeat,
+    $line bottom left / #{$width} #{$size} no-repeat,
+    $line bottom right / #{$size} #{$width} no-repeat,
+    $line bottom right / #{$width} #{$size} no-repeat;
+}
+
+$-scanlines: repeating-linear-gradient(
+  to bottom,
+  pip(0.035) 0,
+  pip(0.035) 1px,
+  transparent 1px,
+  transparent 3px
+);
+
+@mixin window-frame($border) {
+  border: 1px solid pip(0.3);
+  border-image: none;
+
+  @if $border == simple {
+    padding: 0.35rem;
+    background: corner-brackets(), $-scanlines,
+      radial-gradient(ellipse at 50% 0%, pip(0.09), transparent 70%),
+      $-color-glass;
+    box-shadow: inset 0 0 2rem pip(0.05), 0 0.4rem 1.2rem rgba(0, 0, 0, 0.5);
+  } @else if $border == fancy {
+    position: relative;
+    padding: 1.9rem 1.75rem 1.25rem;
+    border-top: 3px solid pip(0.9);
+    background: corner-brackets(1rem), $-scanlines,
+      radial-gradient(ellipse at 50% 0%, pip(0.12), transparent 65%),
+      $-color-glass;
+    box-shadow: inset 0 0 3rem pip(0.06), 0 0 0 1px rgba(0, 0, 0, 0.6),
+      0 0.8rem 2.5rem rgba(0, 0, 0, 0.65);
+
+    &::before {
+      content: 'ROBCO INDUSTRIES (TM) TERMLINK';
+      position: absolute;
+      top: 0.55rem;
+      left: 1.75rem;
+      font-family: $-font-mono;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: pip(0.45);
+    }
+  } @else if $border == strip {
+    width: 100%;
+    padding: 0 0.4rem;
+    border-width: 0 0 2px;
+    border-color: pip(0.85);
+    background: $-scanlines,
+      linear-gradient(to top, pip(0.1), transparent 80%), $-color-glass;
+  }
+}
+
+$-color-text-strong: $-color-tint;
+$-color-text-muted: pip(0.45);
+$-color-line: pip(0.25);
+$-color-line-strong: pip(0.3);
+$-color-input-border: pip(0.35);
+$-color-surface: pip(0.12);
+$-color-surface-alt: pip(0.06);
+$-color-surface-menu: #04170c;
+$-color-overlay: $-color-glass;
+$-color-success: $-color-tint;
+$-color-error: #ff5a3c;
+$-color-offline: rgba(#ff5a3c, 0.25);
+$-color-hud-text: pip(0.8);
+$-color-hud-text-strong: $-color-tint;
+$-color-notification-backdrop: transparent;
+
+@mixin notification-frame() {
+  border-left: 3px solid $-color-tint;
+  background: corner-brackets(0.6rem), $-scanlines,
+    linear-gradient(to right, pip(0.14), transparent 60%), $-color-glass;
+  box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.5);
+}

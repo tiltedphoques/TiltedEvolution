@@ -53,12 +53,12 @@ input {
   width: 100%;
 
   &[type='password'] {
-    border: 3px solid #808081;
+    border: 3px solid $-color-input-border;
   }
 }
 
 .warning {
-  color: rgb(247, 54, 54);
+  color: $-color-error;
 }
 
 hr {
@@ -66,6 +66,6 @@ hr {
   clear: both;
   display: block;
   width: 80%;
-  background-color: grey;
+  background-color: $-color-line;
   height: 1px;
 }

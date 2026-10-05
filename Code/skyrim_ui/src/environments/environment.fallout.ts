@@ -21,6 +21,10 @@ export const environment = {
       'make sure to read the playguide on our wiki, which you can find through our website, <b>skyrim-together.com</b>.',
       'keep in mind that this is an early experimental build.',
     ],
+    [
+      'Do NOT connect to any server if you are still in the Helgen intro sequence. Make sure you just escaped Helgen first.',
+      'Do NOT connect to any server before you have left Vault 111.',
+    ],
     ['Anniversary Update', 'Creations'],
     ['Skyrim.ini', 'Fallout4.ini'],
     ['Skyrim Together', 'Fallout Together'],
