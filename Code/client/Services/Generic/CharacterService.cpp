@@ -51,6 +51,8 @@
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/MountRequest.h>
 #include <Messages/NotifyMount.h>
+#include <Messages/PowerArmorRequest.h>
+#include <Messages/NotifyPowerArmor.h>
 #include <Messages/NewPackageRequest.h>
 #include <Messages/NotifyNewPackage.h>
 #include <Messages/RequestRespawn.h>
@@ -89,6 +91,9 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_mountConnection = m_dispatcher.sink<MountEvent>().connect<&CharacterService::OnMountEvent>(this);
     m_notifyMountConnection = m_dispatcher.sink<NotifyMount>().connect<&CharacterService::OnNotifyMount>(this);
+#if defined(TP_FALLOUT4)
+    m_powerArmorConnection = m_dispatcher.sink<NotifyPowerArmor>().connect<&CharacterService::OnNotifyPowerArmor>(this);
+#endif
 
     m_initPackageConnection = m_dispatcher.sink<InitPackageEvent>().connect<&CharacterService::OnInitPackageEvent>(this);
     m_newPackageConnection = m_dispatcher.sink<NotifyNewPackage>().connect<&CharacterService::OnNotifyNewPackage>(this);
@@ -301,6 +306,9 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     RunExperienceUpdates();
     ApplyCachedWeaponDraws(acUpdateEvent);
     ProcessLeveledConforms();
+#if defined(TP_FALLOUT4)
+    RunPowerArmorUpdates();
+#endif
 }
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
@@ -1837,6 +1845,10 @@ void CharacterService::RunRemoteUpdates() noexcept
         if (pActor->IsDead() != waitingFor3D.SpawnRequest.IsDead)
             waitingFor3D.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
 
+#if defined(TP_FALLOUT4)
+        ApplyPowerArmor(pActor, waitingFor3D.SpawnRequest.PowerArmorFurnitureId, waitingFor3D.SpawnRequest.PowerArmorFurnitureBaseId);
+#endif
+
 #if !defined(TP_FALLOUT4)
         if (pActor->IsVampireLord())
             pActor->FixVampireLordModel();
@@ -1994,3 +2006,81 @@ void CharacterService::ApplyCachedWeaponDraws(const UpdateEvent& acUpdateEvent) 
     for (uint32_t id : toRemove)
         m_weaponDrawUpdates.erase(id);
 }
+
+#if defined(TP_FALLOUT4)
+void CharacterService::RunPowerArmorUpdates() noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    auto* pPlayer = PlayerCharacter::Get();
+    TESObjectREFR* pFurniture = pPlayer->IsInPowerArmor() ? pPlayer->GetPowerArmorFurniture() : nullptr;
+    const uint32_t furnitureId = pFurniture ? pFurniture->formID : 0;
+    if (furnitureId == m_localPowerArmorFurniture)
+        return;
+
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+    const auto it = std::find_if(view.begin(), view.end(), [view](entt::entity aEntity) { return view.get<FormIdComponent>(aEntity).Id == 0x14; });
+    if (it == view.end())
+        return;
+
+    m_localPowerArmorFurniture = furnitureId;
+
+    PowerArmorRequest request;
+    request.Id = view.get<LocalComponent>(*it).Id;
+    if (pFurniture)
+    {
+        // Frames placed at runtime have ids that only exist in this game; the base is enough to recreate them.
+        if (!pFurniture->IsTemporary())
+            m_world.GetModSystem().GetServerModId(pFurniture->formID, request.FurnitureId);
+        m_world.GetModSystem().GetServerModId(pFurniture->baseForm->formID, request.FurnitureBaseId);
+    }
+
+    spdlog::info("Local player power armor furniture {:X}", furnitureId);
+    m_transport.Send(request);
+}
+
+void CharacterService::OnNotifyPowerArmor(const NotifyPowerArmor& acMessage) const noexcept
+{
+    if (Actor* pActor = Utils::GetByServerId<Actor>(acMessage.Id))
+        ApplyPowerArmor(pActor, acMessage.FurnitureId, acMessage.FurnitureBaseId);
+}
+
+void CharacterService::ApplyPowerArmor(Actor* apActor, const GameId& acFurnitureId, const GameId& acFurnitureBaseId) noexcept
+{
+    const bool wearing = apActor->IsInPowerArmor() || apActor->GetPowerArmorFurniture();
+
+    if (acFurnitureBaseId == GameId{})
+    {
+        if (wearing)
+            apActor->ExitPowerArmor();
+        return;
+    }
+
+    if (wearing)
+        return;
+
+    auto& modSystem = World::Get().GetModSystem();
+    auto* pBase = Cast<TESBoundObject>(TESForm::GetById(modSystem.GetGameId(acFurnitureBaseId)));
+    if (!pBase)
+    {
+        spdlog::warn("Power armor furniture base {:X}:{:X} not found", acFurnitureBaseId.ModId, acFurnitureBaseId.BaseId);
+        return;
+    }
+
+    TESObjectREFR* pFurniture = nullptr;
+    if (acFurnitureId != GameId{})
+        pFurniture = Cast<TESObjectREFR>(TESForm::GetById(modSystem.GetGameId(acFurnitureId)));
+
+    if (!pFurniture || pFurniture->baseForm != pBase || pFurniture->IsDisabled())
+    {
+        NiPoint3 position = apActor->position;
+        NiPoint3 rotation = apActor->rotation;
+        const uint32_t handle = ModManager::Get()->Spawn(position, rotation, apActor->parentCell, apActor->GetWorldSpace(), pBase);
+        pFurniture = TESObjectREFR::GetByHandle(handle);
+    }
+
+    spdlog::info("Actor {:X} enters power armor {:X}", apActor->formID, pFurniture ? pFurniture->formID : 0);
+    apActor->EnterPowerArmor(pFurniture);
+}
+#endif

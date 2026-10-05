@@ -522,3 +522,35 @@ void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLoca
     data.rotate = apRotation;
     RemoveItem(data);
 }
+
+bool Actor::IsInPowerArmor() const noexcept
+{
+    using TQActorInPowerArmor = bool(const Actor*);
+    static VersionDbPtr<TQActorInPowerArmor> qActorInPowerArmor(2219437);
+    return qActorInPowerArmor.Get()(this);
+}
+
+TESObjectREFR* Actor::GetPowerArmorFurniture() const noexcept
+{
+    using TGetArmorFurnitureHandle = uint32_t*(uint32_t*, const Actor*);
+    static VersionDbPtr<TGetArmorFurnitureHandle> getArmorFurnitureHandle(2219423);
+    uint32_t handle = 0;
+    getArmorFurnitureHandle.Get()(&handle, this);
+    return handle ? TESObjectREFR::GetByHandle(handle) : nullptr;
+}
+
+// Instant switch used by the Papyrus Actor.SwitchToPowerArmor.
+void Actor::EnterPowerArmor(TESObjectREFR* apFurniture) noexcept
+{
+    using TSwitchToPowerArmor = void(Actor*, TESObjectREFR*, bool);
+    static VersionDbPtr<TSwitchToPowerArmor> switchToPowerArmor(2219442);
+    if (apFurniture)
+        switchToPowerArmor.Get()(this, apFurniture, false);
+}
+
+void Actor::ExitPowerArmor() noexcept
+{
+    using TSwitchFromPowerArmor = bool(Actor*);
+    static VersionDbPtr<TSwitchFromPowerArmor> switchFromPowerArmor(2252033);
+    switchFromPowerArmor.Get()(this);
+}

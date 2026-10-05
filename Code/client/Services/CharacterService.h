@@ -27,6 +27,7 @@ struct ProjectileLaunchedEvent;
 struct NotifyProjectileLaunch;
 struct MountEvent;
 struct NotifyMount;
+struct NotifyPowerArmor;
 struct InitPackageEvent;
 struct NotifyNewPackage;
 struct NotifyRespawn;
@@ -72,6 +73,10 @@ struct CharacterService
     void OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept;
     void OnMountEvent(const MountEvent& acEvent) const noexcept;
     void OnNotifyMount(const NotifyMount& acMessage) const noexcept;
+#if defined(TP_FALLOUT4)
+    void OnNotifyPowerArmor(const NotifyPowerArmor& acMessage) const noexcept;
+    static void ApplyPowerArmor(Actor* apActor, const GameId& acFurnitureId, const GameId& acFurnitureBaseId) noexcept;
+#endif
     void OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept;
     void OnNotifyNewPackage(const NotifyNewPackage& acMessage) const noexcept;
     void OnNotifyRespawn(const NotifyRespawn& acMessage) const noexcept;
@@ -107,6 +112,9 @@ private:
     void RunSpawnUpdates() const noexcept;
     void RunExperienceUpdates() noexcept;
     void ApplyCachedWeaponDraws(const UpdateEvent& acUpdateEvent) noexcept;
+#if defined(TP_FALLOUT4)
+    void RunPowerArmorUpdates() noexcept;
+#endif
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
@@ -148,6 +156,10 @@ private:
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_mountConnection;
     entt::scoped_connection m_notifyMountConnection;
+#if defined(TP_FALLOUT4)
+    entt::scoped_connection m_powerArmorConnection;
+    uint32_t m_localPowerArmorFurniture{};
+#endif
     entt::scoped_connection m_initPackageConnection;
     entt::scoped_connection m_newPackageConnection;
     entt::scoped_connection m_notifyRespawnConnection;

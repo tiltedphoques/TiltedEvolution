@@ -243,6 +243,11 @@ struct Actor
     void SetEssentialEx(bool aSet) noexcept;
     void SetNoBleedoutRecovery(bool aSet) noexcept;
     void SetPlayerRespawnMode(bool aSet = true) noexcept;
+
+    bool IsInPowerArmor() const noexcept;
+    TESObjectREFR* GetPowerArmorFurniture() const noexcept;
+    void EnterPowerArmor(TESObjectREFR* apFurniture) noexcept;
+    void ExitPowerArmor() noexcept;
     void SetPlayerTeammate(bool aSet) noexcept;
 
     // Actions

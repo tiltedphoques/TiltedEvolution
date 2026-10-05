@@ -68,4 +68,31 @@ static TiltedPhoques::Initializer s_projectileHooks(
         static VersionDbPtr<TLaunch> launch(2236958);
         RealLaunch = launch.Get();
         TP_HOOK(&RealLaunch, HookLaunch);
+
+        // The weapon fire routine reads a flag from the first launched projectile
+        // without a null check; blocked launches leave a null entry there.
+        static VersionDbPtr<uint8_t> fireWeapon(2198960);
+        uint8_t* pLoc = fireWeapon.Get() + 0x8E4;
+        constexpr uint8_t kExpected[] = {0x48, 0x8B, 0x03, 0x8B, 0x88, 0x60, 0x02, 0x00, 0x00};
+        if (std::memcmp(pLoc, kExpected, sizeof(kExpected)) != 0)
+        {
+            spdlog::error("Projectile null check not applied, unexpected code at the weapon fire routine");
+            return;
+        }
+
+        struct C : TiltedPhoques::CodeGenerator
+        {
+            C(uint8_t* apLoc)
+            {
+                mov(rax, ptr[rbx]);
+                test(rax, rax);
+                jz("skip");
+                mov(ecx, ptr[rax + 0x260]);
+                jmp_S(apLoc + 0x9);
+                L("skip");
+                jmp_S(apLoc + 0x1A);
+            }
+        };
+        static C gen(pLoc);
+        TiltedPhoques::Jump(pLoc, gen.getCode());
     });

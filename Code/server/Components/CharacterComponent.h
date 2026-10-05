@@ -82,6 +82,9 @@ struct CharacterComponent
     String SaveBuffer{};
     FormIdComponent BaseId{};
     FormIdComponent LeveledNpcPickId{};
+    // Power armor furniture the character is in; a null base means none.
+    GameId PowerArmorFurnitureId{};
+    GameId PowerArmorFurnitureBaseId{};
     Tints FaceTints{};
     Factions FactionsContent{};
     uint16_t Flags{};
