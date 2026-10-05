@@ -27,9 +27,9 @@ struct ActorState : IMovementState
 
     bool IsWeaponFullyDrawn() const noexcept { return (flags2 >> 1 & 7) == 3; }
 
-    // FO4 lifeState lives in flags1[17:20]; the two "dead" encodings the
-    // client cares about map to the same pattern as Skyrim's.
-    bool IsBleedingOut() const noexcept { return (flags1 & 0x1E00000) == 0x1000000 || (flags1 & 0x1E00000) == 0xE00000; }
+    // lifeState is flags1[17:20]: 7 is essential down, 8 is bleedout.
+    uint32_t GetLifeState() const noexcept { return flags1 >> 17 & 0xF; }
+    bool IsBleedingOut() const noexcept { return GetLifeState() == 8 || GetLifeState() == 7; }
 
     bool SetWeaponDrawn(bool aDraw) noexcept;
 };

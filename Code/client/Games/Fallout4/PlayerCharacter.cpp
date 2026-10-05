@@ -53,6 +53,11 @@ NiPoint3 PlayerCharacter::RespawnPlayer() noexcept
 
     ForceActorValue(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kHealth, 1000000);
 
+    // An essential player goes "essential down" instead of bleeding out and only gets up through this.
+    TP_THIS_FUNCTION(TSetEssentialDown, void, Actor, bool);
+    static VersionDbPtr<TSetEssentialDown> setEssentialDown(2230033);
+    TiltedPhoques::ThisCall(setEssentialDown, static_cast<Actor*>(this), false);
+
     TESObjectCELL* pCell = nullptr;
     if (auto* pWorldSpace = GetWorldSpace())
     {
