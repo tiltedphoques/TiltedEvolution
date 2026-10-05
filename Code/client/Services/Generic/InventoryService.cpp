@@ -263,8 +263,11 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     }
     else
     {
-        // Unequip all armor first, since the game won't auto unequip armor
+        // Unequip all armor first, since the game won't auto unequip armor.
+        // Fallout 4 replaces items in the same body slots by itself, and putting the
+        // old armor back would cover the new piece.
         Inventory wornArmor{};
+#if !defined(TP_FALLOUT4)
         if (pItem->formType == FormType::Armor)
         {
             wornArmor = pActor->GetWornArmor();
@@ -276,6 +279,7 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
                     pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
             }
         }
+#endif
 
 #if defined(TP_FALLOUT4)
         if (auto* pObject = Cast<TESBoundObject>(pItem); pObject && !acMessage.Mods.empty())
