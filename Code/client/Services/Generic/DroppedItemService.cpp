@@ -74,7 +74,7 @@ void DroppedItemService::OnUpdate(const UpdateEvent& acEvent) noexcept
     }
 }
 
-void DroppedItemService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
+void DroppedItemService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
     // The server owns registered items. Keeping a copy would leave an untracked item behind.
     for (const auto& item : m_items)
@@ -146,17 +146,15 @@ void DroppedItemService::OnReferencePickUp(const ReferencePickUpEvent& acEvent) 
         return;
     }
 
-    PickUpDroppedItemRequest request{};
-    request.ServerId = pItem->ServerId;
-    m_transport.Send(request);
-
+    SendPickUp(*pItem);
     Erase(*pItem);
 }
 
 void DroppedItemService::OnDropItemResponse(const DropItemResponse& acMessage) noexcept
 {
+    // Copies spawned for other players' drops always have a server id, so this only matches the local player's drops.
     TrackedItem* pItem = FindByFormId(acMessage.LocalId);
-    if (!pItem || !pItem->IsSimulatedLocally || pItem->ServerId != 0)
+    if (!pItem || pItem->ServerId != 0)
         return;
 
     // The server did not register the drop, so the item stays local only.
@@ -170,21 +168,20 @@ void DroppedItemService::OnDropItemResponse(const DropItemResponse& acMessage) n
 
     if (pItem->IsPickedUpBeforeRegistration)
     {
-        PickUpDroppedItemRequest request{};
-        request.ServerId = pItem->ServerId;
-        m_transport.Send(request);
-
+        SendPickUp(*pItem);
         Erase(*pItem);
         return;
     }
 
     // The item settled before the server answered.
     if (pItem->IsAtRest)
-        SendMove(*pItem, true);
+        SendMove(*pItem);
 }
 
 void DroppedItemService::OnNotifyDroppedItemsSpawn(const NotifyDroppedItemsSpawn& acMessage) noexcept
 {
+    m_items.reserve(m_items.size() + acMessage.Items.size());
+
     for (const DroppedItemData& data : acMessage.Items)
     {
         if (FindByServerId(data.ServerId))
@@ -206,7 +203,7 @@ void DroppedItemService::OnNotifyDroppedItemsSpawn(const NotifyDroppedItemsSpawn
 
         // Physics stays with the simulating client while the item moves.
         if (!item.IsAtRest)
-            item.IsKeyframed = pReference->SetMotionType(TESObjectREFR::MotionType::kKeyframed);
+            EnsureKeyframed(item, pReference);
 
         m_items.push_back(item);
     }
@@ -227,27 +224,24 @@ void DroppedItemService::OnNotifyDroppedItemMove(const NotifyDroppedItemMove& ac
     pItem->IsSettling = move.IsAtRest;
 
     TESObjectREFR* pReference = GetReference(*pItem);
-    if (!pReference)
-    {
-        pItem->IsAtRest = move.IsAtRest;
-        return;
-    }
 
     const NiPoint3 position(move.Transform.Position);
     const NiPoint3 rotation(move.Transform.Rotation);
 
     // Without 3D there is nothing to animate; place the reference so it loads in the right spot.
-    if (!pReference->GetNiNode())
+    if (!pReference || !pReference->GetNiNode())
     {
-        pReference->SetLocation(position);
-        pReference->SetRotation(rotation.x, rotation.y, rotation.z);
+        if (pReference)
+        {
+            pReference->SetLocation(position);
+            pReference->SetRotation(rotation.x, rotation.y, rotation.z);
+        }
 
         pItem->IsAtRest = move.IsAtRest;
         return;
     }
 
-    if (!pItem->IsKeyframed)
-        pItem->IsKeyframed = pReference->SetMotionType(TESObjectREFR::MotionType::kKeyframed);
+    EnsureKeyframed(*pItem, pReference);
 
     // Reach the new sample by the time the next one arrives.
     const float distance = glm::distance(static_cast<glm::vec3>(pReference->position), static_cast<glm::vec3>(position));
@@ -270,44 +264,38 @@ void DroppedItemService::OnNotifyDroppedItemsRemove(const NotifyDroppedItemsRemo
 
 void DroppedItemService::UpdateSimulatedItem(TrackedItem& aItem, double aDelta) noexcept
 {
-    TESObjectREFR* pReference = GetReference(aItem);
-    if (!pReference)
+    if (TESObjectREFR* pReference = GetReference(aItem))
+    {
+        aItem.SimulationTime += aDelta;
+        aItem.TimeSinceSend += aDelta;
+        aItem.LastTransform = GetTransform(pReference);
+
+        // Without 3D there is no rigid body yet; keep waiting then.
+        if (pReference->GetNiNode())
+        {
+            NiPoint3 velocity{};
+            pReference->GetLinearVelocity(velocity);
+
+            if (glm::length(static_cast<glm::vec3>(velocity)) < cRestSpeed)
+                aItem.RestTime += aDelta;
+            else
+                aItem.RestTime = 0.0;
+        }
+
+        aItem.IsAtRest = aItem.RestTime >= cRestDuration || aItem.SimulationTime >= cMaxSimulationTime;
+    }
+    else
     {
         // The reference is gone, e.g. its cell unloaded. Leave the item where it was last seen.
         aItem.IsAtRest = true;
-        if (aItem.ServerId != 0)
-            SendMove(aItem, true);
-        return;
     }
-
-    aItem.SimulationTime += aDelta;
-    aItem.TimeSinceSend += aDelta;
-    aItem.LastTransform = GetTransform(pReference);
-
-    // Without 3D there is no rigid body yet; keep waiting then.
-    if (pReference->GetNiNode())
-    {
-        NiPoint3 velocity{};
-        pReference->GetLinearVelocity(velocity);
-
-        if (glm::length(static_cast<glm::vec3>(velocity)) < cRestSpeed)
-            aItem.RestTime += aDelta;
-        else
-            aItem.RestTime = 0.0;
-    }
-
-    const bool isAtRest = aItem.RestTime >= cRestDuration || aItem.SimulationTime >= cMaxSimulationTime;
-    if (isAtRest)
-        aItem.IsAtRest = true;
 
     // Without a server id yet, the drop response sends the final transform.
     if (aItem.ServerId == 0)
         return;
 
-    if (isAtRest)
-        SendMove(aItem, true);
-    else if (aItem.TimeSinceSend >= cSendInterval && aItem.LastTransform != aItem.LastSentTransform)
-        SendMove(aItem, false);
+    if (aItem.IsAtRest || (aItem.TimeSinceSend >= cSendInterval && aItem.LastTransform != aItem.LastSentTransform))
+        SendMove(aItem);
 }
 
 void DroppedItemService::UpdateFollowingItem(TrackedItem& aItem, double aDelta) noexcept
@@ -319,8 +307,7 @@ void DroppedItemService::UpdateFollowingItem(TrackedItem& aItem, double aDelta) 
         return;
 
     // The copy may have spawned before its 3D loaded.
-    if (!aItem.IsKeyframed)
-        aItem.IsKeyframed = pReference->SetMotionType(TESObjectREFR::MotionType::kKeyframed);
+    EnsureKeyframed(aItem, pReference);
 
     if (aItem.IsSettling)
     {
@@ -335,17 +322,31 @@ void DroppedItemService::UpdateFollowingItem(TrackedItem& aItem, double aDelta) 
     }
 }
 
-void DroppedItemService::SendMove(TrackedItem& aItem, bool aIsAtRest) noexcept
+void DroppedItemService::SendMove(TrackedItem& aItem) noexcept
 {
     DroppedItemMoveRequest request{};
     request.Move.ServerId = aItem.ServerId;
     request.Move.Transform = aItem.LastTransform;
-    request.Move.IsAtRest = aIsAtRest;
+    request.Move.IsAtRest = aItem.IsAtRest;
 
     m_transport.Send(request);
 
     aItem.TimeSinceSend = 0.0;
     aItem.LastSentTransform = aItem.LastTransform;
+}
+
+void DroppedItemService::SendPickUp(const TrackedItem& acItem) const noexcept
+{
+    PickUpDroppedItemRequest request{};
+    request.ServerId = acItem.ServerId;
+
+    m_transport.Send(request);
+}
+
+void DroppedItemService::EnsureKeyframed(TrackedItem& aItem, TESObjectREFR* apReference) noexcept
+{
+    if (!aItem.IsKeyframed)
+        aItem.IsKeyframed = apReference->SetMotionType(TESObjectREFR::MotionType::kKeyframed);
 }
 
 void DroppedItemService::FinishFollowing(TrackedItem& aItem) noexcept
@@ -368,7 +369,7 @@ void DroppedItemService::FinishFollowing(TrackedItem& aItem) noexcept
 
 TESObjectREFR* DroppedItemService::SpawnItem(const DroppedItemData& acData) const noexcept
 {
-    auto& modSystem = World::Get().GetModSystem();
+    auto& modSystem = m_world.GetModSystem();
 
     auto* pBaseForm = Cast<TESBoundObject>(TESForm::GetById(modSystem.GetGameId(acData.Item.BaseId)));
     if (!pBaseForm)
@@ -432,7 +433,12 @@ DroppedItemService::TrackedItem* DroppedItemService::FindByServerId(uint32_t aSe
     return it != m_items.end() ? &*it : nullptr;
 }
 
+// The order of the items does not matter, so swap with the last one instead of shifting the rest.
 void DroppedItemService::Erase(const TrackedItem& acItem) noexcept
 {
-    m_items.erase(m_items.begin() + (&acItem - m_items.data()));
+    auto& item = m_items[&acItem - m_items.data()];
+    if (&item != &m_items.back())
+        item = std::move(m_items.back());
+
+    m_items.pop_back();
 }

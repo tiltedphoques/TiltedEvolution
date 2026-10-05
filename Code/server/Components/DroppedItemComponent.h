@@ -16,7 +16,6 @@ struct DroppedItemComponent
 {
     Inventory::Entry Item{};
     DroppedItemTransform Transform{};
-    bool IsAtRest{};
     // The client that simulates the item's physics; null once the item is at rest.
     Player* pSimulator{};
     // Increases with every drop; used to evict the oldest items first.

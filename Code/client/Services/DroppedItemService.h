@@ -28,7 +28,7 @@ struct DroppedItemService
 
 protected:
     void OnUpdate(const UpdateEvent& acEvent) noexcept;
-    void OnDisconnected(const DisconnectedEvent& acEvent) noexcept;
+    void OnDisconnected(const DisconnectedEvent&) noexcept;
     void OnDropItem(const DropItemEvent& acEvent) noexcept;
     void OnReferencePickUp(const ReferencePickUpEvent& acEvent) noexcept;
     void OnDropItemResponse(const DropItemResponse& acMessage) noexcept;
@@ -64,7 +64,9 @@ private:
 
     void UpdateSimulatedItem(TrackedItem& aItem, double aDelta) noexcept;
     void UpdateFollowingItem(TrackedItem& aItem, double aDelta) noexcept;
-    void SendMove(TrackedItem& aItem, bool aIsAtRest) noexcept;
+    void SendMove(TrackedItem& aItem) noexcept;
+    void SendPickUp(const TrackedItem& acItem) const noexcept;
+    static void EnsureKeyframed(TrackedItem& aItem, TESObjectREFR* apReference) noexcept;
     void FinishFollowing(TrackedItem& aItem) noexcept;
     TESObjectREFR* SpawnItem(const DroppedItemData& acData) const noexcept;
     TESObjectREFR* GetReference(const TrackedItem& acItem) const noexcept;

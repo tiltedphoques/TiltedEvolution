@@ -90,7 +90,7 @@ void DroppedItemService::OnDropItem(const PacketEvent<DropItemRequest>& acMessag
     droppedItem.pSimulator = pPlayer;
     droppedItem.Sequence = m_nextSequence++;
 
-    const auto& cellComponent = m_world.emplace<CellIdComponent>(entity, MakeCellComponent(message.CellId, message.WorldSpaceId, message.Transform));
+    m_world.emplace<CellIdComponent>(entity, MakeCellComponent(message.CellId, message.WorldSpaceId, message.Transform));
 
     // The dropping client already has its own reference.
     m_knownItems[pPlayer].insert(entity);
@@ -101,20 +101,7 @@ void DroppedItemService::OnDropItem(const PacketEvent<DropItemRequest>& acMessag
     spdlog::debug("Player {:X} dropped item {:X}:{:X} (count {}), server id {:X}", pPlayer->GetId(), message.Item.BaseId.ModId, message.Item.BaseId.BaseId, message.Item.Count, response.ServerId);
 
     // Spawn it for the players in range right away instead of waiting for the next interest update.
-    NotifyDroppedItemsSpawn notify{};
-    notify.Items.push_back(ToData(entity));
-
-    for (Player* pOther : m_world.GetPlayerManager())
-    {
-        if (pOther == pPlayer || !pOther->GetCellComponent())
-            continue;
-
-        if (!pOther->GetCellComponent().IsInRange(cellComponent, false))
-            continue;
-
-        m_knownItems[pOther].insert(entity);
-        pOther->Send(notify);
-    }
+    UpdateInterest();
 }
 
 void DroppedItemService::OnDroppedItemMove(const PacketEvent<DroppedItemMoveRequest>& acMessage) noexcept
@@ -141,10 +128,7 @@ void DroppedItemService::OnDroppedItemMove(const PacketEvent<DroppedItemMoveRequ
         cellComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(move.Transform.Position);
 
     if (move.IsAtRest)
-    {
-        droppedItem.IsAtRest = true;
         droppedItem.pSimulator = nullptr;
-    }
 
     NotifyDroppedItemMove notify{};
     notify.Move = move;
@@ -233,11 +217,12 @@ void DroppedItemService::RemoveItem(entt::entity aEntity, const Player* apExclud
     NotifyDroppedItemsRemove notify{};
     notify.ServerIds.push_back(World::ToInteger(aEntity));
 
-    SendToPlayersWithItem(notify, aEntity, apExcludedPlayer);
-
     // hopscotch_map only exposes mutable values through the iterator.
     for (auto it = m_knownItems.begin(); it != m_knownItems.end(); ++it)
-        it.value().erase(aEntity);
+    {
+        if (it.value().erase(aEntity) && it.key() != apExcludedPlayer)
+            it.key()->Send(notify);
+    }
 
     m_world.destroy(aEntity);
 }
@@ -245,8 +230,6 @@ void DroppedItemService::RemoveItem(entt::entity aEntity, const Player* apExclud
 void DroppedItemService::StopSimulation(entt::entity aEntity, DroppedItemComponent& aDroppedItem) noexcept
 {
     const Player* pSimulator = aDroppedItem.pSimulator;
-
-    aDroppedItem.IsAtRest = true;
     aDroppedItem.pSimulator = nullptr;
 
     NotifyDroppedItemMove notify{};
@@ -277,7 +260,7 @@ DroppedItemData DroppedItemService::ToData(entt::entity aEntity) const noexcept
     data.CellId = cellComponent.Cell;
     data.WorldSpaceId = cellComponent.WorldSpaceId;
     data.Transform = droppedItem.Transform;
-    data.IsAtRest = droppedItem.IsAtRest;
+    data.IsAtRest = droppedItem.pSimulator == nullptr;
 
     return data;
 }
