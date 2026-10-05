@@ -12,6 +12,8 @@
 #include <ExtraData/ExtraFactionChanges.h>
 #include <Magic/ActorMagicCaster.h>
 #include <World.h>
+#include <Events/HitEvent.h>
+#include <Events/HealthChangeEvent.h>
 
 ActorExtension* Actor::GetExtension() noexcept
 {
@@ -122,12 +124,64 @@ void TP_MAKE_THISCALL(HookDestructor, Actor)
     TiltedPhoques::ThisCall(s_destructor, apThis);
 }
 
+TP_THIS_FUNCTION(TModActorValue, void, Actor, ActorValueOwner::ForceMode, const ActorValueInfo*, float, TESObjectREFR*);
+TModActorValue* s_modActorValue = nullptr;
+
+// All health damage ends up here. Damage is applied by the client that owns the
+// victim or dealt the hit, and sent to the others, like Skyrim's DamageActor hook.
+void TP_MAKE_THISCALL(HookModActorValue, Actor, ActorValueOwner::ForceMode aMode, const ActorValueInfo* apInfo, float aDelta, TESObjectREFR* apSource)
+{
+    if (aMode != ActorValueOwner::ForceMode::DAMAGE || aDelta >= 0.f || ScopedActorValueOverride::IsOverriden() || !apInfo ||
+        apInfo != ActorValueInfo::Resolve(ActorValueInfo::kHealth))
+    {
+        return TiltedPhoques::ThisCall(s_modActorValue, apThis, aMode, apInfo, aDelta, apSource);
+    }
+
+    Actor* pHitter = Cast<Actor>(apSource);
+    if (pHitter)
+        World::Get().GetRunner().Trigger(HitEvent(pHitter->formID, apThis->formID));
+
+    const auto* pExHittee = apThis->GetExtension();
+    if (pExHittee->IsLocalPlayer())
+    {
+        if (!World::Get().GetServerSettings().PvpEnabled && pHitter && pHitter->GetExtension()->IsRemotePlayer())
+            return;
+
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, aDelta));
+        return TiltedPhoques::ThisCall(s_modActorValue, apThis, aMode, apInfo, aDelta, apSource);
+    }
+    if (pExHittee->IsRemotePlayer())
+        return;
+
+    if (pHitter)
+    {
+        const auto* pExHitter = pHitter->GetExtension();
+        if (pExHitter->IsLocalPlayer())
+        {
+            World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, aDelta));
+            return TiltedPhoques::ThisCall(s_modActorValue, apThis, aMode, apInfo, aDelta, apSource);
+        }
+        if (pExHitter->IsRemotePlayer())
+            return;
+    }
+
+    if (pExHittee->IsLocal())
+    {
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, aDelta));
+        return TiltedPhoques::ThisCall(s_modActorValue, apThis, aMode, apInfo, aDelta, apSource);
+    }
+}
+
 TiltedPhoques::Initializer s_actorHooks(
     []()
     {
         static VersionDbPtr<TDestructor> destructor(2229565);
         s_destructor = destructor.Get();
         TP_HOOK(&s_destructor, HookDestructor);
+
+        static VersionDbPtr<TModActorValue> modActorValue(2230987);
+        s_modActorValue = modActorValue.Get();
+        TP_HOOK(&s_modActorValue, HookModActorValue);
     });
 }
 

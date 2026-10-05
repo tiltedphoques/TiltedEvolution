@@ -2,6 +2,7 @@
 
 #include <Misc/ActorValueOwner.h>
 #include <Forms/ActorValueInfo.h>
+#include <Games/Overrides.h>
 
 float ActorValueOwner::GetValue(uint32_t aId) const noexcept
 {
@@ -33,14 +34,17 @@ void ActorValueOwner::ModValue(uint32_t aId, float aValue)
         ModNativeBaseValue(*pInfo, aValue);
 }
 
+// Values set by the client itself (often received from the network) are not damage to report.
 void ActorValueOwner::ForceCurrent(ForceMode aMode, uint32_t aId, float aValue)
 {
+    ScopedActorValueOverride _;
     if (const auto* pInfo = ActorValueInfo::Resolve(aId))
         ModNativeValue(aMode, *pInfo, aValue);
 }
 
 void ActorValueOwner::SetValue(uint32_t aId, float aValue) noexcept
 {
+    ScopedActorValueOverride _;
     if (const auto* pInfo = ActorValueInfo::Resolve(aId))
         SetNativeValue(*pInfo, aValue);
 }
