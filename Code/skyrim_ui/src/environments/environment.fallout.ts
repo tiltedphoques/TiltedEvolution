@@ -6,7 +6,8 @@ export const environment = {
   urlProtocol: 'https',
   // Fallout Together has no public server list yet; connect by address.
   url: '',
-  githubUrl: 'https://api.github.com/repos/tiltedphoques/TiltedEvolution/tags',
+  // No Fallout Together releases to compare against yet.
+  githubUrl: '',
   overwriteVersion: "",
   chatMessageLengthLimit: 512,
   nbReconnectionAttempts: 5,
