@@ -7,6 +7,10 @@
 #include <EquipManager.h>
 #include <Games/Overrides.h>
 #include <World.h>
+#include <Games/Misc/Lock.h>
+#include <Events/ActivateEvent.h>
+#include <Events/LockChangeEvent.h>
+#include <Events/InventoryChangeEvent.h>
 
 TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 {
@@ -90,7 +94,9 @@ void TESObjectREFR::SetRotation(float aX, float aY, float aZ) noexcept
 {
     TP_THIS_FUNCTION(TSetAngle, void, TESObjectREFR, const NiPoint3&);
     static VersionDbPtr<TSetAngle> setAngle(2201134);
-    const NiPoint3 angle(glm::vec3(aX, aY, aZ));
+    // An actor's pitch is where it looks; as a reference angle it tilts the whole body.
+    const bool isActor = formType == FormType::Character;
+    const NiPoint3 angle(glm::vec3(isActor ? 0.f : aX, isActor ? 0.f : aY, aZ));
     TiltedPhoques::ThisCall(setAngle, this, angle);
 }
 
@@ -146,13 +152,13 @@ void TESObjectREFR::Delete() const noexcept
     }
 }
 
+TP_THIS_FUNCTION(TActivateRef, bool, TESObjectREFR, TESObjectREFR*, TESBoundObject*, int32_t, bool, bool, bool);
+static TActivateRef* RealActivateRef = nullptr;
+
 bool TESObjectREFR::Activate(TESObjectREFR* apActivator, uint8_t, TESBoundObject* apObjectToGet, int32_t aCount, char aDefaultProcessing) noexcept
 {
     ScopedActivateOverride _;
-
-    TP_THIS_FUNCTION(TActivateRef, bool, TESObjectREFR, TESObjectREFR*, TESBoundObject*, int32_t, bool, bool, bool);
-    static VersionDbPtr<TActivateRef> activateRef(2201147);
-    return TiltedPhoques::ThisCall(activateRef, this, apActivator, apObjectToGet, aCount, aDefaultProcessing != 0, false, false);
+    return TiltedPhoques::ThisCall(RealActivateRef, this, apActivator, apObjectToGet, aCount, aDefaultProcessing != 0, false, false);
 }
 
 bool TESObjectREFR::PlayAnimation(BSFixedString* apEventName) noexcept
@@ -180,11 +186,12 @@ Lock* TESObjectREFR::CreateLock() noexcept
     return TiltedPhoques::ThisCall(addLock, this);
 }
 
+TP_THIS_FUNCTION(TAddLockChange, void, TESObjectREFR);
+static TAddLockChange* RealAddLockChange = nullptr;
+
 void TESObjectREFR::LockChange() noexcept
 {
-    TP_THIS_FUNCTION(TAddLockChange, void, TESObjectREFR);
-    static VersionDbPtr<TAddLockChange> addLockChange(2200731);
-    TiltedPhoques::ThisCall(addLockChange, this);
+    TiltedPhoques::ThisCall(RealAddLockChange, this);
 }
 
 void TESObjectREFR::MoveTo(TESObjectCELL* apCell, const NiPoint3& acPosition) const noexcept
@@ -399,3 +406,87 @@ void TESObjectREFR::PayGold(int32_t aAmount) noexcept
     caps.Count = -aAmount;
     AddOrRemoveItem(caps);
 }
+
+namespace
+{
+TP_THIS_FUNCTION(TAddObjectToContainer, void, TESObjectREFR, TESBoundObject*, ExtraDataList**, int32_t, TESObjectREFR*, ITEM_REMOVE_REASON);
+TP_THIS_FUNCTION(TRemoveItem, BSPointerHandle<TESObjectREFR>*, TESObjectREFR, BSPointerHandle<TESObjectREFR>*, RemoveItemData*);
+
+TAddObjectToContainer* RealAddObjectToContainer = nullptr;
+TRemoveItem* RealRemoveItem = nullptr;
+
+// Actors have their own hooks; Actor::RemoveItem also ends up in the reference version.
+void QueueContainerChange(TESObjectREFR* apReference, const TESBoundObject* apObject, int32_t aCount)
+{
+    if (aCount == 0 || apReference->formType == FormType::Character || ScopedInventoryOverride::IsOverriden())
+        return;
+
+    Inventory::Entry item{};
+    World::Get().GetModSystem().GetServerModId(apObject->formID, item.BaseId);
+    item.Count = aCount;
+    World::Get().GetRunner().Trigger(InventoryChangeEvent(apReference->formID, std::move(item)));
+}
+
+bool TP_MAKE_THISCALL(HookActivateRef, TESObjectREFR, TESObjectREFR* apActivator, TESBoundObject* apObjectToGet, int32_t aCount, bool aDefaultProcessing,
+                      bool aFromScript, bool aLooping)
+{
+    Actor* pActivator = Cast<Actor>(apActivator);
+    if (pActivator && apThis->baseForm && apThis->baseForm->formType != FormType::Book && !ScopedActivateOverride::IsOverriden())
+    {
+        auto openState = TESObjectREFR::kNone;
+        if (apThis->baseForm->formType == FormType::Door)
+            openState = apThis->GetOpenState();
+
+        World::Get().GetRunner().Trigger(ActivateEvent(apThis, pActivator, apObjectToGet, aCount, aDefaultProcessing, 0, openState));
+    }
+
+    return TiltedPhoques::ThisCall(RealActivateRef, apThis, apActivator, apObjectToGet, aCount, aDefaultProcessing, aFromScript, aLooping);
+}
+
+void TP_MAKE_THISCALL(HookAddLockChange, TESObjectREFR)
+{
+    TiltedPhoques::ThisCall(RealAddLockChange, apThis);
+
+    if (const auto* pLock = apThis->GetLock())
+        World::Get().GetRunner().Trigger(LockChangeEvent(apThis->formID, pLock->IsLocked(), pLock->lockLevel));
+    else
+        World::Get().GetRunner().Trigger(LockChangeEvent(apThis->formID, false, 0));
+}
+
+void TP_MAKE_THISCALL(HookAddObjectToContainer, TESObjectREFR, TESBoundObject* apObject, ExtraDataList** apExtra, int32_t aCount, TESObjectREFR* apOldContainer,
+                      ITEM_REMOVE_REASON aReason)
+{
+    if (apObject && aCount > 0)
+        QueueContainerChange(apThis, apObject, aCount);
+
+    TiltedPhoques::ThisCall(RealAddObjectToContainer, apThis, apObject, apExtra, aCount, apOldContainer, aReason);
+}
+
+BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveItem, TESObjectREFR, BSPointerHandle<TESObjectREFR>* apResult, RemoveItemData* apData)
+{
+    // The engine asks for INT_MAX to mean "all of them".
+    if (apData && apData->object && apData->count > 0)
+        QueueContainerChange(apThis, apData->object, -static_cast<int32_t>(std::min<int64_t>(apData->count, apThis->GetItemCountInInventory(apData->object))));
+
+    return TiltedPhoques::ThisCall(RealRemoveItem, apThis, apResult, apData);
+}
+} // namespace
+
+static TiltedPhoques::Initializer s_referenceHooks(
+    []()
+    {
+        static VersionDbPtr<TActivateRef> activateRef(2201147);
+        static VersionDbPtr<TAddLockChange> addLockChange(2200731);
+        static VersionDbPtr<TAddObjectToContainer> addObjectToContainer(2201031);
+        static VersionDbPtr<TRemoveItem> removeItem(2200919);
+
+        RealActivateRef = activateRef.Get();
+        RealAddLockChange = addLockChange.Get();
+        RealAddObjectToContainer = addObjectToContainer.Get();
+        RealRemoveItem = removeItem.Get();
+
+        TP_HOOK(&RealActivateRef, HookActivateRef);
+        TP_HOOK(&RealAddLockChange, HookAddLockChange);
+        TP_HOOK(&RealAddObjectToContainer, HookAddObjectToContainer);
+        TP_HOOK(&RealRemoveItem, HookRemoveItem);
+    });

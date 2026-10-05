@@ -216,7 +216,10 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveItem, Actor, BSPointe
     if (apData && apData->object && apData->count > 0 && !ScopedInventoryOverride::IsOverriden())
     {
         const bool drop = apData->reason == ITEM_REMOVE_REASON::kDropping;
-        QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, MakeInventoryEntry(apData->object, -apData->count), drop), apData->a_otherContainer);
+        // The engine asks for INT_MAX to mean "all of them".
+        const auto count = static_cast<int32_t>(std::min<int64_t>(apData->count, apThis->GetItemCountInInventory(apData->object)));
+        if (count > 0)
+            QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, MakeInventoryEntry(apData->object, -count), drop), apData->a_otherContainer);
     }
 
     ScopedEquipOverride _;
