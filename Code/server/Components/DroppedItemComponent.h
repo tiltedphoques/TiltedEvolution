@@ -9,8 +9,7 @@
 struct Player;
 
 /**
- * @brief An item a player dropped into the world. The server only registers it and relays its state;
- * the dropping client simulates the physics until the item settles.
+ * @brief An item a player dropped into the world.
  */
 struct DroppedItemComponent
 {

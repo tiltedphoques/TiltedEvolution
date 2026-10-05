@@ -1126,8 +1126,7 @@ void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* ap
     // GetItemFromExtraData() overwrites the count with the stack's ExtraCount.
     item.Count = -aCount;
 
-    // Other clients only remove the item from this actor's inventory.
-    // The reference placed in the world is synced separately by the DroppedItemService.
+    // Other clients only remove the item from the inventory; DroppedItemService syncs the placed reference.
     QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, item));
 
     void* pResult = nullptr;

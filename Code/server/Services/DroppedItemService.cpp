@@ -100,7 +100,7 @@ void DroppedItemService::OnDropItem(const PacketEvent<DropItemRequest>& acMessag
 
     spdlog::debug("Player {:X} dropped item {:X}:{:X} (count {}), server id {:X}", pPlayer->GetId(), message.Item.BaseId.ModId, message.Item.BaseId.BaseId, message.Item.Count, response.ServerId);
 
-    // Spawn it for the players in range right away instead of waiting for the next interest update.
+    // Spawn it for players in range now, not on the next interest tick.
     UpdateInterest();
 }
 

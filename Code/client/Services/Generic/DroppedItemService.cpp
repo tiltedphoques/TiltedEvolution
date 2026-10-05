@@ -24,9 +24,8 @@ namespace
 {
 // How often the simulating client sends the transform while the item moves.
 constexpr double cSendInterval = 0.1;
-// The item counts as settled once it moves slower than this (units per second)...
+// Settled: slower than cRestSpeed (units/s) for cRestDuration.
 constexpr float cRestSpeed = 2.f;
-// ...for this long. Havok puts resting bodies to sleep, so their velocity drops to zero.
 constexpr double cRestDuration = 0.5;
 // Stops the simulation of an item that never settles, such as one jittering against geometry.
 constexpr double cMaxSimulationTime = 10.0;
@@ -152,7 +151,7 @@ void DroppedItemService::OnReferencePickUp(const ReferencePickUpEvent& acEvent) 
 
 void DroppedItemService::OnDropItemResponse(const DropItemResponse& acMessage) noexcept
 {
-    // Copies spawned for other players' drops always have a server id, so this only matches the local player's drops.
+    // Only the local player's unregistered drops have no server id.
     TrackedItem* pItem = FindByFormId(acMessage.LocalId);
     if (!pItem || pItem->ServerId != 0)
         return;
@@ -217,7 +216,7 @@ void DroppedItemService::OnNotifyDroppedItemMove(const NotifyDroppedItemMove& ac
     if (!pItem || pItem->IsSimulatedLocally)
         return;
 
-    // An item that gave up after cFollowTimeout resumes following, so a late update still lands it in the right spot.
+    // A copy that timed out resumes following, so a late update still lands it.
     pItem->IsAtRest = false;
     pItem->TimeSinceUpdate = 0.0;
     pItem->TargetTransform = move.Transform;
@@ -270,7 +269,7 @@ void DroppedItemService::UpdateSimulatedItem(TrackedItem& aItem, double aDelta) 
         aItem.TimeSinceSend += aDelta;
         aItem.LastTransform = GetTransform(pReference);
 
-        // Without 3D there is no rigid body yet; keep waiting then.
+        // No 3D means no rigid body yet.
         if (pReference->GetNiNode())
         {
             NiPoint3 velocity{};
@@ -378,7 +377,6 @@ TESObjectREFR* DroppedItemService::SpawnItem(const DroppedItemData& acData) cons
     TESObjectCELL* pCell = nullptr;
     TESWorldSpace* pWorldSpace = nullptr;
 
-    // For an exterior, the engine picks the cell from the position.
     if (acData.WorldSpaceId)
         pWorldSpace = Cast<TESWorldSpace>(TESForm::GetById(modSystem.GetGameId(acData.WorldSpaceId)));
     else
@@ -433,7 +431,7 @@ DroppedItemService::TrackedItem* DroppedItemService::FindByServerId(uint32_t aSe
     return it != m_items.end() ? &*it : nullptr;
 }
 
-// The order of the items does not matter, so swap with the last one instead of shifting the rest.
+// Order doesn't matter: swap with the last item instead of shifting.
 void DroppedItemService::Erase(const TrackedItem& acItem) noexcept
 {
     auto& item = m_items[&acItem - m_items.data()];
