@@ -61,8 +61,35 @@ void PlayerService::OnUpdate(const UpdateEvent&) noexcept
     RunBeastFormDetection();
 }
 
+#if defined(TP_FALLOUT4)
+namespace
+{
+// Time keeps running for everyone else, so VATS has no slow motion and no kill cams online.
+float& VatsTargetSelectTimeMult() noexcept
+{
+    static VersionDbPtr<float> s_value(302826); // fVATSTimeMultTargetSelect
+    return *s_value.Get();
+}
+
+float& KillCamOdds() noexcept
+{
+    static VersionDbPtr<float> s_value(175207); // fKillCamBaseOdds
+    return *s_value.Get();
+}
+
+std::optional<std::pair<float, float>> s_offlineVatsSettings;
+} // namespace
+#endif
+
 void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 {
+#if defined(TP_FALLOUT4)
+    if (!s_offlineVatsSettings)
+        s_offlineVatsSettings = {VatsTargetSelectTimeMult(), KillCamOdds()};
+    VatsTargetSelectTimeMult() = 1.f;
+    KillCamOdds() = 0.f;
+#endif
+
     // TODO: SkyrimTogether.esm
     if (auto* pKillMove = Cast<TESGlobal>(TESForm::GetById(FormIds::KillMoveGlobal)))
         pKillMove->f = 0.f;
@@ -73,6 +100,14 @@ void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
+#if defined(TP_FALLOUT4)
+    if (s_offlineVatsSettings)
+    {
+        VatsTargetSelectTimeMult() = s_offlineVatsSettings->first;
+        KillCamOdds() = s_offlineVatsSettings->second;
+    }
+#endif
+
     PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
     m_serverDifficulty = m_previousDifficulty = 6;
 
