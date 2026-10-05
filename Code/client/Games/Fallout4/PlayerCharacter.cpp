@@ -7,9 +7,12 @@
 #include <Games/TES.h>
 #include <Events/SetWaypointEvent.h>
 #include <Events/RemoveWaypointEvent.h>
+#include <Events/AddExperienceEvent.h>
+#include <Games/Overrides.h>
 #include <World.h>
 
-int32_t PlayerCharacter::LastUsedCombatSkill = -1;
+// Fallout 4 has no skills; any value but -1 lets shared party experience through.
+int32_t PlayerCharacter::LastUsedCombatSkill = 0;
 
 PlayerCharacter* PlayerCharacter::Get() noexcept
 {
@@ -41,9 +44,23 @@ void PlayerCharacter::SetGodMode(bool aSet) noexcept
     setGodMode.Get()(aSet);
 }
 
-void PlayerCharacter::AddSkillExperience(int32_t, float) noexcept
+TP_THIS_FUNCTION(TRewardExperience, void, Actor, float, bool, TESObjectREFR*, TESForm*);
+static TRewardExperience* RealRewardExperience = nullptr;
+
+// Shared party experience arrives as plain experience points.
+void PlayerCharacter::AddSkillExperience(int32_t, float aExperience) noexcept
 {
-    // Fallout 4 has no skills; shared party experience is not mapped yet.
+    ScopedExperienceOverride _;
+    TiltedPhoques::ThisCall(RealRewardExperience, static_cast<Actor*>(this), aExperience, true, nullptr, nullptr);
+}
+
+// Kill rewards are the only ones with a target; like Skyrim's combat skills they are shared with the party.
+void TP_MAKE_THISCALL(HookRewardExperience, Actor, float aAmount, bool aDirect, TESObjectREFR* apTarget, TESForm* apWeapon)
+{
+    if (apThis == PlayerCharacter::Get() && aAmount > 0.f && Cast<Actor>(apTarget) && !ScopedExperienceOverride::IsOverriden())
+        World::Get().GetRunner().Trigger(AddExperienceEvent(aAmount));
+
+    TiltedPhoques::ThisCall(RealRewardExperience, apThis, aAmount, aDirect, apTarget, apWeapon);
 }
 
 NiPoint3 PlayerCharacter::RespawnPlayer() noexcept
@@ -129,6 +146,10 @@ static TiltedPhoques::Initializer s_playerCharacterHooks(
     {
         static VersionDbPtr<TSetPlayerMapMarker> setPlayerMapMarker(2233021);
         static VersionDbPtr<TRemovePlayerMapMarker> removePlayerMapMarker(2233022);
+
+        static VersionDbPtr<TRewardExperience> rewardExperience(2230428);
+        RealRewardExperience = rewardExperience.Get();
+        TP_HOOK(&RealRewardExperience, HookRewardExperience);
 
         RealSetPlayerMapMarker = setPlayerMapMarker.Get();
         RealRemovePlayerMapMarker = removePlayerMapMarker.Get();

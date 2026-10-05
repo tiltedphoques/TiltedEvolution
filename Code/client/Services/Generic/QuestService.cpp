@@ -58,6 +58,16 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
 {
+#if defined(TP_FALLOUT4)
+    if (apEvent->started)
+    {
+        m_world.GetRunner().Queue([formId = apEvent->formId]() {
+            ScopedQuestOverride _;
+            TESQuest::ApplyPendingStage(formId);
+        });
+    }
+#endif
+
     if (ScopedQuestOverride::IsOverriden())
         return BSTEventResult::kOk;
 

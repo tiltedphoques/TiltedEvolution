@@ -36,6 +36,11 @@
 
 #include <Components.h>
 #include <World.h>
+#include <Sky/Sky.h>
+#include <TimeManager.h>
+#include <Forms/TESGlobal.h>
+#include <Services/PartyService.h>
+#include <Forms/ActorValueInfo.h>
 
 #include <Forms/TESObjectCELL.h>
 #include <Forms/TESWorldSpace.h>

@@ -106,6 +106,8 @@ struct TESQuest : BGSStoryManagerTreeForm
 
     bool SetStage(uint16_t stage);
     void ScriptSetStage(uint16_t stage);
+    // Applies a stage that was requested while the quest was still starting.
+    static void ApplyPendingStage(uint32_t aFormId) noexcept;
     void SetStopped();
 };
 
