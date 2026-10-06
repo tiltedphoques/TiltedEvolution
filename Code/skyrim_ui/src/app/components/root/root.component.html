@@ -13,7 +13,8 @@
   <div
     [@controls]="active$ | async"
     class="app-root-controls"
-    [class.background-element]="view$ | async"
+    [class.background-element]="(view$ | async) !== null && (view$ | async) !== RootView.TRADE"
+    [class.trading-controls]="(view$ | async) === RootView.TRADE"
   >
     <app-window border="strip" class="app-root-menu">
       <button
