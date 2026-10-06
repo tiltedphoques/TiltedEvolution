@@ -1,0 +1,41 @@
+@import 'env';
+
+:host { display: block; max-width: calc(100vw - 2rem); }
+.trade-popup {
+  box-sizing: border-box;
+  width: min(70rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  background: $-color-background;
+  font-family: $-font-default;
+}
+.trade-header { display: flex; justify-content: space-between; gap: $-size-gap; padding: 1rem; }
+.title { font-size: 1.4rem; }
+.trade-body { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: $-size-gap; padding: 1rem; }
+.status-pane, .status, .actions { display: flex; flex-direction: column; gap: .75rem; }
+.status span[data-ready='true'] { color: #a8d59a; }
+.trade-content { min-width: 0; }
+.inventory-section { max-height: 40vh; overflow: auto; }
+.section-title { font-size: 1.2rem; margin: .5rem 0; }
+table { width: 100%; border-collapse: collapse; }
+th { position: sticky; top: 0; background: #151515; text-align: left; }
+th, td { padding: .5rem; border-bottom: 1px solid #555; }
+button { padding: .35rem .6rem; background: #292929; border-radius: 2px; }
+button:disabled, input:disabled { opacity: .45; }
+.numeric, .count { text-align: right; }
+.offer-editor, .quick-actions, .line { display: flex; gap: .35rem; align-items: center; }
+.offer-editor input { width: 4rem; min-width: 0; }
+.quick-actions { margin-top: .35rem; }
+.offers-section { display: grid; grid-template-columns: 1fr 1fr; gap: $-size-gap; margin-top: 1rem; }
+.offer-column { padding: .5rem; border: 1px solid #555; }
+.offer-column > ul { padding: 0; list-style: none; max-height: 22vh; overflow: auto; }
+.line { justify-content: space-between; }
+.item-details { padding-left: 1rem; font-size: .85rem; color: #bbb; }
+.quest-warning { color: #d8b88a; font-size: .85rem; }
+.empty, .no-trade { padding: 1rem; color: #aaa; }
+.bar { height: .3rem; background: #555; margin-top: .35rem; }
+.fill { height: 100%; background: #a8d59a; transition: width $-time-transition linear; }
+@media (max-width: 900px) {
+  .trade-body { grid-template-columns: 1fr; }
+  .actions { flex-direction: row; flex-wrap: wrap; }
+}

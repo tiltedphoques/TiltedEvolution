@@ -9,6 +9,43 @@ import { ChatService } from './chat.service';
 import { ErrorEvents, ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
 
+export interface TradeItemPayload {
+  modId: number;
+  baseId: number;
+  count: number;
+  isQuestItem: boolean;
+  isEquipped?: boolean;
+  name: string;
+  inventoryIndex?: number;
+  offeredCount?: number;
+  isGold?: boolean;
+  details?: string[];
+}
+
+export interface TradeStatePayload {
+  active: boolean;
+  partnerId: number;
+  initiatedBySelf: boolean;
+  selfReady: boolean;
+  partnerReady: boolean;
+  selfItems: TradeItemPayload[];
+  partnerItems: TradeItemPayload[];
+  inventory: TradeItemPayload[];
+  countdownMs: number;
+  countdownTotalMs: number;
+}
+
+export interface TradeInvitePayload {
+  inviterId: number;
+  expiryTick: number;
+}
+
+export interface TradeCancellationPayload {
+  partnerId: number;
+  reason: number;
+  wasInitiator: boolean;
+}
+
 /** Client game service. */
 @Injectable({
   providedIn: 'root',
@@ -57,6 +94,23 @@ export class ClientService implements OnDestroy {
 
   /** Local quest started or updated while not in a party. */
   public questUpdatedChange = new Subject<void>();
+
+  /** Trade invite received. */
+  public tradeInviteChange = new Subject<TradeInvitePayload>();
+
+  /** Trade invite expired. */
+  public tradeInviteExpiredChange = new Subject<number>();
+
+  /** Active trade state change. */
+  public tradeStateChange = new BehaviorSubject<TradeStatePayload | undefined>(
+    undefined,
+  );
+
+  /** Trade cancellation notifications. */
+  public tradeCancelledChange = new Subject<TradeCancellationPayload>();
+
+  /** Trade completion notifications. */
+  public tradeCompletedChange = new Subject<number>();
 
   /** Disconnect player to server change. */
   public playerDisconnectedChange = new Subject<Player>();
@@ -154,6 +208,17 @@ export class ClientService implements OnDestroy {
       'partyInviteReceived',
       this.onPartyInviteReceived.bind(this),
     );
+    skyrimtogether.on(
+      'tradeInviteReceived',
+      this.onTradeInviteReceived.bind(this),
+    );
+    skyrimtogether.on(
+      'tradeInviteExpired',
+      this.onTradeInviteExpired.bind(this),
+    );
+    skyrimtogether.on('tradeStateUpdated', this.onTradeStateUpdated.bind(this));
+    skyrimtogether.on('tradeCancelled', this.onTradeCancelled.bind(this));
+    skyrimtogether.on('tradeCompleted', this.onTradeCompleted.bind(this));
     skyrimtogether.on('questUpdated', this.onQuestUpdated.bind(this));
   }
 
@@ -188,6 +253,11 @@ export class ClientService implements OnDestroy {
     skyrimtogether.off('partyCreated');
     skyrimtogether.off('partyLeft');
     skyrimtogether.off('partyInviteReceived');
+    skyrimtogether.off('tradeInviteReceived');
+    skyrimtogether.off('tradeInviteExpired');
+    skyrimtogether.off('tradeStateUpdated');
+    skyrimtogether.off('tradeCancelled');
+    skyrimtogether.off('tradeCompleted');
     skyrimtogether.off('questUpdated');
   }
 
@@ -266,6 +336,31 @@ export class ClientService implements OnDestroy {
   /**
    * Open the play guide on the wiki in the default browser.
    */
+  /** Send a trade invite to another player. */
+  public sendTradeInvite(playerId: number): void {
+    skyrimtogether.sendTradeInvite(playerId);
+  }
+
+  /** Respond to an incoming trade invite. */
+  public respondTradeInvite(playerId: number, accept: boolean): void {
+    skyrimtogether.respondTradeInvite(playerId, accept);
+  }
+
+  /** Cancel the current trade session or outstanding invite. */
+  public cancelTrade(): void {
+    skyrimtogether.cancelTrade();
+  }
+
+  /** Toggle readiness state in the current trade session. */
+  public setTradeReady(ready: boolean): void {
+    skyrimtogether.setTradeReady(ready);
+  }
+
+  /** Update the offered items for the current trade session. */
+  public updateTradeOffer(entries: { index: number; count: number }[]): void {
+    skyrimtogether.updateTradeOffer(entries);
+  }
+
   public openPlayGuide(): void {
     skyrimtogether.openPlayGuide();
   }
@@ -642,6 +737,171 @@ export class ClientService implements OnDestroy {
     this.zone.run(() => {
       this.partyInviteReceivedChange.next(inviterId);
     });
+  }
+
+  private onTradeInviteReceived(inviterId: number, expiryTick: number) {
+    if (environment.game) {
+      console.log(
+        `%conTradeInviteReceived`,
+        'background: #FFC107; color: #000; padding: 3px; font-size: 9px;',
+        inviterId,
+        expiryTick,
+      );
+    }
+    this.zone.run(() => {
+      this.tradeInviteChange.next({ inviterId, expiryTick });
+    });
+  }
+
+  private onTradeInviteExpired(inviterId: number) {
+    if (environment.game) {
+      console.log(
+        `%conTradeInviteExpired`,
+        'background: #FFC107; color: #000; padding: 3px; font-size: 9px;',
+        inviterId,
+      );
+    }
+    this.zone.run(() => {
+      this.tradeInviteExpiredChange.next(inviterId);
+    });
+  }
+
+  private onTradeStateUpdated(
+    active: boolean,
+    partnerId: number,
+    initiatedBySelf: boolean,
+    selfReady: boolean,
+    partnerReady: boolean,
+    selfItems: unknown[],
+    partnerItems: unknown[],
+    inventory: unknown[],
+    countdownMs: number,
+    countdownTotalMs: number,
+  ) {
+    if (environment.game) {
+      console.log(
+        `%conTradeStateUpdated`,
+        'background: #FFC107; color: #000; padding: 3px; font-size: 9px;',
+        active,
+        partnerId,
+        initiatedBySelf,
+        selfReady,
+        partnerReady,
+        selfItems,
+        partnerItems,
+        inventory,
+        countdownMs,
+        countdownTotalMs,
+      );
+    }
+
+    const normalized: TradeStatePayload = {
+      active: Boolean(active),
+      partnerId: Number.isFinite(partnerId) ? partnerId : 0,
+      initiatedBySelf: Boolean(initiatedBySelf),
+      selfReady: Boolean(selfReady),
+      partnerReady: Boolean(partnerReady),
+      selfItems: Array.isArray(selfItems)
+        ? selfItems.map(item => this.normalizeTradeItem(item))
+        : [],
+      partnerItems: Array.isArray(partnerItems)
+        ? partnerItems.map(item => this.normalizeTradeItem(item))
+        : [],
+      inventory: Array.isArray(inventory)
+        ? inventory.map(item => this.normalizeTradeItem(item))
+        : [],
+      countdownMs: Number.isFinite(countdownMs) ? Number(countdownMs) : 0,
+      countdownTotalMs: Number.isFinite(countdownTotalMs)
+        ? Number(countdownTotalMs)
+        : 0,
+    };
+
+    this.zone.run(() => {
+      this.tradeStateChange.next(normalized);
+    });
+  }
+
+  private onTradeCancelled(
+    partnerId: number,
+    reason: number,
+    wasInitiator: boolean,
+  ) {
+    if (environment.game) {
+      console.log(
+        `%conTradeCancelled`,
+        'background: #FFC107; color: #000; padding: 3px; font-size: 9px;',
+        partnerId,
+        reason,
+        wasInitiator,
+      );
+    }
+    this.zone.run(() => {
+      this.tradeCancelledChange.next({ partnerId, reason, wasInitiator });
+    });
+  }
+
+  private onTradeCompleted(partnerId: number) {
+    if (environment.game) {
+      console.log(
+        `%conTradeCompleted`,
+        'background: #FFC107; color: #000; padding: 3px; font-size: 9px;',
+        partnerId,
+      );
+    }
+    this.zone.run(() => {
+      this.tradeCompletedChange.next(partnerId);
+    });
+  }
+
+  private normalizeTradeItem(payload: any): TradeItemPayload {
+    const modId = Number.isFinite(payload?.modId) ? Number(payload.modId) : 0;
+    const baseId = Number.isFinite(payload?.baseId)
+      ? Number(payload.baseId)
+      : 0;
+    const count = Math.max(
+      0,
+      Number.isFinite(payload?.count) ? Number(payload.count) : 0,
+    );
+    const isQuestItem = Boolean(payload?.isQuestItem);
+    const fallbackName = `0x${modId.toString(16).padStart(8, '0')}:0x${baseId
+      .toString(16)
+      .padStart(8, '0')}`;
+    const name =
+      typeof payload?.name === 'string' && payload.name.length > 0
+        ? payload.name
+        : fallbackName;
+
+    const item: TradeItemPayload = {
+      modId,
+      baseId,
+      count,
+      isQuestItem,
+      isEquipped: Boolean(payload?.isEquipped),
+      name,
+    };
+
+    if (payload?.inventoryIndex !== undefined) {
+      item.inventoryIndex = Number(payload.inventoryIndex);
+    }
+    if (payload?.offeredCount !== undefined) {
+      item.offeredCount = Math.max(
+        0,
+        Number.isFinite(payload.offeredCount)
+          ? Number(payload.offeredCount)
+          : 0,
+      );
+    }
+    if (payload?.isGold !== undefined) {
+      item.isGold = Boolean(payload.isGold);
+    }
+    if (Array.isArray(payload?.details)) {
+      item.details = payload.details.map((entry: any) => String(entry));
+    }
+    if (item.isGold === undefined) {
+      item.isGold = modId === 0 && baseId === 0x0000000f;
+    }
+
+    return item;
   }
 
   private onQuestUpdated() {

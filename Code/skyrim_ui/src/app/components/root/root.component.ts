@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
 import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
+import { TradeUiService } from '../../services/trade-ui.service';
 import { DestroyService } from '../../services/destroy.service';
 import {
   SettingService,
@@ -56,6 +57,7 @@ export class RootComponent implements OnInit {
     private readonly uiRepository: UiRepository,
     private readonly translocoService: TranslocoService,
     private readonly settingService: SettingService,
+    private readonly tradeUiService: TradeUiService,
     public readonly overlay: Overlay, // used for mockup
   ) {
     this.translocoService.setActiveLang(
@@ -108,6 +110,9 @@ export class RootComponent implements OnInit {
   }
 
   public setView(view: View | null) {
+    if (this.uiRepository.getView() === View.TRADE && view !== View.TRADE) {
+      this.tradeUiService.cancelTrade();
+    }
     this.uiRepository.openView(view);
 
     if (view) {
@@ -118,6 +123,9 @@ export class RootComponent implements OnInit {
   }
 
   public closeView() {
+    if (this.uiRepository.getView() === View.TRADE) {
+      this.tradeUiService.cancelTrade();
+    }
     this.uiRepository.openView(null);
   }
 

@@ -197,6 +197,51 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     );
   }
 
+  sendTradeInvite(playerId: number): void {
+    if (!this.connected) {
+      return;
+    }
+    if (this.showEvents) {
+      console.log('[mock] sendTradeInvite', playerId);
+    }
+  }
+
+  respondTradeInvite(playerId: number, accept: boolean): void {
+    if (!this.connected) {
+      return;
+    }
+    if (this.showEvents) {
+      console.log('[mock] respondTradeInvite', playerId, accept);
+    }
+  }
+
+  cancelTrade(): void {
+    if (!this.connected) {
+      return;
+    }
+    if (this.showEvents) {
+      console.log('[mock] cancelTrade');
+    }
+  }
+
+  setTradeReady(ready: boolean): void {
+    if (!this.connected) {
+      return;
+    }
+    if (this.showEvents) {
+      console.log('[mock] setTradeReady', ready);
+    }
+  }
+
+  updateTradeOffer(entries: SkyrimTogetherTypes.TradeOfferEntry[]): void {
+    if (!this.connected) {
+      return;
+    }
+    if (this.showEvents) {
+      console.log('[mock] updateTradeOffer', entries);
+    }
+  }
+
   initMock() {
     Object.keys((this as any)._events).forEach(e => {
       this.on(e, (...params) => {

@@ -1,0 +1,217 @@
+<app-window border="fancy" class="trade-popup">
+  <ng-container *ngIf="session$ | async as session; else noTrade">
+    <header class="trade-header">
+      <div class="title">
+        <span class="caption">
+          {{
+            'COMPONENT.TRADE_MENU.TRADING_WITH'
+              | transloco : { name: session.partnerName }
+          }}
+        </span>
+      </div>
+      <div class="countdown" *ngIf="session.countdownMs > 0">
+        <div class="label">
+          {{
+            'COMPONENT.TRADE_MENU.COUNTDOWN'
+              | transloco : { seconds: formatCountdown(session.countdownMs) }
+          }}
+        </div>
+        <div class="bar">
+          <div
+            class="fill"
+            [style.width.%]="session.countdownProgress * 100"
+          ></div>
+        </div>
+      </div>
+    </header>
+
+    <section class="trade-body">
+      <aside class="status-pane">
+        <div class="status">
+          <span [attr.data-ready]="session.selfReady">
+            {{
+              (session.selfReady
+                ? 'COMPONENT.TRADE_MENU.SELF_READY'
+                : 'COMPONENT.TRADE_MENU.SELF_NOT_READY'
+              ) | transloco
+            }}
+          </span>
+          <span [attr.data-ready]="session.partnerReady">
+            {{
+              (session.partnerReady
+                ? 'COMPONENT.TRADE_MENU.PARTNER_READY'
+                : 'COMPONENT.TRADE_MENU.PARTNER_NOT_READY'
+              ) | transloco : { name: session.partnerName }
+            }}
+          </span>
+        </div>
+
+        <div class="actions">
+          <button (click)="toggleReady(session)">
+            {{
+              (session.selfReady
+                ? 'COMPONENT.TRADE_MENU.ACTIONS.UNREADY'
+                : 'COMPONENT.TRADE_MENU.ACTIONS.READY'
+              ) | transloco
+            }}
+          </button>
+          <button class="secondary" (click)="cancelTrade()">
+            {{ 'COMPONENT.TRADE_MENU.ACTIONS.CANCEL_TRADE' | transloco }}
+          </button>
+          <button class="secondary ghost" (click)="close()">
+            {{ 'COMPONENT.TRADE_MENU.ACTIONS.CLOSE' | transloco }}
+          </button>
+        </div>
+      </aside>
+
+      <main class="trade-content">
+        <section class="inventory-section">
+          <h3 class="section-title">
+            {{ 'COMPONENT.TRADE_MENU.INVENTORY_TITLE' | transloco }}
+          </h3>
+          <div class="empty" *ngIf="session.inventory.length === 0">
+            {{ 'COMPONENT.TRADE_MENU.NO_INVENTORY' | transloco }}
+          </div>
+          <table *ngIf="session.inventory.length > 0">
+            <thead>
+              <tr>
+                <th>
+                  {{ 'COMPONENT.TRADE_MENU.ITEM_COLUMNS.NAME' | transloco }}
+                </th>
+                <th>
+                  {{
+                    'COMPONENT.TRADE_MENU.ITEM_COLUMNS.AVAILABLE' | transloco
+                  }}
+                </th>
+                <th>
+                  {{ 'COMPONENT.TRADE_MENU.ITEM_COLUMNS.OFFERED' | transloco }}
+                </th>
+                <th class="spacer"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="
+                  let item of session.inventory;
+                  trackBy: trackByInventory
+                "
+                [attr.data-quest]="(item.isQuestItem || item.isEquipped)"
+                [attr.data-gold]="item.isGold"
+              >
+                <td>
+                  <div class="item-name">{{ item.name }}</div>
+                  <ul class="item-details" *ngIf="item.details?.length">
+                    <li *ngFor="let detail of item.details">{{ detail }}</li>
+                  </ul>
+                  <div class="quest-warning" *ngIf="item.isQuestItem">
+                    {{ 'COMPONENT.TRADE_MENU.QUEST_ITEM_WARNING' | transloco }}
+                  </div>
+                  <div class="quest-warning" *ngIf="item.isEquipped">
+                    {{ 'COMPONENT.TRADE_MENU.EQUIPPED_ITEM_WARNING' | transloco }}
+                  </div>
+                </td>
+                <td class="numeric">{{ item.available }}</td>
+                <td>
+                  <div class="offer-editor">
+                    <button
+                      type="button"
+                      (click)="addToOffer(item, -1)"
+                      [disabled]="item.offered <= 0 || (item.isQuestItem || item.isEquipped)"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min="0"
+                      [max]="item.available"
+                      [value]="item.offered"
+                      [disabled]="(item.isQuestItem || item.isEquipped)"
+                      (change)="
+                        updateOfferFromInput(item, $any($event.target).value)
+                      "
+                    />
+                    <button
+                      type="button"
+                      (click)="addToOffer(item, 1)"
+                      [disabled]="
+                        item.offered >= item.available || item.isQuestItem || item.isEquipped
+                      "
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div class="quick-actions" *ngIf="item.isGold">
+                    <button (click)="addToOffer(item, 100)">+100</button>
+                    <button (click)="addToOffer(item, 1000)">+1000</button>
+                    <button (click)="offerAll(item)">
+                      {{ 'COMPONENT.TRADE_MENU.ACTIONS.OFFER_ALL' | transloco }}
+                    </button>
+                  </div>
+                </td>
+                <td class="row-actions">
+                  <button
+                    class="secondary"
+                    type="button"
+                    (click)="clearOffer(item)"
+                    [disabled]="item.offered === 0"
+                  >
+                    {{ 'COMPONENT.TRADE_MENU.ACTIONS.CLEAR' | transloco }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="offers-section">
+          <div class="offer-column">
+            <h3 class="section-title">
+              {{ 'COMPONENT.TRADE_MENU.OFFER_TITLE' | transloco }}
+            </h3>
+            <div class="empty" *ngIf="session.selfOffer.length === 0">
+              {{ 'COMPONENT.TRADE_MENU.EMPTY_OFFER' | transloco }}
+            </div>
+            <ul *ngIf="session.selfOffer.length > 0">
+              <li *ngFor="let item of session.selfOffer; trackBy: trackByOffer">
+                <div class="line">
+                  <span class="name">{{ item.name }}</span>
+                  <span class="count">×{{ item.count }}</span>
+                </div>
+                <ul class="item-details" *ngIf="item.details?.length">
+                  <li *ngFor="let detail of item.details">{{ detail }}</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+          <div class="offer-column partner">
+            <h3 class="section-title">
+              {{ 'COMPONENT.TRADE_MENU.PARTNER_OFFER_TITLE' | transloco }}
+            </h3>
+            <div class="empty" *ngIf="session.partnerOffer.length === 0">
+              {{ 'COMPONENT.TRADE_MENU.EMPTY_PARTNER_OFFER' | transloco }}
+            </div>
+            <ul *ngIf="session.partnerOffer.length > 0" class="partner-offer">
+              <li
+                *ngFor="let item of session.partnerOffer; trackBy: trackByOffer"
+              >
+                <div class="line">
+                  <span class="name">{{ item.name }}</span>
+                  <span class="count">×{{ item.count }}</span>
+                </div>
+                <ul class="item-details" *ngIf="item.details?.length">
+                  <li *ngFor="let detail of item.details">{{ detail }}</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </section>
+      </main>
+    </section>
+  </ng-container>
+
+  <ng-template #noTrade>
+    <div class="no-trade">
+      {{ 'COMPONENT.TRADE_MENU.NO_ACTIVE_TRADE' | transloco }}
+    </div>
+  </ng-template>
+</app-window>

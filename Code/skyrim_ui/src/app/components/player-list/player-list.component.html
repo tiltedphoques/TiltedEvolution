@@ -32,6 +32,25 @@
             >
               {{ 'COMPONENT.PARTY_LIST.INVITE' | transloco }}
             </button>
+            <ng-container *ngIf="!player.pendingInvite; else pendingTrade">
+              <button
+                type="button"
+                class="user-action-button"
+                (click)="sendTradeInvite(player.id)"
+                [disabled]="player.tradeBusy"
+              >
+                {{ 'COMPONENT.PARTY_LIST.TRADE' | transloco }}
+              </button>
+            </ng-container>
+            <ng-template #pendingTrade>
+              <button
+                type="button"
+                class="user-action-button secondary"
+                (click)="cancelTradeInvite(player.id)"
+              >
+                {{ 'COMPONENT.PARTY_LIST.CANCEL_TRADE_INVITE' | transloco }}
+              </button>
+            </ng-template>
           </td>
         </tr>
       </tbody>
