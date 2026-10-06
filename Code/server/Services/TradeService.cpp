@@ -266,6 +266,8 @@ void TradeService::OnTradeOfferUpdate(const PacketEvent<TradeOfferUpdateRequest>
     pSession->Offers[cIndex].Items = std::move(sanitized);
     pSession->Offers[cIndex].Ready = false;
     pSession->Offers[1 - cIndex].Ready = false;
+    pSession->Offers[cIndex].AcceptedItems.clear();
+    pSession->Offers[1 - cIndex].AcceptedItems.clear();
     ResetCountdown(*pSession);
 
     spdlog::debug("[TradeService]: Updated offer for player {} in session {}", pPlayer->GetId(), pSession->Id);
@@ -292,6 +294,7 @@ void TradeService::OnTradeSetReady(const PacketEvent<TradeSetReadyRequest>& acPa
     if (!message.Ready)
     {
         pSession->Offers[cIndex].Ready = false;
+        pSession->Offers[cIndex].AcceptedItems.clear();
         ResetCountdown(*pSession);
         SendStateUpdate(*pSession);
         return;
@@ -304,12 +307,18 @@ void TradeService::OnTradeSetReady(const PacketEvent<TradeSetReadyRequest>& acPa
         return;
     }
 
-    if (!ValidatePreparedPotions(pSession->Offers[1 - cIndex].Items, message.PreparedPotions))
+    if (!ValidateAcceptedItems(pSession->Offers[1 - cIndex].Items, message.AcceptedItems))
     {
         CancelSession(*pSession, TradeCancelReason::FailedValidation, pPlayer);
         return;
     }
-    pSession->Offers[cIndex].PreparedPotions = message.PreparedPotions;
+    // Keep the server's canonical copies of the accepted partner items, not the client's echo.
+    const auto& incoming = pSession->Offers[1 - cIndex].Items;
+    const auto accepted = MatchAcceptedItems(incoming, message.AcceptedItems);
+    pSession->Offers[cIndex].AcceptedItems.clear();
+    for (size_t i = 0; i < incoming.size(); ++i)
+        if (accepted[i])
+            pSession->Offers[cIndex].AcceptedItems.push_back(incoming[i]);
     pSession->Offers[cIndex].Ready = true;
 
     const bool cBothReady = pSession->Offers[0].Ready && pSession->Offers[1].Ready;
@@ -454,6 +463,8 @@ void TradeService::SendStateUpdate(const TradeSession& aSession) const noexcept
         notify.PartnerItems = aSession.Offers[1 - i].Items;
         notify.CountdownTotalMs = total;
         notify.CountdownMs = remaining;
+        if (aSession.Offers[1 - i].Ready)
+            notify.SelfAcceptedItems = aSession.Offers[1 - i].AcceptedItems;
         notify.SelfInventory.clear();
         if (auto* pInventory = GetInventoryFor(pPlayer))
             notify.SelfInventory = pInventory->Entries;
@@ -500,11 +511,13 @@ void TradeService::FinalizeTrade(TradeSession& aSession) noexcept
     auto* rightInventory = GetInventoryFor(sessionCopy.Players[1]);
     Inventory leftResult;
     Inventory rightResult;
+    // Only items the recipient could resolve change hands; the rest stay with their owner.
+    const auto& leftTransfer = sessionCopy.Offers[1].AcceptedItems;
+    const auto& rightTransfer = sessionCopy.Offers[0].AcceptedItems;
     if (!leftInventory || !rightInventory ||
-        !ValidatePreparedPotions(sessionCopy.Offers[1].Items, sessionCopy.Offers[0].PreparedPotions) ||
-        !ValidatePreparedPotions(sessionCopy.Offers[0].Items, sessionCopy.Offers[1].PreparedPotions) ||
-        !PrepareTradeExchange(*leftInventory, *rightInventory,
-        sessionCopy.Offers[0].Items, sessionCopy.Offers[1].Items, leftResult, rightResult))
+        !ValidateAcceptedItems(sessionCopy.Offers[0].Items, leftTransfer) ||
+        !ValidateAcceptedItems(sessionCopy.Offers[1].Items, rightTransfer) ||
+        !PrepareTradeExchange(*leftInventory, *rightInventory, leftTransfer, rightTransfer, leftResult, rightResult))
     {
         CancelSession(aSession, TradeCancelReason::FailedValidation);
         return;
@@ -519,7 +532,7 @@ void TradeService::FinalizeTrade(TradeSession& aSession) noexcept
         Player* recipient = sessionCopy.Players[1 - from];
         const auto senderEntity = *sender->GetCharacter();
         const auto recipientEntity = *recipient->GetCharacter();
-        for (const auto& item : sessionCopy.Offers[from].Items)
+        for (const auto& item : sessionCopy.Offers[1 - from].AcceptedItems)
         {
             NotifyInventoryChanges removal;
             removal.ServerId = World::ToInteger(senderEntity);

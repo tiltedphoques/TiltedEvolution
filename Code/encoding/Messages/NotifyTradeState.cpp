@@ -19,6 +19,10 @@ void NotifyTradeState::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) cons
     Serialization::WriteVarInt(aWriter, SelfInventory.size());
     for (const auto& item : SelfInventory)
         item.Serialize(aWriter);
+
+    Serialization::WriteVarInt(aWriter, SelfAcceptedItems.size());
+    for (const auto& item : SelfAcceptedItems)
+        item.Serialize(aWriter);
 }
 
 void NotifyTradeState::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -56,5 +60,14 @@ void NotifyTradeState::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) no
         Inventory::Entry entry;
         entry.Deserialize(aReader);
         SelfInventory.push_back(entry);
+    }
+
+    auto acceptedCount = Serialization::ReadVarInt(aReader);
+    SelfAcceptedItems.reserve(acceptedCount);
+    for (size_t i = 0; i < acceptedCount; ++i)
+    {
+        Inventory::Entry entry;
+        entry.Deserialize(aReader);
+        SelfAcceptedItems.push_back(entry);
     }
 }

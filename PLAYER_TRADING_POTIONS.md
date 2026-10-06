@@ -14,3 +14,9 @@ Build both clients and the server from the same commit on `codex/player-trading-
 Recreation uses Skyrim's `BGSCreatedObjectManager::AddPotion` (or `AddPoison` for poisons) with the captured effects directly, in the sender's effect order. It does not invoke the crafting menu or calculate strength from the recipient's skills. The Ready request confirms successful reconstruction; changing an offer invalidates readiness. Unsupported temporary effects and effect conditions are excluded from trading. Custom per-instance names remain local inventory UI metadata.
 
 Native engine behavior, including the AddPotion address and created-object reference lifetime, still requires this in-game test. Passing compilation and packet tests does not establish in-game correctness.
+
+## Items the recipient cannot load
+
+Each client shows only the partner items it can rebuild: every plugin form the item references must be loaded locally, and crafted (temporary) potions and enchantments must have effects that resolve locally. Items using an applied crafted poison are never receivable. When a player readies, the Ready request lists exactly the partner items that client accepts; the server transfers only those, and everything else stays with its owner. Once the partner is ready, the sender's own offer marks any item the partner cannot receive.
+
+9. A offers a crafted potion with an effect from a plugin B lacks, plus a crafted poison with vanilla effects. B offers a weapon with a crafted vanilla enchantment, plus armor from a plugin A lacks. Verify A sees only the weapon, B sees only the poison, each sender's offer marks the hidden item after the partner readies, and after the countdown only the weapon and poison change hands.
