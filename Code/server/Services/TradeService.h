@@ -39,8 +39,14 @@ protected:
 private:
     struct TradeOffer
     {
+        // GCC evaluates the map's value traits before the enclosing service is complete.
+        TradeOffer() noexcept
+            : Ready(false)
+        {
+        }
+
         TiltedPhoques::Vector<Inventory::Entry> Items;
-        bool Ready{false};
+        bool Ready;
     };
 
     struct TradeSession
