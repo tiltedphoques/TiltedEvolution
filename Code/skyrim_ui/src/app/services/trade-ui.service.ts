@@ -8,6 +8,10 @@ import { UiRepository } from '../store/ui.repository';
 import { View } from '../models/view.enum';
 import { matchesTradeCategory, normalizeTradeCategory, tradeCategories, TradeCategory, TradeItemCategory } from '../models/trade-category';
 
+function isExcludedTradeItem(item: TradeItemPayload): boolean {
+  return item.isQuestItem || (item.modId === 0 && item.baseId === 0x1f4);
+}
+
 export interface TradeInventoryItemView {
   category: TradeItemCategory;
   index: number;
@@ -170,9 +174,9 @@ export class TradeUiService implements OnDestroy {
   private setOfferCount(index: number, value: number): void {
     const state = this.state;
     const item = state?.inventory.find(item => item.inventoryIndex === index);
-    if (!state?.active || !item || item.isQuestItem || item.isEquipped || !Number.isFinite(value)) return;
+    if (!state?.active || !item || isExcludedTradeItem(item) || item.isEquipped || !Number.isFinite(value)) return;
     const count = Math.max(0, Math.min(item.count, Math.floor(value)));
-    const entries = state.inventory.map(entry => ({
+    const entries = state.inventory.filter(entry => !isExcludedTradeItem(entry)).map(entry => ({
       index: entry.inventoryIndex!,
       count: entry.inventoryIndex === index ? count : entry.offeredCount ?? 0,
     })).filter(entry => Number.isInteger(entry.index) && entry.count > 0);
@@ -226,7 +230,7 @@ export class TradeUiService implements OnDestroy {
       active: true, partnerId: state.partnerId, partnerName: this.getDisplayName(state.partnerId),
       initiatedBySelf: state.initiatedBySelf, selfReady: state.selfReady, partnerReady: state.partnerReady,
       selfOffer: state.selfItems.map(offer), partnerOffer: state.partnerItems.map(offer),
-      inventory: state.inventory.filter(item => Number.isInteger(item.inventoryIndex)).map((item, position) => ({
+      inventory: state.inventory.filter(item => Number.isInteger(item.inventoryIndex) && !isExcludedTradeItem(item)).map((item, position) => ({
         ...offer(item, position), index: item.inventoryIndex!, available: item.count,
         category: normalizeTradeCategory(item.category),
         isEquipped: item.isEquipped ?? false,
