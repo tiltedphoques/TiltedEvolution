@@ -13,6 +13,7 @@
 #include <Events/RemoveWaypointEvent.h>
 
 #include <World.h>
+#include <Services/PartyService.h>
 
 #include <Games/Skyrim/Forms/ActorValueInfo.h>
 #include <Games/ActorExtension.h>
@@ -178,7 +179,11 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
 
     // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync.
     // The inventory change event should always be sent to the server, otherwise the server inventory won't be updated.
+    // Quest items must UpdateClients even when persistent: otherwise peers never see the pickup and the
+    // TESObjectREFR quest-item inject (copy onto local PC) never runs for the party.
     bool shouldUpdateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
+    if (item.IsQuestItem && World::Get().GetPartyService().IsInParty())
+        shouldUpdateClients = true;
 
     // The player still needs its server entity and ownership epoch so stale inventory events can be rejected.
     if (const auto ownershipToken = Utils::GetLocalOwnershipToken(apThis->formID))
