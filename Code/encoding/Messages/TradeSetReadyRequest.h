@@ -16,5 +16,5 @@ struct TradeSetReadyRequest final : ClientMessage
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
     bool Ready{false};
-    Vector<Inventory::Entry> PreparedPotions;
+    Vector<Inventory::Entry> AcceptedItems;
 };

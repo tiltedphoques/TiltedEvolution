@@ -73,6 +73,52 @@ const char* GetItemCategory(TESForm* apForm) noexcept
     }
 }
 
+bool EffectsResolve(ModSystem& aModSystem, const Vector<Inventory::EffectItem>& acEffects) noexcept
+{
+    for (const auto& effect : acEffects)
+        if (!Cast<EffectSetting>(TESForm::GetById(aModSystem.GetGameId(effect.EffectId))))
+            return false;
+    return true;
+}
+
+// Whether this game can rebuild a partner's item: every plugin form it references must be loaded,
+// and temporary forms must carry data to recreate them here.
+bool CanReceiveTradeItem(ModSystem& aModSystem, const Inventory::Entry& acItem) noexcept
+{
+    if (!acItem.Potion.Effects.empty())
+    {
+        if (!acItem.Potion.IsValid() || !EffectsResolve(aModSystem, acItem.Potion.Effects))
+            return false;
+    }
+    else if (acItem.BaseId.ModId == 0xFFFFFFFF || !Cast<TESBoundObject>(TESForm::GetById(aModSystem.GetGameId(acItem.BaseId))))
+        return false;
+
+    if (acItem.ExtraEnchantId != 0)
+    {
+        if (acItem.ExtraEnchantId.ModId == 0xFFFFFFFF)
+        {
+            // Player-crafted enchantment: recreated from its effects on the recipient.
+            if (acItem.EnchantData.Effects.empty() || !EffectsResolve(aModSystem, acItem.EnchantData.Effects))
+                return false;
+        }
+        else if (!TESForm::GetById(aModSystem.GetGameId(acItem.ExtraEnchantId)))
+            return false;
+    }
+
+    if (acItem.ExtraPoisonId != 0)
+    {
+        if (acItem.ExtraPoisonId.ModId == 0xFFFFFFFF)
+        {
+            // Applied player-crafted poison: recreated from its effects on the recipient.
+            if (!acItem.PoisonData.IsValid() || !EffectsResolve(aModSystem, acItem.PoisonData.Effects))
+                return false;
+        }
+        else if (!Cast<AlchemyItem>(TESForm::GetById(aModSystem.GetGameId(acItem.ExtraPoisonId))))
+            return false;
+    }
+    return true;
+}
+
 std::string MakeDisplayName(ModSystem& aModSystem, const Inventory::Entry& aEntry)
 {
     if (!aEntry.Potion.Effects.empty())
@@ -193,23 +239,27 @@ void TradeService::SetReady(bool aReady) noexcept
             CancelTrade();
             return;
         }
-        // Keep existing prepared forms alive through cancellation races until the session ends.
+        // Accept only partner items this game can rebuild; the rest stay with the partner.
+        // Keep prepared potion forms alive through cancellation races until the session ends.
+        auto& modSystem = m_world.GetModSystem();
         for (const auto& item : m_session.PartnerItems)
         {
-            if (item.Potion.Effects.empty())
+            if (!CanReceiveTradeItem(modSystem, item))
                 continue;
-            auto* created = AlchemyItem::Create(item.Potion);
-            if (!created)
+            if (!item.Potion.Effects.empty())
             {
-                spdlog::error("[TradeService]: Unable to prepare incoming crafted potion; cancelling before inventory changes");
-                CancelTrade();
-                return;
+                auto* created = AlchemyItem::Create(item.Potion);
+                if (!created)
+                {
+                    spdlog::error("[TradeService]: Unable to prepare incoming crafted potion; leaving it with the partner");
+                    continue;
+                }
+                if (std::find(m_preparedPotions.begin(), m_preparedPotions.end(), created) == m_preparedPotions.end())
+                    m_preparedPotions.push_back(created);
+                else
+                    AlchemyItem::Release(created);
             }
-            if (std::find(m_preparedPotions.begin(), m_preparedPotions.end(), created) == m_preparedPotions.end())
-                m_preparedPotions.push_back(created);
-            else
-                AlchemyItem::Release(created);
-            request.PreparedPotions.push_back(item);
+            request.AcceptedItems.push_back(item);
         }
     }
     m_transport.Send(request);
@@ -314,6 +364,7 @@ void TradeService::OnTradeStarted(const NotifyTradeStarted& acMessage) noexcept
     m_session.SelfItems.clear();
     m_session.PartnerItems.clear();
     m_session.SelfInventory.clear();
+    m_session.SelfAcceptedItems.clear();
     m_session.CountdownMs = 0;
     m_session.CountdownTotalMs = 0;
 
@@ -336,6 +387,7 @@ void TradeService::OnTradeState(const NotifyTradeState& acMessage) noexcept
     m_session.SelfItems = acMessage.SelfItems;
     m_session.PartnerItems = acMessage.PartnerItems;
     m_session.SelfInventory = acMessage.SelfInventory;
+    m_session.SelfAcceptedItems = acMessage.SelfAcceptedItems;
     m_session.CountdownMs = acMessage.CountdownMs;
     m_session.CountdownTotalMs = acMessage.CountdownTotalMs;
 
@@ -386,7 +438,17 @@ void TradeService::EmitStateToUI() const noexcept
 
     auto& modSystem = m_world.GetModSystem();
 
-    auto makeDict = [&](const Inventory::Entry& entry) {
+    auto formatEffect = [&](const Inventory::EffectItem& effect) {
+        auto* form = TESForm::GetById(modSystem.GetGameId(effect.EffectId));
+        std::string text = fmt::format("{}: {:.0f}", form && form->GetName() ? form->GetName() : "Unknown effect", effect.Magnitude);
+        if (effect.Area > 0)
+            text += fmt::format(", {} ft", effect.Area);
+        if (effect.Duration > 0)
+            text += fmt::format(" for {}s", effect.Duration);
+        return text;
+    };
+
+    auto makeDict = [&](const Inventory::Entry& entry, const char* apNote = nullptr) {
         auto dict = CefDictionaryValue::Create();
         dict->SetInt("modId", entry.BaseId.ModId);
         dict->SetInt("baseId", entry.BaseId.BaseId);
@@ -400,30 +462,42 @@ void TradeService::EmitStateToUI() const noexcept
 
         auto details = CefListValue::Create();
         int detailIndex = 0;
-        for (const auto& effect : entry.Potion.Effects)
+        if (!entry.Potion.Effects.empty())
         {
-            auto* form = TESForm::GetById(modSystem.GetGameId(effect.EffectId));
-            details->SetString(detailIndex++, fmt::format("{}: {} / {}s", form && form->GetName() ? form->GetName() : "Unknown effect", effect.Magnitude, effect.Duration));
+            // Temporary IDs belong to the owner's game session; the recipient gets a fresh one from AddPotion.
+            details->SetString(detailIndex++, fmt::format("Temporary ID: {:08X}", 0xFF000000u | (entry.BaseId.BaseId & 0x00FFFFFFu)));
+            for (const auto& effect : entry.Potion.Effects)
+                details->SetString(detailIndex++, formatEffect(effect));
         }
         if (entry.ExtraHealth > 1.0f)
             details->SetString(detailIndex++, fmt::format("Improvement: {:.0f}%", entry.ExtraHealth * 100.0f));
         if (entry.ExtraEnchantId.BaseId || !entry.EnchantData.Effects.empty())
             details->SetString(detailIndex++, "Enchanted");
-        if (entry.ExtraPoisonId.BaseId)
+        if (!entry.PoisonData.Effects.empty())
+        {
+            details->SetString(detailIndex++, fmt::format("Poisoned ({} uses left):", entry.ExtraPoisonCount));
+            for (const auto& effect : entry.PoisonData.Effects)
+                details->SetString(detailIndex++, "  " + formatEffect(effect));
+        }
+        else if (entry.ExtraPoisonId.BaseId)
             details->SetString(detailIndex++, "Poisoned");
         if (entry.ExtraSoulLevel > 0)
             details->SetString(detailIndex++, fmt::format("Soul level: {}", entry.ExtraSoulLevel));
+        if (apNote)
+            details->SetString(detailIndex++, apNote);
         dict->SetList("details", details);
         return dict;
     };
 
     std::vector<int32_t> usedCounts(m_session.SelfInventory.size(), 0);
+    const auto selfAccepted = MatchAcceptedItems(m_session.SelfItems, m_session.SelfAcceptedItems);
 
     auto selfList = CefListValue::Create();
     for (size_t i = 0; i < m_session.SelfItems.size(); ++i)
     {
         const auto& item = m_session.SelfItems[i];
-        auto dict = makeDict(item);
+        const bool notReceivable = m_session.PartnerReady && !selfAccepted[i];
+        auto dict = makeDict(item, notReceivable ? "Partner can't receive this item. It stays with you." : nullptr);
         dict->SetInt("count", std::abs(item.Count));
 
         std::optional<uint32_t> match;
@@ -451,13 +525,16 @@ void TradeService::EmitStateToUI() const noexcept
     }
     pArgs->SetList(5, selfList);
 
+    // Partner items this game cannot rebuild are hidden; they are never accepted and stay with the partner.
     auto partnerList = CefListValue::Create();
-    for (size_t i = 0; i < m_session.PartnerItems.size(); ++i)
+    int partnerIndex = 0;
+    for (const auto& item : m_session.PartnerItems)
     {
-        const auto& item = m_session.PartnerItems[i];
+        if (!CanReceiveTradeItem(modSystem, item))
+            continue;
         auto dict = makeDict(item);
         dict->SetInt("count", std::abs(item.Count));
-        partnerList->SetDictionary(static_cast<int>(i), dict);
+        partnerList->SetDictionary(partnerIndex++, dict);
     }
     pArgs->SetList(6, partnerList);
 

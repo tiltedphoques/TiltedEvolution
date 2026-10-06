@@ -30,6 +30,8 @@ struct AlchemyItem : MagicItem
 
     bool IsPoison() const noexcept { return (data.flags & Poison) != 0; }
     bool IsFood() const noexcept { return (data.flags & Food) != 0 && !IsPoison(); }
+    // Records a player-crafted potion or poison's effects; false for other forms or unsupported effects.
+    static bool CaptureRecipe(TESForm* apForm, Inventory::PotionData& aData) noexcept;
     static void Capture(TESForm* apForm, Inventory::Entry& aEntry) noexcept;
     static AlchemyItem* Find(TESObjectREFR* apOwner, const Inventory::PotionData& aData) noexcept;
     // The returned pointer owns one created-object-manager reference. Release it after use.

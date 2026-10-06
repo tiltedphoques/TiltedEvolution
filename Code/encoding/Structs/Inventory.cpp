@@ -1,8 +1,15 @@
 #include <Structs/Inventory.h>
 #include <TiltedCore/Serialization.hpp>
+#include <algorithm>
 #include <cmath>
 
 using TiltedPhoques::Serialization;
+
+bool Inventory::PotionData::operator==(const PotionData& acRhs) const noexcept
+{
+    return IsPoison == acRhs.IsPoison && Effects.size() == acRhs.Effects.size() &&
+        std::is_permutation(Effects.begin(), Effects.end(), acRhs.Effects.begin());
+}
 
 bool Inventory::PotionData::IsValid() const noexcept
 {
@@ -64,6 +71,10 @@ void Inventory::Entry::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const n
     Serialization::WriteVarInt(aWriter, Potion.Effects.size());
     for (const auto& effect : Potion.Effects)
         effect.Serialize(aWriter);
+    Serialization::WriteBool(aWriter, PoisonData.IsPoison);
+    Serialization::WriteVarInt(aWriter, PoisonData.Effects.size());
+    for (const auto& effect : PoisonData.Effects)
+        effect.Serialize(aWriter);
 }
 
 void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -103,6 +114,15 @@ void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexc
         EffectItem effect;
         effect.Deserialize(aReader);
         Potion.Effects.push_back(effect);
+    }
+    PoisonData.IsPoison = Serialization::ReadBool(aReader);
+    PoisonData.Effects.clear();
+    const auto poisonEffectCount = Serialization::ReadVarInt(aReader);
+    for (uint64_t i = 0; i < poisonEffectCount; ++i)
+    {
+        EffectItem effect;
+        effect.Deserialize(aReader);
+        PoisonData.Effects.push_back(effect);
     }
 }
 

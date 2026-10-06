@@ -24,4 +24,6 @@ struct NotifyTradeState final : ServerMessage
     TiltedPhoques::Vector<Inventory::Entry> SelfItems;
     TiltedPhoques::Vector<Inventory::Entry> PartnerItems;
     TiltedPhoques::Vector<Inventory::Entry> SelfInventory;
+    // Own offered items the ready partner can receive; empty while the partner is not ready.
+    TiltedPhoques::Vector<Inventory::Entry> SelfAcceptedItems;
 };

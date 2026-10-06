@@ -3,16 +3,14 @@
 #include <Systems/ModSystem.h>
 #include <TESObjectREFR.h>
 #include <World.h>
-#include <algorithm>
-#include <tuple>
 
-void AlchemyItem::Capture(TESForm* apForm, Inventory::Entry& aEntry) noexcept
+bool AlchemyItem::CaptureRecipe(TESForm* apForm, Inventory::PotionData& aData) noexcept
 {
+    aData = {};
     auto* potion = apForm && apForm->IsTemporary() ? Cast<AlchemyItem>(apForm) : nullptr;
     if (!potion || potion->IsFood())
-        return;
-    aEntry.Potion = {};
-    aEntry.Potion.IsPoison = potion->IsPoison();
+        return false;
+    aData.IsPoison = potion->IsPoison();
     auto& mods = World::Get().GetModSystem();
     for (auto* effect : potion->listOfEffects)
     {
@@ -21,24 +19,26 @@ void AlchemyItem::Capture(TESForm* apForm, Inventory::Entry& aEntry) noexcept
         if (!effect || !effect->pEffectSetting || effect->Condition.pHead || effect->pEffectSetting->IsTemporary() ||
             !mods.GetServerModId(effect->pEffectSetting->formID, result.EffectId))
         {
-            aEntry.Potion.Effects.clear();
-            return;
+            aData.Effects.clear();
+            return false;
         }
         result.Magnitude = effect->data.fMagnitude;
         result.Area = effect->data.iArea;
         result.Duration = effect->data.iDuration;
         result.RawCost = effect->fRawCost;
-        aEntry.Potion.Effects.push_back(result);
+        aData.Effects.push_back(result);
     }
-    if (!aEntry.Potion.IsValid())
-    {
-        aEntry.Potion.Effects.clear();
+    if (!aData.IsValid())
+        aData.Effects.clear();
+    return !aData.Effects.empty();
+}
+
+void AlchemyItem::Capture(TESForm* apForm, Inventory::Entry& aEntry) noexcept
+{
+    auto* potion = apForm && apForm->IsTemporary() ? Cast<AlchemyItem>(apForm) : nullptr;
+    if (!potion || potion->IsFood())
         return;
-    }
-    std::sort(aEntry.Potion.Effects.begin(), aEntry.Potion.Effects.end(), [](const auto& a, const auto& b) {
-        return std::tie(a.EffectId.ModId, a.EffectId.BaseId, a.Magnitude, a.Area, a.Duration, a.RawCost) <
-            std::tie(b.EffectId.ModId, b.EffectId.BaseId, b.Magnitude, b.Area, b.Duration, b.RawCost);
-    });
+    CaptureRecipe(apForm, aEntry.Potion);
 }
 
 AlchemyItem* AlchemyItem::Find(TESObjectREFR* apOwner, const Inventory::PotionData& aData) noexcept
@@ -82,18 +82,20 @@ AlchemyItem* AlchemyItem::Create(const Inventory::PotionData& aData) noexcept
         }
         effects[i] = effect;
     }
-    // CommonLibSSE AddPotion: output is a one-pointer CreatedObjPtr, not a raw return value.
-    // AE address-library ID 36167; no AlchemyMenu, recipe, ingredients or skill calculation.
+    // CommonLibSSE AddPotion/AddPoison: output is a one-pointer created-object smart pointer.
+    // AE address-library IDs 36167 (potion) and 36168 (poison), the same calls the alchemy menu ends with.
+    // No AlchemyMenu, recipe, ingredient or skill calculation is involved.
     TP_THIS_FUNCTION(TAddPotion, void, BGSCreatedObjectManager, AlchemyItem**, GameArray<EffectItem>*);
     POINTER_SKYRIMSE(TAddPotion, addPotion, 36167);
+    POINTER_SKYRIMSE(TAddPotion, addPoison, 36168);
     AlchemyItem* created = nullptr;
-    TiltedPhoques::ThisCall(addPotion, manager, &created, &effects);
+    TiltedPhoques::ThisCall(aData.IsPoison ? addPoison : addPotion, manager, &created, &effects);
     Memory::Free(effects.data);
     if (created)
     {
-        Inventory::Entry check;
-        Capture(created, check);
-        if (check.Potion == aData)
+        Inventory::PotionData check;
+        CaptureRecipe(created, check);
+        if (check == aData)
             return created;
         spdlog::error("[TradeService]: AddPotion returned effects/type differing from the offered potion");
         Release(created);

@@ -46,7 +46,8 @@ private:
         }
 
         TiltedPhoques::Vector<Inventory::Entry> Items;
-        TiltedPhoques::Vector<Inventory::Entry> PreparedPotions;
+        // Items of the partner's offer this player can resolve and receive.
+        TiltedPhoques::Vector<Inventory::Entry> AcceptedItems;
         bool Ready;
     };
 
