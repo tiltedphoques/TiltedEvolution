@@ -13,6 +13,7 @@ function isExcludedTradeItem(item: TradeItemPayload): boolean {
 }
 
 export interface TradeInventoryItemView {
+  baseName: string;
   category: TradeItemCategory;
   index: number;
   name: string;
@@ -67,7 +68,7 @@ export class TradeUiService implements OnDestroy {
     map(([session, category, search]) => {
       const terms = this.normalizeSearch(search).trim().split(/\s+/u).filter(Boolean);
       return (session?.inventory ?? []).filter(item => matchesTradeCategory(item.category, category)
-        && terms.every(term => this.normalizeSearch(item.name).includes(term)));
+        && terms.every(term => this.normalizeSearch(`${item.name} ${item.baseName}`).includes(term)));
     }),
   );
 
@@ -232,6 +233,8 @@ export class TradeUiService implements OnDestroy {
       selfOffer: state.selfItems.map(offer), partnerOffer: state.partnerItems.map(offer),
       inventory: state.inventory.filter(item => Number.isInteger(item.inventoryIndex) && !isExcludedTradeItem(item)).map((item, position) => ({
         ...offer(item, position), index: item.inventoryIndex!, available: item.count,
+        baseName: item.name,
+        name: item.customNames?.length ? item.customNames.join(' / ') : item.name,
         category: normalizeTradeCategory(item.category),
         isEquipped: item.isEquipped ?? false,
         offered: item.offeredCount ?? 0, isGold: item.isGold ?? false,

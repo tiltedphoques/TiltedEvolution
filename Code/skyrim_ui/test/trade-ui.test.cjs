@@ -62,6 +62,34 @@ function state() {
   };
 }
 
+test('custom names are searchable only in inventory while both offers retain base names', () => {
+  const fixture = setup();
+  const payload = state();
+  const item = { ...payload.inventory[0], name: 'Iron Sword', customNames: ['Dragon Slayer', 'Épée du héros'] };
+  payload.inventory = [item];
+  payload.selfItems = [item];
+  payload.partnerItems = [item];
+  let visible;
+  let session;
+  const inventorySubscription = fixture.service.visibleInventory$.subscribe(items => visible = items);
+  const sessionSubscription = fixture.service.session$.subscribe(value => session = value);
+  fixture.client.tradeStateChange.next(payload);
+  assert.equal(visible[0].name, 'Dragon Slayer / Épée du héros');
+  assert.equal(visible[0].baseName, 'Iron Sword');
+  assert.equal(session.selfOffer[0].name, 'Iron Sword');
+  assert.equal(session.partnerOffer[0].name, 'Iron Sword');
+  for (const search of ['dragon', 'epee heros', 'iron sword', 'slayer iron']) {
+    fixture.service.setSearch(search);
+    assert.equal(visible.length, 1, search);
+  }
+  fixture.service.updateOfferFromInput(7, 3);
+  assert.deepEqual(Object.keys(fixture.calls.at(-1)[1][0]).sort(), ['count', 'index']);
+  assert.equal(payload.inventory[0].name, 'Iron Sword');
+  inventorySubscription.unsubscribe();
+  sessionSubscription.unsubscribe();
+  fixture.service.ngOnDestroy();
+});
+
 test('offers retain native indices after display sorting without mutating payloads', () => {
   const fixture = setup();
   const payload = state();

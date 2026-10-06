@@ -77,6 +77,7 @@
               >
                 <td>
                   <div class="item-name">{{ item.name }}</div>
+                  <div class="item-details" *ngIf="item.name !== item.baseName">{{ item.baseName }}</div>
                   <ul class="item-details" *ngIf="item.details?.length">
                     <li *ngFor="let detail of item.details">{{ detail }}</li>
                   </ul>
