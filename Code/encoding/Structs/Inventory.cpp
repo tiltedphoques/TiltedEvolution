@@ -1,8 +1,15 @@
 #include <Structs/Inventory.h>
 #include <TiltedCore/Serialization.hpp>
+#include <algorithm>
 #include <cmath>
 
 using TiltedPhoques::Serialization;
+
+bool Inventory::PotionData::operator==(const PotionData& acRhs) const noexcept
+{
+    return IsPoison == acRhs.IsPoison && Effects.size() == acRhs.Effects.size() &&
+        std::is_permutation(Effects.begin(), Effects.end(), acRhs.Effects.begin());
+}
 
 bool Inventory::PotionData::IsValid() const noexcept
 {

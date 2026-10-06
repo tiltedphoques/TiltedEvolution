@@ -30,8 +30,9 @@ struct Inventory
     struct PotionData
     {
         bool IsPoison{};
+        // Engine order is kept so recreation matches the original potion; comparison ignores order.
         Vector<EffectItem> Effects{};
-        bool operator==(const PotionData&) const noexcept = default;
+        bool operator==(const PotionData& acRhs) const noexcept;
         bool IsValid() const noexcept;
     };
 

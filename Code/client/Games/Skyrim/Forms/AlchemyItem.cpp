@@ -3,8 +3,6 @@
 #include <Systems/ModSystem.h>
 #include <TESObjectREFR.h>
 #include <World.h>
-#include <algorithm>
-#include <tuple>
 
 void AlchemyItem::Capture(TESForm* apForm, Inventory::Entry& aEntry) noexcept
 {
@@ -31,14 +29,7 @@ void AlchemyItem::Capture(TESForm* apForm, Inventory::Entry& aEntry) noexcept
         aEntry.Potion.Effects.push_back(result);
     }
     if (!aEntry.Potion.IsValid())
-    {
         aEntry.Potion.Effects.clear();
-        return;
-    }
-    std::sort(aEntry.Potion.Effects.begin(), aEntry.Potion.Effects.end(), [](const auto& a, const auto& b) {
-        return std::tie(a.EffectId.ModId, a.EffectId.BaseId, a.Magnitude, a.Area, a.Duration, a.RawCost) <
-            std::tie(b.EffectId.ModId, b.EffectId.BaseId, b.Magnitude, b.Area, b.Duration, b.RawCost);
-    });
 }
 
 AlchemyItem* AlchemyItem::Find(TESObjectREFR* apOwner, const Inventory::PotionData& aData) noexcept
@@ -82,12 +73,14 @@ AlchemyItem* AlchemyItem::Create(const Inventory::PotionData& aData) noexcept
         }
         effects[i] = effect;
     }
-    // CommonLibSSE AddPotion: output is a one-pointer CreatedObjPtr, not a raw return value.
-    // AE address-library ID 36167; no AlchemyMenu, recipe, ingredients or skill calculation.
+    // CommonLibSSE AddPotion/AddPoison: output is a one-pointer created-object smart pointer.
+    // AE address-library IDs 36167 (potion) and 36168 (poison), the same calls the alchemy menu ends with.
+    // No AlchemyMenu, recipe, ingredient or skill calculation is involved.
     TP_THIS_FUNCTION(TAddPotion, void, BGSCreatedObjectManager, AlchemyItem**, GameArray<EffectItem>*);
     POINTER_SKYRIMSE(TAddPotion, addPotion, 36167);
+    POINTER_SKYRIMSE(TAddPotion, addPoison, 36168);
     AlchemyItem* created = nullptr;
-    TiltedPhoques::ThisCall(addPotion, manager, &created, &effects);
+    TiltedPhoques::ThisCall(aData.IsPoison ? addPoison : addPotion, manager, &created, &effects);
     Memory::Free(effects.data);
     if (created)
     {
