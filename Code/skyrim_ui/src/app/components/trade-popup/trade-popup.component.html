@@ -56,7 +56,7 @@
                 <th>
                   {{ 'COMPONENT.TRADE_MENU.ITEM_COLUMNS.NAME' | transloco }}
                 </th>
-                <th>
+                <th class="available-column">
                   {{
                     'COMPONENT.TRADE_MENU.ITEM_COLUMNS.AVAILABLE' | transloco
                   }}
@@ -87,7 +87,7 @@
                     {{ 'COMPONENT.TRADE_MENU.EQUIPPED_ITEM_WARNING' | transloco }}
                   </div>
                 </td>
-                <td class="numeric">{{ item.available }}</td>
+                <td class="available-column">{{ item.available }}</td>
                 <td>
                   <div class="offer-editor">
                     <button

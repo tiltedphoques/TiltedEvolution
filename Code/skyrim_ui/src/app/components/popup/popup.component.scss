@@ -17,3 +17,28 @@
     max-height: calc(100vh - #{2 * $-size-gap});
   }
 }
+
+// Trading is a docked panel; its transparent host must not intercept the chat or F2 menu.
+:host([data-popup='trade']) {
+  left: calc(32vw + #{4 * $-size-gap});
+  right: $-size-gap;
+  top: 9vh;
+  bottom: $-size-gap;
+  width: auto;
+  height: auto;
+  justify-content: stretch;
+  align-items: stretch;
+  background: transparent;
+  pointer-events: none;
+
+  > app-window {
+    box-sizing: border-box;
+    flex: 1 1 0;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    max-width: 100%;
+    max-height: 100%;
+    border: 0;
+  }
+}
