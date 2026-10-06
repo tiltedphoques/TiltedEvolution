@@ -28,10 +28,14 @@
 #include <Systems/ModSystem.h>
 #include <Games/Skyrim/Forms/TESForm.h>
 #include <Games/Skyrim/Forms/AlchemyItem.h>
+#include <Games/Skyrim/PlayerCharacter.h>
+#include <Games/Skyrim/ExtraData/ExtraContainerChanges.h>
+#include <Games/Skyrim/ExtraData/ExtraTextDisplayData.h>
 
 #include <spdlog/fmt/fmt.h>
 
 #include <cmath>
+#include <algorithm>
 #include <cstring>
 #include <string>
 #include <optional>
@@ -82,6 +86,41 @@ std::string MakeDisplayName(ModSystem& aModSystem, const Inventory::Entry& aEntr
     }
 
     return fmt::format("0x{:08X}:0x{:08X}", aEntry.BaseId.ModId, aEntry.BaseId.BaseId);
+}
+
+// Names are local UI metadata only: offers and network inventory retain the base name.
+CefRefPtr<CefListValue> GetLocalCustomNames(ModSystem& aModSystem, const Inventory::Entry& aEntry)
+{
+    auto names = CefListValue::Create();
+    auto* player = PlayerCharacter::Get();
+    auto* changes = player ? player->GetContainerChanges() : nullptr;
+    if (!changes || !changes->entries)
+        return names;
+
+    const auto formId = aModSystem.GetGameId(aEntry.BaseId);
+    std::vector<std::string> seen;
+    for (auto* entry : *changes->entries)
+    {
+        if (!entry || !entry->form || entry->form->formID != formId || !entry->dataList)
+            continue;
+        for (auto* extra : *entry->dataList)
+        {
+            if (!extra)
+                continue;
+            auto* text = Cast<ExtraTextDisplayData>(extra->GetByType(ExtraDataType::TextDisplayData));
+            const char* name = text ? text->DisplayName.AsAscii() : nullptr;
+            if (!name || !*name)
+                continue;
+            Inventory::Entry local;
+            local.BaseId = aEntry.BaseId;
+            TESObjectREFR::GetItemFromExtraData(local, extra);
+            if (!SameTradeItem(local, aEntry) || std::find(seen.begin(), seen.end(), name) != seen.end())
+                continue;
+            seen.emplace_back(name);
+            names->SetString(static_cast<int>(seen.size() - 1), name);
+        }
+    }
+    return names;
 }
 } // namespace
 
@@ -372,6 +411,7 @@ void TradeService::EmitStateToUI() const noexcept
         auto dict = makeDict(entry);
         dict->SetInt("count", entry.Count);
         dict->SetInt("inventoryIndex", static_cast<int>(i));
+        dict->SetList("customNames", GetLocalCustomNames(modSystem, entry));
         dict->SetInt("offeredCount", i < usedCounts.size() ? usedCounts[i] : 0);
         inventoryList->SetDictionary(static_cast<int>(i), dict);
     }

@@ -18,6 +18,7 @@ export interface TradeItemPayload {
   isQuestItem: boolean;
   isEquipped?: boolean;
   name: string;
+  customNames?: string[];
   inventoryIndex?: number;
   offeredCount?: number;
   isGold?: boolean;
@@ -899,6 +900,9 @@ export class ClientService implements OnDestroy {
     }
     if (Array.isArray(payload?.details)) {
       item.details = payload.details.map((entry: any) => String(entry));
+    }
+    if (Array.isArray(payload?.customNames)) {
+      item.customNames = payload.customNames.filter((name: unknown): name is string => typeof name === 'string' && name.trim().length > 0);
     }
     if (item.isGold === undefined) {
       item.isGold = modId === 0 && baseId === 0x0000000f;
