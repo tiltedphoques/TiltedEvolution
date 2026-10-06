@@ -400,10 +400,20 @@ void TradeService::EmitStateToUI() const noexcept
 
         auto details = CefListValue::Create();
         int detailIndex = 0;
-        for (const auto& effect : entry.Potion.Effects)
+        if (!entry.Potion.Effects.empty())
         {
-            auto* form = TESForm::GetById(modSystem.GetGameId(effect.EffectId));
-            details->SetString(detailIndex++, fmt::format("{}: {} / {}s", form && form->GetName() ? form->GetName() : "Unknown effect", effect.Magnitude, effect.Duration));
+            // Temporary IDs belong to the owner's game session; the recipient gets a fresh one from AddPotion.
+            details->SetString(detailIndex++, fmt::format("Temporary ID: {:08X}", 0xFF000000u | (entry.BaseId.BaseId & 0x00FFFFFFu)));
+            for (const auto& effect : entry.Potion.Effects)
+            {
+                auto* form = TESForm::GetById(modSystem.GetGameId(effect.EffectId));
+                std::string text = fmt::format("{}: {:.0f}", form && form->GetName() ? form->GetName() : "Unknown effect", effect.Magnitude);
+                if (effect.Area > 0)
+                    text += fmt::format(", {} ft", effect.Area);
+                if (effect.Duration > 0)
+                    text += fmt::format(" for {}s", effect.Duration);
+                details->SetString(detailIndex++, text);
+            }
         }
         if (entry.ExtraHealth > 1.0f)
             details->SetString(detailIndex++, fmt::format("Improvement: {:.0f}%", entry.ExtraHealth * 100.0f));

@@ -81,6 +81,21 @@ TEST_CASE("Crafted potion trades identify recipes independently of temporary for
     }
 }
 
+TEST_CASE("Crafted potion recipes compare independently of effect order", "[trading][alchemy]")
+{
+    auto first = CraftedPotion();
+    first.Potion.Effects.push_back(first.Potion.Effects[0]);
+    first.Potion.Effects[1].EffectId.BaseId += 1;
+    first.Potion.Effects[1].Magnitude = 5.0f;
+    auto second = first;
+    std::swap(second.Potion.Effects[0], second.Potion.Effects[1]);
+    REQUIRE(first.Potion == second.Potion);
+    REQUIRE(SameTradeItem(first, second));
+
+    second.Potion.Effects[0] = second.Potion.Effects[1];
+    REQUIRE_FALSE(first.Potion == second.Potion);
+}
+
 TEST_CASE("Potion readiness proofs must match the complete incoming offer", "[trading][alchemy]")
 {
     auto potion = CraftedPotion();
