@@ -323,6 +323,10 @@ void PlayerService::RunBeastFormDetection() const noexcept
     static uint32_t lastRaceFormID = 0;
     static std::chrono::steady_clock::time_point lastSendTimePoint;
     constexpr auto cDelayBetweenUpdates = 250ms;
+    // Werewolf (0xCDD84) and Vampire Lord (0x200283A)
+    constexpr auto isBeastRace = [](uint32_t aFormId) noexcept {
+        return aFormId == 0xCDD84 || aFormId == 0x200283A;
+    };
 
     const auto now = std::chrono::steady_clock::now();
     if (now - lastSendTimePoint < cDelayBetweenUpdates)
@@ -334,13 +338,17 @@ void PlayerService::RunBeastFormDetection() const noexcept
     if (!pPlayer->race)
         return;
 
-    if (pPlayer->race->formID == lastRaceFormID)
+    const uint32_t raceFormId = pPlayer->race->formID;
+    if (raceFormId == lastRaceFormID)
         return;
 
-    if (pPlayer->race->formID == 0x200283A || pPlayer->race->formID == 0xCDD84)
+    // Fire on both enter and leave once the race (and thus serialized appearance) has
+    // settled. HookSetBeastForm alone is too early on leave (same late-inform rationale
+    // as 1b0f698 for enter). Transform quests stay denylisted in QuestService.
+    if (isBeastRace(raceFormId) || isBeastRace(lastRaceFormID))
         m_world.GetDispatcher().trigger(BeastFormChangeEvent());
 
-    lastRaceFormID = pPlayer->race->formID;
+    lastRaceFormID = raceFormId;
 }
 
 void PlayerService::ToggleDeathSystem(bool aSet) noexcept
