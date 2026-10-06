@@ -15,6 +15,7 @@ struct NotifyTradeStarted;
 struct NotifyTradeState;
 struct NotifyTradeCancel;
 struct NotifyTradeComplete;
+struct AlchemyItem;
 
 /**
  * @brief Handles client-side trade state and messaging to the UI overlay.
@@ -22,14 +23,14 @@ struct NotifyTradeComplete;
 struct TradeService
 {
     TradeService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
-    ~TradeService() noexcept = default;
+    ~TradeService() noexcept;
 
     TP_NOCOPYMOVE(TradeService);
 
     void SendInvite(uint32_t aTargetPlayerId) const noexcept;
     void RespondToInvite(uint32_t aRequesterPlayerId, bool aAccept) const noexcept;
     void CancelTrade() const noexcept;
-    void SetReady(bool aReady) const noexcept;
+    void SetReady(bool aReady) noexcept;
     struct OfferSelection
     {
         uint32_t Index{0};
@@ -48,6 +49,7 @@ private:
     void OnTradeComplete(const NotifyTradeComplete& acMessage) noexcept;
 
     void ClearSession() noexcept;
+    void ReleasePreparedPotions() noexcept;
     void EmitStateToUI() const noexcept;
     void EmitInviteUpdate(uint32_t aInviterId, bool aAdded, uint64_t aExpiryTick = 0) const noexcept;
     void EmitCancellation(uint32_t aPartnerId, TradeCancelReason aReason, bool aWasInitiator) const noexcept;
@@ -72,6 +74,7 @@ private:
     };
 
     TradeSession m_session;
+    TiltedPhoques::Vector<AlchemyItem*> m_preparedPotions;
     TiltedPhoques::Map<uint32_t, uint64_t> m_pendingInvites;
 
     entt::scoped_connection m_updateConnection;

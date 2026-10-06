@@ -15,6 +15,7 @@ struct Inventory
         int32_t Duration{};
         float RawCost{};
         GameId EffectId{};
+        bool operator==(const EffectItem&) const noexcept = default;
 
         void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
         void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
@@ -24,6 +25,14 @@ struct Inventory
     {
         bool IsWeapon{};
         Vector<EffectItem> Effects{};
+    };
+
+    struct PotionData
+    {
+        bool IsPoison{};
+        Vector<EffectItem> Effects{};
+        bool operator==(const PotionData&) const noexcept = default;
+        bool IsValid() const noexcept;
     };
 
     struct Entry
@@ -36,6 +45,7 @@ struct Inventory
         GameId ExtraEnchantId{};
         uint16_t ExtraEnchantCharge{};
         EnchantmentData EnchantData{};
+        PotionData Potion{};
 
         float ExtraHealth{};
 
@@ -57,7 +67,14 @@ struct Inventory
 
         bool ContainsExtraData() const noexcept { return !IsExtraDataEquals(Entry{}); }
 
-        bool CanBeMerged(const Entry& acRhs) const noexcept { return BaseId == acRhs.BaseId && IsExtraDataEquals(acRhs); }
+        // Crafted potion identity is its recipe, not another client's temporary form ID.
+        bool SameBase(const Entry& acRhs) const noexcept
+        {
+            if (!Potion.Effects.empty() || !acRhs.Potion.Effects.empty())
+                return BaseId.ModId == 0xFFFFFFFF && acRhs.BaseId.ModId == 0xFFFFFFFF && Potion == acRhs.Potion;
+            return BaseId == acRhs.BaseId;
+        }
+        bool CanBeMerged(const Entry& acRhs) const noexcept { return SameBase(acRhs) && IsExtraDataEquals(acRhs); }
 
         bool IsExtraDataEquals(const Entry& acRhs) const noexcept
         {

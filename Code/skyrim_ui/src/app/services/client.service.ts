@@ -17,6 +17,7 @@ export interface TradeItemPayload {
   count: number;
   isQuestItem: boolean;
   isEquipped?: boolean;
+  isUnsupportedTemporary?: boolean;
   name: string;
   customNames?: string[];
   inventoryIndex?: number;
@@ -881,6 +882,7 @@ export class ClientService implements OnDestroy {
       count,
       isQuestItem,
       isEquipped: Boolean(payload?.isEquipped),
+      isUnsupportedTemporary: Boolean(payload?.isUnsupportedTemporary),
       name,
     };
 

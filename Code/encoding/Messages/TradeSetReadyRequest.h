@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Message.h"
+#include <Structs/Inventory.h>
 
 struct TradeSetReadyRequest final : ClientMessage
 {
@@ -15,4 +16,5 @@ struct TradeSetReadyRequest final : ClientMessage
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
     bool Ready{false};
+    Vector<Inventory::Entry> PreparedPotions;
 };

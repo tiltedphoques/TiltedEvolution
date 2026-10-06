@@ -1,6 +1,9 @@
 #pragma once
 
 #include "MagicItem.h"
+#include <Structs/Inventory.h>
+
+struct TESObjectREFR;
 
 struct AlchemyItem : MagicItem
 {
@@ -27,6 +30,11 @@ struct AlchemyItem : MagicItem
 
     bool IsPoison() const noexcept { return (data.flags & Poison) != 0; }
     bool IsFood() const noexcept { return (data.flags & Food) != 0 && !IsPoison(); }
+    static void Capture(TESForm* apForm, Inventory::Entry& aEntry) noexcept;
+    static AlchemyItem* Find(TESObjectREFR* apOwner, const Inventory::PotionData& aData) noexcept;
+    // The returned pointer owns one created-object-manager reference. Release it after use.
+    static AlchemyItem* Create(const Inventory::PotionData& aData) noexcept;
+    static void Release(AlchemyItem* apItem) noexcept;
 };
 
 static_assert(sizeof(AlchemyItem::Data) == 0x20);

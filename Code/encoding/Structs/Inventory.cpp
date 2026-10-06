@@ -1,7 +1,19 @@
 #include <Structs/Inventory.h>
 #include <TiltedCore/Serialization.hpp>
+#include <cmath>
 
 using TiltedPhoques::Serialization;
+
+bool Inventory::PotionData::IsValid() const noexcept
+{
+    if (Effects.empty() || Effects.size() > 32)
+        return false;
+    for (const auto& effect : Effects)
+        if (!std::isfinite(effect.Magnitude) || effect.Magnitude < 0 || !std::isfinite(effect.RawCost) || effect.RawCost < 0 ||
+            effect.Area < 0 || effect.Duration < 0 || effect.EffectId.ModId == 0xFFFFFFFF || !effect.EffectId.BaseId)
+            return false;
+    return true;
+}
 
 void Inventory::EffectItem::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
@@ -48,6 +60,10 @@ void Inventory::Entry::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const n
     Serialization::WriteBool(aWriter, ExtraWorn);
     Serialization::WriteBool(aWriter, ExtraWornLeft);
     Serialization::WriteBool(aWriter, IsQuestItem);
+    Serialization::WriteBool(aWriter, Potion.IsPoison);
+    Serialization::WriteVarInt(aWriter, Potion.Effects.size());
+    for (const auto& effect : Potion.Effects)
+        effect.Serialize(aWriter);
 }
 
 void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -79,6 +95,15 @@ void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexc
     ExtraWorn = Serialization::ReadBool(aReader);
     ExtraWornLeft = Serialization::ReadBool(aReader);
     IsQuestItem = Serialization::ReadBool(aReader);
+    Potion.IsPoison = Serialization::ReadBool(aReader);
+    Potion.Effects.clear();
+    const auto potionEffectCount = Serialization::ReadVarInt(aReader);
+    for (uint64_t i = 0; i < potionEffectCount; ++i)
+    {
+        EffectItem effect;
+        effect.Deserialize(aReader);
+        Potion.Effects.push_back(effect);
+    }
 }
 
 bool Inventory::operator==(const Inventory& acRhs) const noexcept
@@ -93,7 +118,7 @@ bool Inventory::operator!=(const Inventory& acRhs) const noexcept
 
 bool Inventory::Entry::operator==(const Inventory::Entry& acRhs) const noexcept
 {
-    return BaseId == acRhs.BaseId && Count == acRhs.Count && IsExtraDataEquals(acRhs);
+    return SameBase(acRhs) && Count == acRhs.Count && IsExtraDataEquals(acRhs);
 }
 
 bool Inventory::Entry::operator!=(const Inventory::Entry& acRhs) const noexcept

@@ -99,6 +99,7 @@ declare namespace SkyrimTogetherTypes {
   type TradeInviteExpiredCallback = (inviterId: number) => void;
 
   interface TradeItemPayload {
+    isUnsupportedTemporary?: boolean;
     customNames?: string[];
     category?: string;
     modId: number;

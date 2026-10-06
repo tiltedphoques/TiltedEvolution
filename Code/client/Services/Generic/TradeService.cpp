@@ -75,6 +75,15 @@ const char* GetItemCategory(TESForm* apForm) noexcept
 
 std::string MakeDisplayName(ModSystem& aModSystem, const Inventory::Entry& aEntry)
 {
+    if (!aEntry.Potion.Effects.empty())
+    {
+        auto* local = AlchemyItem::Find(PlayerCharacter::Get(), aEntry.Potion);
+        auto* created = local ? nullptr : AlchemyItem::Create(aEntry.Potion);
+        auto* potion = local ? local : created;
+        std::string name = potion && potion->GetName() ? potion->GetName() : "Crafted potion (unavailable)";
+        AlchemyItem::Release(created);
+        return name;
+    }
     const uint32_t formId = aModSystem.GetGameId(aEntry.BaseId);
     if (formId)
     {
@@ -97,7 +106,8 @@ CefRefPtr<CefListValue> GetLocalCustomNames(ModSystem& aModSystem, const Invento
     if (!changes || !changes->entries)
         return names;
 
-    const auto formId = aModSystem.GetGameId(aEntry.BaseId);
+    const auto* potion = aEntry.Potion.Effects.empty() ? nullptr : AlchemyItem::Find(player, aEntry.Potion);
+    const auto formId = potion ? potion->formID : aModSystem.GetGameId(aEntry.BaseId);
     std::vector<std::string> seen;
     for (auto* entry : *changes->entries)
     {
@@ -113,6 +123,7 @@ CefRefPtr<CefListValue> GetLocalCustomNames(ModSystem& aModSystem, const Invento
                 continue;
             Inventory::Entry local;
             local.BaseId = aEntry.BaseId;
+            local.Potion = aEntry.Potion;
             TESObjectREFR::GetItemFromExtraData(local, extra);
             if (!SameTradeItem(local, aEntry) || std::find(seen.begin(), seen.end(), name) != seen.end())
                 continue;
@@ -158,10 +169,49 @@ void TradeService::CancelTrade() const noexcept
     m_transport.Send(request);
 }
 
-void TradeService::SetReady(bool aReady) const noexcept
+TradeService::~TradeService() noexcept
+{
+    ReleasePreparedPotions();
+}
+
+void TradeService::ReleasePreparedPotions() noexcept
+{
+    for (auto* potion : m_preparedPotions)
+        AlchemyItem::Release(potion);
+    m_preparedPotions.clear();
+}
+
+void TradeService::SetReady(bool aReady) noexcept
 {
     TradeSetReadyRequest request{};
     request.Ready = aReady;
+    if (aReady)
+    {
+        auto* player = PlayerCharacter::Get();
+        if (!player || !ValidateTradeOffer(player->GetInventory(), m_session.SelfItems))
+        {
+            CancelTrade();
+            return;
+        }
+        // Keep existing prepared forms alive through cancellation races until the session ends.
+        for (const auto& item : m_session.PartnerItems)
+        {
+            if (item.Potion.Effects.empty())
+                continue;
+            auto* created = AlchemyItem::Create(item.Potion);
+            if (!created)
+            {
+                spdlog::error("[TradeService]: Unable to prepare incoming crafted potion; cancelling before inventory changes");
+                CancelTrade();
+                return;
+            }
+            if (std::find(m_preparedPotions.begin(), m_preparedPotions.end(), created) == m_preparedPotions.end())
+                m_preparedPotions.push_back(created);
+            else
+                AlchemyItem::Release(created);
+            request.PreparedPotions.push_back(item);
+        }
+    }
     m_transport.Send(request);
 }
 
@@ -316,6 +366,7 @@ void TradeService::OnTradeComplete(const NotifyTradeComplete& acMessage) noexcep
 
 void TradeService::ClearSession() noexcept
 {
+    ReleasePreparedPotions();
     m_session = TradeSession{};
     EmitStateToUI();
 }
@@ -341,13 +392,19 @@ void TradeService::EmitStateToUI() const noexcept
         dict->SetInt("baseId", entry.BaseId.BaseId);
         dict->SetBool("isQuestItem", entry.IsQuestItem);
         dict->SetBool("isEquipped", entry.IsWorn());
+        dict->SetBool("isUnsupportedTemporary", entry.BaseId.ModId == 0xFFFFFFFF && !entry.Potion.IsValid());
         dict->SetString("name", MakeDisplayName(modSystem, entry));
         dict->SetBool("isGold", entry.BaseId.ModId == 0 && entry.BaseId.BaseId == 0x0000000F);
         const uint32_t formId = modSystem.GetGameId(entry.BaseId);
-        dict->SetString("category", GetItemCategory(formId ? TESForm::GetById(formId) : nullptr));
+        dict->SetString("category", !entry.Potion.Effects.empty() ? (entry.Potion.IsPoison ? "poisons" : "potions") : GetItemCategory(formId ? TESForm::GetById(formId) : nullptr));
 
         auto details = CefListValue::Create();
         int detailIndex = 0;
+        for (const auto& effect : entry.Potion.Effects)
+        {
+            auto* form = TESForm::GetById(modSystem.GetGameId(effect.EffectId));
+            details->SetString(detailIndex++, fmt::format("{}: {} / {}s", form && form->GetName() ? form->GetName() : "Unknown effect", effect.Magnitude, effect.Duration));
+        }
         if (entry.ExtraHealth > 1.0f)
             details->SetString(detailIndex++, fmt::format("Improvement: {:.0f}%", entry.ExtraHealth * 100.0f));
         if (entry.ExtraEnchantId.BaseId || !entry.EnchantData.Effects.empty())
