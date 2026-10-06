@@ -4,6 +4,12 @@
 #include <algorithm>
 #include <limits>
 
+inline bool IsExcludedTradeItem(const Inventory::Entry& acItem) noexcept
+{
+    // Skyrim's internal unarmed weapon has no inventory name and is not a player-tradable item.
+    return acItem.IsQuestItem || (acItem.BaseId.ModId == 0 && acItem.BaseId.BaseId == 0x1F4);
+}
+
 inline bool SameTradeItem(const Inventory::Entry& left, const Inventory::Entry& right) noexcept
 {
     if (!left.CanBeMerged(right) || left.EnchantData.IsWeapon != right.EnchantData.IsWeapon ||
@@ -29,7 +35,7 @@ inline bool ValidateTradeOffer(const Inventory& acInventory, const Vector<Invent
 
     for (const auto& item : acItems)
     {
-        if (item.Count <= 0 || item.IsQuestItem || item.IsWorn())
+        if (item.Count <= 0 || IsExcludedTradeItem(item) || item.IsWorn())
             return false;
 
         int32_t needed = item.Count;

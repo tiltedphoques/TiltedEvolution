@@ -30,6 +30,17 @@ TEST_CASE("Trade offers reserve inventory quantities", "[trading]")
         offer[0].IsQuestItem = true;
         REQUIRE_FALSE(ValidateTradeOffer(inventory, offer));
     }
+    SECTION("Removing a quest flag cannot bypass the canonical inventory check")
+    {
+        inventory.Entries[0].IsQuestItem = true;
+        REQUIRE_FALSE(ValidateTradeOffer(inventory, offer));
+    }
+    SECTION("The internal unarmed weapon cannot be traded")
+    {
+        inventory.Entries[0].BaseId.BaseId = 0x1F4;
+        offer[0].BaseId.BaseId = offer[1].BaseId.BaseId = 0x1F4;
+        REQUIRE_FALSE(ValidateTradeOffer(inventory, offer));
+    }
     SECTION("Counts must be positive")
     {
         offer[0].Count = -1;

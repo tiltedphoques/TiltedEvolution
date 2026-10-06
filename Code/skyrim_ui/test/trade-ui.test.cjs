@@ -273,3 +273,26 @@ test('row Max chooses the maximum and Clear chooses zero while preserving other 
   assert.equal(fixture.calls.at(-1)[1].find(item => item.index === 7).count, 2);
   fixture.service.ngOnDestroy();
 });
+
+test('quest items and internal fists are hidden while native indices and other offers remain intact', () => {
+  const fixture = setup();
+  const payload = state();
+  payload.inventory = [
+    { ...payload.inventory[0], inventoryIndex: 0, isQuestItem: true },
+    { ...payload.inventory[0], inventoryIndex: 1, baseId: 0x1f4, offeredCount: 0 },
+    { ...payload.inventory[1], inventoryIndex: 9 },
+  ];
+  let visible;
+  const subscription = fixture.service.visibleInventory$.subscribe(items => visible = items);
+  fixture.client.tradeStateChange.next(payload);
+  assert.equal(visible.length, 1);
+  assert.equal(visible[0].index, 9);
+  fixture.service.offerAll(0);
+  fixture.service.offerAll(1);
+  assert.equal(fixture.calls.length, 0);
+  fixture.service.offerAll(9);
+  assert.equal(fixture.calls.at(-1)[1].length, 1);
+  assert.equal(fixture.calls.at(-1)[1][0].index, 9);
+  subscription.unsubscribe();
+  fixture.service.ngOnDestroy();
+});
