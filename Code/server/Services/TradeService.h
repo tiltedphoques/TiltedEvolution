@@ -46,6 +46,7 @@ private:
         }
 
         TiltedPhoques::Vector<Inventory::Entry> Items;
+        TiltedPhoques::Vector<Inventory::Entry> PreparedPotions;
         bool Ready;
     };
 

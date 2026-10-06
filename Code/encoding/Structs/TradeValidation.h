@@ -7,7 +7,9 @@
 inline bool IsExcludedTradeItem(const Inventory::Entry& acItem) noexcept
 {
     // Skyrim's internal unarmed weapon has no inventory name and is not a player-tradable item.
-    return acItem.IsQuestItem || (acItem.BaseId.ModId == 0 && acItem.BaseId.BaseId == 0x1F4);
+    return acItem.IsQuestItem || (acItem.BaseId.ModId == 0 && acItem.BaseId.BaseId == 0x1F4) ||
+        (acItem.BaseId.ModId == 0xFFFFFFFF && !acItem.Potion.IsValid()) ||
+        (acItem.BaseId.ModId != 0xFFFFFFFF && !acItem.Potion.Effects.empty());
 }
 
 inline bool SameTradeItem(const Inventory::Entry& left, const Inventory::Entry& right) noexcept
@@ -23,6 +25,21 @@ inline bool SameTradeItem(const Inventory::Entry& left, const Inventory::Entry& 
             return false;
     }
     return true;
+}
+
+// A ready client must have recreated exactly the incoming crafted potions for this offer.
+inline bool ValidatePreparedPotions(const Vector<Inventory::Entry>& acIncoming, const Vector<Inventory::Entry>& acPrepared) noexcept
+{
+    size_t index = 0;
+    for (const auto& item : acIncoming)
+    {
+        if (item.Potion.Effects.empty())
+            continue;
+        if (index >= acPrepared.size() || acPrepared[index].Count != item.Count || !SameTradeItem(item, acPrepared[index]))
+            return false;
+        ++index;
+    }
+    return index == acPrepared.size();
 }
 
 // Reserve quantities across the entire offer so repeated entries cannot reuse the same items.

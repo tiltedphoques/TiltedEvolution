@@ -9,7 +9,7 @@ import { View } from '../models/view.enum';
 import { matchesTradeCategory, normalizeTradeCategory, tradeCategories, TradeCategory, TradeItemCategory } from '../models/trade-category';
 
 function isExcludedTradeItem(item: TradeItemPayload): boolean {
-  return item.isQuestItem || (item.modId === 0 && item.baseId === 0x1f4);
+  return item.isQuestItem || item.isUnsupportedTemporary === true || (item.modId === 0 && item.baseId === 0x1f4);
 }
 
 export interface TradeInventoryItemView {

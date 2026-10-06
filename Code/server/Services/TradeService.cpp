@@ -304,6 +304,12 @@ void TradeService::OnTradeSetReady(const PacketEvent<TradeSetReadyRequest>& acPa
         return;
     }
 
+    if (!ValidatePreparedPotions(pSession->Offers[1 - cIndex].Items, message.PreparedPotions))
+    {
+        CancelSession(*pSession, TradeCancelReason::FailedValidation, pPlayer);
+        return;
+    }
+    pSession->Offers[cIndex].PreparedPotions = message.PreparedPotions;
     pSession->Offers[cIndex].Ready = true;
 
     const bool cBothReady = pSession->Offers[0].Ready && pSession->Offers[1].Ready;
@@ -494,7 +500,10 @@ void TradeService::FinalizeTrade(TradeSession& aSession) noexcept
     auto* rightInventory = GetInventoryFor(sessionCopy.Players[1]);
     Inventory leftResult;
     Inventory rightResult;
-    if (!leftInventory || !rightInventory || !PrepareTradeExchange(*leftInventory, *rightInventory,
+    if (!leftInventory || !rightInventory ||
+        !ValidatePreparedPotions(sessionCopy.Offers[1].Items, sessionCopy.Offers[0].PreparedPotions) ||
+        !ValidatePreparedPotions(sessionCopy.Offers[0].Items, sessionCopy.Offers[1].PreparedPotions) ||
+        !PrepareTradeExchange(*leftInventory, *rightInventory,
         sessionCopy.Offers[0].Items, sessionCopy.Offers[1].Items, leftResult, rightResult))
     {
         CancelSession(aSession, TradeCancelReason::FailedValidation);

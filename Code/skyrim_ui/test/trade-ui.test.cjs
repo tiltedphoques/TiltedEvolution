@@ -62,6 +62,25 @@ function state() {
   };
 }
 
+test('supported crafted potions are selectable while unsupported temporary forms are excluded', () => {
+  const fixture = setup();
+  const payload = state();
+  payload.inventory = [
+    { ...payload.inventory[0], modId: 0xffffffff, category: 'potions', name: 'Potion of Healing', isUnsupportedTemporary: false },
+    { ...payload.inventory[1], modId: 0xffffffff, isUnsupportedTemporary: true },
+  ];
+  let visible;
+  const subscription = fixture.service.visibleInventory$.subscribe(items => visible = items);
+  fixture.client.tradeStateChange.next(payload);
+  assert.equal(visible.length, 1);
+  assert.equal(visible[0].name, 'Potion of Healing');
+  fixture.service.updateOfferFromInput(7, 3);
+  assert.equal(fixture.calls.at(-1)[1].length, 1);
+  assert.equal(fixture.calls.at(-1)[1][0].index, 7);
+  subscription.unsubscribe();
+  fixture.service.ngOnDestroy();
+});
+
 test('custom names are searchable only in inventory while both offers retain base names', () => {
   const fixture = setup();
   const payload = state();

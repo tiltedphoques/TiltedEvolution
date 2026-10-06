@@ -700,6 +700,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
 
             Inventory::Entry entry;
             modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
+            AlchemyItem::Capture(pGameEntry->form, entry);
             entry.Count = pGameEntry->count;
 
             inventory.Entries.push_back(std::move(entry));
@@ -719,6 +720,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
 
         Inventory::Entry entry{};
         modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
+        AlchemyItem::Capture(pGameEntry->form, entry);
         entry.Count = pGameEntry->count;
 
         for (ExtraDataList* pExtraDataList : *pGameEntry->dataList)
@@ -728,6 +730,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
 
             Inventory::Entry innerEntry;
             innerEntry.BaseId = entry.BaseId;
+            innerEntry.Potion = entry.Potion;
             innerEntry.Count = 1;
 
             GetItemFromExtraData(innerEntry, pExtraDataList);
@@ -875,7 +878,16 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
     ModSystem& modSystem = World::Get().GetModSystem();
 
     uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
+    AlchemyItem* createdPotion = nullptr;
     TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
+    if (!arEntry.Potion.Effects.empty())
+    {
+        if (arEntry.Count > 0)
+            pObject = createdPotion = AlchemyItem::Create(arEntry.Potion);
+        else
+            pObject = AlchemyItem::Find(this, arEntry.Potion);
+        objectId = pObject ? pObject->formID : 0;
+    }
     if (!pObject)
     {
         spdlog::warn("{}: Object to add not found, {:X}:{:X}.", __FUNCTION__, arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
@@ -906,7 +918,30 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
     else if (arEntry.Count < 0)
     {
         spdlog::debug("Removing item {:X}, count {}", pObject->formID, -arEntry.Count);
-        RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+        if (arEntry.Potion.Effects.empty())
+            RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+        else
+        {
+            // Equivalent recipes can have different local IDs. Remove across their actual stacks.
+            int64_t remaining = -static_cast<int64_t>(arEntry.Count);
+            while (remaining > 0)
+            {
+                auto* potion = AlchemyItem::Find(this, arEntry.Potion);
+                if (!potion)
+                    break;
+                const auto before = GetItemCountInInventory(potion);
+                const auto count = static_cast<int32_t>(std::min(remaining, before));
+                if (count <= 0)
+                    break;
+                RemoveItem(potion, count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+                const auto removed = before - GetItemCountInInventory(potion);
+                if (removed <= 0)
+                    break;
+                remaining -= removed;
+            }
+            if (remaining)
+                spdlog::error("[TradeService]: Crafted potion removal was short by {} items", remaining);
+        }
     }
 
     // TODO(cosideci): this is still flawed. Adding the refr to the quest leader is hard.
@@ -923,6 +958,7 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
         }
     }
 
+    AlchemyItem::Release(createdPotion);
     UpdateItemList(nullptr);
 }
 
@@ -1045,6 +1081,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIte
 
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
+        AlchemyItem::Capture(apItem, item);
         item.Count = aCount;
 
         if (apExtraData)
@@ -1067,6 +1104,7 @@ TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, BSPointerHandle<TESObje
 
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
+        AlchemyItem::Capture(apItem, item);
 
         if (apExtraList)
         {
