@@ -96,6 +96,34 @@ TEST_CASE("Crafted potion recipes compare independently of effect order", "[trad
     REQUIRE_FALSE(first.Potion == second.Potion);
 }
 
+TEST_CASE("Applied crafted poisons identify by recipe, not temporary ID", "[trading][alchemy]")
+{
+    Inventory::Entry sword;
+    sword.BaseId.BaseId = 0x12EB7;
+    sword.Count = 1;
+    sword.ExtraPoisonId.ModId = 0xFFFFFFFF;
+    sword.ExtraPoisonId.BaseId = 0x900;
+    sword.ExtraPoisonCount = 3;
+    sword.PoisonData = CraftedPotion().Potion;
+    sword.PoisonData.IsPoison = true;
+    REQUIRE(sword.PoisonData.IsValid());
+
+    auto recreated = sword;
+    recreated.ExtraPoisonId.BaseId = 0xABC;
+    REQUIRE(SameTradeItem(sword, recreated));
+    recreated.PoisonData.Effects[0].Magnitude += 1;
+    REQUIRE_FALSE(SameTradeItem(sword, recreated));
+
+    TiltedPhoques::Buffer buffer(1024);
+    TiltedPhoques::Buffer::Writer writer(&buffer);
+    sword.Serialize(writer);
+    TiltedPhoques::Buffer::Reader reader(&buffer);
+    Inventory::Entry decoded;
+    decoded.Deserialize(reader);
+    REQUIRE(decoded == sword);
+    REQUIRE(decoded.PoisonData == sword.PoisonData);
+}
+
 TEST_CASE("Accepted items must be an in-order subset of the incoming offer", "[trading][alchemy]")
 {
     auto potion = CraftedPotion();

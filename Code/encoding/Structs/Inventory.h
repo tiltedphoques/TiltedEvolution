@@ -52,6 +52,8 @@ struct Inventory
 
         GameId ExtraPoisonId{};
         uint32_t ExtraPoisonCount{};
+        // Recipe of an applied player-crafted poison, whose temporary ID is only valid for its owner.
+        PotionData PoisonData{};
 
         int32_t ExtraSoulLevel{};
 
@@ -82,8 +84,15 @@ struct Inventory
             // TODO: the whole server side state thing is very flawed
             // since many of these things can and will change, like poison id or charge
             // or the fact that the enchant id can be temp
-            return ExtraCharge == acRhs.ExtraCharge && ExtraEnchantId == acRhs.ExtraEnchantId && ExtraEnchantCharge == acRhs.ExtraEnchantCharge && ExtraEnchantRemoveUnequip == acRhs.ExtraEnchantRemoveUnequip && ExtraHealth == acRhs.ExtraHealth && ExtraPoisonId == acRhs.ExtraPoisonId &&
+            return ExtraCharge == acRhs.ExtraCharge && ExtraEnchantId == acRhs.ExtraEnchantId && ExtraEnchantCharge == acRhs.ExtraEnchantCharge && ExtraEnchantRemoveUnequip == acRhs.ExtraEnchantRemoveUnequip && ExtraHealth == acRhs.ExtraHealth && IsSamePoison(acRhs) &&
                    ExtraPoisonCount == acRhs.ExtraPoisonCount && ExtraSoulLevel == acRhs.ExtraSoulLevel && ExtraWorn == acRhs.ExtraWorn && ExtraWornLeft == acRhs.ExtraWornLeft && IsQuestItem == acRhs.IsQuestItem;
+        }
+
+        bool IsSamePoison(const Entry& acRhs) const noexcept
+        {
+            if (!PoisonData.Effects.empty() || !acRhs.PoisonData.Effects.empty())
+                return ExtraPoisonId.ModId == 0xFFFFFFFF && acRhs.ExtraPoisonId.ModId == 0xFFFFFFFF && PoisonData == acRhs.PoisonData;
+            return ExtraPoisonId == acRhs.ExtraPoisonId;
         }
 
         bool IsWorn() const noexcept { return ExtraWorn || ExtraWornLeft; }

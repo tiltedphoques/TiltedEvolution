@@ -558,6 +558,7 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
         {
             modSystem.GetServerModId(pExtraPoison->pPoison->formID, arEntry.ExtraPoisonId);
             arEntry.ExtraPoisonCount = pExtraPoison->uiCount;
+            AlchemyItem::CaptureRecipe(pExtraPoison->pPoison, arEntry.PoisonData);
         }
     }
 
@@ -618,12 +619,18 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
 
     if (arEntry.ExtraPoisonId != 0)
     {
-        // TODO: does poison have the same temp problem as enchants?
-        // doesn't seem to be the case, there are only like 3 poisons, and no custom ones
-        TP_ASSERT(arEntry.ExtraPoisonId.ModId != 0xFFFFFFFF, "Poison is sent as temp!");
-
-        uint32_t poisonId = modSystem.GetGameId(arEntry.ExtraPoisonId);
-        if (AlchemyItem* pPoison = Cast<AlchemyItem>(TESForm::GetById(poisonId)))
+        AlchemyItem* pPoison = nullptr;
+        if (arEntry.ExtraPoisonId.ModId == 0xFFFFFFFF)
+        {
+            // Player-crafted poison: recreate it from the owner's recipe. The created-object reference
+            // is kept so the form outlives this extra data list being attached to the item.
+            pPoison = AlchemyItem::Create(arEntry.PoisonData);
+            if (!pPoison)
+                spdlog::warn("{}: Unable to recreate applied crafted poison", __FUNCTION__);
+        }
+        else
+            pPoison = Cast<AlchemyItem>(TESForm::GetById(modSystem.GetGameId(arEntry.ExtraPoisonId)));
+        if (pPoison)
         {
             pExtraDataList->SetPoison(pPoison, arEntry.ExtraPoisonCount);
         }
