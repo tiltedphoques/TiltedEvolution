@@ -73,6 +73,17 @@
   opacity: 30%;
 }
 
+.trade-dock {
+  position: fixed;
+  left: calc(32vw + #{4 * $-size-gap});
+  right: $-size-gap;
+  top: 9vh;
+  bottom: $-size-gap;
+  min-width: 0;
+  min-height: 0;
+  pointer-events: none;
+}
+
 ::ng-deep {
   .app-root-popups {
     > app-popup > app-window {
