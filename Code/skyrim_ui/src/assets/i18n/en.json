@@ -149,6 +149,23 @@
       "BACK": "Back"
     },
     "TRADE_MENU": {
+      "FILTER_CATEGORY": "Filter inventory by item category",
+      "NO_CATEGORY_ITEMS": "No items in this category.",
+      "CATEGORIES": {
+        "all": "All",
+        "weapons": "Weapons",
+        "armor": "Armor / Apparel",
+        "ammunition": "Ammunition",
+        "potions": "Potions",
+        "poisons": "Poisons",
+        "scrolls": "Scrolls",
+        "food": "Food",
+        "ingredients": "Ingredients",
+        "books": "Books",
+        "keys": "Keys",
+        "soul_gems": "Soul Gems",
+        "misc": "Misc"
+      },
       "EQUIPPED_ITEM_WARNING": "Unequip this item before trading it.",
       "INVITES_TITLE": "Trade invitations",
       "NO_INVITES": "No pending trade invitations.",

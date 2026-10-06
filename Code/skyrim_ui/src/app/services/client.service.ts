@@ -8,8 +8,10 @@ import { Player } from '../models/player';
 import { ChatService } from './chat.service';
 import { ErrorEvents, ErrorService } from './error.service';
 import { LoadingService } from './loading.service';
+import { normalizeTradeCategory, TradeItemCategory } from '../models/trade-category';
 
 export interface TradeItemPayload {
+  category?: TradeItemCategory;
   modId: number;
   baseId: number;
   count: number;
@@ -872,6 +874,7 @@ export class ClientService implements OnDestroy {
         : fallbackName;
 
     const item: TradeItemPayload = {
+      category: normalizeTradeCategory(payload?.category),
       modId,
       baseId,
       count,

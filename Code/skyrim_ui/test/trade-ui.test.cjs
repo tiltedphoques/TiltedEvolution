@@ -11,12 +11,18 @@ const output = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, experimentalDecorators: true },
 }).outputText;
 const exported = {};
+const categoryExports = {};
+const categorySource = fs.readFileSync(path.join(__dirname, '../src/app/models/trade-category.ts'), 'utf8');
+vm.runInNewContext(ts.transpileModule(categorySource, {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+}).outputText, { exports: categoryExports });
 vm.runInNewContext(output, {
   exports: exported,
   require(name) {
     if (name === '@angular/core') return { Injectable: () => value => value };
     if (name === 'rxjs') return require(name);
     if (name.endsWith('view.enum')) return { View: { TRADE: 'trade' } };
+    if (name.endsWith('trade-category')) return categoryExports;
     return {};
   },
 });
@@ -121,5 +127,71 @@ test('navigation through the existing view repository also cancels a hidden trad
   fixture.ui.openView('party');
   assert.equal(fixture.calls.at(-1)[0], 'cancelTrade');
   assert.equal(fixture.ui.view, 'party');
+  fixture.service.ngOnDestroy();
+});
+
+test('category filtering preserves offers and native indices for hidden items', () => {
+  const fixture = setup();
+  const payload = state();
+  payload.inventory[0].category = 'weapons';
+  payload.inventory[1].category = 'food';
+  payload.selfItems = [{ ...payload.inventory[0], count: 2 }];
+  let visible;
+  let session;
+  const inventorySubscription = fixture.service.visibleInventory$.subscribe(items => visible = items);
+  const sessionSubscription = fixture.service.session$.subscribe(value => session = value);
+  fixture.client.tradeStateChange.next(payload);
+  fixture.service.selectCategory('food');
+  assert.equal(visible.length, 1);
+  assert.equal(visible[0].index, 3);
+  assert.equal(session.selfOffer.length, 1);
+  assert.equal(session.selfOffer[0].count, 2);
+  fixture.service.updateOfferFromInput(3, 4);
+  const selections = fixture.calls.at(-1)[1];
+  assert.equal(selections.find(item => item.index === 7).count, 2);
+  assert.equal(selections.find(item => item.index === 3).count, 4);
+  fixture.service.selectCategory('all');
+  assert.equal(visible.length, 2);
+  inventorySubscription.unsubscribe();
+  sessionSubscription.unsubscribe();
+  fixture.service.ngOnDestroy();
+});
+
+test('category selection survives inventory updates and resets for the next session', () => {
+  const fixture = setup();
+  const payload = state();
+  payload.inventory[0].category = 'weapons';
+  payload.inventory[1].category = 'food';
+  let visible;
+  const subscription = fixture.service.visibleInventory$.subscribe(items => visible = items);
+  fixture.client.tradeStateChange.next(payload);
+  fixture.service.selectCategory('weapons');
+  fixture.client.tradeStateChange.next({ ...payload, inventory: [payload.inventory[1]] });
+  assert.equal(visible.length, 0);
+  fixture.client.tradeStateChange.next(undefined);
+  fixture.client.tradeStateChange.next(payload);
+  assert.equal(visible.length, 2);
+  subscription.unsubscribe();
+  fixture.service.ngOnDestroy();
+});
+
+test('broad categories include ammo, poisons and soul gems; unknown types remain accessible', () => {
+  const fixture = setup();
+  const payload = state();
+  payload.inventory = ['weapons', 'ammunition', 'potions', 'poisons', 'soul_gems', 'unrecognized'].map((category, index) => ({
+    ...payload.inventory[0], category, inventoryIndex: index,
+  }));
+  let visible;
+  const subscription = fixture.service.visibleInventory$.subscribe(items => visible = items);
+  fixture.client.tradeStateChange.next(payload);
+  fixture.service.selectCategory('weapons');
+  assert.equal(visible.length, 2);
+  fixture.service.selectCategory('potions');
+  assert.equal(visible.length, 2);
+  fixture.service.selectCategory('misc');
+  assert.equal(visible.length, 2);
+  fixture.service.selectCategory('soul_gems');
+  assert.equal(visible.length, 1);
+  subscription.unsubscribe();
   fixture.service.ngOnDestroy();
 });

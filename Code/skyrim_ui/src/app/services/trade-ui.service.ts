@@ -1,13 +1,15 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Subscription } from 'rxjs';
 import { TranslocoService } from '@ngneat/transloco';
 import { ClientService, TradeItemPayload, TradeStatePayload } from './client.service';
 import { PlayerListService } from './player-list.service';
 import { PopupNotificationService } from './popup-notification.service';
 import { UiRepository } from '../store/ui.repository';
 import { View } from '../models/view.enum';
+import { matchesTradeCategory, normalizeTradeCategory, tradeCategories, TradeCategory, TradeItemCategory } from '../models/trade-category';
 
 export interface TradeInventoryItemView {
+  category: TradeItemCategory;
   index: number;
   name: string;
   modId: number;
@@ -52,6 +54,16 @@ export class TradeUiService implements OnDestroy {
   private readonly subscriptions = new Subscription();
   private readonly sessionSubject = new BehaviorSubject<TradeSessionView | undefined>(undefined);
   public readonly session$ = this.sessionSubject.asObservable();
+  public readonly categories = tradeCategories;
+  private readonly categorySubject = new BehaviorSubject<TradeCategory>('all');
+  public readonly category$ = this.categorySubject.asObservable();
+  public readonly visibleInventory$ = combineLatest([this.session$, this.category$]).pipe(
+    map(([session, category]) => (session?.inventory ?? []).filter(item => matchesTradeCategory(item.category, category))),
+  );
+
+  public selectCategory(category: TradeCategory): void {
+    if (tradeCategories.includes(category)) this.categorySubject.next(category);
+  }
   private readonly outgoing = new BehaviorSubject<ReadonlySet<number>>(new Set());
   public readonly pendingOutgoing$ = this.outgoing.asObservable();
   private state?: TradeStatePayload;
@@ -182,6 +194,7 @@ export class TradeUiService implements OnDestroy {
   private applyState(state?: TradeStatePayload): void {
     this.state = state?.active ? state : undefined;
     if (!this.state) {
+      this.categorySubject.next('all');
       this.sessionSubject.next(undefined);
       if (this.uiRepository.getView() === View.TRADE) this.uiRepository.openView(this.previousView);
       this.previousView = null;
@@ -208,6 +221,7 @@ export class TradeUiService implements OnDestroy {
       selfOffer: state.selfItems.map(offer), partnerOffer: state.partnerItems.map(offer),
       inventory: state.inventory.filter(item => Number.isInteger(item.inventoryIndex)).map((item, position) => ({
         ...offer(item, position), index: item.inventoryIndex!, available: item.count,
+        category: normalizeTradeCategory(item.category),
         isEquipped: item.isEquipped ?? false,
         offered: item.offeredCount ?? 0, isGold: item.isGold ?? false,
       })).sort((a, b) => a.name.localeCompare(b.name)),

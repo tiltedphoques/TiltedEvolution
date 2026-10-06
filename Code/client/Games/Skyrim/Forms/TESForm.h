@@ -5,16 +5,23 @@
 
 enum class FormType : uint8_t
 {
+    Scroll = 23,
     Armor = 26,
     Book = 27,
     Container = 28,
     Door = 29,
     Ingredient = 30,
+    Light = 31,
+    Misc = 32,
+    Apparatus = 33,
     Weapon = 41,
     Ammo = 42,
     Npc = 43,
     LeveledCharacter = 44,
+    Key = 45,
     Alchemy = 46,
+    Note = 48,
+    SoulGem = 52,
     LeveledItem = 53,
     Character = 62,
     QuestItem = 77,

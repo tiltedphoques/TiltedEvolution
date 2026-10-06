@@ -27,6 +27,7 @@
 
 #include <Systems/ModSystem.h>
 #include <Games/Skyrim/Forms/TESForm.h>
+#include <Games/Skyrim/Forms/AlchemyItem.h>
 
 #include <spdlog/fmt/fmt.h>
 
@@ -39,6 +40,34 @@
 namespace
 {
 constexpr uint64_t kInviteCleanupIntervalMs = 1000;
+
+const char* GetItemCategory(TESForm* apForm) noexcept
+{
+    if (!apForm)
+        return "misc";
+    switch (apForm->formType)
+    {
+    case FormType::Weapon: return "weapons";
+    case FormType::Ammo: return "ammunition";
+    case FormType::Armor: return "armor";
+    case FormType::Scroll: return "scrolls";
+    case FormType::Ingredient: return "ingredients";
+    case FormType::Book:
+    case FormType::Note: return "books";
+    case FormType::Key: return "keys";
+    case FormType::SoulGem: return "soul_gems";
+    case FormType::Alchemy:
+        if (const auto* pAlchemy = Cast<AlchemyItem>(apForm))
+        {
+            if (pAlchemy->IsPoison())
+                return "poisons";
+            if (pAlchemy->IsFood())
+                return "food";
+        }
+        return "potions";
+    default: return "misc";
+    }
+}
 
 std::string MakeDisplayName(ModSystem& aModSystem, const Inventory::Entry& aEntry)
 {
@@ -275,6 +304,8 @@ void TradeService::EmitStateToUI() const noexcept
         dict->SetBool("isEquipped", entry.IsWorn());
         dict->SetString("name", MakeDisplayName(modSystem, entry));
         dict->SetBool("isGold", entry.BaseId.ModId == 0 && entry.BaseId.BaseId == 0x0000000F);
+        const uint32_t formId = modSystem.GetGameId(entry.BaseId);
+        dict->SetString("category", GetItemCategory(formId ? TESForm::GetById(formId) : nullptr));
 
         auto details = CefListValue::Create();
         int detailIndex = 0;

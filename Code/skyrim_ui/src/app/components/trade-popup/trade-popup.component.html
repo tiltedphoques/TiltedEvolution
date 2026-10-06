@@ -69,10 +69,22 @@
           <h3 class="section-title">
             {{ 'COMPONENT.TRADE_MENU.INVENTORY_TITLE' | transloco }}
           </h3>
-          <div class="empty" *ngIf="session.inventory.length === 0">
-            {{ 'COMPONENT.TRADE_MENU.NO_INVENTORY' | transloco }}
+          <div class="category-filters" role="group"
+            [attr.aria-label]="'COMPONENT.TRADE_MENU.FILTER_CATEGORY' | transloco">
+            <button *ngFor="let category of categories" type="button"
+              [class.selected]="(category$ | async) === category"
+              [attr.aria-pressed]="(category$ | async) === category"
+              (click)="tradeUiService.selectCategory(category)">
+              {{ ('COMPONENT.TRADE_MENU.CATEGORIES.' + category) | transloco }}
+            </button>
           </div>
-          <table *ngIf="session.inventory.length > 0">
+          <ng-container *ngIf="visibleInventory$ | async as visibleInventory">
+          <div class="empty" *ngIf="visibleInventory.length === 0">
+            {{ (session.inventory.length === 0
+              ? 'COMPONENT.TRADE_MENU.NO_INVENTORY'
+              : 'COMPONENT.TRADE_MENU.NO_CATEGORY_ITEMS') | transloco }}
+          </div>
+          <table *ngIf="visibleInventory.length > 0">
             <thead>
               <tr>
                 <th>
@@ -92,7 +104,7 @@
             <tbody>
               <tr
                 *ngFor="
-                  let item of session.inventory;
+                  let item of visibleInventory;
                   trackBy: trackByInventory
                 "
                 [attr.data-quest]="(item.isQuestItem || item.isEquipped)"
@@ -161,6 +173,7 @@
               </tr>
             </tbody>
           </table>
+          </ng-container>
         </section>
 
         <section class="offers-section">
