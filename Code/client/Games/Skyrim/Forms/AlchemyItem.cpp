@@ -4,13 +4,13 @@
 #include <TESObjectREFR.h>
 #include <World.h>
 
-void AlchemyItem::Capture(TESForm* apForm, Inventory::Entry& aEntry) noexcept
+bool AlchemyItem::CaptureRecipe(TESForm* apForm, Inventory::PotionData& aData) noexcept
 {
+    aData = {};
     auto* potion = apForm && apForm->IsTemporary() ? Cast<AlchemyItem>(apForm) : nullptr;
     if (!potion || potion->IsFood())
-        return;
-    aEntry.Potion = {};
-    aEntry.Potion.IsPoison = potion->IsPoison();
+        return false;
+    aData.IsPoison = potion->IsPoison();
     auto& mods = World::Get().GetModSystem();
     for (auto* effect : potion->listOfEffects)
     {
@@ -19,17 +19,26 @@ void AlchemyItem::Capture(TESForm* apForm, Inventory::Entry& aEntry) noexcept
         if (!effect || !effect->pEffectSetting || effect->Condition.pHead || effect->pEffectSetting->IsTemporary() ||
             !mods.GetServerModId(effect->pEffectSetting->formID, result.EffectId))
         {
-            aEntry.Potion.Effects.clear();
-            return;
+            aData.Effects.clear();
+            return false;
         }
         result.Magnitude = effect->data.fMagnitude;
         result.Area = effect->data.iArea;
         result.Duration = effect->data.iDuration;
         result.RawCost = effect->fRawCost;
-        aEntry.Potion.Effects.push_back(result);
+        aData.Effects.push_back(result);
     }
-    if (!aEntry.Potion.IsValid())
-        aEntry.Potion.Effects.clear();
+    if (!aData.IsValid())
+        aData.Effects.clear();
+    return !aData.Effects.empty();
+}
+
+void AlchemyItem::Capture(TESForm* apForm, Inventory::Entry& aEntry) noexcept
+{
+    auto* potion = apForm && apForm->IsTemporary() ? Cast<AlchemyItem>(apForm) : nullptr;
+    if (!potion || potion->IsFood())
+        return;
+    CaptureRecipe(apForm, aEntry.Potion);
 }
 
 AlchemyItem* AlchemyItem::Find(TESObjectREFR* apOwner, const Inventory::PotionData& aData) noexcept
@@ -84,9 +93,9 @@ AlchemyItem* AlchemyItem::Create(const Inventory::PotionData& aData) noexcept
     Memory::Free(effects.data);
     if (created)
     {
-        Inventory::Entry check;
-        Capture(created, check);
-        if (check.Potion == aData)
+        Inventory::PotionData check;
+        CaptureRecipe(created, check);
+        if (check == aData)
             return created;
         spdlog::error("[TradeService]: AddPotion returned effects/type differing from the offered potion");
         Release(created);

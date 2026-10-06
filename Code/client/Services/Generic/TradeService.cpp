@@ -107,8 +107,13 @@ bool CanReceiveTradeItem(ModSystem& aModSystem, const Inventory::Entry& acItem) 
 
     if (acItem.ExtraPoisonId != 0)
     {
-        // Applied crafted poisons carry no recipe in the inventory entry.
-        if (acItem.ExtraPoisonId.ModId == 0xFFFFFFFF || !Cast<AlchemyItem>(TESForm::GetById(aModSystem.GetGameId(acItem.ExtraPoisonId))))
+        if (acItem.ExtraPoisonId.ModId == 0xFFFFFFFF)
+        {
+            // Applied player-crafted poison: recreated from its effects on the recipient.
+            if (!acItem.PoisonData.IsValid() || !EffectsResolve(aModSystem, acItem.PoisonData.Effects))
+                return false;
+        }
+        else if (!Cast<AlchemyItem>(TESForm::GetById(aModSystem.GetGameId(acItem.ExtraPoisonId))))
             return false;
     }
     return true;
@@ -433,6 +438,16 @@ void TradeService::EmitStateToUI() const noexcept
 
     auto& modSystem = m_world.GetModSystem();
 
+    auto formatEffect = [&](const Inventory::EffectItem& effect) {
+        auto* form = TESForm::GetById(modSystem.GetGameId(effect.EffectId));
+        std::string text = fmt::format("{}: {:.0f}", form && form->GetName() ? form->GetName() : "Unknown effect", effect.Magnitude);
+        if (effect.Area > 0)
+            text += fmt::format(", {} ft", effect.Area);
+        if (effect.Duration > 0)
+            text += fmt::format(" for {}s", effect.Duration);
+        return text;
+    };
+
     auto makeDict = [&](const Inventory::Entry& entry, const char* apNote = nullptr) {
         auto dict = CefDictionaryValue::Create();
         dict->SetInt("modId", entry.BaseId.ModId);
@@ -452,21 +467,19 @@ void TradeService::EmitStateToUI() const noexcept
             // Temporary IDs belong to the owner's game session; the recipient gets a fresh one from AddPotion.
             details->SetString(detailIndex++, fmt::format("Temporary ID: {:08X}", 0xFF000000u | (entry.BaseId.BaseId & 0x00FFFFFFu)));
             for (const auto& effect : entry.Potion.Effects)
-            {
-                auto* form = TESForm::GetById(modSystem.GetGameId(effect.EffectId));
-                std::string text = fmt::format("{}: {:.0f}", form && form->GetName() ? form->GetName() : "Unknown effect", effect.Magnitude);
-                if (effect.Area > 0)
-                    text += fmt::format(", {} ft", effect.Area);
-                if (effect.Duration > 0)
-                    text += fmt::format(" for {}s", effect.Duration);
-                details->SetString(detailIndex++, text);
-            }
+                details->SetString(detailIndex++, formatEffect(effect));
         }
         if (entry.ExtraHealth > 1.0f)
             details->SetString(detailIndex++, fmt::format("Improvement: {:.0f}%", entry.ExtraHealth * 100.0f));
         if (entry.ExtraEnchantId.BaseId || !entry.EnchantData.Effects.empty())
             details->SetString(detailIndex++, "Enchanted");
-        if (entry.ExtraPoisonId.BaseId)
+        if (!entry.PoisonData.Effects.empty())
+        {
+            details->SetString(detailIndex++, fmt::format("Poisoned ({} uses left):", entry.ExtraPoisonCount));
+            for (const auto& effect : entry.PoisonData.Effects)
+                details->SetString(detailIndex++, "  " + formatEffect(effect));
+        }
+        else if (entry.ExtraPoisonId.BaseId)
             details->SetString(detailIndex++, "Poisoned");
         if (entry.ExtraSoulLevel > 0)
             details->SetString(detailIndex++, fmt::format("Soul level: {}", entry.ExtraSoulLevel));
