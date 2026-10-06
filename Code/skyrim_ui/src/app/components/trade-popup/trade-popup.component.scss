@@ -39,7 +39,7 @@ td:first-child { overflow-wrap: anywhere; }
 th { position: sticky; top: 0; background: $-color-background; text-align: left; z-index: 1; }
 th, td { padding: var(--inventory-cell-padding); border-bottom: 1px solid #555; }
 .offered-heading { padding-left: calc(var(--inventory-cell-padding) + var(--quantity-step-width) + var(--quantity-gap)); }
-.available-column { text-align: left; padding-right: 2rem; }
+.available-column { text-align: center; padding-right: 2rem; }
 button { font-size: 1rem; padding: .35rem .6rem; }
 button:disabled, input:disabled { opacity: .45; }
 .numeric, .count { text-align: right; }
