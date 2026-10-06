@@ -270,10 +270,30 @@ void DebugService::OnDraw() noexcept
     ImGui::BeginMainMenuBar();
     if (ImGui::BeginMenu("Helpers"))
     {
+        // Fallback for players stuck in dialogue / scenes with input blocked. Does not touch quest stages.
+        auto clearStuckDialogueAndControls = []() {
+            auto* pPlayer = PlayerCharacter::Get();
+            if (!pPlayer)
+                return;
+            pPlayer->StopCurrentDialogue(true);
+            if (auto* pControls = PlayerControls::GetInstance())
+            {
+                pControls->SetBlockPlayerInput(false);
+                pControls->SetEnabled(true);
+            }
+        };
+
+        if (ImGui::Button("Clear stuck dialogue"))
+        {
+            clearStuckDialogueAndControls();
+        }
+
         if (ImGui::Button("Unstuck player"))
         {
+            clearStuckDialogueAndControls();
             auto* pPlayer = PlayerCharacter::Get();
-            pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
+            if (pPlayer && pPlayer->currentProcess)
+                pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
         }
 
         if (ImGui::Button("Stop all combat"))
