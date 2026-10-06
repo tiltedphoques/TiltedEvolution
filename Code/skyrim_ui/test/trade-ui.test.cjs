@@ -98,11 +98,11 @@ test('expired notification actions cannot respond to an obsolete invitation', ()
   fixture.service.ngOnDestroy();
 });
 
-test('closing an active trade cancels it and restores the previous target view', () => {
+test('Cancel Trade explicitly cancels the exchange and restores the previous target view', () => {
   const fixture = setup();
   fixture.client.tradeStateChange.next(state());
   assert.equal(fixture.ui.view, 'trade');
-  fixture.service.closePopup();
+  fixture.service.cancelTrade();
   assert.equal(fixture.calls.at(-1)[0], 'cancelTrade');
   assert.equal(fixture.ui.view, 'players');
   fixture.service.ngOnDestroy();
@@ -121,11 +121,12 @@ test('quest items, equipped items and nonfinite counts never enter an offer', ()
   fixture.service.ngOnDestroy();
 });
 
-test('navigation through the existing view repository also cancels a hidden trade', () => {
+test('navigation and subsequent state updates preserve an exchange without reopening it', () => {
   const fixture = setup();
   fixture.client.tradeStateChange.next(state());
   fixture.ui.openView('party');
-  assert.equal(fixture.calls.at(-1)[0], 'cancelTrade');
+  fixture.client.tradeStateChange.next({ ...state(), selfReady: true, countdownMs: 2000 });
+  assert.equal(fixture.calls.length, 0);
   assert.equal(fixture.ui.view, 'party');
   fixture.service.ngOnDestroy();
 });
@@ -190,8 +191,47 @@ test('broad categories include ammo, poisons and soul gems; unknown types remain
   assert.equal(visible.length, 2);
   fixture.service.selectCategory('misc');
   assert.equal(visible.length, 2);
-  fixture.service.selectCategory('soul_gems');
-  assert.equal(visible.length, 1);
+  assert.equal(fixture.service.categories.includes('soul_gems'), false);
+  assert.equal(fixture.service.categories.includes('ammunition'), false);
+  subscription.unsubscribe();
+  fixture.service.ngOnDestroy();
+});
+
+test('F2 activation changes retain the trade view, ready status and countdown', () => {
+  const rootExports = {};
+  const rootSource = fs.readFileSync(path.join(__dirname, '../src/app/components/root/root.component.ts'), 'utf8');
+  vm.runInNewContext(ts.transpileModule(rootSource, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, experimentalDecorators: true },
+  }).outputText, {
+    exports: rootExports, setTimeout,
+    require(name) {
+      if (name === '@angular/core') return { Component: () => value => value, ViewChild: () => () => {} };
+      if (name.startsWith('rxjs')) return require(name);
+      if (name.endsWith('view.enum')) return { View: { TRADE: 'trade' } };
+      if (name.endsWith('/environment')) return { environment: { game: false } };
+      return {};
+    },
+  });
+  const fixture = setup();
+  fixture.ui.isViewOpen = () => fixture.ui.view !== null;
+  fixture.client.activationStateChange = new Subject();
+  fixture.client.inGameStateChange = new BehaviorSubject(true);
+  const root = Object.create(rootExports.RootComponent.prototype);
+  root.client = fixture.client;
+  root.uiRepository = fixture.ui;
+  root.destroy$ = new Subject();
+  root.onActivationStateSubscription();
+  let session;
+  const subscription = fixture.service.session$.subscribe(value => session = value);
+  fixture.client.tradeStateChange.next({ ...state(), selfReady: true, countdownMs: 3000 });
+  fixture.client.activationStateChange.next(false);
+  fixture.client.tradeStateChange.next({ ...state(), selfReady: true, countdownMs: 2000 });
+  fixture.client.activationStateChange.next(true);
+  assert.equal(fixture.ui.view, 'trade');
+  assert.equal(session.selfReady, true);
+  assert.equal(session.countdownMs, 2000);
+  assert.equal(fixture.calls.length, 0);
+  root.destroy$.next();
   subscription.unsubscribe();
   fixture.service.ngOnDestroy();
 });

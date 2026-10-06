@@ -25,6 +25,12 @@
         {{ 'COMPONENT.ROOT.CONNECT' | transloco }}
       </button>
       <ng-container *ngIf="connected$ | async">
+        <button *ngIf="tradeSession$ | async"
+          data-style-ornament="inverted"
+          [attr.data-style-active]="(view$ | async) === RootView.TRADE"
+          (click)="setView(RootView.TRADE)">
+          {{ 'COMPONENT.PARTY_LIST.TRADE' | transloco }}
+        </button>
         <button
           data-style-ornament="inverted"
           [attr.data-style-active]="(view$ | async) === RootView.DISCONNECT"

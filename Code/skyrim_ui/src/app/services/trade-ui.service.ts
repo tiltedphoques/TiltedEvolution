@@ -103,9 +103,6 @@ export class TradeUiService implements OnDestroy {
     this.subscriptions.add(playerListService.playerList.subscribe(() => {
       if (this.state?.active) this.sessionSubject.next(this.toView(this.state));
     }));
-    this.subscriptions.add(uiRepository.view$.subscribe(view => {
-      if (this.state?.active && view !== View.TRADE) this.cancelTrade();
-    }));
   }
 
   ngOnDestroy(): void {
@@ -135,11 +132,6 @@ export class TradeUiService implements OnDestroy {
   public cancelTrade(): void {
     if (this.state?.active) this.clientService.cancelTrade();
     this.applyState(undefined);
-  }
-
-  public closePopup(): void {
-    // Closing an exchange also cancels it; background countdowns must not transfer items.
-    this.cancelTrade();
   }
 
   public setReady(ready: boolean): void {
@@ -192,6 +184,7 @@ export class TradeUiService implements OnDestroy {
   }
 
   private applyState(state?: TradeStatePayload): void {
+    const startingSession = state?.active && (!this.state?.active || this.state.partnerId !== state.partnerId);
     this.state = state?.active ? state : undefined;
     if (!this.state) {
       this.categorySubject.next('all');
@@ -202,7 +195,7 @@ export class TradeUiService implements OnDestroy {
     }
     this.incoming.delete(this.state.partnerId);
     this.removeOutgoing(this.state.partnerId);
-    if (this.uiRepository.getView() !== View.TRADE) {
+    if (startingSession && this.uiRepository.getView() !== View.TRADE) {
       this.previousView = this.uiRepository.getView();
       this.uiRepository.openView(View.TRADE);
     }

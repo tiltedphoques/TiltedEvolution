@@ -1,32 +1,8 @@
 <app-window border="fancy" class="trade-popup">
   <ng-container *ngIf="session$ | async as session; else noTrade">
     <header class="trade-header">
-      <div class="title">
-        <span class="caption">
-          {{
-            'COMPONENT.TRADE_MENU.TRADING_WITH'
-              | transloco : { name: session.partnerName }
-          }}
-        </span>
-      </div>
-      <div class="countdown" *ngIf="session.countdownMs > 0">
-        <div class="label">
-          {{
-            'COMPONENT.TRADE_MENU.COUNTDOWN'
-              | transloco : { seconds: formatCountdown(session.countdownMs) }
-          }}
-        </div>
-        <div class="bar">
-          <div
-            class="fill"
-            [style.width.%]="session.countdownProgress * 100"
-          ></div>
-        </div>
-      </div>
-    </header>
-
-    <section class="trade-body">
-      <aside class="status-pane">
+      <div class="trade-summary">
+        <h2 class="title">{{ 'COMPONENT.TRADE_MENU.TRADING_WITH' | transloco : { name: session.partnerName } }}</h2>
         <div class="status">
           <span [attr.data-ready]="session.selfReady">
             {{
@@ -46,29 +22,9 @@
           </span>
         </div>
 
-        <div class="actions">
-          <button (click)="toggleReady(session)">
-            {{
-              (session.selfReady
-                ? 'COMPONENT.TRADE_MENU.ACTIONS.UNREADY'
-                : 'COMPONENT.TRADE_MENU.ACTIONS.READY'
-              ) | transloco
-            }}
-          </button>
-          <button class="secondary" (click)="cancelTrade()">
-            {{ 'COMPONENT.TRADE_MENU.ACTIONS.CANCEL_TRADE' | transloco }}
-          </button>
-          <button class="secondary ghost" (click)="close()">
-            {{ 'COMPONENT.TRADE_MENU.ACTIONS.CLOSE' | transloco }}
-          </button>
-        </div>
-      </aside>
-
-      <main class="trade-content">
-        <section class="inventory-section">
-          <h3 class="section-title">
-            {{ 'COMPONENT.TRADE_MENU.INVENTORY_TITLE' | transloco }}
-          </h3>
+      </div>
+      <div class="inventory-heading">
+        <h3 class="section-title">{{ 'COMPONENT.TRADE_MENU.INVENTORY_TITLE' | transloco }}</h3>
           <div class="category-filters" role="group"
             [attr.aria-label]="'COMPONENT.TRADE_MENU.FILTER_CATEGORY' | transloco">
             <button *ngFor="let category of categories" type="button"
@@ -78,6 +34,9 @@
               {{ ('COMPONENT.TRADE_MENU.CATEGORIES.' + category) | transloco }}
             </button>
           </div>
+      </div>
+    </header>
+    <section class="inventory-list">
           <ng-container *ngIf="visibleInventory$ | async as visibleInventory">
           <div class="empty" *ngIf="visibleInventory.length === 0">
             {{ (session.inventory.length === 0
@@ -174,9 +133,8 @@
             </tbody>
           </table>
           </ng-container>
-        </section>
-
-        <section class="offers-section">
+    </section>
+    <section class="offers-section">
           <div class="offer-column">
             <h3 class="section-title">
               {{ 'COMPONENT.TRADE_MENU.OFFER_TITLE' | transloco }}
@@ -188,13 +146,21 @@
               <li *ngFor="let item of session.selfOffer; trackBy: trackByOffer">
                 <div class="line">
                   <span class="name">{{ item.name }}</span>
-                  <span class="count">×{{ item.count }}</span>
+                  <span class="count">&times;{{ item.count }}</span>
                 </div>
                 <ul class="item-details" *ngIf="item.details?.length">
                   <li *ngFor="let detail of item.details">{{ detail }}</li>
                 </ul>
               </li>
             </ul>
+          </div>
+          <div class="actions">
+            <button type="button" (click)="toggleReady(session)">
+              {{ (session.selfReady ? 'COMPONENT.TRADE_MENU.ACTIONS.UNREADY' : 'COMPONENT.TRADE_MENU.ACTIONS.READY') | transloco }}
+            </button>
+            <button type="button" (click)="cancelTrade()">
+              {{ 'COMPONENT.TRADE_MENU.ACTIONS.CANCEL_TRADE' | transloco }}
+            </button>
           </div>
           <div class="offer-column partner">
             <h3 class="section-title">
@@ -209,7 +175,7 @@
               >
                 <div class="line">
                   <span class="name">{{ item.name }}</span>
-                  <span class="count">×{{ item.count }}</span>
+                  <span class="count">&times;{{ item.count }}</span>
                 </div>
                 <ul class="item-details" *ngIf="item.details?.length">
                   <li *ngFor="let detail of item.details">{{ detail }}</li>
@@ -217,14 +183,11 @@
               </li>
             </ul>
           </div>
-        </section>
-      </main>
     </section>
-  </ng-container>
-
-  <ng-template #noTrade>
-    <div class="no-trade">
-      {{ 'COMPONENT.TRADE_MENU.NO_ACTIVE_TRADE' | transloco }}
+    <div class="countdown" *ngIf="session.countdownMs > 0" role="status">
+      {{ 'COMPONENT.TRADE_MENU.COUNTDOWN' | transloco : { seconds: formatCountdown(session.countdownMs) } }}
+      <div class="bar"><div class="fill" [style.width.%]="session.countdownProgress * 100"></div></div>
     </div>
-  </ng-template>
+  </ng-container>
+  <ng-template #noTrade><div class="no-trade">{{ 'COMPONENT.TRADE_MENU.NO_ACTIVE_TRADE' | transloco }}</div></ng-template>
 </app-window>

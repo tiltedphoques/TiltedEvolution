@@ -39,6 +39,7 @@ export class RootComponent implements OnInit {
   readonly RootView = View;
 
   view$ = this.uiRepository.view$;
+  tradeSession$ = this.tradeUiService.session$;
 
   connected$ = this.client.connectionStateChange.asObservable();
   menuOpen$ = this.client.openingMenuChange.asObservable();
@@ -110,9 +111,6 @@ export class RootComponent implements OnInit {
   }
 
   public setView(view: View | null) {
-    if (this.uiRepository.getView() === View.TRADE && view !== View.TRADE) {
-      this.tradeUiService.cancelTrade();
-    }
     this.uiRepository.openView(view);
 
     if (view) {
@@ -124,7 +122,8 @@ export class RootComponent implements OnInit {
 
   public closeView() {
     if (this.uiRepository.getView() === View.TRADE) {
-      this.tradeUiService.cancelTrade();
+      // F2 hides the overlay through its activation animation; keep the exchange selected for reopening.
+      return;
     }
     this.uiRepository.openView(null);
   }

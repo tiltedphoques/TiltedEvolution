@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   TradeInventoryItemView,
@@ -21,17 +21,6 @@ export class TradePopupComponent {
     this.tradeUiService.session$;
 
   constructor(public readonly tradeUiService: TradeUiService) {}
-
-  public close(): void {
-    this.tradeUiService.closePopup();
-  }
-
-  @HostListener('window:keydown.escape', ['$event'])
-  public onEscape(event: KeyboardEvent): void {
-    this.close();
-    event.stopPropagation();
-    event.preventDefault();
-  }
 
   public cancelTrade(): void {
     this.tradeUiService.cancelTrade();

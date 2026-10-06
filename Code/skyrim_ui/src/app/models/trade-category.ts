@@ -1,13 +1,14 @@
 export const tradeCategories = [
-  'all', 'weapons', 'armor', 'ammunition', 'potions', 'poisons', 'scrolls',
-  'food', 'ingredients', 'books', 'keys', 'soul_gems', 'misc',
+  'all', 'weapons', 'armor', 'potions', 'poisons', 'scrolls',
+  'food', 'ingredients', 'books', 'keys', 'misc',
 ] as const;
 
 export type TradeCategory = typeof tradeCategories[number];
-export type TradeItemCategory = Exclude<TradeCategory, 'all'>;
+const tradeItemCategories = [...tradeCategories.filter(category => category !== 'all'), 'ammunition', 'soul_gems'] as const;
+export type TradeItemCategory = Exclude<TradeCategory, 'all'> | 'ammunition' | 'soul_gems';
 
 export function normalizeTradeCategory(value: unknown): TradeItemCategory {
-  return value !== 'all' && tradeCategories.includes(value as TradeCategory)
+  return tradeItemCategories.includes(value as TradeItemCategory)
     ? value as TradeItemCategory : 'misc';
 }
 
