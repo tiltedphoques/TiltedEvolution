@@ -14,7 +14,7 @@
     [@controls]="active$ | async"
     class="app-root-controls"
     [class.background-element]="(view$ | async) !== null && (view$ | async) !== RootView.TRADE"
-    [class.trading-controls]="(view$ | async) === RootView.TRADE"
+    [class.trading-controls]="tradeSession$ | async"
   >
     <app-window border="strip" class="app-root-menu">
       <button
