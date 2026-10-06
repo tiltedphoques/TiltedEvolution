@@ -27,19 +27,33 @@ inline bool SameTradeItem(const Inventory::Entry& left, const Inventory::Entry& 
     return true;
 }
 
-// A ready client must have recreated exactly the incoming crafted potions for this offer.
-inline bool ValidatePreparedPotions(const Vector<Inventory::Entry>& acIncoming, const Vector<Inventory::Entry>& acPrepared) noexcept
+// A ready client lists the partner items it can resolve and receive, in offer order.
+// Items it leaves out stay with their owner.
+inline bool ValidateAcceptedItems(const Vector<Inventory::Entry>& acIncoming, const Vector<Inventory::Entry>& acAccepted) noexcept
 {
     size_t index = 0;
     for (const auto& item : acIncoming)
     {
-        if (item.Potion.Effects.empty())
-            continue;
-        if (index >= acPrepared.size() || acPrepared[index].Count != item.Count || !SameTradeItem(item, acPrepared[index]))
-            return false;
-        ++index;
+        if (index < acAccepted.size() && acAccepted[index].Count == item.Count && SameTradeItem(item, acAccepted[index]))
+            ++index;
     }
-    return index == acPrepared.size();
+    return index == acAccepted.size();
+}
+
+// Marks which offered items appear in the partner's accepted list, matching in offer order.
+inline Vector<bool> MatchAcceptedItems(const Vector<Inventory::Entry>& acOffer, const Vector<Inventory::Entry>& acAccepted) noexcept
+{
+    Vector<bool> result(acOffer.size(), false);
+    size_t index = 0;
+    for (size_t i = 0; i < acOffer.size(); ++i)
+    {
+        if (index < acAccepted.size() && acAccepted[index].Count == acOffer[i].Count && SameTradeItem(acOffer[i], acAccepted[index]))
+        {
+            result[i] = true;
+            ++index;
+        }
+    }
+    return result;
 }
 
 // Reserve quantities across the entire offer so repeated entries cannot reuse the same items.

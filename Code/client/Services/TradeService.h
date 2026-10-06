@@ -69,6 +69,7 @@ private:
         TiltedPhoques::Vector<Inventory::Entry> SelfItems;
         TiltedPhoques::Vector<Inventory::Entry> PartnerItems;
         TiltedPhoques::Vector<Inventory::Entry> SelfInventory;
+        TiltedPhoques::Vector<Inventory::Entry> SelfAcceptedItems;
         uint32_t CountdownMs{0};
         uint32_t CountdownTotalMs{0};
     };

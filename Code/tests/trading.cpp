@@ -96,20 +96,65 @@ TEST_CASE("Crafted potion recipes compare independently of effect order", "[trad
     REQUIRE_FALSE(first.Potion == second.Potion);
 }
 
-TEST_CASE("Potion readiness proofs must match the complete incoming offer", "[trading][alchemy]")
+TEST_CASE("Accepted items must be an in-order subset of the incoming offer", "[trading][alchemy]")
 {
     auto potion = CraftedPotion();
-    REQUIRE_FALSE(ValidatePreparedPotions({potion}, {}));
-    REQUIRE(ValidatePreparedPotions({potion}, {potion}));
+    REQUIRE(ValidateAcceptedItems({potion}, {}));
+    REQUIRE(ValidateAcceptedItems({potion}, {potion}));
     auto stale = potion;
     stale.Count += 1;
-    REQUIRE_FALSE(ValidatePreparedPotions({potion}, {stale}));
+    REQUIRE_FALSE(ValidateAcceptedItems({potion}, {stale}));
     stale = potion;
     stale.Potion.Effects[0].Magnitude += 1;
-    REQUIRE_FALSE(ValidatePreparedPotions({potion}, {stale}));
-    REQUIRE_FALSE(ValidatePreparedPotions({}, {potion}));
-    REQUIRE_FALSE(ValidatePreparedPotions({potion}, {potion, potion}));
-    REQUIRE(ValidatePreparedPotions({}, {}));
+    REQUIRE_FALSE(ValidateAcceptedItems({potion}, {stale}));
+    REQUIRE_FALSE(ValidateAcceptedItems({}, {potion}));
+    REQUIRE_FALSE(ValidateAcceptedItems({potion}, {potion, potion}));
+    REQUIRE(ValidateAcceptedItems({}, {}));
+}
+
+TEST_CASE("Only items each recipient accepts change hands", "[trading][alchemy]")
+{
+    // A offers a modded-effect potion and a vanilla-effect poison; B offers a vanilla weapon and modded armor.
+    auto moddedPotion = CraftedPotion(1);
+    moddedPotion.Count = 1;
+    moddedPotion.Potion.Effects[0].EffectId.ModId = 7;
+    auto poison = CraftedPotion(2);
+    poison.Count = 1;
+    poison.Potion.IsPoison = true;
+    Inventory::Entry weapon;
+    weapon.BaseId.BaseId = 0x12EB7;
+    weapon.Count = 1;
+    weapon.ExtraEnchantId.ModId = 0xFFFFFFFF;
+    weapon.ExtraEnchantId.BaseId = 0x800;
+    weapon.EnchantData.IsWeapon = true;
+    weapon.EnchantData.Effects.push_back(poison.Potion.Effects[0]);
+    Inventory::Entry armor;
+    armor.BaseId.ModId = 9;
+    armor.BaseId.BaseId = 0x801;
+    armor.Count = 1;
+
+    Inventory left;
+    left.Entries = {moddedPotion, poison};
+    Inventory right;
+    right.Entries = {weapon, armor};
+    const Vector<Inventory::Entry> leftOffer{moddedPotion, poison};
+    const Vector<Inventory::Entry> rightOffer{weapon, armor};
+    const Vector<Inventory::Entry> acceptedByB{poison};
+    const Vector<Inventory::Entry> acceptedByA{weapon};
+    REQUIRE(ValidateAcceptedItems(leftOffer, acceptedByB));
+    REQUIRE(ValidateAcceptedItems(rightOffer, acceptedByA));
+    REQUIRE(MatchAcceptedItems(leftOffer, acceptedByB) == Vector<bool>{false, true});
+    REQUIRE(MatchAcceptedItems(rightOffer, acceptedByA) == Vector<bool>{true, false});
+
+    Inventory leftResult;
+    Inventory rightResult;
+    REQUIRE(PrepareTradeExchange(left, right, acceptedByB, acceptedByA, leftResult, rightResult));
+    REQUIRE(leftResult.Entries.size() == 2);
+    REQUIRE(SameTradeItem(leftResult.Entries[0], moddedPotion));
+    REQUIRE(SameTradeItem(leftResult.Entries[1], weapon));
+    REQUIRE(rightResult.Entries.size() == 2);
+    REQUIRE(SameTradeItem(rightResult.Entries[0], armor));
+    REQUIRE(SameTradeItem(rightResult.Entries[1], poison));
 }
 
 TEST_CASE("Potion recipes and readiness proofs round trip through packet factories", "[trading][encoding][alchemy]")
@@ -124,7 +169,7 @@ TEST_CASE("Potion recipes and readiness proofs round trip through packet factori
     {
         TradeSetReadyRequest request;
         request.Ready = true;
-        request.PreparedPotions.push_back(potion);
+        request.AcceptedItems.push_back(potion);
         TiltedPhoques::Buffer::Writer writer(&buffer);
         request.Serialize(writer);
         TiltedPhoques::Buffer::Reader reader(&buffer);
@@ -132,14 +177,15 @@ TEST_CASE("Potion recipes and readiness proofs round trip through packet factori
         REQUIRE(message);
         const auto* decoded = static_cast<TradeSetReadyRequest*>(message.get());
         REQUIRE(decoded->Ready);
-        REQUIRE(decoded->PreparedPotions == request.PreparedPotions);
-        REQUIRE(decoded->PreparedPotions[0].Potion == potion.Potion);
+        REQUIRE(decoded->AcceptedItems == request.AcceptedItems);
+        REQUIRE(decoded->AcceptedItems[0].Potion == potion.Potion);
     }
     SECTION("Full inventory state")
     {
         NotifyTradeState state;
         state.PartnerItems.push_back(potion);
         state.SelfInventory.push_back(potion);
+        state.SelfAcceptedItems.push_back(potion);
         TiltedPhoques::Buffer::Writer writer(&buffer);
         state.Serialize(writer);
         TiltedPhoques::Buffer::Reader reader(&buffer);
@@ -148,6 +194,8 @@ TEST_CASE("Potion recipes and readiness proofs round trip through packet factori
         const auto* decoded = static_cast<NotifyTradeState*>(message.get());
         REQUIRE(decoded->PartnerItems[0].Potion == potion.Potion);
         REQUIRE(decoded->SelfInventory[0].Potion == potion.Potion);
+        REQUIRE(decoded->SelfAcceptedItems.size() == 1);
+        REQUIRE(decoded->SelfAcceptedItems[0].Potion == potion.Potion);
     }
 }
 
