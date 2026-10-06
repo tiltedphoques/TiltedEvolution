@@ -391,6 +391,11 @@ interface SkyrimTogether {
   setTime(hours: number, minutes: number): void;
 
   /**
+   * Ask the server to make the local player's character wave at everyone.
+   */
+  wave(): void;
+
+  /**
    * Deactivate UI and release control.
    */
   deactivate(): void;
