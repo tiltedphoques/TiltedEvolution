@@ -1,6 +1,6 @@
 @import 'env';
 
-:host { display: block; width: 100%; height: 100%; min-width: 0; pointer-events: auto; }
+:host { display: block; width: 100%; height: 100%; min-width: 0; max-width: 100%; pointer-events: auto; }
 .trade-popup {
   box-sizing: border-box;
   display: flex;
@@ -8,19 +8,22 @@
   gap: $-size-gap;
   width: 100%;
   height: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding: $-size-gap;
   overflow: hidden;
   background: $-color-background;
   font-family: $-font-default;
   font-size: 1rem;
 }
+.trade-popup > * { min-width: 0; max-width: 100%; }
 .trade-header { display: grid; grid-template-columns: minmax(11rem, 18%) minmax(0, 1fr); gap: $-size-gap; flex: 0 0 auto; }
 .title { font-size: 1.25rem; margin: 0 0 .6rem; }
 .status { display: flex; flex-direction: column; gap: .25rem; }
 .status span[data-ready='true'] { color: #a8d59a; }
 .section-title { font-size: 1.1rem; margin: 0 0 .5rem; }
 .inventory-heading { min-width: 0; }
-.inventory-title-row { display: flex; align-items: center; gap: $-size-gap; margin-bottom: .5rem; }
+.inventory-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: $-size-gap; margin-bottom: .5rem; }
 .inventory-title-row .section-title { margin: 0; flex: 0 0 auto; }
 .inventory-search { flex: 1 1 auto; min-width: 0; max-width: 24rem; padding: .25rem .5rem; font-size: 1rem; }
 .category-filters { display: flex; flex-wrap: nowrap; gap: .2rem; overflow-x: auto; padding-bottom: .3rem; }
@@ -29,7 +32,10 @@
 .category-filters button:focus-visible { outline: 2px solid #ccc; outline-offset: -2px; }
 .inventory-list { flex: 1 1 auto; min-height: 0; overflow-y: scroll; scrollbar-gutter: stable; }
 .inventory-list { --quantity-step-width: 2rem; --quantity-gap: .35rem; --inventory-cell-padding: .55rem; }
-table { width: 100%; border-collapse: collapse; }
+table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+th.available-column { width: 8rem; }
+th.offered-heading { width: 18rem; }
+td:first-child { overflow-wrap: anywhere; }
 th { position: sticky; top: 0; background: $-color-background; text-align: left; z-index: 1; }
 th, td { padding: var(--inventory-cell-padding); border-bottom: 1px solid #555; }
 .offered-heading { padding-left: calc(var(--inventory-cell-padding) + var(--quantity-step-width) + var(--quantity-gap)); }
@@ -50,13 +56,15 @@ button:disabled, input:disabled { opacity: .45; }
 .offer-editor input { box-sizing: border-box; width: 100%; min-width: 0; font-size: 1rem; }
 .quick-actions { margin-top: .35rem; }
 .offers-section { display: grid; grid-template-columns: minmax(0, 1fr) minmax(8rem, 18%) minmax(0, 1fr); gap: $-size-gap; height: clamp(8rem, 21vh, 14rem); flex: 0 0 auto; }
-.offer-column { min-height: 0; overflow-y: scroll; scrollbar-gutter: stable; padding: .65rem; border: 1px solid #555; }
+.offer-column { min-width: 0; min-height: 0; overflow-y: scroll; scrollbar-gutter: stable; padding: .65rem; border: 1px solid #555; overflow-wrap: anywhere; }
 .offer-column .section-title { position: sticky; top: -.65rem; padding: .35rem 0; background: $-color-background; }
 .offer-column > ul { margin: 0; padding: 0; list-style: none; }
 .offer-column > ul > li { margin-bottom: .35rem; }
 .actions { display: flex; flex-direction: column; justify-content: center; gap: $-size-gap; }
 .actions button { font-size: 1.1rem; opacity: 1; }
 .line { justify-content: space-between; }
+.line .name { min-width: 0; overflow-wrap: anywhere; }
+.line .count { flex-shrink: 0; }
 .item-details { padding-left: 1rem; margin: .2rem 0; font-size: 1rem; color: #bbb; }
 .quest-warning { color: #d8b88a; font-size: 1rem; }
 .empty, .no-trade { padding: .5rem; color: #aaa; }
