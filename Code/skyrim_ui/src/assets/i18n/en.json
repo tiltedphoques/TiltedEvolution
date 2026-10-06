@@ -149,6 +149,8 @@
       "BACK": "Back"
     },
     "TRADE_MENU": {
+      "SEARCH_ITEMS": "Search items…",
+      "NO_MATCHING_ITEMS": "No items match your search and category.",
       "FILTER_CATEGORY": "Filter inventory by item category",
       "NO_CATEGORY_ITEMS": "No items in this category.",
       "CATEGORIES": {
@@ -185,6 +187,7 @@
         "CANCEL_TRADE": "Cancel trade",
         "CLEAR": "Clear",
         "OFFER_ALL": "Offer all",
+        "MAX": "Max",
         "CLOSE": "Close window"
       },
       "INVENTORY_TITLE": "Your inventory",

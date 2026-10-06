@@ -57,9 +57,22 @@ export class TradeUiService implements OnDestroy {
   public readonly categories = tradeCategories;
   private readonly categorySubject = new BehaviorSubject<TradeCategory>('all');
   public readonly category$ = this.categorySubject.asObservable();
-  public readonly visibleInventory$ = combineLatest([this.session$, this.category$]).pipe(
-    map(([session, category]) => (session?.inventory ?? []).filter(item => matchesTradeCategory(item.category, category))),
+  private readonly searchSubject = new BehaviorSubject<string>('');
+  public readonly search$ = this.searchSubject.asObservable();
+  public readonly visibleInventory$ = combineLatest([this.session$, this.category$, this.search$]).pipe(
+    map(([session, category, search]) => {
+      const terms = this.normalizeSearch(search).trim().split(/\s+/u).filter(Boolean);
+      return (session?.inventory ?? []).filter(item => matchesTradeCategory(item.category, category)
+        && terms.every(term => this.normalizeSearch(item.name).includes(term)));
+    }),
   );
+
+  public setSearch(search: string): void { this.searchSubject.next(search); }
+
+  private normalizeSearch(value: string): string {
+    return value.normalize('NFKD').replace(/\p{M}/gu, '').toLocaleLowerCase()
+      .replace(/ß/g, 'ss').replace(/ı/g, 'i').replace(/ς/g, 'σ');
+  }
 
   public selectCategory(category: TradeCategory): void {
     if (tradeCategories.includes(category)) this.categorySubject.next(category);
@@ -188,6 +201,7 @@ export class TradeUiService implements OnDestroy {
     this.state = state?.active ? state : undefined;
     if (!this.state) {
       this.categorySubject.next('all');
+      this.searchSubject.next('');
       this.sessionSubject.next(undefined);
       if (this.uiRepository.getView() === View.TRADE) this.uiRepository.openView(this.previousView);
       this.previousView = null;

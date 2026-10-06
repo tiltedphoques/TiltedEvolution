@@ -17,6 +17,7 @@ export class TradePopupComponent {
   public readonly categories = this.tradeUiService.categories;
   public readonly category$ = this.tradeUiService.category$;
   public readonly visibleInventory$ = this.tradeUiService.visibleInventory$;
+  public readonly search$ = this.tradeUiService.search$;
   public readonly session$: Observable<TradeSessionView | undefined> =
     this.tradeUiService.session$;
 

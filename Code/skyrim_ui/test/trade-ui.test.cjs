@@ -235,3 +235,41 @@ test('F2 activation changes retain the trade view, ready status and countdown', 
   subscription.unsubscribe();
   fixture.service.ngOnDestroy();
 });
+
+test('partial text search handles localized names and combines with categories without changing offers', () => {
+  const fixture = setup();
+  const payload = state();
+  payload.inventory = ['Épée enchantée', 'Двемерская стрела', '鋼鉄の剣', 'Straße', 'Ilık çorba'].map((name, index) => ({
+    ...payload.inventory[0], name, category: index === 4 ? 'food' : 'weapons', inventoryIndex: index,
+  }));
+  let visible;
+  const subscription = fixture.service.visibleInventory$.subscribe(items => visible = items);
+  fixture.client.tradeStateChange.next(payload);
+  for (const [query, expected] of [['EPE ENCH', 0], ['МЕРСК', 1], ['鉄の', 2], ['STRASS', 3], ['ılık', 4]]) {
+    fixture.service.setSearch(query);
+    assert.equal(visible.length, 1);
+    assert.equal(visible[0].index, expected);
+  }
+  fixture.service.selectCategory('weapons');
+  assert.equal(visible.length, 0);
+  assert.equal(fixture.calls.length, 0);
+  fixture.service.setSearch('');
+  assert.equal(visible.length, 4);
+  fixture.client.tradeStateChange.next(undefined);
+  fixture.client.tradeStateChange.next(payload);
+  assert.equal(visible.length, 5);
+  subscription.unsubscribe();
+  fixture.service.ngOnDestroy();
+});
+
+test('row Max chooses the maximum and Clear chooses zero while preserving other offers', () => {
+  const fixture = setup();
+  fixture.client.tradeStateChange.next(state());
+  fixture.service.offerAll(3);
+  assert.equal(fixture.calls.at(-1)[1].find(item => item.index === 3).count, 5);
+  assert.equal(fixture.calls.at(-1)[1].find(item => item.index === 7).count, 2);
+  fixture.service.clearOffer(3);
+  assert.equal(fixture.calls.at(-1)[1].some(item => item.index === 3), false);
+  assert.equal(fixture.calls.at(-1)[1].find(item => item.index === 7).count, 2);
+  fixture.service.ngOnDestroy();
+});
