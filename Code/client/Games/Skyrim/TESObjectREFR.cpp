@@ -612,9 +612,10 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
             pEnchantment = Cast<EnchantmentItem>(TESForm::GetById(enchantId));
         }
 
-        TP_ASSERT(pEnchantment, "No Enchantment created or found.");
-
-        pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge, arEntry.ExtraEnchantRemoveUnequip);
+        if (pEnchantment)
+            pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge, arEntry.ExtraEnchantRemoveUnequip);
+        else
+            spdlog::warn("{}: Enchantment {:X}:{:X} could not be created or found", __FUNCTION__, arEntry.ExtraEnchantId.ModId, arEntry.ExtraEnchantId.BaseId);
     }
 
     if (arEntry.ExtraPoisonId != 0)
@@ -931,8 +932,9 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
                 return nullptr;
             if (ExtraDataList* pExisting = FindExtraDataForItem(apItem, arEntry))
                 return pExisting;
-            spdlog::warn("{}: No stored extra data matches item {:X}; removing with rebuilt data", __FUNCTION__, apItem->formID);
-            return GetExtraDataFromItem(arEntry);
+            // Never hand RemoveItem a list the inventory does not own; remote copies often lack the exact data.
+            spdlog::warn("{}: No stored extra data matches item {:X}; removing without extra data", __FUNCTION__, apItem->formID);
+            return nullptr;
         };
         if (arEntry.Potion.Effects.empty())
             RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, removalList(pObject), nullptr);
@@ -974,7 +976,9 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
         }
     }
 
-    AlchemyItem::Release(createdPotion);
+    // The created potion's reference is deliberately kept: dropping it could free a form the inventory
+    // still points at if the inventory does not hold its own created-object reference.
+    (void)createdPotion;
     UpdateItemList(nullptr);
 }
 

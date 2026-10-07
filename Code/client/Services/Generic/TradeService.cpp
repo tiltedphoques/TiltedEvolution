@@ -124,12 +124,11 @@ std::string MakeDisplayName(ModSystem& aModSystem, const Inventory::Entry& aEntr
 {
     if (!aEntry.Potion.Effects.empty())
     {
-        auto* local = AlchemyItem::Find(PlayerCharacter::Get(), aEntry.Potion);
-        auto* created = local ? nullptr : AlchemyItem::Create(aEntry.Potion);
-        auto* potion = local ? local : created;
-        std::string name = potion && potion->GetName() ? potion->GetName() : "Crafted potion (unavailable)";
-        AlchemyItem::Release(created);
-        return name;
+        // Only name from a potion this game already has; creating forms just to render the UI is avoided.
+        if (auto* local = AlchemyItem::Find(PlayerCharacter::Get(), aEntry.Potion); local && local->GetName())
+            return local->GetName();
+        auto* first = TESForm::GetById(aModSystem.GetGameId(aEntry.Potion.Effects[0].EffectId));
+        return fmt::format("{} of {}", aEntry.Potion.IsPoison ? "Poison" : "Potion", first && first->GetName() ? first->GetName() : "unknown effect");
     }
     const uint32_t formId = aModSystem.GetGameId(aEntry.BaseId);
     if (formId)
@@ -223,8 +222,7 @@ TradeService::~TradeService() noexcept
 
 void TradeService::ReleasePreparedPotions() noexcept
 {
-    for (auto* potion : m_preparedPotions)
-        AlchemyItem::Release(potion);
+    // References are kept: the same forms may already be in this player's inventory after the trade.
     m_preparedPotions.clear();
 }
 
@@ -253,8 +251,6 @@ void TradeService::SetReady(bool aReady) noexcept
                 }
                 if (std::find(m_preparedPotions.begin(), m_preparedPotions.end(), created) == m_preparedPotions.end())
                     m_preparedPotions.push_back(created);
-                else
-                    AlchemyItem::Release(created);
             }
             request.AcceptedItems.push_back(item);
         }
