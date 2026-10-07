@@ -901,10 +901,9 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
         return;
     }
 
-    ExtraDataList* pExtraDataList = GetExtraDataFromItem(arEntry);
-
     if (arEntry.Count > 0)
     {
+        ExtraDataList* pExtraDataList = GetExtraDataFromItem(arEntry);
         bool isWorn = false;
         bool isWornLeft = false;
         if (pExtraDataList)
@@ -925,8 +924,18 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
     else if (arEntry.Count < 0)
     {
         spdlog::debug("Removing item {:X}, count {}", pObject->formID, -arEntry.Count);
+        // Removal must name the inventory's own extra data list. A freshly built list matches none of the
+        // stored ones, so an enchanted, renamed or poisoned item would stay while a plain copy was taken.
+        auto removalList = [this, &arEntry](TESBoundObject* apItem) -> ExtraDataList* {
+            if (!arEntry.ContainsExtraData())
+                return nullptr;
+            if (ExtraDataList* pExisting = FindExtraDataForItem(apItem, arEntry))
+                return pExisting;
+            spdlog::warn("{}: No stored extra data matches item {:X}; removing with rebuilt data", __FUNCTION__, apItem->formID);
+            return GetExtraDataFromItem(arEntry);
+        };
         if (arEntry.Potion.Effects.empty())
-            RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+            RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, removalList(pObject), nullptr);
         else
         {
             // Equivalent recipes can have different local IDs. Remove across their actual stacks.
@@ -940,7 +949,7 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
                 const auto count = static_cast<int32_t>(std::min(remaining, before));
                 if (count <= 0)
                     break;
-                RemoveItem(potion, count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+                RemoveItem(potion, count, ITEM_REMOVE_REASON::kRemove, removalList(potion), nullptr);
                 const auto removed = before - GetItemCountInInventory(potion);
                 if (removed <= 0)
                     break;
@@ -967,6 +976,34 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
 
     AlchemyItem::Release(createdPotion);
     UpdateItemList(nullptr);
+}
+
+ExtraDataList* TESObjectREFR::FindExtraDataForItem(TESBoundObject* apObject, const Inventory::Entry& arEntry) const noexcept
+{
+    auto* pChanges = GetContainerChanges();
+    if (!apObject || !pChanges || !pChanges->entries)
+        return nullptr;
+
+    for (auto* pEntry : *pChanges->entries)
+    {
+        if (!pEntry || pEntry->form != apObject || !pEntry->dataList)
+            continue;
+        for (ExtraDataList* pExtraDataList : *pEntry->dataList)
+        {
+            if (!pExtraDataList)
+                continue;
+            Inventory::Entry local{};
+            local.BaseId = arEntry.BaseId;
+            local.Potion = arEntry.Potion;
+            {
+                ScopedExtraDataOverride _;
+                GetItemFromExtraData(local, pExtraDataList);
+            }
+            if (local.CanBeMerged(arEntry))
+                return pExtraDataList;
+        }
+    }
+    return nullptr;
 }
 
 void TESObjectREFR::UpdateItemList(TESForm* pUnkForm) noexcept
