@@ -21,3 +21,9 @@ Each client shows only the partner items it can rebuild: every plugin form the i
 
 9. A offers a crafted potion with an effect from a plugin B lacks, plus a crafted poison with vanilla effects. B offers a weapon with a crafted vanilla enchantment, plus armor from a plugin A lacks. Verify A sees only the weapon, B sees only the poison, each sender's offer marks the hidden item after the partner readies, and after the countdown only the weapon and poison change hands.
 10. Coat a weapon with a crafted vanilla-effect poison, trade it, and verify the recipient's weapon shows the same poison effects and remaining uses, then hits apply the poison. Repeat with a poison using an effect from a plugin the recipient lacks: the weapon must stay hidden and remain with the sender.
+
+## Live inventory snapshot
+
+Enchanting, renaming and brewing can change items without the incremental inventory events the server relies on. When a trade starts and each time a player readies, their client sends its live inventory and the server replaces its copy for the trade. Offered items the snapshot no longer covers are dropped from the offer and both players are unreadied. Readying an outdated offer, or one built on an outdated partner offer, unreadies instead of cancelling.
+
+11. Enchant and rename an item ("AAA ...") and brew a potion while connected, then start a trade without relogging. Both must appear in the picker, the renamed item must be found by searching "AAA", and readying with both offered must not cancel the trade.

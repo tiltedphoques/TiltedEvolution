@@ -50,6 +50,7 @@ private:
 
     void ClearSession() noexcept;
     void ReleasePreparedPotions() noexcept;
+    void SyncInventory() const noexcept;
     void EmitStateToUI() const noexcept;
     void EmitInviteUpdate(uint32_t aInviterId, bool aAdded, uint64_t aExpiryTick = 0) const noexcept;
     void EmitCancellation(uint32_t aPartnerId, TradeCancelReason aReason, bool aWasInitiator) const noexcept;

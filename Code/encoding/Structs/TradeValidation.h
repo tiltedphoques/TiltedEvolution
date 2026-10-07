@@ -86,6 +86,37 @@ inline bool ValidateTradeOffer(const Inventory& acInventory, const Vector<Invent
     return true;
 }
 
+// Keeps the offered items an inventory can still cover, reserving quantities in offer order.
+inline Vector<Inventory::Entry> KeepCoveredTradeOffer(const Inventory& acInventory, const Vector<Inventory::Entry>& acItems) noexcept
+{
+    Vector<int32_t> remaining;
+    remaining.reserve(acInventory.Entries.size());
+    for (const auto& entry : acInventory.Entries)
+        remaining.push_back(std::max(0, entry.Count));
+
+    Vector<Inventory::Entry> kept;
+    for (const auto& item : acItems)
+    {
+        if (item.Count <= 0 || IsExcludedTradeItem(item) || item.IsWorn())
+            continue;
+        auto reserved = remaining;
+        int32_t needed = item.Count;
+        for (size_t i = 0; i < acInventory.Entries.size() && needed > 0; ++i)
+        {
+            if (!SameTradeItem(acInventory.Entries[i], item))
+                continue;
+            const int32_t count = std::min(needed, reserved[i]);
+            reserved[i] -= count;
+            needed -= count;
+        }
+        if (needed != 0)
+            continue;
+        remaining = std::move(reserved);
+        kept.push_back(item);
+    }
+    return kept;
+}
+
 // Publish neither inventory until both offers and resulting stack counts are valid.
 inline bool PrepareTradeExchange(const Inventory& acLeft, const Inventory& acRight,
     const Vector<Inventory::Entry>& acLeftOffer, const Vector<Inventory::Entry>& acRightOffer,

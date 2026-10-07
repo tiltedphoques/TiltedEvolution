@@ -11,6 +11,7 @@
 #include <Messages/TradeOfferUpdateRequest.h>
 #include <Messages/TradeSetReadyRequest.h>
 #include <Messages/TradeCancelRequest.h>
+#include <Messages/TradeInventorySyncRequest.h>
 #include <Messages/NotifyTradeInvite.h>
 #include <Messages/NotifyTradeStarted.h>
 #include <Messages/NotifyTradeState.h>
@@ -233,12 +234,8 @@ void TradeService::SetReady(bool aReady) noexcept
     request.Ready = aReady;
     if (aReady)
     {
-        auto* player = PlayerCharacter::Get();
-        if (!player || !ValidateTradeOffer(player->GetInventory(), m_session.SelfItems))
-        {
-            CancelTrade();
-            return;
-        }
+        // The server validates the offer against this snapshot; an outdated offer unreadies instead of cancelling.
+        SyncInventory();
         // Accept only partner items this game can rebuild; the rest stay with the partner.
         // Keep prepared potion forms alive through cancellation races until the session ends.
         auto& modSystem = m_world.GetModSystem();
@@ -262,6 +259,16 @@ void TradeService::SetReady(bool aReady) noexcept
             request.AcceptedItems.push_back(item);
         }
     }
+    m_transport.Send(request);
+}
+
+void TradeService::SyncInventory() const noexcept
+{
+    auto* player = PlayerCharacter::Get();
+    if (!player)
+        return;
+    TradeInventorySyncRequest request{};
+    request.Entries = player->GetInventory().Entries;
     m_transport.Send(request);
 }
 
@@ -370,6 +377,9 @@ void TradeService::OnTradeStarted(const NotifyTradeStarted& acMessage) noexcept
 
     m_pendingInvites.erase(acMessage.PartnerPlayerId);
     EmitInviteUpdate(acMessage.PartnerPlayerId, false);
+
+    // Offer from the live inventory: enchanted, renamed and brewed items may be missing from the server copy.
+    SyncInventory();
 
     EmitStateToUI();
 }

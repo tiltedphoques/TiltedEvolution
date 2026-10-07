@@ -58,6 +58,7 @@ enum ClientOpcode : unsigned char
     kTradeOfferUpdateRequest,
     kTradeSetReadyRequest,
     kTradeCancelRequest,
+    kTradeInventorySyncRequest,
     kClientOpcodeMax
 };
 

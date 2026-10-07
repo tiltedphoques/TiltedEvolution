@@ -10,6 +10,7 @@
 #include <Messages/ServerMessageFactory.h>
 #include <catch2/catch.hpp>
 #include <limits>
+#include <Messages/TradeInventorySyncRequest.h>
 
 namespace
 {
@@ -367,4 +368,41 @@ TEST_CASE("Trade packets round trip through message factories", "[trading][encod
         REQUIRE(decoded->SelfItems == state.SelfItems);
         REQUIRE(decoded->SelfInventory == state.SelfInventory);
     }
+}
+
+TEST_CASE("Inventory sync keeps only offered items the live inventory still covers", "[trading]")
+{
+    Inventory::Entry sword;
+    sword.BaseId.BaseId = 0x12EB7;
+    sword.Count = 1;
+    auto enchanted = sword;
+    enchanted.ExtraEnchantId.ModId = 0xFFFFFFFF;
+    enchanted.ExtraEnchantId.BaseId = 0x800;
+    enchanted.EnchantData.IsWeapon = true;
+    enchanted.EnchantData.Effects.push_back(CraftedPotion().Potion.Effects[0]);
+    auto potion = CraftedPotion();
+
+    // The server copy still had the plain sword; enchanting changed it in place.
+    Inventory live;
+    live.Entries = {enchanted, potion};
+    const auto kept = KeepCoveredTradeOffer(live, {sword, potion, enchanted});
+    REQUIRE(kept.size() == 2);
+    REQUIRE(SameTradeItem(kept[0], potion));
+    REQUIRE(SameTradeItem(kept[1], enchanted));
+
+    auto twoPotions = potion;
+    twoPotions.Count = potion.Count;
+    REQUIRE(KeepCoveredTradeOffer(live, {twoPotions, twoPotions}).size() == 1);
+
+    TiltedPhoques::Buffer buffer(4096);
+    TradeInventorySyncRequest request;
+    request.Entries = live.Entries;
+    TiltedPhoques::Buffer::Writer writer(&buffer);
+    request.Serialize(writer);
+    TiltedPhoques::Buffer::Reader reader(&buffer);
+    auto message = ClientMessageFactory{}.Extract(reader);
+    REQUIRE(message);
+    REQUIRE(message->GetOpcode() == kTradeInventorySyncRequest);
+    const auto* decoded = static_cast<TradeInventorySyncRequest*>(message.get());
+    REQUIRE(decoded->Entries == request.Entries);
 }

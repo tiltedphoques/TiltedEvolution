@@ -13,6 +13,7 @@ struct TradeInviteResponseRequest;
 struct TradeOfferUpdateRequest;
 struct TradeSetReadyRequest;
 struct TradeCancelRequest;
+struct TradeInventorySyncRequest;
 
 struct Player;
 
@@ -35,6 +36,7 @@ protected:
     void OnTradeOfferUpdate(const PacketEvent<TradeOfferUpdateRequest>& acPacket) noexcept;
     void OnTradeSetReady(const PacketEvent<TradeSetReadyRequest>& acPacket) noexcept;
     void OnTradeCancel(const PacketEvent<TradeCancelRequest>& acPacket) noexcept;
+    void OnTradeInventorySync(const PacketEvent<TradeInventorySyncRequest>& acPacket) noexcept;
 
 private:
     struct TradeOffer
@@ -102,4 +104,5 @@ private:
     entt::scoped_connection m_tradeOfferUpdateConnection;
     entt::scoped_connection m_tradeSetReadyConnection;
     entt::scoped_connection m_tradeCancelConnection;
+    entt::scoped_connection m_tradeInventorySyncConnection;
 };

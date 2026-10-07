@@ -18,6 +18,7 @@
 #include <Messages/TradeOfferUpdateRequest.h>
 #include <Messages/TradeSetReadyRequest.h>
 #include <Messages/TradeCancelRequest.h>
+#include <Messages/TradeInventorySyncRequest.h>
 
 #include <Game/Player.h>
 #include <Game/PlayerManager.h>
@@ -43,6 +44,7 @@ TradeService::TradeService(World& aWorld, entt::dispatcher& aDispatcher) noexcep
     m_tradeOfferUpdateConnection = aDispatcher.sink<PacketEvent<TradeOfferUpdateRequest>>().connect<&TradeService::OnTradeOfferUpdate>(this);
     m_tradeSetReadyConnection = aDispatcher.sink<PacketEvent<TradeSetReadyRequest>>().connect<&TradeService::OnTradeSetReady>(this);
     m_tradeCancelConnection = aDispatcher.sink<PacketEvent<TradeCancelRequest>>().connect<&TradeService::OnTradeCancel>(this);
+    m_tradeInventorySyncConnection = aDispatcher.sink<PacketEvent<TradeInventorySyncRequest>>().connect<&TradeService::OnTradeInventorySync>(this);
 }
 
 void TradeService::OnUpdate(const UpdateEvent&) noexcept
@@ -302,14 +304,22 @@ void TradeService::OnTradeSetReady(const PacketEvent<TradeSetReadyRequest>& acPa
 
     if (!ValidateOffer(pPlayer, pSession->Offers[cIndex].Items))
     {
+        // The offer no longer matches the player's inventory; keep the trade open so they can adjust it.
         spdlog::warn("[TradeService]: Player {} attempted to ready invalid offer", pPlayer->GetId());
-        CancelSession(*pSession, TradeCancelReason::FailedValidation, pPlayer);
+        pSession->Offers[cIndex].Ready = false;
+        pSession->Offers[cIndex].AcceptedItems.clear();
+        ResetCountdown(*pSession);
+        SendStateUpdate(*pSession);
         return;
     }
 
     if (!ValidateAcceptedItems(pSession->Offers[1 - cIndex].Items, message.AcceptedItems))
     {
-        CancelSession(*pSession, TradeCancelReason::FailedValidation, pPlayer);
+        // The partner's offer changed after this player last saw it; they can ready again on the new state.
+        pSession->Offers[cIndex].Ready = false;
+        pSession->Offers[cIndex].AcceptedItems.clear();
+        ResetCountdown(*pSession);
+        SendStateUpdate(*pSession);
         return;
     }
     // Keep the server's canonical copies of the accepted partner items, not the client's echo.
@@ -344,6 +354,39 @@ void TradeService::OnTradeCancel(const PacketEvent<TradeCancelRequest>& acPacket
     }
 
     RemoveInviteFor(pPlayer, TradeCancelReason::Cancelled, pPlayer);
+}
+
+void TradeService::OnTradeInventorySync(const PacketEvent<TradeInventorySyncRequest>& acPacket) noexcept
+{
+    Player* pPlayer = acPacket.pPlayer;
+    TradeSession* pSession = GetSession(pPlayer);
+    if (!pSession)
+        return;
+
+    const int32_t cIndex = GetSessionIndex(*pSession, pPlayer);
+    auto* pInventory = GetInventoryFor(pPlayer);
+    if (cIndex < 0 || !pInventory)
+        return;
+
+    // Incremental inventory events miss in-place changes such as enchanting, renaming or brewing,
+    // so the trading player's live inventory replaces the server copy for the trade.
+    pInventory->Entries = acPacket.Packet.Entries;
+
+    auto& offer = pSession->Offers[cIndex];
+    auto covered = KeepCoveredTradeOffer(*pInventory, offer.Items);
+    if (covered.size() != offer.Items.size())
+    {
+        spdlog::debug("[TradeService]: Dropped {} offered items no longer in player {}'s inventory", offer.Items.size() - covered.size(), pPlayer->GetId());
+        offer.Items = std::move(covered);
+        for (auto& each : pSession->Offers)
+        {
+            each.Ready = false;
+            each.AcceptedItems.clear();
+        }
+        ResetCountdown(*pSession);
+    }
+
+    SendStateUpdate(*pSession);
 }
 
 TradeService::TradeSession* TradeService::GetSession(Player* apPlayer) noexcept
