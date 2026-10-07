@@ -58,6 +58,18 @@ AlchemyItem* AlchemyItem::Find(TESObjectREFR* apOwner, const Inventory::PotionDa
     return nullptr;
 }
 
+namespace
+{
+// Effect cost only feeds the item's gold value; the engine may keep its own when it reuses a created potion.
+bool SameEffects(const Inventory::PotionData& acLhs, const Inventory::PotionData& acRhs) noexcept
+{
+    return acLhs.IsPoison == acRhs.IsPoison && acLhs.Effects.size() == acRhs.Effects.size() &&
+        std::is_permutation(acLhs.Effects.begin(), acLhs.Effects.end(), acRhs.Effects.begin(), [](const auto& acA, const auto& acB) {
+            return acA.EffectId == acB.EffectId && acA.Magnitude == acB.Magnitude && acA.Area == acB.Area && acA.Duration == acB.Duration;
+        });
+}
+} // namespace
+
 AlchemyItem* AlchemyItem::Create(const Inventory::PotionData& aData) noexcept
 {
     if (!aData.IsValid())
@@ -91,24 +103,21 @@ AlchemyItem* AlchemyItem::Create(const Inventory::PotionData& aData) noexcept
     AlchemyItem* created = nullptr;
     TiltedPhoques::ThisCall(aData.IsPoison ? addPoison : addPotion, manager, &created, &effects);
     Memory::Free(effects.data);
-    if (created)
+    if (!created)
     {
-        Inventory::PotionData check;
-        CaptureRecipe(created, check);
-        if (check == aData)
-            return created;
-        spdlog::error("[TradeService]: AddPotion returned effects/type differing from the offered potion");
-        Release(created);
+        spdlog::error("[TradeService]: {} returned no form for a {}-effect recipe", aData.IsPoison ? "AddPoison" : "AddPotion", aData.Effects.size());
+        return nullptr;
     }
+    Inventory::PotionData check;
+    CaptureRecipe(created, check);
+    if (SameEffects(check, aData))
+        return created;
+    // The engine may hand back an existing created potion, including one in this player's own inventory.
+    // Dropping its reference here could free a form an inventory still holds, so it is only refused.
+    spdlog::error("[TradeService]: {} returned {:X} whose effects differ from the offered recipe", aData.IsPoison ? "AddPoison" : "AddPotion", created->formID);
+    for (const auto& effect : aData.Effects)
+        spdlog::error("[TradeService]:   wanted {:X}:{:X} magnitude {} area {} duration {} cost {}", effect.EffectId.ModId, effect.EffectId.BaseId, effect.Magnitude, effect.Area, effect.Duration, effect.RawCost);
+    for (const auto& effect : check.Effects)
+        spdlog::error("[TradeService]:   got {:X}:{:X} magnitude {} area {} duration {} cost {}", effect.EffectId.ModId, effect.EffectId.BaseId, effect.Magnitude, effect.Area, effect.Duration, effect.RawCost);
     return nullptr;
-}
-
-void AlchemyItem::Release(AlchemyItem* apItem) noexcept
-{
-    auto* manager = BGSCreatedObjectManager::Get();
-    if (!apItem || !manager)
-        return;
-    TP_THIS_FUNCTION(TDecrementRef, void, BGSCreatedObjectManager, AlchemyItem*);
-    POINTER_SKYRIMSE(TDecrementRef, decrementRef, 36171);
-    TiltedPhoques::ThisCall(decrementRef, manager, apItem);
 }

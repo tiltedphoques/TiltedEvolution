@@ -34,9 +34,9 @@ struct AlchemyItem : MagicItem
     static bool CaptureRecipe(TESForm* apForm, Inventory::PotionData& aData) noexcept;
     static void Capture(TESForm* apForm, Inventory::Entry& aEntry) noexcept;
     static AlchemyItem* Find(TESObjectREFR* apOwner, const Inventory::PotionData& aData) noexcept;
-    // The returned pointer owns one created-object-manager reference. Release it after use.
+    // The returned form may be an existing created potion with the same effects. Its created-object
+    // reference is never dropped: other inventories can point at the same form.
     static AlchemyItem* Create(const Inventory::PotionData& aData) noexcept;
-    static void Release(AlchemyItem* apItem) noexcept;
 };
 
 static_assert(sizeof(AlchemyItem::Data) == 0x20);
