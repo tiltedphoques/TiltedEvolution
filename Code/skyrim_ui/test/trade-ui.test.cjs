@@ -240,6 +240,7 @@ test('broad categories include ammo, poisons and soul gems; unknown types remain
   assert.equal(visible.length, 2);
   assert.equal(fixture.service.categories.includes('soul_gems'), false);
   assert.equal(fixture.service.categories.includes('ammunition'), false);
+  assert.equal(fixture.service.categories.includes('poisons'), false);
   subscription.unsubscribe();
   fixture.service.ngOnDestroy();
 });

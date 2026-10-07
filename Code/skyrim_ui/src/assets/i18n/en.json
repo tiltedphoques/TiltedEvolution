@@ -166,7 +166,7 @@
         "books": "Books",
         "keys": "Keys",
         "soul_gems": "Soul Gems",
-        "misc": "Misc/Gems"
+        "misc": "Misc"
       },
       "EQUIPPED_ITEM_WARNING": "Unequip this item before trading it.",
       "INVITES_TITLE": "Trade invitations",
