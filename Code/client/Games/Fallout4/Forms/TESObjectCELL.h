@@ -14,7 +14,7 @@ struct TESObjectCELL : TESForm
 
     enum class CellState : uint8_t
     {
-        Attached = 7
+        Attached = 8
     };
 
     bool IsAttached() const { return cellState == CellState::Attached; }

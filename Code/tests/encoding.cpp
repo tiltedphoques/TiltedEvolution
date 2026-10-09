@@ -4,6 +4,8 @@
 #include <TiltedCore/Serialization.hpp>
 
 #include <optional>
+#include <limits>
+#include <type_traits>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -13,6 +15,8 @@
 
 #include <catch2/catch.hpp>
 
+#include <Messages/SettlementRequest.h>
+#include <Messages/NotifySettlement.h>
 #include <Messages/ClientMessageFactory.h>
 #include <Messages/ServerMessageFactory.h>
 #include <Structs/Vector2_NetQuantize.h>
@@ -635,5 +639,85 @@ TEST_CASE("StringCache", "[encoding.string_cache]")
         recvUpdate.DeserializeRaw(reader);
 
         REQUIRE(update == recvUpdate);
+    }
+}
+
+TEST_CASE("Settlement edits retain identity, revisions and tombstones", "[encoding][settlement]")
+{
+    SettlementRequest request;
+    request.Operation = SettlementRequest::Action::Update;
+    request.RequestId = 0xFF012345;
+    request.SessionId = 0x123456789ABC;
+    request.Data.Id = 71;
+    request.Data.Revision = 3;
+    request.Data.LeaderReference = 0xFF004321;
+    request.Data.Workshop = {1, 0x1000};
+    request.Data.Base = {2, 0x2000};
+    request.Data.Cell = {1, 0x3000};
+    request.Data.WorldSpace = {1, 0x4000};
+    request.Data.Position = {-50000.f, 12345.f, 1400.f};
+    request.Data.Rotation = {0.f, 0.f, 1.5f};
+    request.Data.Scale = 125;
+    REQUIRE(request.Data.IsValid());
+    auto roundTrip = [](const auto& aMessage, const auto& aFactory)
+    {
+        using T = std::decay_t<decltype(aMessage)>;
+        Buffer buffer(16384);
+        Buffer::Writer writer(&buffer);
+        aMessage.Serialize(writer);
+        Buffer::Reader reader(&buffer);
+        auto decoded = CastUnique<T>(aFactory.Extract(reader));
+        REQUIRE(decoded);
+        REQUIRE(*decoded == aMessage);
+    };
+    SECTION("Runtime placements and stable reference removals survive transport")
+    {
+        roundTrip(request, ClientMessageFactory{});
+        request.Data.LeaderReference = 0;
+        request.Data.Reference = {1, 0x5000};
+        request.Data.Removed = true;
+        roundTrip(request, ClientMessageFactory{});
+        NotifySettlement notify;
+        notify.SessionId = 0x123456789ABC;
+        notify.LeaderPlayerId = 11;
+        notify.SenderId = 12;
+        notify.RequestId = request.RequestId;
+        notify.Accepted = true;
+        notify.Data = request.Data;
+        roundTrip(notify, ServerMessageFactory{});
+        notify.Accepted = false;
+        roundTrip(notify, ServerMessageFactory{});
+    }
+    SECTION("Snapshot handshake has no object")
+    {
+        roundTrip(SettlementRequest{}, ClientMessageFactory{});
+        NotifySettlement notify;
+        notify.SessionId = 345;
+        notify.Accepted = true;
+        roundTrip(notify, ServerMessageFactory{});
+    }
+    SECTION("Malformed transforms and missing identities are rejected")
+    {
+        auto invalid = request.Data;
+        invalid.Position.x = std::numeric_limits<float>::quiet_NaN();
+        REQUIRE_FALSE(invalid.IsValid());
+        invalid = request.Data;
+        invalid.Rotation.z = std::numeric_limits<float>::infinity();
+        REQUIRE_FALSE(invalid.IsValid());
+        invalid = request.Data;
+        invalid.Scale = 0;
+        REQUIRE_FALSE(invalid.IsValid());
+        invalid = request.Data;
+        invalid.Workshop = {};
+        REQUIRE_FALSE(invalid.IsValid());
+        invalid = request.Data;
+        invalid.Base = {};
+        REQUIRE_FALSE(invalid.IsValid());
+        invalid = request.Data;
+        invalid.LeaderReference = 0x12345;
+        REQUIRE_FALSE(invalid.IsValid());
+        invalid = request.Data;
+        invalid.Reference = {1, 0x5000};
+        REQUIRE_FALSE(invalid.IsValid());
     }
 }

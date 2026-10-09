@@ -3,6 +3,7 @@
 
 #include <Services/CharacterService.h>
 #include <Services/ObjectService.h>
+#include <Services/SettlementService.h>
 #include <Services/QuestService.h>
 #include <Services/ServerListService.h>
 #include <Services/ActorValueService.h>
@@ -24,6 +25,7 @@ World::World()
     ctx().emplace<PlayerService>(*this, m_dispatcher);
     ctx().emplace<CalendarService>(*this, m_dispatcher);
     ctx().emplace<ObjectService>(*this, m_dispatcher);
+    ctx().emplace<SettlementService>(*this, m_dispatcher);
     ctx().emplace<ModsComponent>();
     ctx().emplace<ServerListService>(*this, m_dispatcher);
     ctx().emplace<QuestService>(*this, m_dispatcher);

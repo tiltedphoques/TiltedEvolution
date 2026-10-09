@@ -61,6 +61,8 @@
 #include <Messages/NotifySetTimeResult.h>
 #include <Messages/NotifyActionEvents.h>
 
+#include <Messages/NotifySettlement.h>
+
 using TiltedPhoques::UniquePtr;
 
 struct ServerMessageFactory
@@ -77,7 +79,7 @@ struct ServerMessageFactory
             NotifyDrawWeapon, NotifyMount, NotifyNewPackage, NotifyRespawn, NotifySyncExperience, NotifyEquipmentChanges, NotifyChatMessageBroadcast, TeleportCommandResponse,
             NotifyPlayerRespawn, NotifyDialogue, NotifySubtitle, NotifyPlayerDialogue, NotifyActorTeleport, NotifyPlayerLeft, NotifyPlayerJoined, NotifyDialogue, NotifySubtitle,
             NotifyPlayerDialogue, NotifyPlayerLevel, NotifyPlayerCellChanged, NotifyTeleport, NotifyPlayerHealthUpdate, NotifySettingsChange, NotifyWeatherChange,
-            NotifySetWaypoint, NotifyRemoveWaypoint, NotifySetTimeResult, NotifyRemoveSpell, NotifyPowerArmor, NotifyActionEvents>;
+            NotifySetWaypoint, NotifyRemoveWaypoint, NotifySetTimeResult, NotifyRemoveSpell, NotifyPowerArmor, NotifyActionEvents, NotifySettlement>;
 
         return s_visitor(std::forward<T>(func));
     }
