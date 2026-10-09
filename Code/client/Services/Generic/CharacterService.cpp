@@ -51,6 +51,12 @@
 #include <Messages/RequestOwnershipClaim.h>
 #include <Messages/MountRequest.h>
 #include <Messages/NotifyMount.h>
+#include <Messages/PowerArmorRequest.h>
+#include <Messages/NotifyPowerArmor.h>
+#if defined(TP_FALLOUT4)
+#include <Forms/ActorValueInfo.h>
+#include <cmath>
+#endif
 #include <Messages/NewPackageRequest.h>
 #include <Messages/NotifyNewPackage.h>
 #include <Messages/RequestRespawn.h>
@@ -65,6 +71,7 @@
 
 #include <World.h>
 #include <Games/TES.h>
+#include <Games/Overrides.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
     : m_world(aWorld)
@@ -89,6 +96,9 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
 
     m_mountConnection = m_dispatcher.sink<MountEvent>().connect<&CharacterService::OnMountEvent>(this);
     m_notifyMountConnection = m_dispatcher.sink<NotifyMount>().connect<&CharacterService::OnNotifyMount>(this);
+#if defined(TP_FALLOUT4)
+    m_powerArmorConnection = m_dispatcher.sink<NotifyPowerArmor>().connect<&CharacterService::OnNotifyPowerArmor>(this);
+#endif
 
     m_initPackageConnection = m_dispatcher.sink<InitPackageEvent>().connect<&CharacterService::OnInitPackageEvent>(this);
     m_newPackageConnection = m_dispatcher.sink<NotifyNewPackage>().connect<&CharacterService::OnNotifyNewPackage>(this);
@@ -171,7 +181,7 @@ void CharacterService::ReconcileActorData(
         // A remote draw correction may still be queued when an ownership grant arrives.
         m_weaponDrawUpdates.erase(apActor->formID);
 
-        if (apActor->actorState.IsWeaponDrawn() != acActorData.IsWeaponDrawn)
+        if (apActor->GetActorState()->IsWeaponDrawn() != acActorData.IsWeaponDrawn)
             apActor->SetWeaponDrawnEx(acActorData.IsWeaponDrawn);
     }
     else
@@ -301,6 +311,9 @@ void CharacterService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
     RunExperienceUpdates();
     ApplyCachedWeaponDraws(acUpdateEvent);
     ProcessLeveledConforms();
+#if defined(TP_FALLOUT4)
+    RunPowerArmorUpdates();
+#endif
 }
 
 void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept
@@ -326,8 +339,15 @@ void CharacterService::OnConnected(const ConnectedEvent& acConnectedEvent) const
     }
 }
 
-void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept
+void CharacterService::OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) noexcept
 {
+#if defined(TP_FALLOUT4)
+    m_localPowerArmorFurniture = 0;
+    m_powerArmorServerId = 0;
+    m_powerArmorOwnershipEpoch = 0;
+    m_localPowerArmorData = {};
+    m_powerArmorNextUpdate = {};
+#endif
     auto remoteView = m_world.view<FormIdComponent, RemoteComponent>();
     for (auto entity : remoteView)
     {
@@ -1311,6 +1331,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
         pNpc->Serialize(&message.AppearanceBuffer);
     }
 
+#if !defined(TP_FALLOUT4)
     if (isPlayer)
     {
         auto& entries = message.FaceTints.Entries;
@@ -1329,6 +1350,7 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
                 entries[i].Name = tints[i]->texture->name.AsAscii();
         }
     }
+#endif
 
     if (isPlayer)
     {
@@ -1563,7 +1585,7 @@ ActorData CharacterService::BuildActorData(Actor* apActor) const noexcept
     actorData.InitialActorValues = apActor->GetEssentialActorValues();
     actorData.InitialInventory = apActor->GetActorInventory();
     actorData.IsDead = apActor->IsDead();
-    actorData.IsWeaponDrawn = apActor->actorState.IsWeaponFullyDrawn();
+    actorData.IsWeaponDrawn = apActor->GetActorState()->IsWeaponFullyDrawn();
 
     return actorData;
 }
@@ -1572,6 +1594,11 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
 {
     if (acPickId == GameId{})
         return;
+
+#if defined(TP_FALLOUT4)
+    // LeveledNpcSystem::ApplyPick is not implemented for Fallout 4; keep the local pick.
+    return;
+#endif
 
     TESNPC* pBase = Cast<TESNPC>(apActor->baseForm);
     if (!pBase)
@@ -1830,8 +1857,16 @@ void CharacterService::RunRemoteUpdates() noexcept
         if (pActor->IsDead() != waitingFor3D.SpawnRequest.IsDead)
             waitingFor3D.SpawnRequest.IsDead ? pActor->Kill() : pActor->Respawn();
 
+#if defined(TP_FALLOUT4)
+        if (auto* pRemote = m_world.try_get<RemoteComponent>(entity))
+            ApplyPowerArmor(pActor, waitingFor3D.SpawnRequest.PowerArmorFurnitureId, waitingFor3D.SpawnRequest.PowerArmorFurnitureBaseId,
+                            waitingFor3D.SpawnRequest.PowerArmor, pRemote->PowerArmorFrameToken);
+#endif
+
+#if !defined(TP_FALLOUT4)
         if (pActor->IsVampireLord())
             pActor->FixVampireLordModel();
+#endif
 
         readyEntities.push_back(entity);
 
@@ -1985,3 +2020,147 @@ void CharacterService::ApplyCachedWeaponDraws(const UpdateEvent& acUpdateEvent) 
     for (uint32_t id : toRemove)
         m_weaponDrawUpdates.erase(id);
 }
+
+#if defined(TP_FALLOUT4)
+void CharacterService::RunPowerArmorUpdates() noexcept
+{
+    if (!m_transport.IsConnected())
+        return;
+
+    auto* pPlayer = PlayerCharacter::Get();
+    if (!pPlayer)
+        return;
+    TESObjectREFR* pFurniture = pPlayer->IsInPowerArmor() ? pPlayer->GetPowerArmorFurniture() : nullptr;
+    const uint32_t furnitureId = pFurniture ? pFurniture->formID : 0;
+    const auto now = std::chrono::steady_clock::now();
+    if (furnitureId == m_localPowerArmorFurniture && now < m_powerArmorNextUpdate)
+        return;
+    m_powerArmorNextUpdate = now + 500ms;
+
+    auto view = m_world.view<FormIdComponent, LocalComponent>();
+    const auto it = std::find_if(view.begin(), view.end(), [view](entt::entity aEntity) { return view.get<FormIdComponent>(aEntity).Id == 0x14; });
+    if (it == view.end())
+        return;
+    const auto& local = view.get<LocalComponent>(*it);
+
+    PowerArmorData data{};
+    if (pFurniture)
+    {
+        data.Items = pPlayer->GetPowerArmorInventory();
+        const float battery = pPlayer->actorValueOwner.GetValue(ActorValueInfo::kPowerArmorBattery);
+        data.BatteryCharge = std::round(std::max(0.f, battery) * 10.f) / 10.f;
+        data.FrameToken = furnitureId;
+    }
+    // Preserve the last worn state so the remote exit can transfer it to the frame.
+    else if (m_localPowerArmorFurniture)
+        data = m_localPowerArmorData;
+
+    if (furnitureId == m_localPowerArmorFurniture && local.Id == m_powerArmorServerId &&
+        local.OwnershipEpoch == m_powerArmorOwnershipEpoch && data == m_localPowerArmorData && !pFurniture)
+        return;
+    if (!data.IsValid())
+        return;
+
+    PowerArmorRequest request;
+    request.Id = local.Id;
+    request.OwnershipEpoch = local.OwnershipEpoch;
+    request.Data = data;
+    if (pFurniture)
+    {
+        if (!pFurniture->IsTemporary())
+            m_world.GetModSystem().GetServerModId(pFurniture->formID, request.FurnitureId);
+        m_world.GetModSystem().GetServerModId(pFurniture->baseForm->formID, request.FurnitureBaseId);
+        if (request.FurnitureBaseId == GameId{})
+            return;
+    }
+
+    if (m_transport.Send(request))
+    {
+        m_localPowerArmorFurniture = furnitureId;
+        m_powerArmorServerId = local.Id;
+        m_powerArmorOwnershipEpoch = local.OwnershipEpoch;
+        m_localPowerArmorData = furnitureId ? data : PowerArmorData{};
+    }
+}
+
+void CharacterService::OnNotifyPowerArmor(const NotifyPowerArmor& acMessage) const noexcept
+{
+    if (!acMessage.Data.IsValid() || (acMessage.FurnitureBaseId != GameId{} && acMessage.Data.FrameToken == 0))
+        return;
+    auto view = m_world.view<RemoteComponent, FormIdComponent>(entt::exclude<LocalComponent>);
+    const auto it = std::find_if(view.begin(), view.end(), [view, &acMessage](entt::entity aEntity)
+    {
+        const auto& remote = view.get<RemoteComponent>(aEntity);
+        return remote.Id == acMessage.Id && remote.OwnershipEpoch == acMessage.OwnershipEpoch;
+    });
+    if (it == view.end())
+        return;
+    if (auto* pWaiting = m_world.try_get<WaitingFor3D>(*it))
+    {
+        pWaiting->SpawnRequest.PowerArmorFurnitureId = acMessage.FurnitureId;
+        pWaiting->SpawnRequest.PowerArmorFurnitureBaseId = acMessage.FurnitureBaseId;
+        pWaiting->SpawnRequest.PowerArmor = acMessage.Data;
+        return;
+    }
+    if (auto* pActor = Cast<Actor>(TESForm::GetById(view.get<FormIdComponent>(*it).Id)))
+        ApplyPowerArmor(pActor, acMessage.FurnitureId, acMessage.FurnitureBaseId, acMessage.Data, view.get<RemoteComponent>(*it).PowerArmorFrameToken);
+}
+
+void CharacterService::ApplyPowerArmor(Actor* apActor, const GameId& acFurnitureId, const GameId& acFurnitureBaseId,
+                                     const PowerArmorData& acData, uint32_t& aFrameToken) noexcept
+{
+    ScopedInventoryOverride inventoryOverride;
+    ScopedEquipOverride equipOverride;
+    const auto applyContents = [&]()
+    {
+        apActor->ApplyPowerArmorInventory(acData.Items);
+        apActor->actorValueOwner.SetBaseValue(ActorValueInfo::kPowerArmorBattery, std::max(100.f, acData.BatteryCharge));
+        const float current = apActor->actorValueOwner.GetValue(ActorValueInfo::kPowerArmorBattery);
+        apActor->actorValueOwner.ForceCurrent(ActorValueOwner::ForceMode::DAMAGE, ActorValueInfo::kPowerArmorBattery, acData.BatteryCharge - current);
+    };
+    bool wearing = apActor->IsInPowerArmor() || apActor->GetPowerArmorFurniture();
+    if (acFurnitureBaseId == GameId{})
+    {
+        if (wearing)
+        {
+            if (acData.FrameToken)
+                applyContents();
+            apActor->ExitPowerArmor();
+        }
+        aFrameToken = 0;
+        return;
+    }
+    if (wearing && aFrameToken != acData.FrameToken)
+    {
+        apActor->ExitPowerArmor();
+        wearing = false;
+    }
+    if (wearing)
+    {
+        applyContents();
+        return;
+    }
+
+    auto& modSystem = World::Get().GetModSystem();
+    auto* pBase = Cast<TESBoundObject>(TESForm::GetById(modSystem.GetGameId(acFurnitureBaseId)));
+    if (!pBase)
+        return;
+    TESObjectREFR* pFurniture = nullptr;
+    if (acFurnitureId != GameId{})
+        pFurniture = Cast<TESObjectREFR>(TESForm::GetById(modSystem.GetGameId(acFurnitureId)));
+    if (!pFurniture || pFurniture->baseForm != pBase || pFurniture->IsDisabled())
+    {
+        const uint32_t handle = ModManager::Get()->Spawn(apActor->position, apActor->rotation, apActor->parentCell, apActor->GetWorldSpace(), pBase);
+        pFurniture = TESObjectREFR::GetByHandle(handle);
+    }
+    if (!pFurniture)
+        return;
+    apActor->EnterPowerArmor(pFurniture);
+    if (apActor->IsInPowerArmor())
+    {
+        aFrameToken = acData.FrameToken;
+        applyContents();
+    }
+}
+
+#endif

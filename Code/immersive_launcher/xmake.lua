@@ -58,9 +58,15 @@ local function build_launcher()
         "mem")
 end
 
-target("SkyrimImmersiveLauncher")
-    set_basename("SkyrimTogether")
+local kGame = get_config("game") or "skyrim"
+local kClientLib = kGame == "fallout4" and "Fallout4TogetherClient" or "SkyrimTogetherClient"
+local kClientLibFile = kGame == "fallout4" and "FTClient" or "SkyrimTogetherClient"
+local kLauncherName = kGame == "fallout4" and "Fallout4ImmersiveLauncher" or "SkyrimImmersiveLauncher"
+local kBaseName = kGame == "fallout4" and "FalloutTogether" or "SkyrimTogether"
+
+target(kLauncherName)
+    set_basename(kBaseName)
     add_defines("TARGET_PREFIX=\"st\"")
-    add_deps("SkyrimTogetherClient")
-    add_ldflags("/WHOLEARCHIVE:SkyrimTogetherClient", { force = true })
+    add_deps(kClientLib)
+    add_ldflags("/WHOLEARCHIVE:" .. kClientLibFile, { force = true })
     build_launcher()

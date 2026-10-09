@@ -4,7 +4,9 @@
 #include <Actor.h>
 #include <ExtraData/ExtraLeveledCreature.h>
 #include <Forms/TESNPC.h>
+#if !defined(TP_FALLOUT4)
 #include <Misc/GarbageCollector.h>
+#endif
 
 bool LeveledNpcSystem::IsLeveledNpcBase(const TESNPC* apBase) noexcept
 {
@@ -20,7 +22,12 @@ TESNPC* LeveledNpcSystem::GetOriginalBase(const Actor* apActor) noexcept
     if (!apActor)
         return nullptr;
 
+#if defined(TP_FALLOUT4)
+    const ExtraDataList* pExtraList = apActor->extraData;
+    const auto* pExtra = pExtraList ? static_cast<ExtraLeveledCreature*>(pExtraList->GetByType(ExtraDataType::LeveledCreature)) : nullptr;
+#else
     const auto* pExtra = static_cast<ExtraLeveledCreature*>(apActor->extraData.GetByType(ExtraDataType::LeveledCreature));
+#endif
     if (pExtra && pExtra->originalBase)
         return Cast<TESNPC>(pExtra->originalBase);
 
@@ -33,6 +40,11 @@ bool LeveledNpcSystem::ApplyPick(Actor* apActor, TESNPC* apPick) noexcept
     if (!apPick)
         return false;
 
+#if defined(TP_FALLOUT4)
+    // Fallout 4 resolves leveled actors through TESActorBaseData::CalcTemplateForRef and DeferredDeleter;
+    // applying a remote pick is not implemented yet.
+    return false;
+#else
     // Skyrim resolves a leveled NPC by copying the original base, then
     // applying the pick according to that base's template flags. Using
     // the pick itself discards data such as a hold guard's name/outfit.
@@ -53,4 +65,5 @@ bool LeveledNpcSystem::ApplyPick(Actor* apActor, TESNPC* apPick) noexcept
     spdlog::info("Applied leveled NPC pick for actor {:X}, original base: {:X}, base: {:X}, pick: {:X}",
         apActor->formID, pOriginalBase->formID, pResolvedBase->formID, apPick->formID);
     return true;
+#endif
 }

@@ -52,7 +52,7 @@
     button {
       min-width: 4em;
       padding: 0.5em;
-      background-color: #292929;
+      background-color: $-color-surface;
       border-radius: 2px;
     }
   }
@@ -85,7 +85,7 @@
 
 .search-list-server {
   display: inline-block;
-  background-color: rgba($color: #292929, $alpha: 0.6);
+  background-color: rgba($-color-surface, 0.6);
   font-size: 0.85rem;
   border-radius: 7px;
   height: 1.5rem;
@@ -112,7 +112,7 @@
       display: flex;
       align-items: center;
       width: 100%;
-      border-bottom: 1px solid grey;
+      border-bottom: 1px solid $-color-line;
       border-collapse: separate;
       font-size: var(--server-list-font-size);
 
@@ -138,20 +138,20 @@
     }
 
     .offline {
-      background-color: #ff9494;
+      background-color: $-color-offline;
     }
 
     .server-compatible {
-      color: green;
+      color: $-color-success;
     }
 
     .server-incompatible {
-      color: red;
+      color: $-color-error;
     }
 
     .join-button {
       padding: 0.25vw;
-      background-color: #292929;
+      background-color: $-color-surface;
       border-radius: 2px;
       margin-left: 5%;
       margin-right: 5%;
@@ -159,17 +159,17 @@
     }
 
     .server-list-favorite {
-      color: white;
+      color: $-color-text-strong;
 
       &:hover {
-        color: gray;
+        color: $-color-text-muted;
       }
 
       &.not {
-        color: gray;
+        color: $-color-text-muted;
 
         &:hover {
-          color: white;
+          color: $-color-text-strong;
         }
       }
     }

@@ -20,13 +20,13 @@
 
     section {
       margin-bottom: 1rem;
-      border-bottom: 2px solid;
+      border-bottom: 2px solid $-color-line-strong;
 
       .version {
-        color: green;
+        color: $-color-success;
 
         .outdated {
-          color: red;
+          color: $-color-error;
         }
       }
 

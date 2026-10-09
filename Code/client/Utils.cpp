@@ -84,11 +84,17 @@ std::optional<ActorOwnershipToken> GetRemoteOwnershipToken(const uint32_t aFormI
 
 void ShowHudMessage(const TiltedPhoques::String& acMessage)
 {
+#if defined(TP_FALLOUT4)
+    using TShowHudMessage = void(const char*, const char*, bool, bool);
+    static VersionDbPtr<TShowHudMessage> s_showHudMessage(2222440);
+    s_showHudMessage.Get()(acMessage.c_str(), nullptr, false, false);
+#else
     using TShowHudMessage = void(const char*, const char*, bool);
 
     POINTER_SKYRIMSE(TShowHudMessage, s_showHudMessage, 52933);
 
     s_showHudMessage(acMessage.c_str(), nullptr, false);
+#endif
 }
 
 } // namespace Utils

@@ -18,7 +18,7 @@ struct NotifyEquipmentChanges final : ServerMessage
 
     bool operator==(const NotifyEquipmentChanges& acRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() && ServerId == acRhs.ServerId && OwnershipEpoch == acRhs.OwnershipEpoch && ItemId == acRhs.ItemId && EquipSlotId == acRhs.EquipSlotId && Count == acRhs.Count && Unequip == acRhs.Unequip && IsSpell == acRhs.IsSpell && IsShout == acRhs.IsShout;
+        return GetOpcode() == acRhs.GetOpcode() && ServerId == acRhs.ServerId && OwnershipEpoch == acRhs.OwnershipEpoch && ItemId == acRhs.ItemId && EquipSlotId == acRhs.EquipSlotId && Count == acRhs.Count && Unequip == acRhs.Unequip && IsSpell == acRhs.IsSpell && IsShout == acRhs.IsShout && Mods == acRhs.Mods;
     }
 
     uint32_t ServerId{};
@@ -29,4 +29,5 @@ struct NotifyEquipmentChanges final : ServerMessage
     bool Unequip = false;
     bool IsSpell = false;
     bool IsShout = false;
+    TiltedPhoques::Vector<GameId> Mods{};
 };

@@ -4,7 +4,7 @@
     if(
       lightness($color) > 50,
       if($negative, #fff, #000),
-      if($negative, #000, #fff)
+      if($negative, #000, $-color-tint)
     ),
     (1 - $amount) * 100
   );

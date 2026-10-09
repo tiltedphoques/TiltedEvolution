@@ -12,7 +12,7 @@
 TESForm* TESForm::GetById(const uint32_t aId)
 {
     using TGetFormById = TESForm*(uint32_t);
-    POINTER_SKYRIMSE(TGetFormById, getFormById, 14617);
+    POINTER_GAME(TGetFormById, getFormById, 14617, 2193092);
 
     return getFormById.Get()(aId);
 }
@@ -92,6 +92,17 @@ void TESForm::SetSkipSaveFlag(bool aSet) noexcept
 
 uint32_t TESForm::GetChangeFlags() const noexcept
 {
+#if defined(TP_FALLOUT4)
+    TP_THIS_FUNCTION(TGetChangeFlags, uint32_t*, void, uint32_t*, const TESForm*);
+    static VersionDbPtr<void*> saveLoadGame(2697789);
+    static VersionDbPtr<TGetChangeFlags> getChangeFlags(2227900);
+    auto* pSaveLoadGame = *saveLoadGame.Get();
+    if (!pSaveLoadGame)
+        return 0;
+    uint32_t flags = 0;
+    TiltedPhoques::ThisCall(getChangeFlags, pSaveLoadGame, &flags, this);
+    return flags;
+#else
     struct Unk
     {
         uint8_t unk0[0x330];
@@ -112,6 +123,7 @@ uint32_t TESForm::GetChangeFlags() const noexcept
         return 0;
 
     return changeFlags.flags;
+#endif
 }
 
 TESNPC* TESNPC::Create(const String& acBuffer, const uint32_t aChangeFlags) noexcept
@@ -140,3 +152,29 @@ BGSHeadPart* TESNPC::GetHeadPart(uint32_t aType)
 
     return nullptr;
 }
+
+#if defined(TP_FALLOUT4)
+using TUsePreprocessedHead = bool(TESNPC*);
+static TUsePreprocessedHead* RealUsePreprocessedHead = nullptr;
+
+// Remote player NPCs have no facegen files on disk, so build their heads at runtime.
+static bool HookUsePreprocessedHead(TESNPC* apNpc)
+{
+    TESNPC* pRoot = apNpc;
+    while (pRoot && pRoot->faceNPC)
+        pRoot = pRoot->faceNPC;
+
+    if (pRoot && pRoot->IsTemporary())
+        return false;
+
+    return RealUsePreprocessedHead(apNpc);
+}
+
+static TiltedPhoques::Initializer s_npcHooks(
+    []()
+    {
+        static VersionDbPtr<TUsePreprocessedHead> usePreprocessedHead(2209308);
+        RealUsePreprocessedHead = usePreprocessedHead.Get();
+        TP_HOOK(&RealUsePreprocessedHead, HookUsePreprocessedHead);
+    });
+#endif

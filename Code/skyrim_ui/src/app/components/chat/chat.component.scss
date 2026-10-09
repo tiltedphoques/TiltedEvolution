@@ -29,22 +29,22 @@
     &.system {
       .app-chat-date,
       .app-chat-message {
-        color: #9999ff;
+        color: $-color-chat-system;
       }
     }
     &.dialogue {
       .app-chat-message {
-        color: #00ff33;
+        color: $-color-chat-dialogue;
       }
     }
     &.party {
       .app-chat-message {
-        color: #9affe6;
+        color: $-color-chat-party;
       }
     }
     &.local {
       .app-chat-message {
-        color: #eeff00;
+        color: $-color-chat-local;
       }
     }
   }
@@ -64,7 +64,7 @@
   flex: 0 0 (1rem + $-size-gap);
   margin-top: 0.1rem;
   border-top: 0.1rem solid;
-  border-image: url('../../../assets/images/separator/single.svg') 3;
+  border-image: image(separator) 3;
 
   input {
     flex: 1 1 auto;

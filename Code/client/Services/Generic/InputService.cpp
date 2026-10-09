@@ -13,15 +13,19 @@
 #include <Services/DiscordService.h>
 #include <World.h>
 
+#if !defined(TP_FALLOUT4)
 #include "Games/Skyrim/Interface/MenuControls.h"
+#endif
 
 static OverlayService* s_pOverlay = nullptr;
 static UINT s_currentACP = CP_ACP;
 
+#if !defined(TP_FALLOUT4)
 void ForceKillAllInput()
 {
     MenuControls::GetInstance()->SetToggle(false);
 }
+#endif
 
 uint32_t GetCefModifiers(uint16_t aVirtualKey)
 {
@@ -97,20 +101,14 @@ bool IsDisableKey(int aKey) noexcept
     return aKey == VK_ESCAPE;
 }
 
-void SetUIActive(OverlayService& aOverlay, auto apRenderer, bool aActive)
+void SetUIActive(OverlayService& aOverlay, bool aActive)
 {
-    TiltedPhoques::DInputHook::Get().SetEnabled(aActive);
     aOverlay.SetActive(aActive);
+    InputService::UpdateInputCapture();
 
     // Ensures the game is actually loaded, in case the initial event was sent too early
     aOverlay.SetVersion(BUILD_COMMIT);
     aOverlay.GetOverlayApp()->ExecuteAsync("enterGame");
-
-    apRenderer->SetCursorVisible(aActive);
-
-    // This is to disable the Windows cursor
-    while (ShowCursor(FALSE) >= 0)
-        ;
 }
 
 void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aType, bool aE0, bool aE1)
@@ -187,19 +185,36 @@ void ProcessKeyboard(uint16_t aKey, uint16_t aScanCode, cef_key_event_type_t aTy
     if (!pRenderer)
         return;
 
+    if (aKey == VK_ESCAPE && World::Get().GetDebugService().m_showDebugStuff)
+    {
+        if (aType == KEYEVENT_KEYUP)
+            World::Get().GetDebugService().SetVisible(false);
+        return;
+    }
+
     const auto active = overlay.GetActive();
 
     spdlog::debug("ProcessKey, type: {}, key: {}, active: {}", aType, aKey, active);
 
     if (aType != KEYEVENT_CHAR && (IsToggleKey(aKey) || (IsDisableKey(aKey) && active)))
     {
+        // Only a release that follows a press toggles; some input stacks report a release twice.
+        static bool s_togglePressed = false;
+
         if (!overlay.GetInGame())
         {
+#if !defined(TP_FALLOUT4)
             TiltedPhoques::DInputHook::Get().SetEnabled(false);
+#endif
         }
-        else if (aType == KEYEVENT_KEYUP)
+        else if (aType == KEYEVENT_RAWKEYDOWN || aType == KEYEVENT_KEYDOWN)
         {
-            SetUIActive(overlay, pRenderer, !active);
+            s_togglePressed = true;
+        }
+        else if (aType == KEYEVENT_KEYUP && s_togglePressed)
+        {
+            s_togglePressed = false;
+            SetUIActive(overlay, !active);
         }
     }
     else if (active)
@@ -223,6 +238,9 @@ void ProcessMouseMove(uint16_t aX, uint16_t aY)
     const auto pRenderer = pClient->GetOverlayRenderHandler();
     if (!pRenderer)
         return;
+
+    if (InputService::IsInputCaptured())
+        pRenderer->SetCursorLocation(aX, aY);
 
     const auto active = overlay.GetActive();
 
@@ -315,17 +333,29 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     auto& discord = World::Get().ctx().at<DiscordService>();
     discord.WndProcHandler(hwnd, uMsg, wParam, lParam);
 
-    const bool active = s_pOverlay->GetActive();
+    const bool active = IsInputCaptured();
     if (active)
     {
         auto& imgui = World::Get().ctx().at<ImguiService>();
         imgui.WndProcHandler(hwnd, uMsg, wParam, lParam);
     }
 
-    POINT position;
-
+    POINT position{};
     GetCursorPos(&position);
-    ScreenToClient(GetActiveWindow(), &position);
+    ScreenToClient(hwnd, &position);
+
+    if (active)
+    {
+        RECT clientRect{};
+        GetClientRect(hwnd, &clientRect);
+        CefRect viewRect;
+        pRenderer->GetViewRect(pClient->GetBrowser(), viewRect);
+        if (clientRect.right > 0 && clientRect.bottom > 0 && viewRect.width > 0 && viewRect.height > 0)
+        {
+            position.x = std::clamp<LONG>(position.x * viewRect.width / clientRect.right, 0, viewRect.width - 1);
+            position.y = std::clamp<LONG>(position.y * viewRect.height / clientRect.bottom, 0, viewRect.height - 1);
+        }
+    }
 
     ProcessMouseMove(static_cast<uint16_t>(position.x), static_cast<uint16_t>(position.y));
 
@@ -344,9 +374,11 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 
         if (input.header.dwType == RIM_TYPEKEYBOARD)
         {
+#if !defined(TP_FALLOUT4)
             const auto keyboard = input.data.keyboard;
-
-            ProcessKeyboard(keyboard.VKey, keyboard.MakeCode, keyboard.Flags & RI_KEY_BREAK ? KEYEVENT_KEYUP : KEYEVENT_KEYDOWN, keyboard.Flags & RI_KEY_E0, keyboard.Flags & RI_KEY_E1);
+            ProcessKeyboard(
+                keyboard.VKey, keyboard.MakeCode, keyboard.Flags & RI_KEY_BREAK ? KEYEVENT_KEYUP : KEYEVENT_KEYDOWN, keyboard.Flags & RI_KEY_E0, keyboard.Flags & RI_KEY_E1);
+#endif
         }
         else if (input.header.dwType == RIM_TYPEMOUSE)
         {
@@ -388,6 +420,13 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
             }
         }
     }
+#if defined(TP_FALLOUT4)
+    else if (uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_SYSKEYDOWN || uMsg == WM_SYSKEYUP)
+    {
+        const auto type = (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP) ? KEYEVENT_KEYUP : KEYEVENT_KEYDOWN;
+        ProcessKeyboard(static_cast<uint16_t>(wParam), (lParam >> 16) & 0xFF, type, (lParam & (1 << 24)) != 0, false);
+    }
+#endif
     else if (uMsg == WM_CHAR)
     {
         uint16_t scancode = (lParam >> 16) & 0xFF;
@@ -402,11 +441,9 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     }
     // If the player tabs out/in with UI visible, this WndProc doesn't run during mouse or keyboard events.
     // When player tabs in, force the UI state
-    else if (uMsg == WM_SETFOCUS && s_pOverlay->GetActive())
+    else if (uMsg == WM_SETFOCUS)
     {
-        TiltedPhoques::DInputHook::Get().SetEnabled(true);
-        s_pOverlay->SetActive(true);
-        pRenderer->SetCursorVisible(true);
+        UpdateInputCapture();
     }
     else if (uMsg == WM_INPUTLANGCHANGE)
     {
@@ -415,6 +452,30 @@ LRESULT CALLBACK InputService::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     }
 
     return 0;
+}
+
+bool InputService::IsInputCaptured() noexcept
+{
+    return s_pOverlay && (s_pOverlay->GetActive() || World::Get().GetDebugService().IsInputCaptured());
+}
+
+void InputService::UpdateInputCapture() noexcept
+{
+    const bool active = IsInputCaptured();
+#if !defined(TP_FALLOUT4)
+    TiltedPhoques::DInputHook::Get().SetEnabled(active);
+#endif
+    s_pOverlay->GetOverlayApp()->GetClient()->GetOverlayRenderHandler()->SetCursorVisible(active);
+
+#if defined(TP_FALLOUT4)
+    if (active)
+        ClipCursor(nullptr);
+#endif
+
+    while (ShowCursor(FALSE) >= 0)
+        ;
+    if (!active)
+        SetCursor(nullptr);
 }
 
 InputService::InputService(OverlayService& aOverlay) noexcept

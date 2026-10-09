@@ -21,8 +21,10 @@
 #include <Games/ActorExtension.h>
 #include <EquipManager.h>
 
+#if !defined(TP_FALLOUT4)
 #include <Structs/Skyrim/AnimationGraphDescriptor_VampireLordBehavior.h>
 #include <Structs/Skyrim/AnimationGraphDescriptor_WerewolfBehavior.h>
+#endif
 
 #include <Games/Overrides.h>
 
@@ -432,21 +434,28 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
     data.pSpell = pSpell;
     data.pEffectItem = pEffect;
     data.fMagnitude = acMessage.Magnitude;
-    data.fUnkFloat1 = 1.0f;
     data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
     data.bDualCast = acMessage.IsDualCasting;
+
+#if !defined(TP_FALLOUT4)
+    data.fUnkFloat1 = 1.0f;
 
     if (pEffect->IsWerewolfEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_WerewolfBehavior::m_key;
 
     if (pEffect->IsVampireLordEffect())
         pActor->GetExtension()->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
+#endif
 
     // This hack is here because slow time seems to be twice as slow when cast by an npc
     if (pEffect->IsSlowEffect())
         pActor = PlayerCharacter::Get();
 
+#if defined(TP_FALLOUT4)
+    static_cast<MagicTarget*>(pActor)->AddTarget(data);
+#else
     pActor->magicTarget.AddTarget(data, acMessage.ApplyHealPerkBonus, acMessage.ApplyStaminaPerkBonus);
+#endif
     spdlog::debug("Applied remote magic effect");
 }
 
@@ -684,7 +693,9 @@ void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
     data.pSpell = pSpell;
     data.pEffectItem = pSpell->GetEffect((pSkyrimTogether->standardId << 24) | 0x1824);
     data.fMagnitude = 1.f;
+#if !defined(TP_FALLOUT4)
     data.fUnkFloat1 = 1.f;
+#endif
     data.eCastingSource = MagicSystem::CastingSource::CASTING_SOURCE_COUNT;
 
     auto view = World::Get().view<FormIdComponent, PlayerComponent>();
@@ -698,6 +709,10 @@ void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
         if (!pRemotePlayer)
             continue;
 
+#if defined(TP_FALLOUT4)
+        static_cast<MagicTarget*>(pRemotePlayer)->AddTarget(data);
+#else
         pRemotePlayer->magicTarget.AddTarget(data, false, false);
+#endif
     }
 }

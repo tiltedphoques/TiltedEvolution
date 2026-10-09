@@ -7,6 +7,12 @@
 #define POINTER_SKYRIMSE(className, variableName, ...) static VersionDbPtr<className> variableName(__VA_ARGS__)
 #define POINTER_SKYRIMSE_LEGACY(className, variableName, ...) static AutoPtr<decltype()> variableName(__VA_ARGS__)
 
+#if defined(TP_FALLOUT4)
+#define POINTER_GAME(className, variableName, skyrimId, falloutId) static VersionDbPtr<className> variableName(falloutId)
+#else
+#define POINTER_GAME(className, variableName, skyrimId, falloutId) POINTER_SKYRIMSE(className, variableName, skyrimId)
+#endif
+
 // TODO: should this be debug only? I removed the check since debug is broken, can only use releasedbg
 #define TP_ASSERT(Expr, Msg, ...)                                    \
     if (!(Expr))                                                     \

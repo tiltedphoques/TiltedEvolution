@@ -29,6 +29,7 @@
             "namedChunks": true,
             "stylePreprocessorOptions": {
               "includePaths": [
+                "src/themes/skyrim",
                 "src",
                 "src/styles"
               ]
@@ -100,6 +101,25 @@
                   "with": "src/environments/environment.e2e.ts"
                 }
               ]
+            },
+            "fallout": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.fallout.ts"
+                }
+              ],
+              "stylePreprocessorOptions": {
+                "includePaths": [
+                  "src/themes/fallout",
+                  "src",
+                  "src/styles"
+                ]
+              },
+              "index": {
+                "input": "src/themes/fallout/index.html",
+                "output": "index.html"
+              }
             }
           }
         },
@@ -121,6 +141,9 @@
             },
             "e2e": {
               "browserTarget": "skyrim-together-ui:build:e2e"
+            },
+            "fallout": {
+              "browserTarget": "skyrim-together-ui:build:fallout,browser"
             }
           }
         },

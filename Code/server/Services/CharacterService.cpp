@@ -36,6 +36,8 @@
 #include <Messages/NotifyDialogue.h>
 #include <Messages/SubtitleRequest.h>
 #include <Messages/NotifySubtitle.h>
+#include <Messages/PowerArmorRequest.h>
+#include <Messages/NotifyPowerArmor.h>
 #include <Messages/NotifyActorTeleport.h>
 
 #include <Setting.h>
@@ -63,6 +65,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_syncExperienceConnection(aDispatcher.sink<PacketEvent<SyncExperienceRequest>>().connect<&CharacterService::OnSyncExperienceRequest>(this))
     , m_dialogueConnection(aDispatcher.sink<PacketEvent<DialogueRequest>>().connect<&CharacterService::OnDialogueRequest>(this))
     , m_subtitleConnection(aDispatcher.sink<PacketEvent<SubtitleRequest>>().connect<&CharacterService::OnSubtitleRequest>(this))
+    , m_powerArmorConnection(aDispatcher.sink<PacketEvent<PowerArmorRequest>>().connect<&CharacterService::OnPowerArmorRequest>(this))
 {
 }
 
@@ -80,6 +83,9 @@ void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, Charact
     apSpawnRequest->IsWeaponDrawn = characterComponent.IsWeaponDrawn();
     apSpawnRequest->IsPlayerSummon = characterComponent.IsPlayerSummon();
     apSpawnRequest->PlayerId = characterComponent.PlayerId;
+    apSpawnRequest->PowerArmorFurnitureId = characterComponent.PowerArmorFurnitureId;
+    apSpawnRequest->PowerArmorFurnitureBaseId = characterComponent.PowerArmorFurnitureBaseId;
+    apSpawnRequest->PowerArmor = characterComponent.PowerArmor;
 
     const auto* pOwnerComponent = aRegistry.try_get<OwnerComponent>(aEntity);
     if (pOwnerComponent)
@@ -575,6 +581,7 @@ void CharacterService::OnSubtitleRequest(const PacketEvent<SubtitleRequest>& acM
     NotifySubtitle notify{};
     notify.ServerId = message.ServerId;
     notify.Text = message.Text;
+    notify.TopicFormId = message.TopicFormId;
 
     const entt::entity cEntity = static_cast<entt::entity>(message.ServerId);
     if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender()))
@@ -1018,4 +1025,32 @@ void CharacterService::ProcessMovementChanges() const noexcept
         if (!message.Updates.empty())
             pPlayer->Send(message);
     }
+}
+
+void CharacterService::OnPowerArmorRequest(const PacketEvent<PowerArmorRequest>& acMessage) const noexcept
+{
+    const auto& message = acMessage.Packet;
+    const entt::entity cEntity = static_cast<entt::entity>(message.Id);
+
+    auto view = m_world.view<CharacterComponent, OwnerComponent>();
+    const auto it = view.find(cEntity);
+    if (it == view.end() || view.get<OwnerComponent>(*it).GetOwner() != acMessage.pPlayer ||
+        view.get<OwnerComponent>(*it).OwnershipEpoch != message.OwnershipEpoch || !message.Data.IsValid() ||
+        (message.FurnitureBaseId != GameId{} && message.Data.FrameToken == 0))
+        return;
+
+    auto& characterComponent = view.get<CharacterComponent>(*it);
+    characterComponent.PowerArmorFurnitureId = message.FurnitureId;
+    characterComponent.PowerArmorFurnitureBaseId = message.FurnitureBaseId;
+    characterComponent.PowerArmor = message.Data;
+
+    NotifyPowerArmor notify;
+    notify.Id = message.Id;
+    notify.OwnershipEpoch = message.OwnershipEpoch;
+    notify.Data = message.Data;
+    notify.FurnitureId = message.FurnitureId;
+    notify.FurnitureBaseId = message.FurnitureBaseId;
+
+    if (!GameServer::Get()->SendToPlayersInRange(notify, cEntity, acMessage.GetSender()))
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }

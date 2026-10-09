@@ -23,6 +23,20 @@ set_warnings("all")
 add_vectorexts("sse", "sse2", "sse3", "ssse3")
 add_vectorexts("neon")
 
+-- Game target: skyrim (default) or fallout4. The client links against
+-- exactly one engine, so this is a compile-time switch that picks the
+-- Games/<Game> tree and the product names.
+option("game")
+    set_default("skyrim")
+    set_showmenu(true)
+    set_values("skyrim", "fallout4")
+option_end()
+
+local kGame = get_config("game")
+if kGame == "fallout4" then
+    add_defines("TP_FALLOUT4=1")
+end
+
 -- build configurations
 add_rules("mode.debug", "mode.releasedbg", "mode.release")
 

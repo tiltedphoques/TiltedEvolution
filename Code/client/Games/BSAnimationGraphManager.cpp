@@ -7,6 +7,9 @@
 
 #include <TiltedCore/Hash.hpp>
 
+// Fallout 4 uses a different variable map layout; see Games/Fallout4/AnimationGraph.cpp.
+#if !defined(TP_FALLOUT4)
+
 SortedMap<uint32_t, String> BSAnimationGraphManager::DumpAnimationVariables(bool aPrintVariables)
 {
     SortedMap<uint32_t, String> variables;
@@ -104,6 +107,7 @@ uint64_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
 
     return Crc64(reinterpret_cast<const unsigned char*>(variableNames.c_str()), variableNames.size());
 }
+#endif
 
 uint64_t BSAnimationGraphManager::GetProjectKey(int aForceIndex)
 {

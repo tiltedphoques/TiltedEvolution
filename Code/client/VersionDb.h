@@ -25,7 +25,7 @@ private:
 
     template <typename T> static T read(std::ifstream& file)
     {
-        T v;
+        T v{};
         file.read((char*)&v, sizeof(T));
         return v;
     }
@@ -150,6 +150,7 @@ public:
         for (int i = 0; i < 4; i++)
             _ver[i] = 0;
         _moduleName = std::string();
+        _verStr.clear();
         _base = 0;
     }
 
@@ -308,10 +309,72 @@ public:
         return true;
     }
 
+    // F4SE next-gen address library format: u64 count, then count pairs of
+    // { u64 id, u64 offset }. Used by Fallout4 1.10.980+ and all 1.11.x.
+    bool LoadF4SE(std::ifstream& file)
+    {
+        const auto start = file.tellg();
+        file.seekg(0, std::ios::end);
+        const auto length = file.tellg() - start;
+        file.seekg(start);
+        const auto count = read<std::uint64_t>(file);
+        if (!file || count == 0 || length < 8 || count != static_cast<std::uint64_t>((length - 8) / 16) || (length - 8) % 16)
+            return false;
+
+        const auto* pDos = reinterpret_cast<const IMAGE_DOS_HEADER*>(_base);
+        const auto* pNt = reinterpret_cast<const IMAGE_NT_HEADERS64*>(_base + pDos->e_lfanew);
+        const auto imageSize = pNt->OptionalHeader.SizeOfImage;
+
+        for (std::uint64_t i = 0; i < count; ++i)
+        {
+            const auto id = read<std::uint64_t>(file);
+            const auto offset = read<std::uint64_t>(file);
+            if (!file || offset >= imageSize || _data.contains(id))
+            {
+                Clear();
+                return false;
+            }
+
+            if (offset == 0)
+                continue;
+
+            _data[id] = offset;
+            _rdata[offset] = id;
+        }
+
+        return true;
+    }
+
     bool Load(const std::filesystem::path& acGamePath, int major, int minor, int revision, int build)
     {
         Clear();
 
+        // Fallout4: F4SE all-in-one address library.
+        // Skyrim: SKSE versionlib.
+#if defined(TP_FALLOUT4)
+        char fileName[256];
+        _snprintf_s(fileName, 256, "version-%d-%d-%d-%d.bin", major, minor, revision, 0);
+
+        std::ifstream file(acGamePath / "Data" / "F4SE" / "Plugins" / fileName, std::ios::binary);
+        if (!file.good())
+            return false;
+
+        for (int i = 0; i < 4; i++)
+            _ver[i] = (i == 0) ? major : (i == 1) ? minor : (i == 2) ? revision : build;
+
+        {
+            char verName[64];
+            _snprintf_s(verName, 64, "%d.%d.%d.%d", major, minor, revision, build);
+            _verStr = verName;
+        }
+
+        {
+            HMODULE handle = GetModuleHandleA(NULL);
+            _base = (unsigned long long)handle;
+        }
+
+        return LoadF4SE(file);
+#else
         char fileName[256];
         _snprintf_s(fileName, 256, "versionlib-%d-%d-%d-%d.bin", major, minor, revision, build);
 
@@ -339,6 +402,7 @@ public:
         }
 
         return format == 5 ? LoadV5(file) : LoadV2(file);
+#endif
     }
 
     bool DumpToTextFile(const std::string& path)

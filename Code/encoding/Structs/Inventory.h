@@ -49,6 +49,9 @@ struct Inventory
         bool ExtraWornLeft{};
         bool IsQuestItem{};
 
+        // Fallout 4 object mods (OMODs) on the item; informational, not part of stack matching.
+        Vector<GameId> Mods{};
+
         bool operator==(const Entry& acRhs) const noexcept;
         bool operator!=(const Entry& acRhs) const noexcept;
 

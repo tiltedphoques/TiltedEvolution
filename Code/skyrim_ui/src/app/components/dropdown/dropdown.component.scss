@@ -4,9 +4,9 @@
   --height: 2em;
   --border-size: 1px;
   --padding: 0.5em;
-  --color-disabled: rgba(255, 255, 255, 0.5);
-  --color-inactive: rgba(255, 255, 255, 0.7);
-  --color-hover: white;
+  --color-disabled: #{rgba($-color-text-strong, 0.5)};
+  --color-inactive: #{rgba($-color-text-strong, 0.7)};
+  --color-hover: #{$-color-text-strong};
   --color: var(--color-inactive);
   --opacity-disabled: 0.5;
   --opacity-inactive: 0.7;
@@ -54,7 +54,7 @@
       min-width: 1em;
       width: 1em;
       background: no-repeat center/contain
-        url(../../../assets/images/arrow/south.svg);
+        image(arrow-south);
     }
 
     &:hover {
@@ -81,7 +81,7 @@
       opacity: var(--opacity-inactive);
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba($-color-text-strong, 0.1);
         opacity: var(--opacity-hover);
       }
 
@@ -96,11 +96,11 @@
         width: 1em;
 
         background: no-repeat center/contain
-          url(../../../assets/images/checkbox/unchecked.svg);
+          image(checkbox-unchecked);
       }
 
       &.selected::after {
-        background-image: url(../../../assets/images/checkbox/checked.svg);
+        background-image: image(checkbox-checked);
       }
     }
   }
@@ -113,7 +113,7 @@
       width: 100%;
       top: var(--height);
       margin-top: calc(2 * var(--border-size));
-      background-color: #0e0e0e;
+      background-color: $-color-surface-menu;
       border: var(--border-size) solid;
     }
   }

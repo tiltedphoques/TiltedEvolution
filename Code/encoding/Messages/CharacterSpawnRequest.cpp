@@ -22,6 +22,9 @@ void CharacterSpawnRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
     Serialization::WriteBool(aWriter, IsWeaponDrawn);
     Serialization::WriteBool(aWriter, IsPlayerSummon);
     LeveledNpcPickId.Serialize(aWriter);
+    PowerArmorFurnitureId.Serialize(aWriter);
+    PowerArmorFurnitureBaseId.Serialize(aWriter);
+    PowerArmor.Serialize(aWriter);
 }
 
 void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -59,4 +62,7 @@ void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
     IsWeaponDrawn = Serialization::ReadBool(aReader);
     IsPlayerSummon = Serialization::ReadBool(aReader);
     LeveledNpcPickId.Deserialize(aReader);
+    PowerArmorFurnitureId.Deserialize(aReader);
+    PowerArmorFurnitureBaseId.Deserialize(aReader);
+    PowerArmor.Deserialize(aReader);
 }

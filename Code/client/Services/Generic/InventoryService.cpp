@@ -14,7 +14,7 @@
 #include <Events/EquipmentChangeEvent.h>
 
 #include <World.h>
-#include <Games/Skyrim/Interface/UI.h>
+#include <Interface/UI.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
 #include <Actor.h>
@@ -139,10 +139,12 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     request.IsShout = acEvent.IsShout;
     request.IsAmmo = acEvent.IsAmmo;
     request.CurrentInventory = pActor->GetEquipment();
+    for (const uint32_t modId : acEvent.Mods)
+        modSystem.GetServerModId(modId, request.Mods.emplace_back());
 
     m_transport.Send(request);
 
-    spdlog::info("Sending equipment request, item: {:X}, count: {}, target object: {:X}", acEvent.ItemId, acEvent.Count, acEvent.ActorId);
+    spdlog::info("Sending equipment request, item: {:X}, count: {}, target object: {:X}, mods {}", acEvent.ItemId, acEvent.Count, acEvent.ActorId, acEvent.Mods.size());
 }
 
 void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& acMessage) noexcept
@@ -261,8 +263,11 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     }
     else
     {
-        // Unequip all armor first, since the game won't auto unequip armor
+        // Unequip all armor first, since the game won't auto unequip armor.
+        // Fallout 4 replaces items in the same body slots by itself, and putting the
+        // old armor back would cover the new piece.
         Inventory wornArmor{};
+#if !defined(TP_FALLOUT4)
         if (pItem->formType == FormType::Armor)
         {
             wornArmor = pActor->GetWornArmor();
@@ -274,6 +279,19 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
                     pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
             }
         }
+#endif
+
+#if defined(TP_FALLOUT4)
+        if (auto* pObject = Cast<TESBoundObject>(pItem); pObject && !acMessage.Mods.empty())
+        {
+            if (!pActor->GetItemCountInInventory(pObject))
+            {
+                ExtraDataList* pExtra = nullptr;
+                pActor->AddObjectToContainer(pObject, &pExtra, 1, nullptr, ITEM_REMOVE_REASON::kRemove);
+            }
+            pActor->AttachItemMods(pObject, acMessage.Mods);
+        }
+#endif
 
         pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
 
@@ -309,7 +327,7 @@ void InventoryService::RunWeaponStateUpdates() noexcept
         Actor* const pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
         auto& localComponent = view.get<LocalComponent>(entity);
 
-        bool isWeaponDrawn = pActor->actorState.IsWeaponDrawn();
+        bool isWeaponDrawn = pActor->GetActorState()->IsWeaponDrawn();
         if (isWeaponDrawn != localComponent.IsWeaponDrawn)
         {
             localComponent.IsWeaponDrawn = isWeaponDrawn;

@@ -25,7 +25,9 @@
 
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
+#include <Forms/ActorValueInfo.h>
 #include <Forms/TESGlobal.h>
+#include <Games/FormIds.h>
 #include <Games/Overrides.h>
 #include <Games/References.h>
 #include <AI/AIProcess.h>
@@ -59,32 +61,67 @@ void PlayerService::OnUpdate(const UpdateEvent&) noexcept
     RunBeastFormDetection();
 }
 
+#if defined(TP_FALLOUT4)
+namespace
+{
+// Time keeps running for everyone else, so VATS has no slow motion and no kill cams online.
+float& VatsTargetSelectTimeMult() noexcept
+{
+    static VersionDbPtr<float> s_value(302826); // fVATSTimeMultTargetSelect
+    return *s_value.Get();
+}
+
+float& KillCamOdds() noexcept
+{
+    static VersionDbPtr<float> s_value(175207); // fKillCamBaseOdds
+    return *s_value.Get();
+}
+
+std::optional<std::pair<float, float>> s_offlineVatsSettings;
+} // namespace
+#endif
+
 void PlayerService::OnConnected(const ConnectedEvent& acEvent) noexcept
 {
-    // TODO: SkyrimTogether.esm
-    TESGlobal* pKillMove = Cast<TESGlobal>(TESForm::GetById(0x100F19));
-    pKillMove->f = 0.f;
+#if defined(TP_FALLOUT4)
+    if (!s_offlineVatsSettings)
+        s_offlineVatsSettings = {VatsTargetSelectTimeMult(), KillCamOdds()};
+    VatsTargetSelectTimeMult() = 1.f;
+    KillCamOdds() = 0.f;
+#endif
 
-    TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
-    pWorldEncountersEnabled->f = 0.f;
+    // TODO: SkyrimTogether.esm
+    if (auto* pKillMove = Cast<TESGlobal>(TESForm::GetById(FormIds::KillMoveGlobal)))
+        pKillMove->f = 0.f;
+
+    if (auto* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(FormIds::WorldEncountersEnabledGlobal)))
+        pWorldEncountersEnabled->f = 0.f;
 }
 
 void PlayerService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
+#if defined(TP_FALLOUT4)
+    if (s_offlineVatsSettings)
+    {
+        VatsTargetSelectTimeMult() = s_offlineVatsSettings->first;
+        KillCamOdds() = s_offlineVatsSettings->second;
+    }
+#endif
+
     PlayerCharacter::Get()->SetDifficulty(m_previousDifficulty);
     m_serverDifficulty = m_previousDifficulty = 6;
 
     ToggleDeathSystem(false);
 
-    TESGlobal* pKillMove = Cast<TESGlobal>(TESForm::GetById(0x100F19));
-    pKillMove->f = 1.f;
+    if (auto* pKillMove = Cast<TESGlobal>(TESForm::GetById(FormIds::KillMoveGlobal)))
+        pKillMove->f = 1.f;
 
     // Restore to the default value (150 in skyrim, 175 in fallout 4)
     float* greetDistance = Settings::GetGreetDistance();
     *greetDistance = 150.f;
 
-    TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
-    pWorldEncountersEnabled->f = 1.f;
+    if (auto* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(FormIds::WorldEncountersEnabledGlobal)))
+        pWorldEncountersEnabled->f = 1.f;
 }
 
 void PlayerService::OnServerSettingsReceived(const ServerSettings& acSettings) noexcept
@@ -178,8 +215,8 @@ void PlayerService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcept
     // TODO: this can be done a bit prettier
     if (acEvent.IsLeader)
     {
-        TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
-        pWorldEncountersEnabled->f = 1.f;
+        if (auto* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(FormIds::WorldEncountersEnabledGlobal)))
+            pWorldEncountersEnabled->f = 1.f;
     }
 }
 
@@ -188,8 +225,8 @@ void PlayerService::OnPartyLeftEvent(const PartyLeftEvent& acEvent) noexcept
     // TODO: this can be done a bit prettier
     if (World::Get().GetTransport().IsConnected())
     {
-        TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
-        pWorldEncountersEnabled->f = 0.f;
+        if (auto* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(FormIds::WorldEncountersEnabledGlobal)))
+            pWorldEncountersEnabled->f = 0.f;
     }
 }
 
@@ -201,7 +238,7 @@ void PlayerService::RunRespawnUpdates() noexcept
     static bool s_startTimer = false;
 
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
-    if (!pPlayer->actorState.IsBleedingOut())
+    if (!pPlayer->GetActorState()->IsBleedingOut())
     {
         m_cachedMainSpellId = pPlayer->magicItems[0] ? pPlayer->magicItems[0]->formID : 0;
         m_cachedSecondarySpellId = pPlayer->magicItems[1] ? pPlayer->magicItems[1]->formID : 0;
@@ -337,7 +374,7 @@ void PlayerService::RunBeastFormDetection() const noexcept
     if (pPlayer->race->formID == lastRaceFormID)
         return;
 
-    if (pPlayer->race->formID == 0x200283A || pPlayer->race->formID == 0xCDD84)
+    if (pPlayer->race->formID == FormIds::VampireLordRace || pPlayer->race->formID == FormIds::WerewolfBeastRace)
         m_world.GetDispatcher().trigger(BeastFormChangeEvent());
 
     lastRaceFormID = pPlayer->race->formID;

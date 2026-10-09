@@ -88,6 +88,10 @@ export class SettingsComponent {
   }
 
   async isGameVersionOutdated(): Promise<boolean> {
+    if (!environment.githubUrl) {
+      return false;
+    }
+
     let usedVersion = this.client.getVersion();
 
     const tags = await this.getVersionTagList();

@@ -11,6 +11,7 @@
 
 #include <Sky/Sky.h>
 #include <Forms/TESWeather.h>
+#include <Games/FormIds.h>
 
 WeatherService::WeatherService(World& aWorld, TransportService& aTransport, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
@@ -71,7 +72,7 @@ void WeatherService::OnPartyJoinedEvent(const PartyJoinedEvent& acEvent) noexcep
         m_cachedWeatherId = pWeather->formID;
 
         // This is the map weather, should not be synced.
-        if (pWeather->formID == 0xA6858)
+        if (pWeather->formID == FormIds::MapWeather)
             return;
 
         RequestWeatherChange request{};
@@ -154,7 +155,7 @@ void WeatherService::RunWeatherUpdates(const double acDelta) noexcept
     }
 
     // This is the map weather, should not be synced.
-    if (pWeather->formID == 0xA6858)
+    if (pWeather->formID == FormIds::MapWeather)
         return;
 
     // Have to manually check each frame because there's no singular SetWeather being used in-game.

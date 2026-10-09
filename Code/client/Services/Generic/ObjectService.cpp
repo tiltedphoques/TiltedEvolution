@@ -25,6 +25,7 @@
 #include <Games/TES.h>
 
 #include <inttypes.h>
+#include <Games/FormIds.h>
 
 ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport)
     : m_world(aWorld)
@@ -48,7 +49,7 @@ bool IsPlayerHome(const TESObjectCELL* pCell) noexcept
     if (pCell && pCell->loadedCellData && pCell->loadedCellData->encounterZone)
     {
         // Only return true if cell has the NoResetZone encounter zone
-        if (pCell->loadedCellData->encounterZone->formID == 0xf90b1)
+        if (pCell->loadedCellData->encounterZone->formID == FormIds::NoResetEncounterZone)
         {
             switch (pCell->formID)
             {

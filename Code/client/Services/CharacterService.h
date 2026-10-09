@@ -1,6 +1,7 @@
 #pragma once
 #include "Structs/Inventory.h"
 #include "Structs/ActorData.h"
+#include <Structs/PowerArmorData.h>
 
 struct ActorAddedEvent;
 struct ActorRemovedEvent;
@@ -27,6 +28,7 @@ struct ProjectileLaunchedEvent;
 struct NotifyProjectileLaunch;
 struct MountEvent;
 struct NotifyMount;
+struct NotifyPowerArmor;
 struct InitPackageEvent;
 struct NotifyNewPackage;
 struct NotifyRespawn;
@@ -62,7 +64,7 @@ struct CharacterService
     void OnActorRemoved(const ActorRemovedEvent& acEvent) noexcept;
     void OnUpdate(const UpdateEvent& acUpdateEvent) noexcept;
     void OnConnected(const ConnectedEvent& acConnectedEvent) const noexcept;
-    void OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) const noexcept;
+    void OnDisconnected(const DisconnectedEvent& acDisconnectedEvent) noexcept;
     void OnAssignCharacter(const AssignCharacterResponse& acMessage) noexcept;
     void OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept;
     void OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept;
@@ -72,6 +74,11 @@ struct CharacterService
     void OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept;
     void OnMountEvent(const MountEvent& acEvent) const noexcept;
     void OnNotifyMount(const NotifyMount& acMessage) const noexcept;
+#if defined(TP_FALLOUT4)
+    void OnNotifyPowerArmor(const NotifyPowerArmor& acMessage) const noexcept;
+    static void ApplyPowerArmor(Actor* apActor, const GameId& acFurnitureId, const GameId& acFurnitureBaseId,
+                                const PowerArmorData& acData, uint32_t& aFrameToken) noexcept;
+#endif
     void OnInitPackageEvent(const InitPackageEvent& acEvent) const noexcept;
     void OnNotifyNewPackage(const NotifyNewPackage& acMessage) const noexcept;
     void OnNotifyRespawn(const NotifyRespawn& acMessage) const noexcept;
@@ -107,6 +114,9 @@ private:
     void RunSpawnUpdates() const noexcept;
     void RunExperienceUpdates() noexcept;
     void ApplyCachedWeaponDraws(const UpdateEvent& acUpdateEvent) noexcept;
+#if defined(TP_FALLOUT4)
+    void RunPowerArmorUpdates() noexcept;
+#endif
 
     World& m_world;
     entt::dispatcher& m_dispatcher;
@@ -148,6 +158,14 @@ private:
     entt::scoped_connection m_referenceMovementSnapshotConnection;
     entt::scoped_connection m_mountConnection;
     entt::scoped_connection m_notifyMountConnection;
+#if defined(TP_FALLOUT4)
+    entt::scoped_connection m_powerArmorConnection;
+    uint32_t m_localPowerArmorFurniture{};
+    uint32_t m_powerArmorServerId{};
+    uint32_t m_powerArmorOwnershipEpoch{};
+    PowerArmorData m_localPowerArmorData{};
+    std::chrono::steady_clock::time_point m_powerArmorNextUpdate{};
+#endif
     entt::scoped_connection m_initPackageConnection;
     entt::scoped_connection m_newPackageConnection;
     entt::scoped_connection m_notifyRespawnConnection;

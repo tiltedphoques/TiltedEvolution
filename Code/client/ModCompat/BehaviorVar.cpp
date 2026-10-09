@@ -33,7 +33,6 @@
 #include "BehaviorVar.h"
 #include "BehaviorVarsMap.h"
 
-#include <Camera/TESCamera.h> // Camera 1st person is only in Skyrim?
 #include <Camera/PlayerCamera.h>
 
 #include <mutex>

@@ -48,6 +48,10 @@ void Inventory::Entry::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const n
     Serialization::WriteBool(aWriter, ExtraWorn);
     Serialization::WriteBool(aWriter, ExtraWornLeft);
     Serialization::WriteBool(aWriter, IsQuestItem);
+
+    Serialization::WriteVarInt(aWriter, Mods.size());
+    for (const GameId& mod : Mods)
+        mod.Serialize(aWriter);
 }
 
 void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -79,6 +83,10 @@ void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexc
     ExtraWorn = Serialization::ReadBool(aReader);
     ExtraWornLeft = Serialization::ReadBool(aReader);
     IsQuestItem = Serialization::ReadBool(aReader);
+
+    Mods.resize(Serialization::ReadVarInt(aReader));
+    for (GameId& mod : Mods)
+        mod.Deserialize(aReader);
 }
 
 bool Inventory::operator==(const Inventory& acRhs) const noexcept
@@ -184,6 +192,7 @@ void Inventory::UpdateEquipment(const Inventory& acNewInventory) noexcept
 
         entry->ExtraWorn = newEntry.ExtraWorn;
         entry->ExtraWornLeft = newEntry.ExtraWornLeft;
+        entry->Mods = newEntry.Mods;
     }
 
     CurrentMagicEquipment = acNewInventory.CurrentMagicEquipment;

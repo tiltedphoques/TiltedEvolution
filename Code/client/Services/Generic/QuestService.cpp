@@ -58,6 +58,16 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
 {
+#if defined(TP_FALLOUT4)
+    if (apEvent->started)
+    {
+        m_world.GetRunner().Queue([formId = apEvent->formId]() {
+            ScopedQuestOverride _;
+            TESQuest::ApplyPendingStage(formId);
+        });
+    }
+#endif
+
     if (ScopedQuestOverride::IsOverriden())
         return BSTEventResult::kOk;
 
@@ -246,6 +256,9 @@ bool QuestService::StopQuest(uint32_t aformId)
     return false;
 }
 
+#if defined(TP_FALLOUT4)
+static constexpr std::array<uint32_t, 0> kNonSyncableQuestIds{};
+#else
 static constexpr std::array kNonSyncableQuestIds = std::to_array<uint32_t>({
     0x2BA16,   // Werewolf transformation quest
     0x20071D0, // Vampire transformation quest
@@ -253,6 +266,7 @@ static constexpr std::array kNonSyncableQuestIds = std::to_array<uint32_t>({
     // 0xFE014801,  // Unknown dynamic ID, kept as note, maybe lookup correct ID this game?
     0xF2593 // Skill experience quest
 });
+#endif
 
 bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
 {

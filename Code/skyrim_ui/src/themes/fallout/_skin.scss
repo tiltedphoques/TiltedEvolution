@@ -1,0 +1,239 @@
+// Global Pip-Boy styling on top of the shared styles.
+
+@font-face {
+  font-family: 'Share Tech Mono';
+  src: url('~src/themes/fallout/assets/fonts/share-tech-mono.ttf');
+}
+
+$-glow: 0 0 0.35em pip(0.55);
+$-ink: #04170c;
+
+body {
+  color: pip(0.9);
+  text-shadow: $-glow;
+  letter-spacing: 0.02em;
+}
+
+::selection {
+  color: $-ink;
+  background: pip(0.9);
+}
+
+h1,
+h2,
+h3 {
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 1.05rem;
+  color: $-color-tint;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 2.5rem;
+    height: 2px;
+    margin-top: 0.4rem;
+    background: $-color-tint;
+    box-shadow: $-glow;
+  }
+}
+
+// Pip-Boy list highlight: the hovered or selected entry turns into a solid bar.
+button {
+  opacity: 1;
+  color: pip(0.75);
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  transition: background $-time-transition, color $-time-transition;
+
+  &:hover:not([disabled]),
+  &[data-style-active='true'] {
+    color: $-ink;
+    background: pip(0.92);
+    text-shadow: none;
+    box-shadow: 0 0 0.6rem pip(0.35);
+  }
+
+  &[disabled] {
+    opacity: 0.35;
+  }
+
+  &[data-style-ornament] {
+    padding: 0.3rem 0.75rem;
+
+    &::before,
+    &::after {
+      display: none;
+    }
+  }
+}
+
+// The connection menu is the Pip-Boy tab row: the selected tab is a bracket
+// that opens into the line below it.
+.app-root-menu > button {
+  position: relative;
+  margin: 0.3rem 0 -2px;
+  padding: 0 0.3rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+  border: 2px solid transparent;
+  border-bottom: 0;
+  color: pip(0.7);
+
+  &:hover:not([disabled]),
+  &[data-style-active='true'] {
+    color: $-color-tint;
+    background: linear-gradient(to bottom, pip(0.16), transparent);
+    border-color: pip(0.85);
+    box-shadow: none;
+    text-shadow: $-glow;
+  }
+}
+
+input:not([type='checkbox']):not([type='range']),
+textarea,
+select {
+  font-family: $-font-mono;
+  color: $-color-tint;
+  caret-color: $-color-tint;
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid pip(0.35);
+
+  &::placeholder {
+    color: pip(0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+}
+
+input[type='text'],
+input[type='password'] {
+  border: 1px solid pip(0.35);
+
+  &:hover {
+    border: 1px solid pip(0.6);
+  }
+
+  &:focus-visible {
+    border: 1px solid $-color-tint;
+    box-shadow: 0 0 0.6rem pip(0.3), inset 0 0 0.6rem pip(0.12);
+  }
+}
+
+option {
+  background: $-ink;
+}
+
+input[type='range'] {
+  --thumb-size: 0.9em;
+  height: 1rem;
+  background: transparent;
+
+  &::before,
+  &::after {
+    display: none;
+  }
+}
+
+::-webkit-slider-runnable-track {
+  height: 2px;
+  border: 0;
+  border-image: none;
+  background: pip(0.45);
+}
+
+::-webkit-slider-thumb {
+  width: 0.55rem;
+  height: 1rem;
+  margin-top: calc(-0.5rem + 1px);
+  background: $-color-tint;
+  box-shadow: $-glow;
+}
+
+:root {
+  --scrollbar-thickness: 0.45rem;
+}
+
+::-webkit-scrollbar-button:single-button {
+  display: none;
+}
+
+::-webkit-scrollbar-track {
+  border: 0;
+  background-color: pip(0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: pip(0.6);
+
+  &:hover {
+    background-color: $-color-tint;
+  }
+}
+
+hr,
+.separator::before,
+.separator::after {
+  border: 0;
+  border-image: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, pip(0.5), transparent);
+}
+
+// Chat reads like a terminal log with a prompt in front of the input.
+app-chat {
+  .app-chat-messages p {
+    font-family: $-font-mono;
+    font-size: 0.95rem;
+  }
+
+  .app-chat-date {
+    color: pip(0.45);
+  }
+
+  .app-chat-input {
+    align-items: center;
+
+    &::before {
+      content: '>';
+      padding-left: 0.4rem;
+      font-family: $-font-mono;
+      color: $-color-tint;
+    }
+
+    input {
+      background: transparent;
+      border: 0;
+    }
+
+    input:focus-visible {
+      border: 0;
+      box-shadow: none;
+    }
+  }
+}
+
+// Popups switch on like a CRT.
+app-popup > app-window {
+  animation: crt-on 280ms ease-out;
+}
+
+@keyframes crt-on {
+  0% {
+    transform: scale(0.6, 0.005);
+    filter: brightness(4);
+    opacity: 0.4;
+  }
+  45% {
+    transform: scale(1, 0.01);
+    filter: brightness(3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1, 1);
+    filter: brightness(1);
+  }
+}

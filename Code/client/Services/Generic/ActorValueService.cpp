@@ -45,6 +45,10 @@ void ActorValueService::CreateActorValuesComponent(const entt::entity aEntity, A
 
     for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
     {
+#if defined(TP_FALLOUT4)
+        if (!ActorValueInfo::Resolve(i))
+            continue;
+#endif
         float value = apActor->GetActorValue(i);
         actorValuesComponent.CurrentActorValues.ActorValuesList.insert({i, value});
         float maxValue = apActor->GetActorPermanentValue(i);
@@ -61,7 +65,7 @@ void ActorValueService::OnLocalComponentAdded(entt::registry& aRegistry, const e
     {
         auto& localComponent = aRegistry.get<LocalComponent>(aEntity);
         localComponent.IsDead = pActor->IsDead();
-        localComponent.IsWeaponDrawn = pActor->actorState.IsWeaponDrawn();
+        localComponent.IsWeaponDrawn = pActor->GetActorState()->IsWeaponDrawn();
         CreateActorValuesComponent(aEntity, pActor);
     }
 }
@@ -130,6 +134,10 @@ void ActorValueService::BroadcastActorValues() noexcept
 
         for (int i = 0; i < ActorValueInfo::kActorValueCount; i++)
         {
+#if defined(TP_FALLOUT4)
+            if (!ActorValueInfo::Resolve(i))
+                continue;
+#endif
             if (isPlayer && i == ActorValueInfo::kDragonSouls)
                 continue;
             

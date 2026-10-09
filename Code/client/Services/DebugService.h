@@ -28,6 +28,9 @@ struct DebugService
     void OnSubtitle(const SubtitleEvent&) noexcept;
     void OnMoveActor(const MoveActorEvent&) noexcept;
 
+    void SetVisible(bool aVisible) noexcept;
+    bool IsInputCaptured() const noexcept;
+
     void SetDebugId(const uint32_t aFormId) noexcept;
 
     static void ArrangeGameWindows(HWND aThisWindow) noexcept;

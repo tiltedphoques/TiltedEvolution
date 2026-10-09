@@ -3,12 +3,18 @@ local function build_client(name)
 target(name)
     set_kind("static")
     set_group("Client")
+    if get_config("game") == "fallout4" then
+        set_basename("FTClient")
+    end
     add_includedirs(".","../../Libraries/")
     set_pcxxheader("TiltedOnlinePCH.h")
 
+    local kGame = get_config("game") or "skyrim"
+    local kGameDir = kGame == "fallout4" and "Games/Fallout4" or "Games/Skyrim"
+
     -- exclude game specifc stuff
-    add_headerfiles("**.h|Games/Skyrim/**|Services/Vivox/**")
-    add_files("**.cpp|Games/Skyrim/**|Services/Vivox/**")
+    add_headerfiles("**.h|Games/Skyrim/**|Games/Fallout4/**|Services/Vivox/**")
+    add_files("**.cpp|Games/Skyrim/**|Games/Fallout4/**|Services/Vivox/**")
 
     after_install(function(target)
         -- copy dlls
@@ -17,17 +23,19 @@ target(name)
             local bindir = path.join(linkdir, "..", "bin")
             os.cp(bindir, target:installdir())
         end
-        -- copy ui
+        -- copy the overlay cursor of the game's ui theme
         local uidir = path.join(target:scriptdir(), "..", "skyrim_ui", "src")
-        os.cp(path.join(uidir, "assets", "images", "cursor.dds"), path.join(target:installdir(), "bin", "assets", "images", "cursor.dds"))
-        os.cp(path.join(uidir, "assets", "images", "cursor.png"), path.join(target:installdir(), "bin", "assets", "images", "cursor.png"))
+        import("core.project.config")
+        local imagedir = config.get("game") == "fallout4" and path.join(uidir, "themes", "fallout", "assets", "images") or path.join(uidir, "assets", "images")
+        os.cp(path.join(imagedir, "cursor.dds"), path.join(target:installdir(), "bin", "assets", "images", "cursor.dds"))
+        os.cp(path.join(imagedir, "cursor.png"), path.join(target:installdir(), "bin", "assets", "images", "cursor.png"))
         os.rm(path.join(target:installdir(), "bin", "**Tests.exe"))
     end)
 
-    add_files("Games/Skyrim/**.cpp")
-    add_headerfiles("Games/Skyrim/**.h")
+    add_files(kGameDir .. "/**.cpp")
+    add_headerfiles(kGameDir .. "/**.h")
     -- rather hacky:
-    add_includedirs("Games/Skyrim")
+    add_includedirs(kGameDir)
     add_deps("SkyrimEncoding")
     add_deps(
         "UiProcess",
@@ -74,4 +82,5 @@ end
 
 add_requires("tiltedcore")
 
-build_client("SkyrimTogetherClient")
+local kGame = get_config("game") or "skyrim"
+build_client(kGame == "fallout4" and "Fallout4TogetherClient" or "SkyrimTogetherClient")

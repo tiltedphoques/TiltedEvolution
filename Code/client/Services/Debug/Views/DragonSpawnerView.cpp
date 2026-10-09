@@ -1,6 +1,8 @@
 #include <imgui.h>
 #include <inttypes.h>
 
+#if !defined(TP_FALLOUT4)
+
 void DebugService::DrawDragonSpawnerView()
 {
     ImGui::Begin("Dragon spawner");
@@ -111,3 +113,4 @@ void DebugService::DrawDragonSpawnerView()
 
     ImGui::End();
 }
+#endif

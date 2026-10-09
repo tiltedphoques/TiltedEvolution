@@ -31,4 +31,8 @@ END
 
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "resources/launcher.manifest"
 
+#if defined(TP_FALLOUT4)
+102 ICON "resources/ft_logo.ico"
+#else
 102 ICON "resources/st.ico"
+#endif

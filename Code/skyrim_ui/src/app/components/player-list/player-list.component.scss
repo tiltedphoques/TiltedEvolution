@@ -1,3 +1,5 @@
+@import 'env';
+
 :host {
   position: relative;
   display: flex;
@@ -26,13 +28,13 @@
     .list-header {
       position: sticky;
       top: 0px;
-      background-color: #151515;
+      background-color: $-color-surface-alt;
       z-index: 1;
     }
 
     th {
       text-align: left;
-      border-bottom: 1px solid grey;
+      border-bottom: 1px solid $-color-line;
       border-collapse: separate;
 
       button {
@@ -41,13 +43,13 @@
     }
 
     tr:not(:last-child) {
-      border-bottom: 1px solid grey;
+      border-bottom: 1px solid $-color-line;
       padding: 15px;
     }
 
     .user-action-button {
       padding: 0.25vw;
-      background-color: #292929;
+      background-color: $-color-surface;
       border-radius: 2px;
       margin-left: 5%;
     }

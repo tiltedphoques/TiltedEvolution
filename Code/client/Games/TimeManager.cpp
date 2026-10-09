@@ -3,7 +3,7 @@
 
 TimeData* TimeData::Get() noexcept
 {
-    POINTER_SKYRIMSE(TimeData*, s_instance, 400447);
+    POINTER_GAME(TimeData*, s_instance, 400447, 4796378);
     return *(s_instance.Get());
 }
 
@@ -22,7 +22,7 @@ void HookSimulateTime(TimeData* apData, float aMultiplier)
 static TiltedPhoques::Initializer s_loadingScreenHooks(
     []()
     {
-        POINTER_SKYRIMSE(TSimulateTime, s_SimulateTime, 36291);
+        POINTER_GAME(TSimulateTime, s_SimulateTime, 36291, 2228558);
         RealSimulateTime = s_SimulateTime.Get();
         TP_HOOK(&RealSimulateTime, HookSimulateTime);
     });

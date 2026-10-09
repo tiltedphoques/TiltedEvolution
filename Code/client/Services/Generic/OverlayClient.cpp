@@ -1,7 +1,7 @@
 #include <TiltedOnlinePCH.h>
 
 #include <OverlayRenderHandler.hpp>
-#include <DInputHook.hpp>
+#include <Services/InputService.h>
 
 #include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
@@ -33,15 +33,14 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
         auto eventArgs = pArguments->GetList(1);
 
         spdlog::info(eventName);
-        spdlog::info(eventArgs->GetString(0).ToString());
-        spdlog::info(std::to_string(eventArgs->GetInt(1)));
-        spdlog::info(eventArgs->GetString(2).ToString());
 
 #ifndef PUBLIC_BUILD
         LOG(INFO) << "event=ui_event name=" << eventName;
 #endif
 
-        if (eventName == "connect")
+        if (eventName == "deactivate")
+            World::Get().GetRunner().Queue([this]() { SetUIVisible(false); });
+        else if (eventName == "connect")
             ProcessConnectMessage(eventArgs);
         else if (eventName == "disconnect")
             ProcessDisconnectMessage();
@@ -149,7 +148,12 @@ void OverlayClient::ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs)
 
 void OverlayClient::ProcessToggleDebugUI()
 {
-    World::Get().GetDebugService().m_showDebugStuff = !World::Get().GetDebugService().m_showDebugStuff;
+    World::Get().GetRunner().Queue(
+        []()
+        {
+            auto& debug = World::Get().GetDebugService();
+            debug.SetVisible(!debug.m_showDebugStuff);
+        });
 }
 
 void OverlayClient::ProcessOpenPlayGuide()
@@ -163,7 +167,6 @@ void OverlayClient::SetUIVisible(bool aVisible) noexcept
     if (!pRenderer)
         return;
 
-    TiltedPhoques::DInputHook::Get().SetEnabled(aVisible);
     World::Get().GetOverlayService().SetActive(aVisible);
-    pRenderer->SetCursorVisible(aVisible);
+    InputService::UpdateInputCapture();
 }

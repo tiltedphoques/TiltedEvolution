@@ -5,15 +5,17 @@
 
 namespace
 {
+#if defined(TP_FALLOUT4)
+constexpr wchar_t kScriptExtenderName[] = L"f4se";
+constexpr char kScriptExtenderEntrypoint[] = "StartF4SE";
+constexpr char kScriptExtenderLabel[] = "F4SE";
+constexpr int kScriptExtenderMinBuild = 709;
+#else
 constexpr wchar_t kScriptExtenderName[] = L"skse64";
-
 constexpr char kScriptExtenderEntrypoint[] = "StartSKSE";
-
-constexpr size_t kScriptExtenderNameLength = sizeof(kScriptExtenderName) / sizeof(wchar_t) - 1;
-
-// AE+ only
-// Use this to raise the SKSE baseline
-constexpr int kSKSEMinBuild = 20100;
+constexpr char kScriptExtenderLabel[] = "SKSE";
+constexpr int kScriptExtenderMinBuild = 20100;
+#endif
 
 HMODULE g_SKSEModuleHandle{nullptr};
 
@@ -54,16 +56,10 @@ int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersio
 
 std::string GetSKSEStyleExeVersion()
 {
-    // make sure newer than anniversary!
     auto exeBuild = VersionDb::Get().GetLoadedVersionString();
+    if (exeBuild.ends_with(".0"))
+        exeBuild.resize(exeBuild.size() - 2);
     std::replace(exeBuild.begin(), exeBuild.end(), '.', '_');
-
-    // chop off empty patch numbers for instance "1.6.323.0 becomes "1_6_323"
-    auto patchPos = exeBuild.find_last_of("_0");
-    if (patchPos != std::string::npos)
-    {
-        exeBuild.erase(exeBuild.begin() + (patchPos - 1), exeBuild.end());
-    }
 
     return exeBuild;
 }
@@ -76,78 +72,65 @@ bool IsScriptExtenderLoaded()
 
 void LoadScriptExtender()
 {
-    const auto exeVerson{GetSKSEStyleExeVersion()};
+    if (g_SKSEModuleHandle)
+        return;
 
-    // Get the path of the game, where the Script Extender dll resides
     const auto gameDir = std::filesystem::current_path();
-
-    std::list<std::filesystem::path> dllMatches;
-    for (const auto& dirEntry : std::filesystem::directory_iterator(gameDir))
-    {
-        const auto& path = dirEntry.path();
-        if (path.extension() != L".dll")
-            continue;
-
-        auto fileName = path.filename().wstring();
-        if (fileName.length() < kScriptExtenderNameLength)
-            continue;
-
-        if (fileName.substr(0, kScriptExtenderNameLength) == kScriptExtenderName)
-        {
-            dllMatches.push_back(path);
-        }
-    }
-
-    // and before you ask, no, they dont expose it via file version info
-    std::filesystem::path* needle = nullptr;
-    for (auto& match : dllMatches)
-    {
-        auto fname = match.filename().string();
-        auto ptr = &fname[kScriptExtenderNameLength + 1];
-        // make extra sure!
-        if (std::strncmp(ptr, exeVerson.c_str(), exeVerson.length()) == 0)
-        {
-            needle = &match;
-            break;
-        }
-    }
-
-    if (!needle)
+    const auto exeVersion = GetSKSEStyleExeVersion();
+    const auto filename = fmt::format(L"{}_{}.dll", kScriptExtenderName, std::wstring(exeVersion.begin(), exeVersion.end()));
+    const auto path = gameDir / filename;
+    std::error_code error;
+    if (!std::filesystem::is_regular_file(path, error))
         return;
 
-    FileVersion fileVersion;
-    if (GetFileVersion(*needle, fileVersion) != 0)
+    FileVersion version{};
+    if (GetFileVersion(path, version) != 0)
     {
-        spdlog::error("Unable to verify Script Extender version");
+        spdlog::error("Unable to verify {} version", kScriptExtenderLabel);
         return;
     }
 
-    auto skseVersion = fmt::format("v{}.{}.{}.{}", fileVersion.versions[0], fileVersion.versions[1], fileVersion.versions[2], fileVersion.versions[3]);
-
-    // nice try.
-    int SkseVCum = fileVersion.versions[0] * 1000000 + fileVersion.versions[1] * 10000 + fileVersion.versions[2] * 100 + fileVersion.versions[3];
-    if (SkseVCum < kSKSEMinBuild)
+    const auto build = version.versions[0] * 1000000 + version.versions[1] * 10000 + version.versions[2] * 100 + version.versions[3];
+    if (build < kScriptExtenderMinBuild)
     {
-        spdlog::error("Pre anniversary Script Extender is unsupported");
+        spdlog::error("{} version is too old for this runtime", kScriptExtenderLabel);
         return;
     }
 
-    if (g_SKSEModuleHandle = LoadLibraryW(needle->c_str()))
+    const auto module = LoadLibraryW(path.c_str());
+    if (!module)
     {
-        if (auto* pStartSKSE = reinterpret_cast<void (*)()>(GetProcAddress(g_SKSEModuleHandle, kScriptExtenderEntrypoint)))
-        {
-            spdlog::info(
-                "Installing SKSE {} startup hooks... be aware that messages that start without a colored "
-                "[timestamp] prefix are logs from the Script Extender and its loaded mods.",
-                skseVersion);
-            pStartSKSE();
-            spdlog::info("SKSE startup hooks installed; initialization will continue during game startup");
-        }
-        else
-            spdlog::warn("SKSE dll doesn't expose StartSKSE(), it may be outdated.");
+        spdlog::error("Failed to load {} (error {})", path.string(), GetLastError());
+        return;
     }
-    else
+
+    const auto pStart = reinterpret_cast<void (*)()>(GetProcAddress(module, kScriptExtenderEntrypoint));
+    if (!pStart)
     {
-        spdlog::error("Failed to load {}! Check your privileges or re-download the Script Extender files.", needle->string());
+        spdlog::error("{} does not export {}", path.string(), kScriptExtenderEntrypoint);
+        FreeLibrary(module);
+        return;
     }
+
+#if defined(TP_FALLOUT4)
+    struct CoreVersion
+    {
+        uint32_t dataVersion;
+        uint32_t runtimeVersion;
+    };
+    const auto* pCore = reinterpret_cast<const CoreVersion*>(GetProcAddress(module, "F4SECore_Version"));
+    int major, minor, revision, patch;
+    VersionDb::Get().GetLoadedVersion(major, minor, revision, patch);
+    const uint32_t runtime = (major << 24) | (minor << 16) | (revision << 4) | patch;
+    if (!pCore || pCore->dataVersion != 1 || pCore->runtimeVersion != runtime)
+    {
+        spdlog::error("F4SE runtime does not match the loaded Fallout 4 executable");
+        FreeLibrary(module);
+        return;
+    }
+#endif
+
+    g_SKSEModuleHandle = module;
+    pStart();
+    spdlog::info("{} {}.{}.{}.{} startup hooks installed", kScriptExtenderLabel, version.versions[0], version.versions[1], version.versions[2], version.versions[3]);
 }

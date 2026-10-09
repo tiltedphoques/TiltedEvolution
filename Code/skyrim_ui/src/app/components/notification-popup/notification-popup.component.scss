@@ -7,8 +7,8 @@
   display: block;
   margin-right: 2em;
   margin-bottom: 0.5em;
-  color: white;
-  background-color: $-color-background;
+  color: $-color-text-strong;
+  background-color: $-color-notification-backdrop;
   font-size: 1.3rem;
 
   &:last-child {
@@ -20,8 +20,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  background-color: rgba($color: #000000, $alpha: 0.7);
   padding: 0.5em;
+  @include notification-frame();
 
   &:hover .expiration-line {
     animation-play-state: paused;
@@ -74,7 +74,7 @@ button {
   bottom: 0;
   margin: 0;
   height: 2px;
-  background-color: white;
+  background-color: $-color-text-strong;
   transform-origin: left;
   animation-name: expire;
   animation-timing-function: linear;

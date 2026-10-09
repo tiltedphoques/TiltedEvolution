@@ -2,12 +2,8 @@
 #include <EquipManager.h>
 #include <services/DebugService.h>
 
-#include <Games/Skyrim/Forms/TESForm.h>
-#include <Games/Skyrim/BSGraphics/BSGraphicsRenderer.h>
-#include <Games/Skyrim/DefaultObjectManager.h>
-#include <Games/Skyrim/Forms/TESAmmo.h>
-#include <Games/Skyrim/Misc/InventoryEntry.h>
-#include <Games/Skyrim/Misc/MiddleProcess.h>
+#include <Forms/TESForm.h>
+#include <BSGraphics/BSGraphicsRenderer.h>
 
 #include <Games/ActorExtension.h>
 

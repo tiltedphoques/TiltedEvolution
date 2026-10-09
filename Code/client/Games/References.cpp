@@ -8,6 +8,7 @@
 #include <Forms/TESNPC.h>
 #include <Forms/TESPackage.h>
 #include <Forms/TESWeather.h>
+#include <Forms/ActorValueInfo.h>
 #include <SaveLoad.h>
 #include <ExtraData/ExtraDataList.h>
 
@@ -35,13 +36,13 @@ namespace Settings
 {
 int32_t* GetDifficulty() noexcept
 {
-    POINTER_SKYRIMSE(int32_t, s_difficulty, 381472);
+    POINTER_GAME(int32_t, s_difficulty, 381472, 1072874);
     return s_difficulty.Get();
 }
 
 float* GetGreetDistance() noexcept
 {
-    POINTER_SKYRIMSE(float, s_greetDistance, 370892);
+    POINTER_GAME(float, s_greetDistance, 370892, 855965);
     return s_greetDistance.Get();
 }
 
@@ -52,12 +53,17 @@ namespace GameplayFormulas
 
 float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexcept
 {
-    using TGetDifficultyMultiplier = float(int32_t, int32_t, bool);
-    POINTER_SKYRIMSE(TGetDifficultyMultiplier, s_getDifficultyMultiplier, 26503);
-
     bool isPlayer = apHittee == PlayerCharacter::Get();
 
+#ifdef TP_FALLOUT4
+    using TGetDifficultyMultiplier = float(int32_t, const ActorValueInfo&, bool);
+    static VersionDbPtr<TGetDifficultyMultiplier> s_getDifficultyMultiplier(2209077);
+    float multiplier = s_getDifficultyMultiplier(PlayerCharacter::Get()->GetDifficulty(), *ActorValueInfo::GetHealth(), isPlayer);
+#else
+    using TGetDifficultyMultiplier = float(int32_t, int32_t, bool);
+    POINTER_SKYRIMSE(TGetDifficultyMultiplier, s_getDifficultyMultiplier, 26503);
     float multiplier = s_getDifficultyMultiplier(PlayerCharacter::Get()->difficulty, ActorValueInfo::kHealth, isPlayer);
+#endif
 
     float realDamage = aDamage;
 
@@ -74,8 +80,14 @@ float CalculateRealDamage(Actor* apHittee, float aDamage, bool aKillMove) noexce
 void FadeOutGame(bool aFadingOut, bool aBlackFade, float aFadeDuration, bool aRemainVisible, float aSecondsToFade) noexcept
 {
     using TFadeOutGame = void(bool, bool, float, bool, float);
+#ifdef TP_FALLOUT4
+    using TShowFaderMenu = void(bool, bool, float, bool, float, void*, bool, uint32_t);
+    static VersionDbPtr<TShowFaderMenu> showFaderMenu(2249651);
+    showFaderMenu.Get()(aFadingOut, aBlackFade, aFadeDuration, aRemainVisible, aSecondsToFade, nullptr, true, 0);
+#else
     POINTER_SKYRIMSE(TFadeOutGame, fadeOutGame, 52847);
     fadeOutGame.Get()(aFadingOut, aBlackFade, aFadeDuration, aRemainVisible, aSecondsToFade);
+#endif
 }
 
 // Disable AI sync for now, experiment didn't work, code might be useful later on though.
@@ -133,15 +145,15 @@ void TP_MAKE_THISCALL(HookSetCurrentPickREFR, Console, BSPointerHandle<TESObject
 static TiltedPhoques::Initializer s_referencesHooks(
     []()
     {
+#if AI_SYNC
         POINTER_SKYRIMSE(TCheckForNewPackage, s_checkForNewPackage, 39114);
         POINTER_SKYRIMSE(TInitFromPackage, s_initFromPackage, 38959);
-        POINTER_SKYRIMSE(TSetCurrentPickREFR, s_setCurrentPickREFR, 51093);
-
         RealCheckForNewPackage = s_checkForNewPackage.Get();
         RealInitFromPackage = s_initFromPackage.Get();
-        RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
-
         TP_HOOK(&RealCheckForNewPackage, HookCheckForNewPackage);
         TP_HOOK(&RealInitFromPackage, HookInitFromPackage);
+#endif
+        POINTER_GAME(TSetCurrentPickREFR, s_setCurrentPickREFR, 51093, 2248551);
+        RealSetCurrentPickREFR = s_setCurrentPickREFR.Get();
         TP_HOOK(&RealSetCurrentPickREFR, HookSetCurrentPickREFR);
     });

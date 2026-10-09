@@ -7,7 +7,7 @@
 bool IAnimationGraphManagerHolder::SetVariableFloat(BSFixedString* apVariable, float aValue)
 {
     TP_THIS_FUNCTION(TSetFloatVariable, bool, IAnimationGraphManagerHolder, BSFixedString*, float);
-    POINTER_SKYRIMSE(TSetFloatVariable, InternalSetFloatVariable, 32887);
+    POINTER_GAME(TSetFloatVariable, InternalSetFloatVariable, 32887, 2214545);
 
     return TiltedPhoques::ThisCall(InternalSetFloatVariable, this, apVariable, aValue);
 }
@@ -15,7 +15,7 @@ bool IAnimationGraphManagerHolder::SetVariableFloat(BSFixedString* apVariable, f
 bool IAnimationGraphManagerHolder::SetVariableInt(BSFixedString* apVariable, int32_t aValue)
 {
     TP_THIS_FUNCTION(TSetIntVariable, bool, IAnimationGraphManagerHolder, BSFixedString*, int32_t);
-    POINTER_SKYRIMSE(TSetIntVariable, InternalSetIntVariable, 32886);
+    POINTER_GAME(TSetIntVariable, InternalSetIntVariable, 32886, 2214544);
 
     return TiltedPhoques::ThisCall(InternalSetIntVariable, this, apVariable, aValue);
 }
@@ -23,17 +23,25 @@ bool IAnimationGraphManagerHolder::SetVariableInt(BSFixedString* apVariable, int
 bool IAnimationGraphManagerHolder::SetVariableBool(BSFixedString* apVariable, bool aValue)
 {
     TP_THIS_FUNCTION(TSetBoolVariable, bool, IAnimationGraphManagerHolder, BSFixedString*, bool);
-    POINTER_SKYRIMSE(TSetBoolVariable, InternalSetBoolVariable, 32885);
+    POINTER_GAME(TSetBoolVariable, InternalSetBoolVariable, 32885, 2214543);
 
     return TiltedPhoques::ThisCall(InternalSetBoolVariable, this, apVariable, aValue);
 }
 
 bool IAnimationGraphManagerHolder::RevertAnimationGraphManager()
 {
+    #if defined(TP_FALLOUT4)
+    TP_THIS_FUNCTION(TRevertAnimationGraphManager, bool, IAnimationGraphManagerHolder, bool);
+#else
     TP_THIS_FUNCTION(TRevertAnimationGraphManager, bool, IAnimationGraphManagerHolder);
-    POINTER_SKYRIMSE(TRevertAnimationGraphManager, InternalRevertAnimationGraphManager, 32883);
+#endif
+    POINTER_GAME(TRevertAnimationGraphManager, InternalRevertAnimationGraphManager, 32883, 2214541);
 
+    #if defined(TP_FALLOUT4)
+    return TiltedPhoques::ThisCall(InternalRevertAnimationGraphManager, this, true);
+#else
     return TiltedPhoques::ThisCall(InternalRevertAnimationGraphManager, this);
+#endif
 }
 
 bool IAnimationGraphManagerHolder::IsReady()

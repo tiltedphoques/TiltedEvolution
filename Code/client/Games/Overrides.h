@@ -43,6 +43,9 @@ struct Quest
 struct SpellCast
 {
 };
+struct ActorValue
+{
+};
 } // namespace details
 
 using ScopedReferencesOverride = ScopedOverride<TESObjectREFR>;
@@ -55,3 +58,4 @@ using ScopedInventoryOverride = ScopedOverride<details::Inventory>;
 using ScopedExtraDataOverride = ScopedOverride<details::ExtraData>;
 using ScopedQuestOverride = ScopedOverride<details::Quest>;
 using ScopedSpellCastOverride = ScopedOverride<details::SpellCast>;
+using ScopedActorValueOverride = ScopedOverride<details::ActorValue>;

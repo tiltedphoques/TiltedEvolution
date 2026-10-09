@@ -8,6 +8,7 @@
 #include <Havok/hkbBehaviorGraph.h>
 
 #include <Services/ImguiService.h>
+#include <Services/InputService.h>
 #include <Services/DebugService.h>
 #include <Services/TransportService.h>
 #include <Services/PapyrusService.h>
@@ -60,12 +61,10 @@
 
 #include <Combat/CombatController.h>
 #include <Camera/PlayerCamera.h>
-#include <AI/Movement/PlayerControls.h>
 #include <Interface/IMenu.h>
 #include <Camera/PlayerCamera.h>
 #include <DefaultObjectManager.h>
 #include <Misc/InventoryEntry.h>
-#include <Misc/MiddleProcess.h>
 
 #include <imgui.h>
 #include <inttypes.h>
@@ -152,6 +151,18 @@ extern thread_local bool g_forceAnimation;
 
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
+#if (!IS_MASTER)
+    // Development aid: TP_AUTOCONNECT=host:port connects once the player is in a cell.
+    static bool s_autoConnectChecked = false;
+    if (!s_autoConnectChecked && PlayerCharacter::Get() && PlayerCharacter::Get()->parentCell)
+    {
+        s_autoConnectChecked = true;
+        char address[256]{};
+        if (GetEnvironmentVariableA("TP_AUTOCONNECT", address, sizeof(address)) > 0 && !m_transport.IsOnline())
+            m_transport.Connect(address);
+    }
+#endif
+
     if (!BSGraphics::GetMainWindow()->IsForeground())
         return;
 
@@ -167,7 +178,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
     if (GetAsyncKeyState(VK_F3) & 0x01)
     {
-        m_showDebugStuff = !m_showDebugStuff;
+        SetVisible(!m_showDebugStuff);
     }
 
 #if (!IS_MASTER)
@@ -261,6 +272,19 @@ void DebugService::DrawServerView() noexcept
     ImGui::End();
 }
 
+bool DebugService::IsInputCaptured() const noexcept
+{
+    return m_showDebugStuff;
+}
+
+void DebugService::SetVisible(bool aVisible) noexcept
+{
+    m_showDebugStuff = aVisible;
+    if (aVisible)
+        m_world.GetOverlayService().SetActive(false);
+    InputService::UpdateInputCapture();
+}
+
 void DebugService::OnDraw() noexcept
 {
     const auto view = m_world.view<FormIdComponent>();
@@ -322,11 +346,16 @@ void DebugService::OnDraw() noexcept
         if (ImGui::Button("Log all open windows"))
         {
             UI* pUI = UI::Get();
+#if defined(TP_FALLOUT4)
+            if (pUI)
+                pUI->DebugLogAllMenus();
+#else
             for (const auto& it : pUI->menuMap)
             {
                 if (pUI->GetMenuOpen(it.key))
                     spdlog::info("{}", it.key.AsAscii());
             }
+#endif
         }
 
         if (ImGui::Button("Close all menus"))
@@ -343,7 +372,9 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Entities", nullptr, &g_enableEntitiesWindow);
         ImGui::MenuItem("Server", nullptr, &g_enableServerWindow);
         ImGui::MenuItem("Party", nullptr, &g_enablePartyWindow);
+#if !defined(TP_FALLOUT4)
         ImGui::MenuItem("Dragon spawner", nullptr, &g_enableDragonSpawnerWindow);
+#endif
 
 #if (!IS_MASTER)
         ImGui::MenuItem("Network", nullptr, &g_enableNetworkWindow);
@@ -351,7 +382,9 @@ void DebugService::OnDraw() noexcept
         ImGui::MenuItem("Inventory", nullptr, &g_enableInventoryWindow);
         ImGui::MenuItem("Animations", nullptr, &g_enableAnimWindow);
         ImGui::MenuItem("Player", nullptr, &g_enablePlayerWindow);
+#if !defined(TP_FALLOUT4)
         ImGui::MenuItem("Skills", nullptr, &g_enableSkillsWindow);
+#endif
         ImGui::MenuItem("Cell", nullptr, &g_enableCellWindow);
         ImGui::MenuItem("Processes", nullptr, &g_enableProcessesWindow);
         ImGui::MenuItem("Weather", nullptr, &g_enableWeatherWindow);
@@ -388,8 +421,10 @@ void DebugService::OnDraw() noexcept
         DrawServerView();
     if (g_enablePartyWindow)
         DrawPartyView();
+#if !defined(TP_FALLOUT4)
     if (g_enableDragonSpawnerWindow)
         DrawDragonSpawnerView();
+#endif
 
 #if (!IS_MASTER)
     if (g_enableNetworkWindow)
@@ -402,8 +437,10 @@ void DebugService::OnDraw() noexcept
         DrawAnimDebugView();
     if (g_enablePlayerWindow)
         DrawPlayerDebugView();
+#if !defined(TP_FALLOUT4)
     if (g_enableSkillsWindow)
         DrawSkillView();
+#endif
     if (g_enableActorValuesWindow)
         DrawActorValuesView();
     if (g_enableCellWindow)

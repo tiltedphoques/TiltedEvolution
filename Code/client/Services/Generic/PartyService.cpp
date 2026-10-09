@@ -22,6 +22,7 @@
 #include <OverlayApp.hpp>
 
 #include <Forms/TESGlobal.h>
+#include <Games/FormIds.h>
 
 PartyService::PartyService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransportService) noexcept
     : m_world(aWorld)
@@ -123,8 +124,8 @@ void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
         // TODO: this can be done a bit prettier
         if (m_isLeader)
         {
-            TESGlobal* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(0xB8EC1));
-            pWorldEncountersEnabled->f = 1.f;
+            if (auto* pWorldEncountersEnabled = Cast<TESGlobal>(TESForm::GetById(FormIds::WorldEncountersEnabledGlobal)))
+                pWorldEncountersEnabled->f = 1.f;
         }
 
         auto pArguments = CefListValue::Create();

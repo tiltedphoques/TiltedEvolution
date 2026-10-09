@@ -4,7 +4,7 @@
 
 INISettingCollection* INISettingCollection::Get() noexcept
 {
-    POINTER_SKYRIMSE(INISettingCollection*, settingCollection, 411155);
+    POINTER_GAME(INISettingCollection*, settingCollection, 411155, 2704108);
 
     return *settingCollection.Get();
 }
@@ -15,7 +15,7 @@ Setting* INISettingCollection::GetSetting(const char* acpName) noexcept
 
     while (pCurrent)
     {
-        if (_stricmp(acpName, pCurrent->setting->name) == 0)
+        if (pCurrent->setting && pCurrent->setting->name && _stricmp(acpName, pCurrent->setting->name) == 0)
             return pCurrent->setting;
 
         pCurrent = pCurrent->next;

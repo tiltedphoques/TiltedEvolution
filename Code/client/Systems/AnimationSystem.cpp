@@ -46,8 +46,8 @@ void AnimationSystem::Update(World& aWorld, Actor* apActor, RemoteAnimationCompo
         const auto pAction = Cast<BGSAction>(TESForm::GetById(actionId));
         const auto pTarget = Cast<TESObjectREFR>(TESForm::GetById(targetId));
 
-        apActor->actorState.flags1 = first.State1;
-        apActor->actorState.flags2 = first.State2;
+        apActor->GetActorState()->flags1 = first.State1;
+        apActor->GetActorState()->flags2 = first.State2;
 
         apActor->LoadAnimationVariables(first.Variables);
 

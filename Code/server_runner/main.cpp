@@ -24,7 +24,11 @@
 
 namespace
 {
+#if defined(TP_FALLOUT4)
+constexpr char kLogFileName[] = "FTServerOut.log";
+#else
 constexpr char kLogFileName[] = "STServerOut.log";
+#endif
 // Its fine for us if several potential server instances read this, since its a tilted platform thing
 // and therefore not considered game specific.
 constexpr char kEULAName[] = "EULA.txt";
