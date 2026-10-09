@@ -14,7 +14,7 @@ struct BSAnimationGraphManager
     void Release()
     {
         if (InterlockedDecrement(&refCount) == 0)
-            this->~BSAnimationGraphManager();
+            delete this;
     }
 
     volatile LONG refCount;
