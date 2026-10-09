@@ -18,4 +18,7 @@ struct RemoteComponent
     uint32_t Id;
     uint32_t CachedRefId;
     uint32_t OwnershipEpoch;
+#if defined(TP_FALLOUT4)
+    uint32_t PowerArmorFrameToken{};
+#endif
 };

@@ -9,6 +9,8 @@ struct EnchantmentItem;
 struct ExtraDataList
 {
     static ExtraDataList* New() noexcept;
+    float GetHealthPercent() const noexcept;
+    void SetHealthPercent(float aHealth) noexcept;
 
     bool Contains(ExtraDataType aType) const;
     void Set(ExtraDataType aType, bool aSet);

@@ -11,6 +11,7 @@
 #include <Events/ActivateEvent.h>
 #include <Events/LockChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
+#include <cmath>
 
 TESObjectREFR* TESObjectREFR::GetByHandle(uint32_t aHandle) noexcept
 {
@@ -260,7 +261,7 @@ Inventory TESObjectREFR::GetInventory() const noexcept
     return GetInventory([](TESForm&) { return true; });
 }
 
-Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) const noexcept
+Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter, bool aIncludeCondition) const noexcept
 {
     Inventory inventory;
     if (!inventoryList)
@@ -280,6 +281,11 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
             modSystem.GetServerModId(item.object->formID, entry.BaseId);
             entry.Count = static_cast<int32_t>(pStack->count);
             entry.ExtraWorn = pStack->IsEquipped();
+            if (aIncludeCondition)
+            {
+                const float health = pStack->extra ? pStack->extra->GetHealthPercent() : -1.f;
+                entry.ExtraHealth = health < 0.f ? 1.f : std::round(std::clamp(health, 0.f, 1.f) * 1000.f) / 1000.f;
+            }
             for (const uint32_t modId : GetStackMods(pStack))
                 modSystem.GetServerModId(modId, entry.Mods.emplace_back());
             inventory.Entries.push_back(std::move(entry));
@@ -397,6 +403,65 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool) noexc
         data.reason = ITEM_REMOVE_REASON::kRemove;
         RemoveItem(data);
     }
+}
+
+void TESObjectREFR::SetInventoryItemCondition(const Inventory::Entry& acEntry) noexcept
+{
+    if (!inventoryList)
+        return;
+    auto* pItem = TESForm::GetById(World::Get().GetModSystem().GetGameId(acEntry.BaseId));
+    TP_THIS_FUNCTION(TLock, void, BSReadWriteLock);
+    static VersionDbPtr<TLock> lock(2267898);
+    static VersionDbPtr<TLock> unlock(2267904);
+    TiltedPhoques::ThisCall(lock.Get(), &inventoryList->lock);
+    for (auto& item : inventoryList->items)
+    {
+        if (item.object != pItem)
+            continue;
+        for (auto* pStack = item.stack; pStack; pStack = pStack->next)
+        {
+            if (pStack->IsEquipped() != acEntry.IsWorn())
+                continue;
+            Vector<GameId> mods;
+            for (const auto id : GetStackMods(pStack))
+                World::Get().GetModSystem().GetServerModId(id, mods.emplace_back());
+            if (mods != acEntry.Mods)
+                continue;
+            if (!pStack->extra && acEntry.ExtraHealth < 1.f)
+            {
+                pStack->extra = ExtraDataList::New();
+                if (pStack->extra)
+                    pStack->extra->refCount = 1;
+            }
+            if (pStack->extra)
+                pStack->extra->SetHealthPercent(acEntry.ExtraHealth);
+            break;
+        }
+        break;
+    }
+    TiltedPhoques::ThisCall(unlock.Get(), &inventoryList->lock);
+}
+
+void TESObjectREFR::SetItemMods(TESBoundObject* apItem, const Vector<GameId>& acMods) noexcept
+{
+    if (!apItem || GetItemCountInInventory(apItem) != 1)
+        return;
+    using TModifyInventoryItemMod = bool(void*, uint32_t, TESObjectREFR*, TESBoundObject*, TESForm*, bool);
+    static VersionDbPtr<TModifyInventoryItemMod> modify(2254249);
+    const auto current = GetItemMods(apItem, 0);
+    auto& modSystem = World::Get().GetModSystem();
+    ScopedInventoryOverride inventoryOverride;
+    ScopedEquipOverride equipOverride;
+    for (const auto id : current)
+    {
+        GameId modId{};
+        if (modSystem.GetServerModId(id, modId) && std::find(acMods.begin(), acMods.end(), modId) == acMods.end())
+        {
+            if (auto* pMod = TESForm::GetById(id))
+                modify.Get()(nullptr, 0, this, apItem, pMod, false);
+        }
+    }
+    AttachItemMods(apItem, acMods);
 }
 
 Vector<uint32_t> TESObjectREFR::GetStackMods(const BGSInventoryItem::Stack* apStack) noexcept

@@ -5,6 +5,8 @@ void PowerArmorRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) con
     Serialization::WriteVarInt(aWriter, Id);
     FurnitureId.Serialize(aWriter);
     FurnitureBaseId.Serialize(aWriter);
+    Serialization::WriteVarInt(aWriter, OwnershipEpoch);
+    Data.Serialize(aWriter);
 }
 
 void PowerArmorRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -14,4 +16,6 @@ void PowerArmorRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) n
     Id = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     FurnitureId.Deserialize(aReader);
     FurnitureBaseId.Deserialize(aReader);
+    OwnershipEpoch = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    Data.Deserialize(aReader);
 }

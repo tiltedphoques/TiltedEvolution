@@ -307,7 +307,9 @@ struct TESObjectREFR : TESForm
     OpenState GetOpenState() noexcept;
 
     Inventory GetInventory() const noexcept;
-    Inventory GetInventory(std::function<bool(TESForm&)> aFilter) const noexcept;
+    Inventory GetInventory(std::function<bool(TESForm&)> aFilter, bool aIncludeCondition = false) const noexcept;
+    void SetInventoryItemCondition(const Inventory::Entry& acEntry) noexcept;
+    void SetItemMods(TESBoundObject* apItem, const Vector<GameId>& acMods) noexcept;
     Inventory GetArmor() const noexcept;
     Inventory GetWornArmor() const noexcept;
 

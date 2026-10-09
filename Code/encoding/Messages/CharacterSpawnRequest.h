@@ -10,6 +10,7 @@
 #include <Structs/Vector3_NetQuantize.h>
 #include <Structs/Rotator2_NetQuantize.h>
 #include <Structs/ActorValues.h>
+#include <Structs/PowerArmorData.h>
 
 using TiltedPhoques::String;
 
@@ -34,7 +35,7 @@ struct CharacterSpawnRequest final : ServerMessage
                ActionsToReplay == acRhs.ActionsToReplay && FaceTints == acRhs.FaceTints && PlayerId == acRhs.PlayerId &&
                OwnershipEpoch == acRhs.OwnershipEpoch && IsDead == acRhs.IsDead && IsPlayer == acRhs.IsPlayer && IsWeaponDrawn == acRhs.IsWeaponDrawn &&
                IsPlayerSummon == acRhs.IsPlayerSummon && LeveledNpcPickId == acRhs.LeveledNpcPickId &&
-               PowerArmorFurnitureId == acRhs.PowerArmorFurnitureId && PowerArmorFurnitureBaseId == acRhs.PowerArmorFurnitureBaseId && GetOpcode() == acRhs.GetOpcode();
+               PowerArmorFurnitureId == acRhs.PowerArmorFurnitureId && PowerArmorFurnitureBaseId == acRhs.PowerArmorFurnitureBaseId && PowerArmor == acRhs.PowerArmor && GetOpcode() == acRhs.GetOpcode();
     }
 
     uint32_t ServerId{};
@@ -43,6 +44,7 @@ struct CharacterSpawnRequest final : ServerMessage
     GameId LeveledNpcPickId{};
     GameId PowerArmorFurnitureId{};
     GameId PowerArmorFurnitureBaseId{};
+    PowerArmorData PowerArmor{};
     GameId CellId{};
     Vector3_NetQuantize Position{};
     Rotator2_NetQuantize Rotation{};

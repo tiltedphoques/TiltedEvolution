@@ -6,6 +6,7 @@
 
 #include <Structs/Tints.h>
 #include <Structs/Factions.h>
+#include <Structs/PowerArmorData.h>
 
 struct CharacterComponent
 {
@@ -85,6 +86,7 @@ struct CharacterComponent
     // Power armor furniture the character is in; a null base means none.
     GameId PowerArmorFurnitureId{};
     GameId PowerArmorFurnitureBaseId{};
+    PowerArmorData PowerArmor{};
     Tints FaceTints{};
     Factions FactionsContent{};
     uint16_t Flags{};

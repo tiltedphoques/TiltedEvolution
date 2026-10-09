@@ -245,6 +245,8 @@ struct Actor
     void SetPlayerRespawnMode(bool aSet = true) noexcept;
 
     bool IsInPowerArmor() const noexcept;
+    Inventory GetPowerArmorInventory() const noexcept;
+    void ApplyPowerArmorInventory(const Inventory& acInventory) noexcept;
     TESObjectREFR* GetPowerArmorFurniture() const noexcept;
     void EnterPowerArmor(TESObjectREFR* apFurniture) noexcept;
     void ExitPowerArmor() noexcept;

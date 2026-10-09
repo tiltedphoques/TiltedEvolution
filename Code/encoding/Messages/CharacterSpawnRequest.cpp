@@ -24,6 +24,7 @@ void CharacterSpawnRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter)
     LeveledNpcPickId.Serialize(aWriter);
     PowerArmorFurnitureId.Serialize(aWriter);
     PowerArmorFurnitureBaseId.Serialize(aWriter);
+    PowerArmor.Serialize(aWriter);
 }
 
 void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -63,4 +64,5 @@ void CharacterSpawnRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReade
     LeveledNpcPickId.Deserialize(aReader);
     PowerArmorFurnitureId.Deserialize(aReader);
     PowerArmorFurnitureBaseId.Deserialize(aReader);
+    PowerArmor.Deserialize(aReader);
 }

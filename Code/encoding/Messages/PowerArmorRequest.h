@@ -2,8 +2,9 @@
 
 #include "Message.h"
 #include <Structs/GameId.h>
+#include <Structs/PowerArmorData.h>
 
-// Sent when the local player enters or leaves power armor. A null furniture base means out of power armor.
+// A null furniture base means out of power armor.
 struct PowerArmorRequest final : ClientMessage
 {
     static constexpr ClientOpcode Opcode = kPowerArmorRequest;
@@ -18,10 +19,12 @@ struct PowerArmorRequest final : ClientMessage
 
     bool operator==(const PowerArmorRequest& acRhs) const noexcept
     {
-        return Id == acRhs.Id && FurnitureId == acRhs.FurnitureId && FurnitureBaseId == acRhs.FurnitureBaseId && GetOpcode() == acRhs.GetOpcode();
+        return Id == acRhs.Id && FurnitureId == acRhs.FurnitureId && FurnitureBaseId == acRhs.FurnitureBaseId && OwnershipEpoch == acRhs.OwnershipEpoch && Data == acRhs.Data && GetOpcode() == acRhs.GetOpcode();
     }
 
     uint32_t Id{};
+    uint32_t OwnershipEpoch{};
+    PowerArmorData Data{};
     GameId FurnitureId{};
     GameId FurnitureBaseId{};
 };

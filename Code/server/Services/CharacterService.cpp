@@ -85,6 +85,7 @@ void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, Charact
     apSpawnRequest->PlayerId = characterComponent.PlayerId;
     apSpawnRequest->PowerArmorFurnitureId = characterComponent.PowerArmorFurnitureId;
     apSpawnRequest->PowerArmorFurnitureBaseId = characterComponent.PowerArmorFurnitureBaseId;
+    apSpawnRequest->PowerArmor = characterComponent.PowerArmor;
 
     const auto* pOwnerComponent = aRegistry.try_get<OwnerComponent>(aEntity);
     if (pOwnerComponent)
@@ -1033,15 +1034,20 @@ void CharacterService::OnPowerArmorRequest(const PacketEvent<PowerArmorRequest>&
 
     auto view = m_world.view<CharacterComponent, OwnerComponent>();
     const auto it = view.find(cEntity);
-    if (it == view.end() || view.get<OwnerComponent>(*it).GetOwner() != acMessage.pPlayer)
+    if (it == view.end() || view.get<OwnerComponent>(*it).GetOwner() != acMessage.pPlayer ||
+        view.get<OwnerComponent>(*it).OwnershipEpoch != message.OwnershipEpoch || !message.Data.IsValid() ||
+        (message.FurnitureBaseId != GameId{} && message.Data.FrameToken == 0))
         return;
 
     auto& characterComponent = view.get<CharacterComponent>(*it);
     characterComponent.PowerArmorFurnitureId = message.FurnitureId;
     characterComponent.PowerArmorFurnitureBaseId = message.FurnitureBaseId;
+    characterComponent.PowerArmor = message.Data;
 
     NotifyPowerArmor notify;
     notify.Id = message.Id;
+    notify.OwnershipEpoch = message.OwnershipEpoch;
+    notify.Data = message.Data;
     notify.FurnitureId = message.FurnitureId;
     notify.FurnitureBaseId = message.FurnitureBaseId;
 

@@ -2,7 +2,9 @@
 
 #include <Games/References.h>
 #include <Games/Memory.h>
+#include <EquipManager.h>
 #include <Forms/ActorValueInfo.h>
+#include <Components/BGSKeywordForm.h>
 #include <Forms/TESNPC.h>
 #include <Games/TES.h>
 #include <Games/Overrides.h>
@@ -557,6 +559,76 @@ void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLoca
     data.dropLoc = apLocation;
     data.rotate = apRotation;
     RemoveItem(data);
+}
+
+Inventory Actor::GetPowerArmorInventory() const noexcept
+{
+    using TGetKeyword = BGSKeyword*();
+    static VersionDbPtr<TGetKeyword> getKeyword(2194743);
+    static VersionDbPtr<TGetKeyword> getFrameKeyword(2194744);
+    auto* pKeyword = getKeyword.Get()();
+    auto* pFrameKeyword = getFrameKeyword.Get()();
+    return GetInventory([pKeyword, pFrameKeyword](TESForm& aForm)
+    {
+        auto* pKeywords = aForm.formType == FormType::Armor ? Cast<BGSKeywordForm>(&aForm) : nullptr;
+        return pKeyword && pKeywords && pKeywords->Contains(pKeyword) && (!pFrameKeyword || !pKeywords->Contains(pFrameKeyword));
+    }, true);
+}
+
+void Actor::ApplyPowerArmorInventory(const Inventory& acInventory) noexcept
+{
+    ScopedInventoryOverride inventoryOverride;
+    ScopedEquipOverride equipOverride;
+    auto& modSystem = World::Get().GetModSystem();
+    auto* pEquip = EquipManager::Get();
+    auto current = GetPowerArmorInventory();
+    Vector<GameId> reconciled;
+    for (const auto& entry : current.Entries)
+    {
+        if (std::find(reconciled.begin(), reconciled.end(), entry.BaseId) != reconciled.end())
+            continue;
+        reconciled.push_back(entry.BaseId);
+        int32_t count = 0;
+        int32_t wanted = 0;
+        for (const auto& item : current.Entries)
+            if (item.BaseId == entry.BaseId)
+                count += item.Count;
+        for (const auto& item : acInventory.Entries)
+            if (item.BaseId == entry.BaseId)
+                wanted += item.Count;
+        if (count != wanted)
+        {
+            auto removed = entry;
+            removed.Count = -count;
+            AddOrRemoveItem(removed);
+        }
+    }
+    current = GetPowerArmorInventory();
+    for (const auto& entry : acInventory.Entries)
+    {
+        auto* pObject = Cast<TESBoundObject>(TESForm::GetById(modSystem.GetGameId(entry.BaseId)));
+        if (!pObject || pObject->formType != FormType::Armor)
+            continue;
+        const auto it = std::find_if(current.Entries.begin(), current.Entries.end(), [&entry](const auto& aItem)
+        { return aItem.BaseId == entry.BaseId; });
+        const bool changed = it == current.Entries.end() || it->Mods != entry.Mods || it->ExtraHealth != entry.ExtraHealth;
+        if (it != current.Entries.end() && it->IsWorn() && (changed || !entry.IsWorn()))
+            pEquip->UnEquip(this, pObject, nullptr, 1, nullptr, false, true, false, false, nullptr);
+        if (it == current.Entries.end())
+        {
+            auto item = entry;
+            item.ExtraWorn = false;
+            AddOrRemoveItem(item);
+        }
+        if (it == current.Entries.end() || it->Mods != entry.Mods)
+            SetItemMods(pObject, entry.Mods);
+        auto condition = entry;
+        if (changed)
+            condition.ExtraWorn = false;
+        SetInventoryItemCondition(condition);
+        if (entry.IsWorn() && (changed || !it->IsWorn()))
+            pEquip->Equip(this, pObject, nullptr, 1, nullptr, false, true, false, false);
+    }
 }
 
 bool Actor::IsInPowerArmor() const noexcept
