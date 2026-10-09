@@ -42,6 +42,8 @@
 #include <Messages/AssignCharacterResponse.h>
 #include <Messages/ServerReferencesMoveRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
+#include <Messages/RequestActionEvents.h>
+#include <Messages/NotifyActionEvents.h>
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
@@ -83,6 +85,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher,
     m_assignCharacterConnection = m_dispatcher.sink<AssignCharacterResponse>().connect<&CharacterService::OnAssignCharacter>(this);
     m_characterSpawnConnection = m_dispatcher.sink<CharacterSpawnRequest>().connect<&CharacterService::OnCharacterSpawn>(this);
     m_referenceMovementSnapshotConnection = m_dispatcher.sink<ServerReferencesMoveRequest>().connect<&CharacterService::OnReferencesMoveRequest>(this);
+    m_actionEventsConnection = m_dispatcher.sink<NotifyActionEvents>().connect<&CharacterService::OnNotifyActionEvents>(this);
     m_factionsConnection = m_dispatcher.sink<NotifyFactionsChanges>().connect<&CharacterService::OnFactionsChanges>(this);
     m_ownershipTransferConnection = m_dispatcher.sink<NotifyOwnershipTransfer>().connect<&CharacterService::OnOwnershipTransfer>(this);
     m_removeCharacterConnection = m_dispatcher.sink<NotifyRemoveCharacter>().connect<&CharacterService::OnRemoveCharacter>(this);
@@ -640,9 +643,13 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
 void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept
 {
-    auto view = m_world.view<RemoteComponent, InterpolationComponent, RemoteAnimationComponent>();
+    // When it came off the network, not when this frame got to it. Otherwise a long frame on our side would look like
+    // network jitter and make every remote actor play further behind for seconds.
+    const double cArrivalTime = m_transport.GetMessageReceiveTime();
 
-    for (const auto& [serverId, update] : acMessage.Updates)
+    auto view = m_world.view<RemoteComponent, InterpolationComponent>();
+
+    for (const auto& [serverId, movement] : acMessage.Updates)
     {
         auto itor = std::find_if(std::begin(view), std::end(view), [serverId = serverId, view](entt::entity entity) { return view.get<RemoteComponent>(entity).Id == serverId; });
 
@@ -650,8 +657,6 @@ void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest
             continue;
 
         auto& interpolationComponent = view.get<InterpolationComponent>(*itor);
-        auto& animationComponent = view.get<RemoteAnimationComponent>(*itor);
-        const auto& movement = update.UpdatedMovement;
 
         InterpolationComponent::TimePoint point;
         point.Tick = acMessage.Tick;
@@ -660,9 +665,25 @@ void CharacterService::OnReferencesMoveRequest(const ServerReferencesMoveRequest
         point.Variables = movement.Variables;
         point.Direction = movement.Direction;
 
-        InterpolationSystem::AddPoint(interpolationComponent, point);
+        InterpolationSystem::AddPoint(interpolationComponent, std::move(point), cArrivalTime);
+    }
+}
 
-        for (const auto& action : update.ActionEvents)
+void CharacterService::OnNotifyActionEvents(const NotifyActionEvents& acMessage) const noexcept
+{
+    auto view = m_world.view<RemoteComponent, RemoteAnimationComponent>();
+
+    for (const auto& [serverId, actions] : acMessage.Actions)
+    {
+        auto itor = std::find_if(std::begin(view), std::end(view), [serverId = serverId, view](entt::entity entity) { return view.get<RemoteComponent>(entity).Id == serverId; });
+
+        if (itor == std::end(view))
+            continue;
+
+        auto& animationComponent = view.get<RemoteAnimationComponent>(*itor);
+
+        // Played once the actor's playback clock reaches their tick, in step with its movement
+        for (const auto& action : actions)
         {
             animationComponent.TimePoints.push_back(action);
         }
@@ -1724,18 +1745,30 @@ void CharacterService::ProcessLeveledConforms() noexcept
 
 void CharacterService::RunLocalUpdates() const noexcept
 {
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 100ms;
+    // Remote clients show actors about one snapshot interval late, so players, mounts and actors in combat get every snapshot
+    // and the rest every few. Assumes 60+ fps: 30ms keeps 60 fps gaps at two frames, with 33ms most were three (~25 Hz).
+    constexpr auto cDelayBetweenSnapshots = 30ms;
+    constexpr uint32_t cLowPrioritySnapshotDivider = 3;
+    // Movement is unreliable, keeping each message around a single packet (~120 bytes per humanoid) means a lost packet
+    // only drops a few actors
+    constexpr size_t cMaxActorsPerMovementMessage = 8;
+
+    static std::chrono::steady_clock::time_point lastSnapshotTimePoint;
+    static uint32_t snapshotCount = 0;
 
     const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
+    if (now - lastSnapshotTimePoint < cDelayBetweenSnapshots)
         return;
 
-    lastSendTimePoint = now;
+    lastSnapshotTimePoint = now;
+    const bool cIsFullSnapshot = ++snapshotCount % cLowPrioritySnapshotDivider == 0;
 
-    ClientReferencesMoveRequest message;
-    message.Tick = m_transport.GetClock().GetCurrentTick();
+    RequestActionEvents actionsMessage;
 
+    ClientReferencesMoveRequest movementMessage;
+    movementMessage.Tick = m_transport.GetClock().GetCurrentTick();
+
+    const auto* pPlayer = PlayerCharacter::Get();
     auto animatedLocalView = m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>();
 
     for (auto entity : animatedLocalView)
@@ -1744,16 +1777,39 @@ void CharacterService::RunLocalUpdates() const noexcept
         auto& animationComponent = animatedLocalView.get<LocalAnimationComponent>(entity);
         auto& formIdComponent = animatedLocalView.get<FormIdComponent>(entity);
 
-        AnimationSystem::Serialize(m_world, message, localComponent, animationComponent, formIdComponent);
+        auto* pActor = Cast<Actor>(TESForm::GetById(formIdComponent.Id));
+        if (!pActor)
+            continue;
+
+        // Remote clients play actions on the same timeline as movement, by the time playback reaches an action it waits
+        // for the snapshot after it anyway, so sending actions along with that snapshot doesn't delay them
+        AnimationSystem::SerializeActions(actionsMessage, localComponent, animationComponent);
+
+        if (!cIsFullSnapshot && pActor != pPlayer && !pActor->IsMount() && !pActor->IsInCombat())
+            continue;
+
+        if (movementMessage.Updates.size() == cMaxActorsPerMovementMessage)
+        {
+            m_transport.Send(movementMessage, TiltedPhoques::kUnreliable);
+            movementMessage.Updates.clear();
+        }
+
+        AnimationSystem::SerializeMovement(m_world, pActor, movementMessage.Updates[localComponent.Id]);
     }
 
-    m_transport.Send(message);
+    if (!actionsMessage.Actions.empty())
+        m_transport.Send(actionsMessage);
+
+    // NoNagle on the last message sends everything queued this frame right away, in as few packets as possible
+    if (!movementMessage.Updates.empty())
+        m_transport.Send(movementMessage, TiltedPhoques::kUnreliableNoNagle);
 }
 
 void CharacterService::RunRemoteUpdates() noexcept
 {
-    // Delay by 300ms to let the interpolation system accumulate interpolation points
-    const auto tick = m_transport.GetClock().GetCurrentTick() - 300;
+    // Each remote actor is played back on its owner's timeline, only as far behind as its snapshots need, see PlaybackClock.
+    // Playback can only rely on snapshots that have been handled, so it runs on the time they were last picked up at.
+    const double cNow = m_transport.GetLastPollTime();
 
     // Interpolation has to keep running even if the actor is not in view, otherwise we will never know if we need to spawn it
     auto interpolatedEntities = m_world.view<RemoteComponent, InterpolationComponent>();
@@ -1770,10 +1826,10 @@ void CharacterService::RunRemoteUpdates() noexcept
             pActor = Cast<Actor>(pForm);
         }
 
-        InterpolationSystem::Update(pActor, interpolationComponent, tick);
+        InterpolationSystem::Update(pActor, interpolationComponent, cNow);
     }
 
-    auto animatedView = m_world.view<RemoteComponent, RemoteAnimationComponent, FormIdComponent>();
+    auto animatedView = m_world.view<RemoteComponent, RemoteAnimationComponent, InterpolationComponent, FormIdComponent>();
 
     for (auto entity : animatedView)
     {
@@ -1785,7 +1841,10 @@ void CharacterService::RunRemoteUpdates() noexcept
         if (!pActor)
             continue;
 
-        AnimationSystem::Update(m_world, pActor, animationComponent, tick);
+        // Actions run on the clock the interpolation pass above just advanced, so the body and its animations stay in step
+        const auto cTick = InterpolationSystem::GetPlaybackTick(animatedView.get<InterpolationComponent>(entity));
+
+        AnimationSystem::Update(m_world, pActor, animationComponent, cTick);
     }
 
     auto facegenView = m_world.view<FormIdComponent, FaceGenComponent>();

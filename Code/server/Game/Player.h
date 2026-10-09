@@ -40,7 +40,7 @@ struct Player
 
     void SetCellComponent(const CellIdComponent& aCellComponent) noexcept;
 
-    void Send(const ServerMessage& acServerMessage) const;
+    void Send(const ServerMessage& acServerMessage, TiltedPhoques::EPacketFlags aPacketFlags = TiltedPhoques::kReliable) const;
 
 private:
     uint32_t m_id{0};
