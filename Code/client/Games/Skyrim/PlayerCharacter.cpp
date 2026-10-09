@@ -196,11 +196,10 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
 
 void TP_MAKE_THISCALL(HookSetBeastForm, void, void* apUnk1, void* apUnk2, bool aEntering)
 {
+    // Graph hash must flip before RealSetBeastForm; appearance RequestRespawn is owned by
+    // PlayerService::RunBeastFormDetection (post-race), so we do not fire BeastFormChangeEvent here.
     if (!aEntering)
-    {
         PlayerCharacter::Get()->GetExtension()->GraphDescriptorHash = BehaviorVar::GetHumanoidHash();
-        World::Get().GetRunner().Trigger(BeastFormChangeEvent());
-    }
 
     TiltedPhoques::ThisCall(RealSetBeastForm, apThis, apUnk1, apUnk2, aEntering);
 }
