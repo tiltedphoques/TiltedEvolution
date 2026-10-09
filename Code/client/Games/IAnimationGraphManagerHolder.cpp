@@ -38,25 +38,14 @@ bool IAnimationGraphManagerHolder::RevertAnimationGraphManager()
 
 bool IAnimationGraphManagerHolder::IsReady()
 {
-    BSAnimationGraphManager* pAnimationGraph = nullptr;
-    const auto result = GetBSAnimationGraph(&pAnimationGraph);
-
-    if (pAnimationGraph)
-        pAnimationGraph->Release();
-
-    return result;
+    BSTSmartPointer<BSAnimationGraphManager> spManager;
+    return GetBSAnimationGraph(spManager);
 }
 
-AnimationGraphManagerPtr IAnimationGraphManagerHolder::GetAnimationGraphManagerPtr() const noexcept
+BSTSmartPointer<BSAnimationGraphManager> IAnimationGraphManagerHolder::GetAnimationGraphManagerPtr() const noexcept
 {
-    BSAnimationGraphManager* pAnimationGraph = nullptr;
-    const bool result = GetBSAnimationGraph(&pAnimationGraph);
+    BSTSmartPointer<BSAnimationGraphManager> spManager;
+    GetBSAnimationGraph(spManager);
 
-    return result ? AnimationGraphManagerPtr{pAnimationGraph} : nullptr;
-}
-
-void AnimationGraphManagerReleaser::operator()(BSAnimationGraphManager* apManager) const
-{
-    if (apManager)
-        apManager->Release();
+    return spManager;
 }
