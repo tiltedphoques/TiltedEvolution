@@ -8,6 +8,7 @@
 #include <Havok/hkbBehaviorGraph.h>
 
 #include <Services/ImguiService.h>
+#include <Services/InputService.h>
 #include <Services/DebugService.h>
 #include <Services/TransportService.h>
 #include <Services/PapyrusService.h>
@@ -177,7 +178,7 @@ void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 
     if (GetAsyncKeyState(VK_F3) & 0x01)
     {
-        m_showDebugStuff = !m_showDebugStuff;
+        SetVisible(!m_showDebugStuff);
     }
 
 #if (!IS_MASTER)
@@ -269,6 +270,19 @@ void DebugService::DrawServerView() noexcept
     }
 
     ImGui::End();
+}
+
+bool DebugService::IsInputCaptured() const noexcept
+{
+    return m_showDebugStuff;
+}
+
+void DebugService::SetVisible(bool aVisible) noexcept
+{
+    m_showDebugStuff = aVisible;
+    if (aVisible)
+        m_world.GetOverlayService().SetActive(false);
+    InputService::UpdateInputCapture();
 }
 
 void DebugService::OnDraw() noexcept

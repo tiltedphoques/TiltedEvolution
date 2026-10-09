@@ -20,11 +20,15 @@ uint32_t s_windowHeight = 0;
 
 LRESULT CALLBACK HookWndProc(HWND aWindow, UINT aMessage, WPARAM aWParam, LPARAM aLParam)
 {
+    const bool captured = InputService::IsInputCaptured();
     if (InputService::WndProc(aWindow, aMessage, aWParam, aLParam) != 0)
         return 0;
     // The game reads raw input here; keep it away from the game while the overlay has focus.
-    if (aMessage == WM_INPUT && World::Get().ctx().at<OverlayService>().GetActive())
+    if (aMessage == WM_INPUT && InputService::IsInputCaptured())
         return DefWindowProcW(aWindow, aMessage, aWParam, aLParam);
+    if ((captured || InputService::IsInputCaptured()) &&
+        (aMessage == WM_KEYDOWN || aMessage == WM_KEYUP || aMessage == WM_SYSKEYDOWN || aMessage == WM_SYSKEYUP || aMessage == WM_CHAR))
+        return 0;
     return CallWindowProcW(s_originalWndProc, aWindow, aMessage, aWParam, aLParam);
 }
 
@@ -76,10 +80,30 @@ HWND WINAPI HookFindWindowA(LPCSTR apClassName, LPCSTR apWindowName)
     return s_findWindowA(apClassName, apWindowName);
 }
 
+using TClipCursor = BOOL(WINAPI)(const RECT*);
+using TSetCursorPos = BOOL(WINAPI)(int, int);
+TClipCursor* s_clipCursor = nullptr;
+TSetCursorPos* s_setCursorPos = nullptr;
+
+BOOL WINAPI HookClipCursor(const RECT* apRect)
+{
+    return s_clipCursor(InputService::IsInputCaptured() ? nullptr : apRect);
+}
+
+BOOL WINAPI HookSetCursorPos(int aX, int aY)
+{
+    if (InputService::IsInputCaptured())
+        return TRUE;
+    return s_setCursorPos(aX, aY);
+}
+
 TiltedPhoques::Initializer s_rendererHooks(
     []()
     {
         s_findWindowA = static_cast<TFindWindowA*>(TP_HOOK_IAT2("USER32.dll", "FindWindowA", HookFindWindowA));
+
+        s_clipCursor = static_cast<TClipCursor*>(TP_HOOK_IAT2("USER32.dll", "ClipCursor", HookClipCursor));
+        s_setCursorPos = static_cast<TSetCursorPos*>(TP_HOOK_IAT2("USER32.dll", "SetCursorPos", HookSetCursorPos));
 
         static VersionDbPtr<TRendererEnd> rendererEnd(2276834);
         s_rendererEnd = rendererEnd.Get();
