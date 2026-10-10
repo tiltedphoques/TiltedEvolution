@@ -4,6 +4,7 @@
 #include <Games/Overrides.h>
 
 #include <World.h>
+#include <Services/PartyService.h>
 #include <Services/PapyrusService.h>
 #include <Events/ActivateEvent.h>
 #include <Events/InventoryChangeEvent.h>
@@ -910,11 +911,13 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
         spdlog::debug("Adding item {:X}, count {}", pObject->formID, arEntry.Count);
         AddObjectToContainer(pObject, pExtraDataList, arEntry.Count, nullptr);
 
-        // TODO: check Actor cast first?
-        if (isWorn)
-            EquipManager::Get()->Equip(Cast<Actor>(this), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
-        else if (isWornLeft)
-            EquipManager::Get()->Equip(Cast<Actor>(this), pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+        if (Actor* pEquipActor = Cast<Actor>(this))
+        {
+            if (isWorn)
+                EquipManager::Get()->Equip(pEquipActor, pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().rightEquipSlot, false, true, false, false);
+            else if (isWornLeft)
+                EquipManager::Get()->Equip(pEquipActor, pObject, nullptr, arEntry.Count, DefaultObjectManager::Get().leftEquipSlot, false, true, false, false);
+        }
     }
     else if (arEntry.Count < 0)
     {
@@ -922,9 +925,10 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
         RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
     }
 
-    // TODO(cosideci): this is still flawed. Adding the refr to the quest leader is hard.
-    // It is still recommended that the quest leader loots all quest items.
-    if (arEntry.IsQuestItem && arEntry.Count > 0 && !aIsSettingInventory)
+    // Quest-item share: when a remote party member gains a quest item, also give the BaseId to the
+    // local player so inventory/count checks can progress. Alias-bound ObjectReferences still cannot
+    // be transferred cleanly — leader loot (or ESP patches) remains required for those cases.
+    if (arEntry.IsQuestItem && arEntry.Count > 0 && !aIsSettingInventory && World::Get().GetPartyService().IsInParty())
     {
         PlayerCharacter* pPlayer = PlayerCharacter::Get();
 

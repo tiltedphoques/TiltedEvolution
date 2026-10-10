@@ -22,6 +22,7 @@
 
 #include <Games/TES.h>
 #include <World.h>
+#include <Services/PartyService.h>
 #include <Services/PapyrusService.h>
 
 #include <Forms/ActorValueInfo.h>
@@ -1093,7 +1094,10 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
 
         // This is here so that objects that are picked up on both clients, aka non temps, are synced through activation sync.
         // The inventory change event should always be sent to the server, otherwise the server inventory won't be updated.
+        // Quest items must UpdateClients even when persistent so party peers run the quest-item inject.
         bool shouldUpdateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
+        if (item.IsQuestItem && World::Get().GetPartyService().IsInParty())
+            shouldUpdateClients = true;
 
         QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item), false, shouldUpdateClients));
     }
