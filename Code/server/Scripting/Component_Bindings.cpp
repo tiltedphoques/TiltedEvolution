@@ -18,7 +18,6 @@ void BindMovementComponent(sol::state_view aState)
     table["Rotation"] = &MovementComponent::Rotation;
     // movementComponentType["Variables"] = &MovementComponent::Variables;
     table["Direction"] = &MovementComponent::Direction;
-    table["Sent"] = &MovementComponent::Sent;
 }
 } // namespace
 

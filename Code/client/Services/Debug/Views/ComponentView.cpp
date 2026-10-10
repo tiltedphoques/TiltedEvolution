@@ -141,6 +141,19 @@ void DebugService::DrawComponentDebugView()
                 if (ImGui::CollapsingHeader("InterpolationComponent"))
                 {
                     ImGui::Text("%f,%f,%f\n", pComponent->Position.x, pComponent->Position.y, pComponent->Position.z);
+
+                    const auto& clock = pComponent->Clock;
+                    if (!pComponent->TimePoints.empty())
+                    {
+                        // How far playback runs behind the newest snapshot right now, negative while extrapolating
+                        const double bufferedTime = static_cast<double>(pComponent->TimePoints.back().Tick) - clock.GetRenderTick();
+
+                        ImGui::Text(
+                            "Buffered: %.1f ms (target %.1f ms)\nSnapshot interval: %.1f ms\nJitter: %.1f ms\nPlayback rate: %.3f\n"
+                            "Extrapolating: %s\nCorrection: %.1f",
+                            bufferedTime, clock.GetTargetDelay(), clock.GetSnapshotInterval(), clock.GetJitter(), clock.GetPlaybackRate(),
+                            pComponent->IsExtrapolating ? "yes" : "no", glm::length(pComponent->PositionError));
+                    }
                 }
             }
 

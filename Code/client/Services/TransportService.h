@@ -26,7 +26,7 @@ struct TransportService : Client
 
     TP_NOCOPYMOVE(TransportService);
 
-    bool Send(const ClientMessage& acMessage) const noexcept;
+    bool Send(const ClientMessage& acMessage, TiltedPhoques::EPacketFlags aPacketFlags = TiltedPhoques::kReliable) const noexcept;
 
     void OnConsume(const void* apData, uint32_t aSize) override;
     void OnConnected() override;
@@ -36,6 +36,14 @@ struct TransportService : Client
     [[nodiscard]] bool IsOnline() const noexcept { return m_connected; }
     void SetServerPassword(const std::string& acPassword) noexcept { m_serverPassword = acPassword; }
     const uint32_t& GetLocalPlayerId() const noexcept { return m_localPlayerId; }
+
+    // Times below are in ms on the networking library's local clock, which keeps running while the game thread is stalled
+
+    // When the message being handled arrived from the network, it may have waited out a long frame since.
+    // Only meaningful while a received message is being handled.
+    [[nodiscard]] double GetMessageReceiveTime() const noexcept;
+    // When received messages were last picked up, everything that arrived before then has been handled
+    [[nodiscard]] double GetLastPollTime() const noexcept { return m_lastPollTime; }
 
 protected:
     // Event handlers
@@ -53,6 +61,7 @@ private:
     bool m_connected;
     String m_serverPassword{};
     uint32_t m_localPlayerId;
+    double m_lastPollTime{};
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_sendServerMessageConnection;
