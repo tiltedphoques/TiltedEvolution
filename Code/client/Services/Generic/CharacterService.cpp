@@ -837,8 +837,12 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
     {
         m_world.emplace_or_replace<RemoteComponent>(cEntity, acMessage.ServerId, pFormIdComponent->Id, acMessage.OwnershipEpoch);
 
-        if (!m_world.all_of<InterpolationComponent>(cEntity))
-            InterpolationSystem::Setup(m_world, cEntity);
+        // The new owner carries on from its own, older view of the actor and stamps snapshots with its own clock, so the
+        // previous owner's snapshots and timing estimates would only drag the actor back. Start over from where it is now.
+        const auto* pOldInterpolationComponent = m_world.try_get<InterpolationComponent>(cEntity);
+        const glm::vec3 cPosition = pActor ? pActor->position : (pOldInterpolationComponent ? pOldInterpolationComponent->Position : glm::vec3{});
+        InterpolationSystem::Setup(m_world, cEntity).Position = cPosition;
+
         if (!m_world.all_of<RemoteAnimationComponent>(cEntity))
             AnimationSystem::Setup(m_world, cEntity);
     }

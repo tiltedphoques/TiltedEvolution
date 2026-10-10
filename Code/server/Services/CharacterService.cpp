@@ -414,9 +414,9 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         }
     }
 
-    // Nagle is left on so relays from different owners within a few ms share packets
+    // Sent right away, Nagle would hold every relay back by up to 5 ms waiting for more to share the packet with
     for (auto& [pPlayer, relay] : messages)
-        pPlayer->Send(relay, TiltedPhoques::kUnreliable);
+        pPlayer->Send(relay, TiltedPhoques::kUnreliableNoNagle);
 }
 
 void CharacterService::OnActionEventsRequest(const PacketEvent<RequestActionEvents>& acMessage) const noexcept
