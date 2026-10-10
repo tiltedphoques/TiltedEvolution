@@ -38,6 +38,7 @@ struct TESForm : BaseFormComponent
         DELETED = 1 << 5,
         DISABLED = 1 << 0xB,
         IGNORE_FRIENDLY_HITS = 1 << 0x14,
+        STILL_LOADING = 1 << 0x15,
     };
 
     static TESForm* GetById(uint32_t aId);
@@ -115,6 +116,7 @@ struct TESForm : BaseFormComponent
 
     bool IsDisabled() const noexcept { return (flags & DISABLED) != 0; }
     bool IsDeleted() const noexcept { return (flags & DELETED) != 0; }
+    bool IsStillLoading() const noexcept { return (flags & STILL_LOADING) != 0; }
     bool IsTemporary() const noexcept { return formID >= 0xFF000000; }
     bool IsConsumable() const noexcept { return formType == FormType::Ingredient || formType == FormType::Alchemy; }
 
