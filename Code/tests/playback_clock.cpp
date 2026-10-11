@@ -17,6 +17,9 @@ struct NetworkConditions
 {
     // Like RunLocalUpdates, the owner sends on the first of its frames that is at least this long after its previous snapshot
     double SnapshotInterval = 30.0;
+    // From then on the owner sends less often, like when an NPC leaves combat
+    double SlowdownTime = 0.0;
+    double SlowSnapshotInterval = 0.0;
     double OwnerFrameTime = 1000.0 / 60.0;
     // Each owner frame is up to this much shorter or longer
     double OwnerFrameJitter = 0.0;
@@ -62,7 +65,8 @@ SimulationResult Simulate(const NetworkConditions& acConditions)
     for (double captureTime = 0.0; captureTime < acConditions.Duration;
          captureTime += acConditions.OwnerFrameTime + (acConditions.OwnerFrameJitter > 0.0 ? frameJitter(random) : 0.0))
     {
-        if (captureTime - lastCaptureTime < acConditions.SnapshotInterval)
+        const bool cIsSlow = acConditions.SlowSnapshotInterval > 0.0 && captureTime >= acConditions.SlowdownTime;
+        if (captureTime - lastCaptureTime < (cIsSlow ? acConditions.SlowSnapshotInterval : acConditions.SnapshotInterval))
             continue;
 
         lastCaptureTime = captureTime;
@@ -157,6 +161,19 @@ TEST_CASE("Playback clock", "[client.playback_clock]")
         REQUIRE(result.StarvedFrames == 0);
         REQUIRE(result.IsAlwaysSmooth);
         REQUIRE(result.MaxDelay < 160.0);
+    }
+
+    SECTION("Quickly plays further behind when the owner starts sending less often")
+    {
+        NetworkConditions conditions;
+        conditions.SlowdownTime = 5000.0;
+        conditions.SlowSnapshotInterval = 100.0;
+
+        const auto result = Simulate(conditions);
+
+        REQUIRE(result.IsAlwaysSmooth);
+        // Only the first longer gaps can't be foreseen, the window average alone would starve for seconds
+        REQUIRE(result.StarvedFrames < 25);
     }
 
     SECTION("Keeps up with a 60 fps owner whose frame times vary")

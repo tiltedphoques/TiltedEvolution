@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <limits>
 
 bool PlaybackClock::AddSample(const double aArrivalTime, const uint64_t aCaptureTick) noexcept
@@ -40,6 +41,7 @@ double PlaybackClock::Advance(const double aNow) noexcept
 
     // The playback rate was picked to close the last error. A long frame must not carry the correction past it, or playback
     // would end up off by as much the other way, e.g. ahead of every snapshot that has arrived.
+    // Simply put: speed up or slow down only until the gap is closed, never past it.
     const double cCorrection = std::clamp(delta * (m_playbackRate - 1.0), std::min(m_error, 0.0), std::max(m_error, 0.0));
     m_renderTick += delta + cCorrection;
 
@@ -64,6 +66,7 @@ double PlaybackClock::Advance(const double aNow) noexcept
 void PlaybackClock::UpdateEstimates(const double aNewestArrivalTime) noexcept
 {
     std::array<double, cMaxSamples> transits;
+    std::array<uint64_t, cMaxSamples> captureTicks;
     size_t count = 0;
     uint64_t oldestCaptureTick = std::numeric_limits<uint64_t>::max();
     uint64_t newestCaptureTick = 0;
@@ -74,6 +77,7 @@ void PlaybackClock::UpdateEstimates(const double aNewestArrivalTime) noexcept
         if (sample.ArrivalTime < aNewestArrivalTime - cSampleWindow)
             continue;
 
+        captureTicks[count] = sample.CaptureTick;
         // Includes the network delay and the unknown offset between both clocks, only differences between transits are meaningful
         transits[count++] = sample.ArrivalTime - static_cast<double>(sample.CaptureTick);
         oldestCaptureTick = std::min(oldestCaptureTick, sample.CaptureTick);
@@ -89,9 +93,17 @@ void PlaybackClock::UpdateEstimates(const double aNewestArrivalTime) noexcept
     std::nth_element(transits.begin(), percentile, end);
     m_jitter = *percentile - m_minTransit;
 
-    // An average is enough because owners send at an even pace, see RunLocalUpdates
+    // Owners send at an even pace while their send rate holds, see RunLocalUpdates
     if (count >= 2)
         m_snapshotInterval = static_cast<double>(newestCaptureTick - oldestCaptureTick) / static_cast<double>(count - 1);
+
+    // The average takes seconds to notice the owner sending less often, e.g. an NPC leaving combat
+    if (count > cRecentGaps)
+    {
+        const auto recentCaptureTick = captureTicks.begin() + cRecentGaps;
+        std::nth_element(captureTicks.begin(), recentCaptureTick, captureTicks.begin() + count, std::greater<>{});
+        m_snapshotInterval = std::max(m_snapshotInterval, static_cast<double>(newestCaptureTick - *recentCaptureTick) / static_cast<double>(cRecentGaps));
+    }
 
     m_targetDelay = std::clamp(m_snapshotInterval + m_jitter + cSafetyMargin, cMinTargetDelay, cMaxTargetDelay);
 }
