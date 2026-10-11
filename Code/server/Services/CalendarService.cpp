@@ -99,6 +99,17 @@ bool CalendarService::SetDate(int aDay, int aMonth, float aYear) noexcept
     return false;
 }
 
+bool CalendarService::AdvanceTime(float aHours) noexcept
+{
+    // The sleep/wait menu allows at most 24 hours; anything beyond that is not a real request.
+    if (!(aHours > 0.f) || aHours > 48.f)
+        return false;
+
+    m_dateTime.AddHours(aHours);
+    SendTimeResync();
+    return true;
+}
+
 void CalendarService::SendTimeResync() noexcept
 {
     ServerTimeSettings timeMsg;

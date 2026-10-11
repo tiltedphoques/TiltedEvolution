@@ -24,6 +24,8 @@ public:
 
     bool SetTime(int aHour, int aMinutes, float aScale) noexcept;
     bool SetDate(int aDay, int aMonth, float aYear) noexcept;
+    // Advances the shared clock by a number of game hours (sleep/wait sync, #467).
+    bool AdvanceTime(float aHours) noexcept;
 
     // returns hours, minutes
     TTime GetTime() const noexcept;

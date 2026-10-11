@@ -53,6 +53,7 @@ enum ClientOpcode : unsigned char
     kRequestSetWaypoint,
     kRequestRemoveWaypoint,
     kSetTimeCommandRequest,
+    kRequestTimeSkip,
     kClientOpcodeMax
 };
 
