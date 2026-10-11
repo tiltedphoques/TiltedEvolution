@@ -17,4 +17,5 @@ struct ServerSettings
     bool DeathSystemEnabled{};
     bool SyncPlayerCalendar{};
     bool AutoPartyJoin{};
+    bool ItemDropsEnabled{};
 };

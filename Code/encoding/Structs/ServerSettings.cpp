@@ -5,7 +5,7 @@ using TiltedPhoques::Serialization;
 
 bool ServerSettings::operator==(const ServerSettings& acRhs) const noexcept
 {
-    return Difficulty == acRhs.Difficulty && GreetingsEnabled == acRhs.GreetingsEnabled && PvpEnabled == acRhs.PvpEnabled && SyncPlayerHomes == acRhs.SyncPlayerHomes && DeathSystemEnabled == acRhs.DeathSystemEnabled && AutoPartyJoin == acRhs.AutoPartyJoin;
+    return Difficulty == acRhs.Difficulty && GreetingsEnabled == acRhs.GreetingsEnabled && PvpEnabled == acRhs.PvpEnabled && SyncPlayerHomes == acRhs.SyncPlayerHomes && DeathSystemEnabled == acRhs.DeathSystemEnabled && AutoPartyJoin == acRhs.AutoPartyJoin && ItemDropsEnabled == acRhs.ItemDropsEnabled;
 }
 
 bool ServerSettings::operator!=(const ServerSettings& acRhs) const noexcept
@@ -22,6 +22,7 @@ void ServerSettings::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noe
     Serialization::WriteBool(aWriter, DeathSystemEnabled);
     Serialization::WriteBool(aWriter, SyncPlayerCalendar);
     Serialization::WriteBool(aWriter, AutoPartyJoin);
+    Serialization::WriteBool(aWriter, ItemDropsEnabled);
 }
 
 void ServerSettings::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -33,4 +34,5 @@ void ServerSettings::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcep
     DeathSystemEnabled = Serialization::ReadBool(aReader);
     SyncPlayerCalendar = Serialization::ReadBool(aReader);
     AutoPartyJoin = Serialization::ReadBool(aReader);
+    ItemDropsEnabled = Serialization::ReadBool(aReader);
 }

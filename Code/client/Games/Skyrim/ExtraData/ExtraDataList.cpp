@@ -134,6 +134,13 @@ void ExtraDataList::SetEnchantmentData(EnchantmentItem* apItem, uint16_t aCharge
     TiltedPhoques::ThisCall(setEnchantmentData, this, apItem, aCharge, aRemoveOnUnequip);
 }
 
+void ExtraDataList::SetCount(uint16_t aCount) noexcept
+{
+    TP_THIS_FUNCTION(TSetCount, void, ExtraDataList, uint16_t aCount);
+    POINTER_SKYRIMSE(TSetCount, setCount, 11617);
+    TiltedPhoques::ThisCall(setCount, this, aCount);
+}
+
 bool ExtraDataList::HasQuestObjectAlias() noexcept
 {
     TP_THIS_FUNCTION(THasQuestObjectAlias, bool, ExtraDataList);

@@ -7,6 +7,8 @@ struct NiPoint3;
 struct TESForm;
 struct TESFaction;
 struct Actor;
+struct TESObjectREFR;
+struct TESBoundObject;
 struct ImageSpaceModifierInstance;
 
 struct GridCellArray
@@ -107,6 +109,7 @@ struct ModManager
     static ModManager* Get() noexcept;
 
     uint32_t Spawn(NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCELL* apParentCell, TESWorldSpace* apWorldSpace, Actor* apCharacter) noexcept;
+    TESObjectREFR* SpawnReference(TESBoundObject* apBaseForm, NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCELL* apParentCell, TESWorldSpace* apWorldSpace) noexcept;
     Mod* GetByName(const char* acpName) const noexcept;
     TESObjectCELL* GetCellFromCoordinates(int32_t aX, int32_t aY, TESWorldSpace* aWorldSpace, bool aSpawnCell) noexcept;
 

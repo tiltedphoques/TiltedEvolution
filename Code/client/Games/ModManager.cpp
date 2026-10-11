@@ -3,6 +3,7 @@
 #include <Games/TES.h>
 
 #include <Actor.h>
+#include <Forms/TESBoundObject.h>
 
 ModManager* ModManager::Get() noexcept
 {
@@ -45,6 +46,20 @@ uint32_t ModManager::Spawn(NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCE
     TiltedPhoques::ThisCall(RealSpawnNewREFR, this, refrHandle, apCharacter->baseForm, &aPosition, &aRotation, apParentCell, apWorldSpace, apCharacter, 0, 0, static_cast<char>(0), static_cast<char>(1));
 
     return refrHandle;
+}
+
+// Places a new temporary reference the way the engine places a dropped item.
+// For an exterior, pass the worldspace and no cell; the engine picks the cell from the position.
+TESObjectREFR* ModManager::SpawnReference(TESBoundObject* apBaseForm, NiPoint3& aPosition, NiPoint3& aRotation, TESObjectCELL* apParentCell, TESWorldSpace* apWorldSpace) noexcept
+{
+    uint32_t refrHandle = 0;
+
+    TiltedPhoques::ThisCall(RealSpawnNewREFR, this, refrHandle, apBaseForm, &aPosition, &aRotation, apParentCell, apWorldSpace, nullptr, 0, 0, static_cast<char>(0), static_cast<char>(1));
+
+    if (!refrHandle)
+        return nullptr;
+
+    return TESObjectREFR::GetByHandle(refrHandle);
 }
 
 Mod* ModManager::GetByName(const char* acpName) const noexcept

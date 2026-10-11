@@ -7,6 +7,7 @@
 #include <Games/Overrides.h>
 
 #include <Events/InventoryChangeEvent.h>
+#include <Events/ReferencePickUpEvent.h>
 #include <Events/BeastFormChangeEvent.h>
 #include <Events/AddExperienceEvent.h>
 #include <Events/SetWaypointEvent.h>
@@ -183,11 +184,15 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
     // The player still needs its server entity and ownership epoch so stale inventory events can be rejected.
     if (const auto ownershipToken = Utils::GetLocalOwnershipToken(apThis->formID))
     {
-        InventoryChangeEvent event(apThis->formID, std::move(item), false, shouldUpdateClients);
+        InventoryChangeEvent event(apThis->formID, std::move(item), shouldUpdateClients);
         event.ServerId = ownershipToken->ServerId;
         event.OwnershipEpoch = ownershipToken->OwnershipEpoch;
         World::Get().GetRunner().Trigger(std::move(event));
     }
+
+    // A dropped item may be server-tracked; the other clients need to delete their copy.
+    if (apObject->IsTemporary())
+        World::Get().GetRunner().Trigger(ReferencePickUpEvent(apObject->formID));
 
     ScopedInventoryOverride _;
 
