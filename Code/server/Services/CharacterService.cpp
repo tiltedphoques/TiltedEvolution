@@ -17,6 +17,8 @@
 #include <Messages/AssignCharacterResponse.h>
 #include <Messages/ServerReferencesMoveRequest.h>
 #include <Messages/ClientReferencesMoveRequest.h>
+#include <Messages/RequestActionEvents.h>
+#include <Messages/NotifyActionEvents.h>
 #include <Messages/CharacterSpawnRequest.h>
 #include <Messages/RequestFactionsChanges.h>
 #include <Messages/NotifyFactionsChanges.h>
@@ -56,6 +58,7 @@ CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher)
     , m_removeCharacterConnection(aDispatcher.sink<CharacterRemoveEvent>().connect<&CharacterService::OnCharacterRemoveEvent>(this))
     , m_characterSpawnedConnection(aDispatcher.sink<CharacterSpawnedEvent>().connect<&CharacterService::OnCharacterSpawned>(this))
     , m_referenceMovementSnapshotConnection(aDispatcher.sink<PacketEvent<ClientReferencesMoveRequest>>().connect<&CharacterService::OnReferencesMoveRequest>(this))
+    , m_actionEventsConnection(aDispatcher.sink<PacketEvent<RequestActionEvents>>().connect<&CharacterService::OnActionEventsRequest>(this))
     , m_factionsChangesConnection(aDispatcher.sink<PacketEvent<RequestFactionsChanges>>().connect<&CharacterService::OnFactionsChanges>(this))
     , m_mountConnection(aDispatcher.sink<PacketEvent<MountRequest>>().connect<&CharacterService::OnMountRequest>(this))
     , m_newPackageConnection(aDispatcher.sink<PacketEvent<NewPackageRequest>>().connect<&CharacterService::OnNewPackageRequest>(this))
@@ -136,7 +139,6 @@ void CharacterService::Serialize(World& aRegistry, entt::entity aEntity, Charact
 void CharacterService::OnUpdate(const UpdateEvent&) const noexcept
 {
     ProcessFactionsChanges();
-    ProcessMovementChanges();
 }
 
 void CharacterService::OnCharacterExteriorCellChange(const CharacterExteriorCellChangeEvent& acEvent) const noexcept
@@ -302,7 +304,6 @@ void CharacterService::OnOwnershipTransferRequest(const PacketEvent<RequestOwner
 
         auto& movementComponent = view.get<MovementComponent>(*it);
         movementComponent.Position = message.Position;
-        movementComponent.Sent = true;
     }
 
     // A normal release starts a fresh search. A declined grant continues the current
@@ -369,13 +370,17 @@ void CharacterService::OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) 
 
 void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept
 {
-    OwnerView<AnimationComponent, MovementComponent, CellIdComponent> view(m_world, acMessage.GetSender());
+    OwnerView<MovementComponent, CellIdComponent, CharacterComponent> view(m_world, acMessage.GetSender());
 
     auto& message = acMessage.Packet;
 
-    for (auto& entry : message.Updates)
+    // Relayed as soon as it arrives, with the owner's capture tick, so receivers can schedule it on the owner's timeline.
+    // Snapshots can arrive out of order, receivers sort them out.
+    Map<Player*, ServerReferencesMoveRequest> messages;
+
+    for (auto& [id, movement] : message.Updates)
     {
-        const auto entity = static_cast<entt::entity>(entry.first);
+        const auto entity = static_cast<entt::entity>(id);
 
         auto itor = view.find(entity);
         if (itor == std::end(view))
@@ -386,15 +391,9 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
 
         auto& movementComponent = view.get<MovementComponent>(*itor);
         auto& cellIdComponent = view.get<CellIdComponent>(*itor);
-        auto& animationComponent = view.get<AnimationComponent>(*itor);
+        const auto& characterComponent = view.get<CharacterComponent>(*itor);
 
         movementComponent.Tick = message.Tick;
-
-        const auto movementCopy = movementComponent;
-
-        auto& update = entry.second;
-        auto& movement = update.UpdatedMovement;
-
         movementComponent.Position = movement.Position;
         movementComponent.Rotation = glm::vec3(movement.Rotation.x, 0.f, movement.Rotation.y);
         movementComponent.Variables = movement.Variables;
@@ -404,20 +403,53 @@ void CharacterService::OnReferencesMoveRequest(const PacketEvent<ClientReference
         cellIdComponent.WorldSpaceId = movement.WorldSpaceId;
         cellIdComponent.CenterCoords = GridCellCoords::CalculateGridCellCoords(movement.Position.x, movement.Position.y);
 
-        for (auto& action : update.ActionEvents)
+        for (auto pPlayer : m_world.GetPlayerManager())
         {
-            auto [canceled, reason] = GameServer::Get()->GetWorld().GetScriptService().HandleCharacterMove(entity);
-            if (canceled)
+            if (pPlayer == acMessage.pPlayer || !cellIdComponent.IsInRange(pPlayer->GetCellComponent(), characterComponent.IsDragon()))
                 continue;
 
-            animationComponent.CurrentAction = action;
+            auto& relay = messages[pPlayer];
+            relay.Tick = message.Tick;
+            relay.Updates[id] = movement;
+        }
+    }
 
-            animationComponent.Actions.push_back(animationComponent.CurrentAction);
+    // Sent right away, Nagle would hold every relay back by up to 5 ms waiting for more to share the packet with
+    for (auto& [pPlayer, relay] : messages)
+        pPlayer->Send(relay, TiltedPhoques::kUnreliableNoNagle);
+}
+
+void CharacterService::OnActionEventsRequest(const PacketEvent<RequestActionEvents>& acMessage) const noexcept
+{
+    OwnerView<AnimationComponent> view(m_world, acMessage.GetSender());
+
+    auto& message = acMessage.Packet;
+
+    for (auto& [id, actions] : message.Actions)
+    {
+        const auto entity = static_cast<entt::entity>(id);
+
+        auto itor = view.find(entity);
+        if (itor == std::end(view))
+        {
+            spdlog::debug("{:x} requested actions of {:x} but does not exist", acMessage.pPlayer->GetConnectionId(), World::ToInteger(entity));
+            continue;
         }
 
-        animationComponent.ActionsReplayCache.AppendAll(update.ActionEvents);
+        NotifyActionEvents notify;
+        auto& acceptedActions = notify.Actions[id];
 
-        movementComponent.Sent = false;
+        for (auto& action : actions)
+        {
+            auto [canceled, reason] = GameServer::Get()->GetWorld().GetScriptService().HandleCharacterMove(entity);
+            if (!canceled)
+                acceptedActions.push_back(action);
+        }
+
+        view.get<AnimationComponent>(*itor).ActionsReplayCache.AppendAll(actions);
+
+        if (!acceptedActions.empty())
+            GameServer::Get()->SendToPlayersInRange(notify, entity, acMessage.pPlayer);
     }
 }
 
@@ -647,7 +679,6 @@ void CharacterService::CreateCharacter(const PacketEvent<AssignCharacterRequest>
     movementComponent.Tick = pServer->GetTick();
     movementComponent.Position = message.Position;
     movementComponent.Rotation = {message.Rotation.x, 0.f, message.Rotation.y};
-    movementComponent.Sent = false;
 
     m_world.emplace<AnimationComponent>(cEntity);
 
@@ -943,79 +974,6 @@ void CharacterService::ProcessFactionsChanges() const noexcept
     for (auto [pPlayer, message] : messages)
     {
         if (!message.Changes.empty())
-            pPlayer->Send(message);
-    }
-}
-
-void CharacterService::ProcessMovementChanges() const noexcept
-{
-    static std::chrono::steady_clock::time_point lastSendTimePoint;
-    constexpr auto cDelayBetweenSnapshots = 1000ms / 50;
-
-    const auto now = std::chrono::steady_clock::now();
-    if (now - lastSendTimePoint < cDelayBetweenSnapshots)
-        return;
-
-    lastSendTimePoint = now;
-
-    const auto characterView = m_world.view<CharacterComponent, CellIdComponent, MovementComponent, AnimationComponent, OwnerComponent>();
-
-    TiltedPhoques::Map<Player*, ServerReferencesMoveRequest> messages;
-
-    for (auto pPlayer : m_world.GetPlayerManager())
-    {
-        auto& message = messages[pPlayer];
-
-        message.Tick = GameServer::Get()->GetTick();
-    }
-
-    for (auto entity : characterView)
-    {
-        auto& characterComponent = characterView.get<CharacterComponent>(entity);
-        auto& movementComponent = characterView.get<MovementComponent>(entity);
-        auto& cellIdComponent = characterView.get<CellIdComponent>(entity);
-        auto& ownerComponent = characterView.get<OwnerComponent>(entity);
-        auto& animationComponent = characterView.get<AnimationComponent>(entity);
-
-        // If we have nothing new to send skip this
-        if (movementComponent.Sent == true)
-            continue;
-
-        for (auto pPlayer : m_world.GetPlayerManager())
-        {
-            if (pPlayer == ownerComponent.GetOwner())
-                continue;
-
-            if (!cellIdComponent.IsInRange(pPlayer->GetCellComponent(), characterComponent.IsDragon()))
-                continue;
-
-            auto& message = messages[pPlayer];
-            auto& update = message.Updates[World::ToInteger(entity)];
-            auto& movement = update.UpdatedMovement;
-
-            movement.Position = movementComponent.Position;
-
-            movement.Rotation.x = movementComponent.Rotation.x;
-            movement.Rotation.y = movementComponent.Rotation.z;
-
-            movement.Direction = movementComponent.Direction;
-            movement.Variables = movementComponent.Variables;
-
-            update.ActionEvents = animationComponent.Actions;
-        }
-    }
-
-    m_world.view<AnimationComponent>().each([](AnimationComponent& animationComponent)
-    {
-        // Remove actions we've sent
-        animationComponent.Actions.clear();
-    });
-
-    m_world.view<MovementComponent>().each([](MovementComponent& movementComponent) { movementComponent.Sent = true; });
-
-    for (auto& [pPlayer, message] : messages)
-    {
-        if (!message.Updates.empty())
             pPlayer->Send(message);
     }
 }

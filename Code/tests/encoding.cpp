@@ -430,8 +430,10 @@ TEST_CASE("Packets", "[encoding.packets]")
     GIVEN("ClientReferencesMoveRequest")
     {
         ClientReferencesMoveRequest sendMessage, recvMessage;
-        auto& update = sendMessage.Updates[1];
-        auto& move = update.UpdatedMovement;
+        sendMessage.Tick = 1712345678901;
+        auto& move = sendMessage.Updates[1];
+        move.Position.x = 1234.5f;
+        move.Direction = 0.75f;
 
         AnimationVariables vars;
         vars.Booleans.resize(76);
@@ -465,7 +467,65 @@ TEST_CASE("Packets", "[encoding.packets]")
 
         recvMessage.DeserializeRaw(reader);
 
-        REQUIRE(recvMessage.Updates[1].UpdatedMovement == sendMessage.Updates[1].UpdatedMovement);
+        REQUIRE(recvMessage.Tick == sendMessage.Tick);
+        REQUIRE(recvMessage.Updates[1] == sendMessage.Updates[1]);
+    }
+
+    GIVEN("RequestActionEvents")
+    {
+        ActionEvent firstAction;
+        firstAction.Tick = 1712345678901;
+        firstAction.ActionId = 42;
+        firstAction.TargetId = 963741;
+        firstAction.State1 = 6547;
+        firstAction.EventName = "jumpStandingStart";
+
+        ActionEvent secondAction = firstAction;
+        secondAction.Tick += 120;
+        secondAction.ActionId = 43;
+        secondAction.EventName = "attackStart";
+        secondAction.TargetEventName = "toast";
+
+        RequestActionEvents sendMessage, recvMessage;
+        sendMessage.Actions[1] = {firstAction, secondAction};
+        sendMessage.Actions[7] = {secondAction};
+
+        Buffer buff(1000);
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        uint64_t trash;
+        reader.ReadBits(trash, 8); // pop opcode
+
+        recvMessage.DeserializeRaw(reader);
+
+        REQUIRE(sendMessage == recvMessage);
+    }
+
+    GIVEN("NotifyActionEvents")
+    {
+        ActionEvent action;
+        action.Tick = 1712345678901;
+        action.ActionId = 42;
+        action.EventName = "blockStart";
+
+        NotifyActionEvents sendMessage;
+        sendMessage.Actions[3] = {action, action};
+
+        Buffer buff(1000);
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        const ServerMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == sendMessage.GetOpcode());
+        REQUIRE(*CastUnique<NotifyActionEvents>(std::move(pMessage)) == sendMessage);
     }
 }
 

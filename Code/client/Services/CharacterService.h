@@ -13,6 +13,7 @@ struct ActionEvent;
 struct AssignCharacterResponse;
 struct CharacterSpawnRequest;
 struct ServerReferencesMoveRequest;
+struct NotifyActionEvents;
 struct NotifyInventoryChanges;
 struct NotifyFactionsChanges;
 struct NotifyRemoveCharacter;
@@ -66,6 +67,7 @@ struct CharacterService
     void OnAssignCharacter(const AssignCharacterResponse& acMessage) noexcept;
     void OnCharacterSpawn(const CharacterSpawnRequest& acMessage) const noexcept;
     void OnReferencesMoveRequest(const ServerReferencesMoveRequest& acMessage) const noexcept;
+    void OnNotifyActionEvents(const NotifyActionEvents& acMessage) const noexcept;
     void OnActionEvent(const ActionEvent& acActionEvent) const noexcept;
     void OnFactionsChanges(const NotifyFactionsChanges& acEvent) const noexcept;
     void OnOwnershipTransfer(const NotifyOwnershipTransfer& acMessage) noexcept;
@@ -146,6 +148,7 @@ private:
     entt::scoped_connection m_assignCharacterConnection;
     entt::scoped_connection m_characterSpawnConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
+    entt::scoped_connection m_actionEventsConnection;
     entt::scoped_connection m_mountConnection;
     entt::scoped_connection m_notifyMountConnection;
     entt::scoped_connection m_initPackageConnection;

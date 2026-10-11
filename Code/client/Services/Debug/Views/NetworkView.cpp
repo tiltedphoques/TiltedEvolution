@@ -2,6 +2,7 @@
 #include <Services/TransportService.h>
 
 #include <imgui.h>
+#include <steam/isteamnetworkingutils.h>
 
 void DebugService::DrawNetworkView()
 {
@@ -38,6 +39,39 @@ void DebugService::DrawNetworkView()
                 average += values[n];
             average /= (float)IM_ARRAYSIZE(values);
             ImGui::PlotLines("Lines", values, IM_ARRAYSIZE(values), values_offset, nullptr, 0.f, FLT_MAX, ImVec2(0, 160.0f));
+        }
+
+        // Applies to everything this client sends and receives, to see how remote actors hold up on a bad connection
+        if (ImGui::CollapsingHeader("Simulate bad connection"))
+        {
+            static int s_lag = 0;
+            static float s_loss = 0.f;
+            static float s_delayedPackets = 0.f;
+            static int s_extraDelay = 0;
+
+            auto* pUtils = SteamNetworkingUtils();
+
+            if (ImGui::SliderInt("Lag each way (ms)", &s_lag, 0, 500))
+            {
+                pUtils->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_FakePacketLag_Send, s_lag);
+                pUtils->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_FakePacketLag_Recv, s_lag);
+            }
+
+            if (ImGui::SliderFloat("Packet loss (%)", &s_loss, 0.f, 50.f))
+            {
+                pUtils->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLoss_Send, s_loss);
+                pUtils->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLoss_Recv, s_loss);
+            }
+
+            // GameNetworkingSockets has no jitter setting, delaying a share of the packets is the closest to it
+            if (ImGui::SliderFloat("Delayed packets (%)", &s_delayedPackets, 0.f, 50.f))
+            {
+                pUtils->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketReorder_Send, s_delayedPackets);
+                pUtils->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketReorder_Recv, s_delayedPackets);
+            }
+
+            if (ImGui::SliderInt("Delayed packets extra lag (ms)", &s_extraDelay, 0, 300))
+                pUtils->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_FakePacketReorder_Time, s_extraDelay);
         }
 
         /*
