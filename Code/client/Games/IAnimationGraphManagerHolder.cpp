@@ -46,3 +46,17 @@ bool IAnimationGraphManagerHolder::IsReady()
 
     return result;
 }
+
+AnimationGraphManagerPtr IAnimationGraphManagerHolder::GetAnimationGraphManagerPtr() const noexcept
+{
+    BSAnimationGraphManager* pAnimationGraph = nullptr;
+    const bool result = GetBSAnimationGraph(&pAnimationGraph);
+
+    return result ? AnimationGraphManagerPtr{pAnimationGraph} : nullptr;
+}
+
+void AnimationGraphManagerReleaser::operator()(BSAnimationGraphManager* apManager) const
+{
+    if (apManager)
+        apManager->Release();
+}

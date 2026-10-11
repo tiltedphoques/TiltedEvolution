@@ -3,6 +3,10 @@
 struct BSAnimationGraphManager;
 struct BSFixedString;
 
+// Replace this if we do ref counted object refactor
+struct AnimationGraphManagerReleaser;
+using AnimationGraphManagerPtr = std::unique_ptr<BSAnimationGraphManager, AnimationGraphManagerReleaser>;
+
 struct IAnimationGraphManagerHolder
 {
     virtual ~IAnimationGraphManagerHolder();
@@ -24,6 +28,8 @@ struct IAnimationGraphManagerHolder
     virtual uint32_t sub_E();
     virtual uint32_t sub_F();
 
+    AnimationGraphManagerPtr GetAnimationGraphManagerPtr() const noexcept;
+
     virtual bool GetVariableFloat(BSFixedString* apVariable, float* apReturn);
     virtual bool GetVariableInt(BSFixedString* apVariable, uint32_t* apReturn);
     virtual bool GetVariableBool(BSFixedString* apVariable, bool* apReturn);
@@ -33,4 +39,9 @@ struct IAnimationGraphManagerHolder
     bool SetVariableBool(BSFixedString* apVariable, bool aValue);
     bool IsReady();
     bool RevertAnimationGraphManager();
+};
+
+struct AnimationGraphManagerReleaser
+{
+    void operator()(BSAnimationGraphManager* apManager) const;
 };
