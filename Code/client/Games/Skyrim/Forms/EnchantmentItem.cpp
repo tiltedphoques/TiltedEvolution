@@ -27,7 +27,11 @@ EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData
         effectItem.fRawCost = effect.RawCost;
         effectItem.pEffectSetting = Cast<EffectSetting>(TESForm::GetById(modSystem.GetGameId(effect.EffectId)));
         if (!effectItem.pEffectSetting)
+        {
+            // The engine dereferences every effect setting; a missing plugin effect must not reach it.
             spdlog::error("Effect setting not found: {:X}:{:X}", effect.EffectId.ModId, effect.EffectId.BaseId);
+            return nullptr;
+        }
 
         // TODO: TESCondition?
 

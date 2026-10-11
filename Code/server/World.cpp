@@ -13,6 +13,7 @@
 #include <Services/CommandService.h>
 #include <Services/StringCacheService.h>
 #include <Services/CombatService.h>
+#include <Services/TradeService.h>
 #include <Services/WeatherService.h>
 #include <Services/ScriptService.h>
 #include <Services/MapService.h>
@@ -38,6 +39,7 @@ World::World()
     ctx().emplace<OverlayService>(*this, m_dispatcher);
     ctx().emplace<CommandService>(*this, m_dispatcher);
     ctx().emplace<StringCacheService>(*this, m_dispatcher);
+    ctx().emplace<TradeService>(*this, m_dispatcher);
     ctx().emplace<CombatService>(*this, m_dispatcher);
     ctx().emplace<WeatherService>(*this, m_dispatcher);
     ctx().emplace<MapService>(*this, m_dispatcher);

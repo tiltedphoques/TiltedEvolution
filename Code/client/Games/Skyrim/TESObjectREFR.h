@@ -63,6 +63,8 @@ struct TESObjectREFR : TESForm
 
     static void GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataList* apExtraDataList) noexcept;
     static ExtraDataList* GetExtraDataFromItem(const Inventory::Entry& arEntry) noexcept;
+    // The inventory's own extra data list describing this entry, so removal takes that exact item.
+    ExtraDataList* FindExtraDataForItem(TESBoundObject* apObject, const Inventory::Entry& arEntry) const noexcept;
 
     virtual void sub_3B();
     virtual void sub_3C();

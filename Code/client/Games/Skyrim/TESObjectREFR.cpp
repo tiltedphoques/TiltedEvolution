@@ -571,6 +571,7 @@ void TESObjectREFR::GetItemFromExtraData(Inventory::Entry& arEntry, ExtraDataLis
         {
             modSystem.GetServerModId(pExtraPoison->pPoison->formID, arEntry.ExtraPoisonId);
             arEntry.ExtraPoisonCount = pExtraPoison->uiCount;
+            AlchemyItem::CaptureRecipe(pExtraPoison->pPoison, arEntry.PoisonData);
         }
     }
 
@@ -624,19 +625,26 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
             pEnchantment = Cast<EnchantmentItem>(TESForm::GetById(enchantId));
         }
 
-        TP_ASSERT(pEnchantment, "No Enchantment created or found.");
-
-        pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge, arEntry.ExtraEnchantRemoveUnequip);
+        if (pEnchantment)
+            pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge, arEntry.ExtraEnchantRemoveUnequip);
+        else
+            spdlog::warn("{}: Enchantment {:X}:{:X} could not be created or found", __FUNCTION__, arEntry.ExtraEnchantId.ModId, arEntry.ExtraEnchantId.BaseId);
     }
 
     if (arEntry.ExtraPoisonId != 0)
     {
-        // TODO: does poison have the same temp problem as enchants?
-        // doesn't seem to be the case, there are only like 3 poisons, and no custom ones
-        TP_ASSERT(arEntry.ExtraPoisonId.ModId != 0xFFFFFFFF, "Poison is sent as temp!");
-
-        uint32_t poisonId = modSystem.GetGameId(arEntry.ExtraPoisonId);
-        if (AlchemyItem* pPoison = Cast<AlchemyItem>(TESForm::GetById(poisonId)))
+        AlchemyItem* pPoison = nullptr;
+        if (arEntry.ExtraPoisonId.ModId == 0xFFFFFFFF)
+        {
+            // Player-crafted poison: recreate it from the owner's recipe. The created-object reference
+            // is kept so the form outlives this extra data list being attached to the item.
+            pPoison = AlchemyItem::Create(arEntry.PoisonData);
+            if (!pPoison)
+                spdlog::warn("{}: Unable to recreate applied crafted poison", __FUNCTION__);
+        }
+        else
+            pPoison = Cast<AlchemyItem>(TESForm::GetById(modSystem.GetGameId(arEntry.ExtraPoisonId)));
+        if (pPoison)
         {
             pExtraDataList->SetPoison(pPoison, arEntry.ExtraPoisonCount);
         }
@@ -713,6 +721,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
 
             Inventory::Entry entry;
             modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
+            AlchemyItem::Capture(pGameEntry->form, entry);
             entry.Count = pGameEntry->count;
 
             inventory.Entries.push_back(std::move(entry));
@@ -732,6 +741,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
 
         Inventory::Entry entry{};
         modSystem.GetServerModId(pGameEntry->form->formID, entry.BaseId);
+        AlchemyItem::Capture(pGameEntry->form, entry);
         entry.Count = pGameEntry->count;
 
         for (ExtraDataList* pExtraDataList : *pGameEntry->dataList)
@@ -741,6 +751,7 @@ Inventory TESObjectREFR::GetInventory(std::function<bool(TESForm&)> aFilter) con
 
             Inventory::Entry innerEntry;
             innerEntry.BaseId = entry.BaseId;
+            innerEntry.Potion = entry.Potion;
             innerEntry.Count = 1;
 
             GetItemFromExtraData(innerEntry, pExtraDataList);
@@ -888,17 +899,25 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
     ModSystem& modSystem = World::Get().GetModSystem();
 
     uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
+    AlchemyItem* createdPotion = nullptr;
     TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
+    if (!arEntry.Potion.Effects.empty())
+    {
+        if (arEntry.Count > 0)
+            pObject = createdPotion = AlchemyItem::Create(arEntry.Potion);
+        else
+            pObject = AlchemyItem::Find(this, arEntry.Potion);
+        objectId = pObject ? pObject->formID : 0;
+    }
     if (!pObject)
     {
         spdlog::warn("{}: Object to add not found, {:X}:{:X}.", __FUNCTION__, arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
         return;
     }
 
-    ExtraDataList* pExtraDataList = GetExtraDataFromItem(arEntry);
-
     if (arEntry.Count > 0)
     {
+        ExtraDataList* pExtraDataList = GetExtraDataFromItem(arEntry);
         bool isWorn = false;
         bool isWornLeft = false;
         if (pExtraDataList)
@@ -919,7 +938,41 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
     else if (arEntry.Count < 0)
     {
         spdlog::debug("Removing item {:X}, count {}", pObject->formID, -arEntry.Count);
-        RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, pExtraDataList, nullptr);
+        // Removal must name the inventory's own extra data list. A freshly built list matches none of the
+        // stored ones, so an enchanted, renamed or poisoned item would stay while a plain copy was taken.
+        auto removalList = [this, &arEntry](TESBoundObject* apItem) -> ExtraDataList* {
+            if (!arEntry.ContainsExtraData())
+                return nullptr;
+            if (ExtraDataList* pExisting = FindExtraDataForItem(apItem, arEntry))
+                return pExisting;
+            // Never hand RemoveItem a list the inventory does not own; remote copies often lack the exact data.
+            spdlog::warn("{}: No stored extra data matches item {:X}; removing without extra data", __FUNCTION__, apItem->formID);
+            return nullptr;
+        };
+        if (arEntry.Potion.Effects.empty())
+            RemoveItem(pObject, -arEntry.Count, ITEM_REMOVE_REASON::kRemove, removalList(pObject), nullptr);
+        else
+        {
+            // Equivalent recipes can have different local IDs. Remove across their actual stacks.
+            int64_t remaining = -static_cast<int64_t>(arEntry.Count);
+            while (remaining > 0)
+            {
+                auto* potion = AlchemyItem::Find(this, arEntry.Potion);
+                if (!potion)
+                    break;
+                const auto before = GetItemCountInInventory(potion);
+                const auto count = static_cast<int32_t>(std::min(remaining, before));
+                if (count <= 0)
+                    break;
+                RemoveItem(potion, count, ITEM_REMOVE_REASON::kRemove, removalList(potion), nullptr);
+                const auto removed = before - GetItemCountInInventory(potion);
+                if (removed <= 0)
+                    break;
+                remaining -= removed;
+            }
+            if (remaining)
+                spdlog::error("[TradeService]: Crafted potion removal was short by {} items", remaining);
+        }
     }
 
     // TODO(cosideci): this is still flawed. Adding the refr to the quest leader is hard.
@@ -936,7 +989,38 @@ void TESObjectREFR::AddOrRemoveItem(const Inventory::Entry& arEntry, bool aIsSet
         }
     }
 
+    // The created potion's reference is deliberately kept: dropping it could free a form the inventory
+    // still points at if the inventory does not hold its own created-object reference.
+    (void)createdPotion;
     UpdateItemList(nullptr);
+}
+
+ExtraDataList* TESObjectREFR::FindExtraDataForItem(TESBoundObject* apObject, const Inventory::Entry& arEntry) const noexcept
+{
+    auto* pChanges = GetContainerChanges();
+    if (!apObject || !pChanges || !pChanges->entries)
+        return nullptr;
+
+    for (auto* pEntry : *pChanges->entries)
+    {
+        if (!pEntry || pEntry->form != apObject || !pEntry->dataList)
+            continue;
+        for (ExtraDataList* pExtraDataList : *pEntry->dataList)
+        {
+            if (!pExtraDataList)
+                continue;
+            Inventory::Entry local{};
+            local.BaseId = arEntry.BaseId;
+            local.Potion = arEntry.Potion;
+            {
+                ScopedExtraDataOverride _;
+                GetItemFromExtraData(local, pExtraDataList);
+            }
+            if (local.CanBeMerged(arEntry))
+                return pExtraDataList;
+        }
+    }
+    return nullptr;
 }
 
 void TESObjectREFR::UpdateItemList(TESForm* pUnkForm) noexcept
@@ -1058,6 +1142,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIte
 
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
+        AlchemyItem::Capture(apItem, item);
         item.Count = aCount;
 
         if (apExtraData)
@@ -1080,6 +1165,7 @@ TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, BSPointerHandle<TESObje
 
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
+        AlchemyItem::Capture(apItem, item);
 
         if (apExtraList)
         {

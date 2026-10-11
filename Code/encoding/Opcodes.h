@@ -53,6 +53,12 @@ enum ClientOpcode : unsigned char
     kRequestSetWaypoint,
     kRequestRemoveWaypoint,
     kSetTimeCommandRequest,
+    kTradeInviteRequest,
+    kTradeInviteResponseRequest,
+    kTradeOfferUpdateRequest,
+    kTradeSetReadyRequest,
+    kTradeCancelRequest,
+    kTradeInventorySyncRequest,
     kClientOpcodeMax
 };
 
@@ -112,5 +118,10 @@ enum ServerOpcode : unsigned char
     kNotifySetWaypoint,
     kNotifyRemoveWaypoint,
     kNotifySetTimeResult,
+    kNotifyTradeInvite,
+    kNotifyTradeStarted,
+    kNotifyTradeState,
+    kNotifyTradeCancel,
+    kNotifyTradeComplete,
     kServerOpcodeMax
 };

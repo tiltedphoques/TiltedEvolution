@@ -1,7 +1,26 @@
 #include <Structs/Inventory.h>
 #include <TiltedCore/Serialization.hpp>
+#include <algorithm>
+#include <cmath>
 
 using TiltedPhoques::Serialization;
+
+bool Inventory::PotionData::operator==(const PotionData& acRhs) const noexcept
+{
+    return IsPoison == acRhs.IsPoison && Effects.size() == acRhs.Effects.size() &&
+        std::is_permutation(Effects.begin(), Effects.end(), acRhs.Effects.begin());
+}
+
+bool Inventory::PotionData::IsValid() const noexcept
+{
+    if (Effects.empty() || Effects.size() > 32)
+        return false;
+    for (const auto& effect : Effects)
+        if (!std::isfinite(effect.Magnitude) || effect.Magnitude < 0 || !std::isfinite(effect.RawCost) || effect.RawCost < 0 ||
+            effect.Area < 0 || effect.Duration < 0 || effect.EffectId.ModId == 0xFFFFFFFF || !effect.EffectId.BaseId)
+            return false;
+    return true;
+}
 
 void Inventory::EffectItem::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
@@ -48,6 +67,14 @@ void Inventory::Entry::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const n
     Serialization::WriteBool(aWriter, ExtraWorn);
     Serialization::WriteBool(aWriter, ExtraWornLeft);
     Serialization::WriteBool(aWriter, IsQuestItem);
+    Serialization::WriteBool(aWriter, Potion.IsPoison);
+    Serialization::WriteVarInt(aWriter, Potion.Effects.size());
+    for (const auto& effect : Potion.Effects)
+        effect.Serialize(aWriter);
+    Serialization::WriteBool(aWriter, PoisonData.IsPoison);
+    Serialization::WriteVarInt(aWriter, PoisonData.Effects.size());
+    for (const auto& effect : PoisonData.Effects)
+        effect.Serialize(aWriter);
 }
 
 void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -79,6 +106,24 @@ void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexc
     ExtraWorn = Serialization::ReadBool(aReader);
     ExtraWornLeft = Serialization::ReadBool(aReader);
     IsQuestItem = Serialization::ReadBool(aReader);
+    Potion.IsPoison = Serialization::ReadBool(aReader);
+    Potion.Effects.clear();
+    const auto potionEffectCount = Serialization::ReadVarInt(aReader);
+    for (uint64_t i = 0; i < potionEffectCount; ++i)
+    {
+        EffectItem effect;
+        effect.Deserialize(aReader);
+        Potion.Effects.push_back(effect);
+    }
+    PoisonData.IsPoison = Serialization::ReadBool(aReader);
+    PoisonData.Effects.clear();
+    const auto poisonEffectCount = Serialization::ReadVarInt(aReader);
+    for (uint64_t i = 0; i < poisonEffectCount; ++i)
+    {
+        EffectItem effect;
+        effect.Deserialize(aReader);
+        PoisonData.Effects.push_back(effect);
+    }
 }
 
 bool Inventory::operator==(const Inventory& acRhs) const noexcept
@@ -93,7 +138,7 @@ bool Inventory::operator!=(const Inventory& acRhs) const noexcept
 
 bool Inventory::Entry::operator==(const Inventory::Entry& acRhs) const noexcept
 {
-    return BaseId == acRhs.BaseId && Count == acRhs.Count && IsExtraDataEquals(acRhs);
+    return SameBase(acRhs) && Count == acRhs.Count && IsExtraDataEquals(acRhs);
 }
 
 bool Inventory::Entry::operator!=(const Inventory::Entry& acRhs) const noexcept

@@ -95,6 +95,49 @@ declare namespace SkyrimTogetherTypes {
 
   type PartyInviteReceivedCallback = (inviterId: number) => void;
 
+  type TradeInviteCallback = (inviterId: number, expiryTick: number) => void;
+  type TradeInviteExpiredCallback = (inviterId: number) => void;
+
+  interface TradeItemPayload {
+    isUnsupportedTemporary?: boolean;
+    customNames?: string[];
+    category?: string;
+    modId: number;
+    baseId: number;
+    count: number;
+    isQuestItem: boolean;
+    name: string;
+    inventoryIndex?: number;
+    offeredCount?: number;
+  }
+
+  interface TradeInventoryPayload extends TradeItemPayload {
+    inventoryIndex: number;
+    offeredCount: number;
+  }
+
+  type TradeStateUpdatedCallback = (
+    active: boolean,
+    partnerId: number,
+    initiatedBySelf: boolean,
+    selfReady: boolean,
+    partnerReady: boolean,
+    selfItems: TradeItemPayload[],
+    partnerItems: TradeItemPayload[],
+    inventory: TradeInventoryPayload[],
+    countdownMs: number,
+    countdownTotalMs: number,
+  ) => void;
+
+  type TradeCancelledCallback = (
+    partnerId: number,
+    reason: number,
+    wasInitiator: boolean,
+  ) => void;
+
+  type TradeCompletedCallback = (partnerId: number) => void;
+
+  type TradeOfferEntry = { index: number; count: number };
   type QuestUpdatedCallback = () => void;
 }
 
@@ -219,6 +262,27 @@ interface SkyrimTogether {
   on(
     event: 'partyInviteReceived',
     callback: SkyrimTogetherTypes.PartyInviteReceivedCallback,
+  ): void;
+
+  on(
+    event: 'tradeInviteReceived',
+    callback: SkyrimTogetherTypes.TradeInviteCallback,
+  ): void;
+  on(
+    event: 'tradeInviteExpired',
+    callback: SkyrimTogetherTypes.TradeInviteExpiredCallback,
+  ): void;
+  on(
+    event: 'tradeStateUpdated',
+    callback: SkyrimTogetherTypes.TradeStateUpdatedCallback,
+  ): void;
+  on(
+    event: 'tradeCancelled',
+    callback: SkyrimTogetherTypes.TradeCancelledCallback,
+  ): void;
+  on(
+    event: 'tradeCompleted',
+    callback: SkyrimTogetherTypes.TradeCompletedCallback,
   ): void;
 
   on(
@@ -357,6 +421,27 @@ interface SkyrimTogether {
   ): void;
 
   off(
+    event: 'tradeInviteReceived',
+    callback?: SkyrimTogetherTypes.TradeInviteCallback,
+  ): void;
+  off(
+    event: 'tradeInviteExpired',
+    callback?: SkyrimTogetherTypes.TradeInviteExpiredCallback,
+  ): void;
+  off(
+    event: 'tradeStateUpdated',
+    callback?: SkyrimTogetherTypes.TradeStateUpdatedCallback,
+  ): void;
+  off(
+    event: 'tradeCancelled',
+    callback?: SkyrimTogetherTypes.TradeCancelledCallback,
+  ): void;
+  off(
+    event: 'tradeCompleted',
+    callback?: SkyrimTogetherTypes.TradeCompletedCallback,
+  ): void;
+
+  off(
     event: 'questUpdated',
     callback?: SkyrimTogetherTypes.QuestUpdatedCallback,
   ): void;
@@ -448,5 +533,10 @@ interface SkyrimTogether {
   /**
    * Open the play guide on the wiki in the default browser.
    */
+  sendTradeInvite(playerId: number): void;
+  respondTradeInvite(playerId: number, accept: boolean): void;
+  cancelTrade(): void;
+  setTradeReady(ready: boolean): void;
+  updateTradeOffer(entries: SkyrimTogetherTypes.TradeOfferEntry[]): void;
   openPlayGuide(): void;
 }
