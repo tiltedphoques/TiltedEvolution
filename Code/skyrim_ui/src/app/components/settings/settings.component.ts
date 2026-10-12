@@ -38,11 +38,11 @@ export class SettingsComponent {
     },
     {
       id: PartyAnchor.BOTTOM_RIGHT,
-      label: 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_LEFT',
+      label: 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_RIGHT',
     },
     {
       id: PartyAnchor.BOTTOM_LEFT,
-      label: 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_RIGHT',
+      label: 'COMPONENT.SETTINGS.PARTY_ANCHOR_POSITION.BOTTOM_LEFT',
     },
   ];
   readonly availableAutoHideTimes = autoHideTimerLengths;
