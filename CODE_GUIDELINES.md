@@ -45,10 +45,3 @@ Names must be self explanatory, ``size_t a;`` is not acceptable, ``size_t incomi
 Don't use java style blocks, a ``{`` needs to be on a new line.
 
 Don't use exceptions, don't use STL code that can throw, use the nothrow version if available or the unsafe version.
-
-## Commit Naming
-Preface commit messages with one of the following tags:
-* `feat:` for new features
-* `tweak:` for tweaks to an existing system
-* `fix:` for bug fixes and crash fixes
-* `refactor:` for refactoring

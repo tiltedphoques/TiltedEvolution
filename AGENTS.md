@@ -117,10 +117,11 @@ xmake project -k vsxmake                 # regenerate the VS solution; rerun aft
 
 ## Conventions
 
-- Match the surrounding style. Hungarian-style prefixes where the file uses them: `a` arguments, `c` const,
+- **Match the surrounding style.** Hungarian-style prefixes where the file uses them: `a` arguments, `c` const,
   `p` pointers, combined as needed (`acEvent`, `apActor`). No `r` prefix for references.
-- Members use `m_`. Globals, including file-scope `static`s, use `g_`. Types and functions are `PascalCase`,
-  and most functions are `noexcept`. Reversed engine types keep the game's names (`hCaster`, `slotType`).
+- Members use `m_` (plain-data structs use bare `PascalCase` fields). Statics use `s_`, globals `g_`; hook originals are
+  `Real<Name>`, constants `k<Name>`. Types and functions are `PascalCase`, and most functions are `noexcept`.
+  Reversed engine types keep the game's names (`hCaster`, `slotType`).
 - No exceptions and no throwing STL calls. No `auto` for primitive types.
 - Use `TiltedPhoques` containers (`String`, `Vector`, `UniquePtr`...) where the surrounding code does. Log
   with `spdlog`.
