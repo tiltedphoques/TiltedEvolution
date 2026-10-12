@@ -61,12 +61,6 @@ if is_plat("linux") then
 end
 
 add_requireconfs("cpp-httplib", {configs = {ssl = true}})
---[[
-add_requireconfs("magnum", { configs = { sdl2 = true }})
-add_requireconfs("magnum-integration",  { configs = { imgui = true }})
-add_requireconfs("magnum-integration.magnum",  { configs = { sdl2 = true }})
-add_requireconfs("magnum-integration.imgui", { override = true })
---]]
 
 before_build(function (target)
     import("modules.version")
