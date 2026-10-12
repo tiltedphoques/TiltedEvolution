@@ -120,7 +120,7 @@
           (ngModelChange)="settings.partyAnchor.next($event)"
         >
           <app-dropdown-option
-            *ngFor="let anchor of availablePartyAnchors"
+            *ngFor="let anchor of availableCorners"
             [text]="anchor.label"
             [value]="anchor.id"
           ></app-dropdown-option>
@@ -177,7 +177,7 @@
           (ngModelChange)="settings.debugAnchor.next($event)"
         >
           <app-dropdown-option
-            *ngFor="let anchor of availablePartyAnchors"
+            *ngFor="let anchor of availableCorners"
             [text]="anchor.label"
             [value]="anchor.id"
           ></app-dropdown-option>

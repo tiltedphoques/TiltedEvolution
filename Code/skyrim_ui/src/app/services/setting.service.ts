@@ -11,7 +11,7 @@ export enum FontSize {
   XL = 'xl',
 }
 
-export enum PartyAnchor {
+export enum ScreenCorner {
   TOP_LEFT = 0,
   TOP_RIGHT,
   BOTTOM_RIGHT,
@@ -97,9 +97,9 @@ export class SettingService {
     this.translocoService.getAvailableLangs(),
   ).map(lang => lang.id);
   private readonly fontSizeValues = Object.values(FontSize);
-  private readonly partyAnchorValues = Object.values(
-    PartyAnchor,
-  ) as PartyAnchor[];
+  private readonly screenCornerValues = Object.values(
+    ScreenCorner,
+  ) as ScreenCorner[];
   private readonly autoHideTimeValues = autoHideTimerLengths;
 
   public settings = {
@@ -132,8 +132,8 @@ export class SettingService {
     partyAnchor: new SelectSetting(
       this.storeService,
       'party_anchor',
-      this.partyAnchorValues,
-      PartyAnchor.TOP_LEFT,
+      this.screenCornerValues,
+      ScreenCorner.TOP_LEFT,
     ),
     partyAnchorOffsetX: new SliderSetting(
       this.storeService,
@@ -149,8 +149,8 @@ export class SettingService {
     debugAnchor: new SelectSetting(
       this.storeService,
       'debug_anchor',
-      this.partyAnchorValues,
-      PartyAnchor.TOP_LEFT,
+      this.screenCornerValues,
+      ScreenCorner.TOP_LEFT,
     ),
   };
 

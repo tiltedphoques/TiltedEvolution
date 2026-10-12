@@ -1,7 +1,7 @@
 <div
   *ngIf="isShown$ | async"
   class="app-debug"
-  [ngStyle]="positionStyle$ | async"
+  [ngClass]="cornerClass$ | async"
 >
   <div *ngIf="debugData$ | async as debugData">
     <span>
