@@ -1,4 +1,8 @@
-<div *ngIf="isShown$ | async" class="app-debug">
+<div
+  *ngIf="isShown$ | async"
+  class="app-debug"
+  [ngStyle]="positionStyle$ | async"
+>
   <div *ngIf="debugData$ | async as debugData">
     <span>
       <fa-icon [icon]="faWifi"></fa-icon>

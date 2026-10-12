@@ -146,6 +146,12 @@ export class SettingService {
       3,
     ),
     isDebugShown: new ToggleSetting(this.storeService, 'debug_isShown', false),
+    debugAnchor: new SelectSetting(
+      this.storeService,
+      'debug_anchor',
+      this.partyAnchorValues,
+      PartyAnchor.TOP_LEFT,
+    ),
   };
 
   constructor(
