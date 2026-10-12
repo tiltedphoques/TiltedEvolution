@@ -85,8 +85,8 @@ xmake project -k vsxmake                 # regenerate the VS solution; rerun aft
 ```
 
 - The solution is `vsxmake2022/<repo dir>.sln`. Most contributors build and debug from it.
-- `Build.bat` does the full dev build including the UI. UI only:
-  `cd Code/skyrim_ui && pnpm install && pnpm deploy:production`. `xmake install -o distrib` gathers binaries.
+- UI: `cd Code/skyrim_ui && pnpm install && pnpm deploy:production`. `xmake install -o distrib` gathers
+  binaries.
 - Main targets:
   - `SkyrimImmersiveLauncher` → `SkyrimTogether.exe`, with the `SkyrimTogetherClient` static lib linked in
   - `SkyrimTogetherServer` → `STServer.dll`, run by `SkyrimServerRunner` → `SkyrimTogetherServer.exe`
@@ -98,10 +98,10 @@ xmake project -k vsxmake                 # regenerate the VS solution; rerun aft
 ## Testing
 
 - **Most gameplay features can only be verified by hand:** run a local server plus two or more game clients
-  on one machine and exercise the feature from both sides (non-master builds write a log per instance).
-  Say plainly when a change still needs an in-game test. Compiling is not proof that it works.
+  on one machine and exercise the feature from both sides. Say plainly when a change still needs an
+  in-game test. Compiling is not proof that it works.
 - Add unit tests only for mission-critical, Skyrim-independent code: protocol encoding, timing and
-  interpolation math, pure data structures. Such code can be compiled into `TPTests`. Ask before writing 
+  interpolation math, pure data structures. Such code can be compiled into `TPTests`. Ask before writing
   tests for gameplay code.
 
 ## Reverse engineering
