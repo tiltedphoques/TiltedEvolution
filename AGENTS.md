@@ -111,10 +111,9 @@ xmake project -k vsxmake                 # regenerate the VS solution; rerun aft
   Say what needs verifying in the binary, warn that a source-only version may be wrong or suboptimal (guessed
   offsets, wrong hook point, missed side effects), and ask whether to go ahead.
 - With an MCP, check the Skyrim SE 1.6.1170 database first. Use 1.7.104 only when something differs.
-- Map an Address Library ID by decoding the matching `versionlib-*.bin` (in the game's `Data/SKSE/Plugins/`)
-  the way `Code/client/VersionDb.h` does (1.6.x bins are format 2, 1.7.x format 5). The address is
-  `0x140000000 + offset`.
-- `Tools/Scripts` has helpers for addresses, RTTI dumps and IDB matching.
+- Map Address Library IDs to IDB addresses and back with `python Tools/Scripts/addrlib.py <decimal id | IDB address>...`
+  (1.6.1170 by default, `-v 1.7.104` for another version; usage at the top of the script).
+- `Tools/Scripts` has other helpers for addresses, RTTI dumps and IDB matching.
 
 ## Conventions
 
