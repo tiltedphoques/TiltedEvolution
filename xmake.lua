@@ -34,7 +34,6 @@ end
 -- direct dependencies version pinning 
 add_requires(
     "entt v3.10.0", 
-    "recastnavigation v1.6.0", 
     "tiltedcore 0.2.9", 
     "cryptopp 8.9.0", 
     "spdlog v1.13.0", 
