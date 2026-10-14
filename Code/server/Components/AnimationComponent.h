@@ -9,7 +9,5 @@
 
 struct AnimationComponent
 {
-    Vector<ActionEvent> Actions;
-    ActionEvent CurrentAction;
     ActionReplayCache ActionsReplayCache;
 };

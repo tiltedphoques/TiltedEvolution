@@ -7,8 +7,8 @@ target(name)
     set_pcxxheader("TiltedOnlinePCH.h")
 
     -- exclude game specifc stuff
-    add_headerfiles("**.h|Games/Skyrim/**|Services/Vivox/**")
-    add_files("**.cpp|Games/Skyrim/**|Services/Vivox/**")
+    add_headerfiles("**.h|Games/Skyrim/**")
+    add_files("**.cpp|Games/Skyrim/**")
 
     after_install(function(target)
         -- copy dlls
@@ -56,22 +56,10 @@ target(name)
         "mem",
         "xbyak")
 
-    if has_config("vivox") then
-        add_files("Services/Vivox/**.cpp")
-        add_headerfiles("Services/Vivox/**.h")
-        add_includedirs("Services/Vivox")
-        add_deps("Vivox")
-        add_defines("TP_VIVOX=1")
-    else
-        add_defines("TP_VIVOX=0")
-    end
-
     add_syslinks(
         "version",
         "dbghelp",
         "kernel32")
 end
-
-add_requires("tiltedcore")
 
 build_client("SkyrimTogetherClient")

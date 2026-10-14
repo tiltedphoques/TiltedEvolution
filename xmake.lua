@@ -34,7 +34,6 @@ end
 -- direct dependencies version pinning 
 add_requires(
     "entt v3.10.0", 
-    "recastnavigation v1.6.0", 
     "tiltedcore 0.2.9", 
     "cryptopp 8.9.0", 
     "spdlog v1.13.0", 
@@ -61,12 +60,6 @@ if is_plat("linux") then
 end
 
 add_requireconfs("cpp-httplib", {configs = {ssl = true}})
---[[
-add_requireconfs("magnum", { configs = { sdl2 = true }})
-add_requireconfs("magnum-integration",  { configs = { imgui = true }})
-add_requireconfs("magnum-integration.magnum",  { configs = { sdl2 = true }})
-add_requireconfs("magnum-integration.imgui", { override = true })
---]]
 
 before_build(function (target)
     import("modules.version")

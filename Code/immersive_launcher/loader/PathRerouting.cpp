@@ -17,6 +17,11 @@ void InstallPathRouting(const std::filesystem::path& gamePath)
     AddDllDirectory(gamePath.c_str());
     SetCurrentDirectoryW(gamePath.c_str());
 
+    // Mod support exception: KiLoader appends <game>\Data\KiLoader\Dependencies to PATH at runtime so its
+    // plugins can find KiHalloc.dll etc., but SetDefaultDllDirectories above excludes PATH from the search order.
+    // Fails harmlessly with ERROR_PATH_NOT_FOUND if KiLoader isn't installed.
+    AddDllDirectory((gamePath / L"Data" / L"KiLoader" / L"Dependencies").c_str());
+
     std::wstring pathBuf;
     pathBuf.resize(32768);
     GetEnvironmentVariableW(L"PATH", pathBuf.data(), static_cast<DWORD>(pathBuf.length()));

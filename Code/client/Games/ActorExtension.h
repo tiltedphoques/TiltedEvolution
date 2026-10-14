@@ -27,6 +27,7 @@ struct ActorExtension
 
     ActionEvent LatestAnimation{};
     size_t GraphDescriptorHash = 0;
+    uint64_t GraphDescriptorProjectKey = 0;
 
     // TODO: atomic? bool instead? maybe simplify to `IsReenabling()` ?
     // Protects discovery while rebuilding a leveled NPC.

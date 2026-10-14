@@ -13,6 +13,4 @@ struct MovementComponent
     glm::vec3 Rotation;
     AnimationVariables Variables;
     float Direction;
-
-    bool Sent;
 };
