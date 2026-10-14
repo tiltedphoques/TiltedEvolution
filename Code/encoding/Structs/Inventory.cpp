@@ -160,6 +160,59 @@ void Inventory::AddOrRemoveEntry(const Entry& acEntry) noexcept
     }
 }
 
+void Inventory::AddOrRemoveEntryClamped(const Entry& acEntry) noexcept
+{
+    if (acEntry.Count == 0)
+        return;
+
+    auto duplicate = std::find_if(Entries.begin(), Entries.end(), [&acEntry](const Entry& entry) { return entry.CanBeMerged(acEntry); });
+
+    if (duplicate != Entries.end())
+    {
+        duplicate->Count += acEntry.Count;
+        if (duplicate->Count <= 0)
+            Entries.erase(duplicate);
+    }
+    else if (acEntry.Count > 0)
+    {
+        Entries.push_back(acEntry);
+    }
+}
+
+Vector<Inventory::Entry> Inventory::MergeMissing(const Inventory& acOther) noexcept
+{
+    Vector<Entry> added{};
+
+    // The game can list the same item in several stacks, compare the totals.
+    Inventory other{};
+    for (const Entry& otherEntry : acOther.Entries)
+        other.AddOrRemoveEntryClamped(otherEntry);
+
+    for (const Entry& otherEntry : other.Entries)
+    {
+        if (otherEntry.Count <= 0)
+            continue;
+
+        auto existing = std::find_if(Entries.begin(), Entries.end(), [&otherEntry](const Entry& entry) { return entry.CanBeMerged(otherEntry); });
+        const int32_t currentCount = existing != Entries.end() ? existing->Count : 0;
+
+        if (otherEntry.Count <= currentCount)
+            continue;
+
+        Entry delta = otherEntry;
+        delta.Count = otherEntry.Count - currentCount;
+
+        if (existing != Entries.end())
+            existing->Count = otherEntry.Count;
+        else
+            Entries.push_back(otherEntry);
+
+        added.push_back(std::move(delta));
+    }
+
+    return added;
+}
+
 void Inventory::UpdateEquipment(const Inventory& acNewInventory) noexcept
 {
     while (true)

@@ -79,7 +79,10 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     }
 
     auto& inventoryComponent = view.get<InventoryComponent>(*it);
-    inventoryComponent.Content.AddOrRemoveEntry(message.Item);
+    if (pOwnerComponent)
+        inventoryComponent.Content.AddOrRemoveEntry(message.Item);
+    else
+        inventoryComponent.Content.AddOrRemoveEntryClamped(message.Item);
 
     if (!message.UpdateClients && !isRemoteNpcInteraction)
         return;

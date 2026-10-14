@@ -12,6 +12,7 @@
 #include <Messages/NotifyLockChange.h>
 #include <Messages/AssignObjectsRequest.h>
 #include <Messages/AssignObjectsResponse.h>
+#include <Messages/NotifyInventoryChanges.h>
 #include <Messages/ScriptAnimationRequest.h>
 #include <Messages/NotifyScriptAnimation.h>
 
@@ -28,6 +29,7 @@ ObjectService::ObjectService(World& aWorld, entt::dispatcher& aDispatcher)
 // TODO(cosideci): the cell handling of objects need to be revamped.
 // We already store the location and worldspace of the mod through CellIdComponent.
 // Clients need a message saying the entity was destroyed.
+// Only doors are dropped here, containers are kept for the whole server session.
 void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) noexcept
 {
     for (Player* pPlayer : m_world.GetPlayerManager())
@@ -44,6 +46,11 @@ void ObjectService::OnPlayerLeaveCellEvent(const PlayerLeaveCellEvent& acEvent) 
         const auto& cellIdComponent = objectView.get<CellIdComponent>(entity);
 
         if (cellIdComponent.Cell != acEvent.OldCell)
+            continue;
+
+        // Container contents are the shared state of everything players stored or took.
+        // Dropping it here would let the next player to enter overwrite it with their own local copy.
+        if (objectView.get<ObjectComponent>(entity).IsContainer)
             continue;
 
         toDestroy.push_back(entity);
@@ -83,8 +90,28 @@ void ObjectService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsReques
 
             auto& objectComponent = view.get<ObjectComponent>(*iter);
             objectData.CurrentLockData = objectComponent.CurrentLockData;
+            objectComponent.IsContainer |= object.IsContainer;
 
             auto& inventoryComponent = view.get<InventoryComponent>(*iter);
+
+            if (object.MergeInventory && objectComponent.MergedPlayers.insert(acMessage.pPlayer->GetUsername()).second)
+            {
+                const Vector<Inventory::Entry> addedEntries = inventoryComponent.Content.MergeMissing(object.CurrentInventory);
+
+                // Players already in the cell have the old server state, hand them what this player brought along.
+                for (const Inventory::Entry& entry : addedEntries)
+                {
+                    NotifyInventoryChanges notify{};
+                    notify.ServerId = objectData.ServerId;
+                    notify.Item = entry;
+
+                    GameServer::Get()->SendToPlayersInRange(notify, *iter, acMessage.pPlayer);
+                }
+
+                if (!addedEntries.empty())
+                    spdlog::info("Merged {} entries from player {} into container {:X}", addedEntries.size(), acMessage.pPlayer->GetUsername().c_str(), object.Id.BaseId);
+            }
+
             objectData.CurrentInventory = inventoryComponent.Content;
 
             objectData.IsSenderFirst = false;
@@ -97,8 +124,11 @@ void ObjectService::OnAssignObjectsRequest(const PacketEvent<AssignObjectsReques
 
             m_world.emplace<FormIdComponent>(cEntity, object.Id);
 
-            auto& objectComponent = m_world.emplace<ObjectComponent>(cEntity, acMessage.pPlayer);
+            auto& objectComponent = m_world.emplace<ObjectComponent>(cEntity);
             objectComponent.CurrentLockData = object.CurrentLockData;
+            objectComponent.IsContainer = object.IsContainer;
+            if (object.MergeInventory)
+                objectComponent.MergedPlayers.insert(acMessage.pPlayer->GetUsername());
 
             m_world.emplace<CellIdComponent>(cEntity, object.CellId, object.WorldSpaceId, object.CurrentCoords);
             auto& inventoryComp = m_world.emplace<InventoryComponent>(cEntity);

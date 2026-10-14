@@ -36,7 +36,7 @@ Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer", "Whether to lis
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "Difficulty for all players: 0 Novice, 1 Apprentice, 2 Adept, 3 Expert, 4 Master, 5 Legendary", 4u};
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
-Console::Setting bSyncPlayerHomes{"Gameplay:bSyncPlayerHomes", "Sync chests and displays in player homes and other NoResetZones", false};
+Console::Setting bSyncPlayerHomes{"Gameplay:bSyncPlayerHomes", "Sync chests and displays in player homes and other NoResetZones. Each player's stored items are merged in, so players can share storage", true};
 Console::Setting bEnableDeathSystem{"Gameplay:bEnableDeathSystem", "Enables the custom multiplayer death system. Only disable it if you use another mod that replaces death", true};
 Console::Setting uTimeScale{"Gameplay:uTimeScale", "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
 Console::Setting bSyncPlayerCalendar{"Gameplay:bSyncPlayerCalendar", "Syncs up all player calendars to be the same day, month, and year. This uses the date of the player with the furthest ahead date at connection.", false};

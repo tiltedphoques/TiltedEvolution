@@ -110,7 +110,10 @@ bool ShouldSyncObject(const TESObjectREFR* apObject, const Set<const TESObjectRE
 
 void ObjectService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
-    // TODO(cosideci): clear object components
+    // Server ids are only valid for one session, stale ones would send inventory changes to the wrong entity.
+    const auto view = m_world.view<ObjectComponent>();
+    Vector<entt::entity> entities(view.begin(), view.end());
+    m_world.destroy(entities.begin(), entities.end());
 }
 
 void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
@@ -121,9 +124,10 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
     TESObjectCELL* pCell = pPlayer->parentCell;
 
-    // Player homes should not be synced, so that chest contents,
-    // which are often used as storage, are never accidentally wiped.
-    if (!World::Get().GetServerSettings().SyncPlayerHomes && IsPlayerHome(pCell))
+    // Player homes are only synced when the server allows it. Their chests are merged instead of
+    // overwritten, so that chest contents, which are often used as storage, are never accidentally wiped.
+    const bool isPlayerHome = IsPlayerHome(pCell);
+    if (!World::Get().GetServerSettings().SyncPlayerHomes && isPlayerHome)
         return;
 
     GameId cellId{};
@@ -177,7 +181,11 @@ void ObjectService::OnCellChange(const CellChangeEvent& acEvent) noexcept
         }
 
         if (pObject->baseForm->formType == FormType::Container)
+        {
             objectData.CurrentInventory = pObject->GetInventory();
+            objectData.IsContainer = true;
+            objectData.MergeInventory = isPlayerHome;
+        }
 
         request.Objects.push_back(objectData);
     }
@@ -234,10 +242,21 @@ entt::entity ObjectService::CreateObjectEntity(const uint32_t acFormId, const ui
 {
     const auto view = m_world.view<FormIdComponent, ObjectComponent>();
 
-    auto it = std::find_if(view.begin(), view.end(), [acServerId, view](entt::entity entity) { return view.get<ObjectComponent>(entity).Id == acServerId; });
+    // Look up by form id: the server may hand out a new id for the same reference (e.g. a door after its cell emptied),
+    // and two entities for one reference would make inventory changes go out with whichever stale id is found first.
+    auto it = std::find_if(view.begin(), view.end(), [acFormId, view](entt::entity entity) { return view.get<FormIdComponent>(entity).Id == acFormId; });
 
     if (it != view.end())
+    {
+        auto& objectComponent = view.get<ObjectComponent>(*it);
+        if (objectComponent.Id != acServerId)
+        {
+            spdlog::info("Updated object entity server id {:X} -> {:X}, form id {:X}", objectComponent.Id, acServerId, acFormId);
+            objectComponent.Id = acServerId;
+        }
+
         return *it;
+    }
 
     entt::entity entity = m_world.create();
     spdlog::info("Created object entity, server id: {:X}, form id {:X}", acServerId, acFormId);

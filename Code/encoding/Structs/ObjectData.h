@@ -24,4 +24,9 @@ struct ObjectData
     LockData CurrentLockData{};
     Inventory CurrentInventory{};
     bool IsSenderFirst{};
+    // Containers keep their contents on the server after everyone leaves the cell, doors do not.
+    bool IsContainer{};
+    // Storage containers (player homes) merge each player's local contents into the shared server state
+    // the first time that player sees them, so nobody's stored items get wiped by someone else's copy.
+    bool MergeInventory{};
 };
