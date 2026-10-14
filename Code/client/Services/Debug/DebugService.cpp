@@ -270,31 +270,31 @@ void DebugService::OnDraw() noexcept
     ImGui::BeginMainMenuBar();
     if (ImGui::BeginMenu("Helpers"))
     {
-        // Fallback for players stuck in dialogue / scenes with input blocked. Does not touch quest stages.
-        auto clearStuckDialogueAndControls = []() {
-            auto* pPlayer = PlayerCharacter::Get();
-            if (!pPlayer)
-                return;
-            pPlayer->StopCurrentDialogue(true);
-            if (auto* pControls = PlayerControls::GetInstance())
-            {
-                pControls->SetBlockPlayerInput(false);
-                pControls->SetEnabled(true);
-            }
-        };
-
-        if (ImGui::Button("Clear stuck dialogue"))
+        if (ImGui::Button("Unstuck player (knockback)"))
         {
-            clearStuckDialogueAndControls();
-        }
-
-        if (ImGui::Button("Unstuck player"))
-        {
-            clearStuckDialogueAndControls();
             auto* pPlayer = PlayerCharacter::Get();
             if (pPlayer && pPlayer->currentProcess)
                 pPlayer->currentProcess->KnockExplosion(pPlayer, &pPlayer->position, 0.f);
         }
+
+        // Fallback for players stuck in dialogue / scenes with input blocked. Does not touch quest stages.
+        if (ImGui::Button("Restore player controls"))
+        {
+            if (auto* pPlayer = PlayerCharacter::Get())
+            {
+                pPlayer->StopCurrentDialogue(true);
+                if (auto* pControls = PlayerControls::GetInstance())
+                {
+                    pControls->SetBlockPlayerInput(false);
+                    pControls->SetActivateEnabled(true);
+                }
+                // Mirrors Game.EnablePlayerControls(). Scripts may disable them again through an input layer.
+                if (auto* pInputManager = BSInputEnableManager::Get())
+                    pInputManager->EnableOtherEvent(BSInputEnableManager::kPlayerControls, true, true);
+            }
+        }
+        ImGui::SetItemTooltip("Ends dialogue and re-enables controls disabled by scripts or scenes.\nMovement controls: %s",
+                              BSInputEnableManager::IsMovementControlsEnabled() ? "enabled" : "disabled");
 
         if (ImGui::Button("Stop all combat"))
         {
