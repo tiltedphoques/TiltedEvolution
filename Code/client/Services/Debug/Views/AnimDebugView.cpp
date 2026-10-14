@@ -94,10 +94,8 @@ void DebugService::DrawAnimDebugView()
         s_blacklist.clear();
     }
 
-    BSAnimationGraphManager* pManager = nullptr;
-    pActor->animationGraphHolder.GetBSAnimationGraph(&pManager);
-
-    if (!pManager)
+    auto spManager = pActor->animationGraphHolder.GetAnimationGraphManagerPtr();
+    if (!spManager)
     {
         ImGui::End();
         s_varMap.clear();
@@ -107,6 +105,8 @@ void DebugService::DrawAnimDebugView()
         s_blacklist.clear();
         return;
     }
+
+    BSAnimationGraphManager* pManager = spManager.get();
 
     const auto pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
 
