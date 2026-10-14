@@ -14,6 +14,8 @@
 
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
+#include <Events/ItemDroppedEvent.h>
+#include <Events/DroppedItemPickedUpEvent.h>
 #include <Events/MountEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Games/Misc/MenuTopicManager.h>
@@ -1096,6 +1098,9 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
         bool shouldUpdateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
 
         QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item), false, shouldUpdateClients));
+
+        if (apObject->IsTemporary() && Utils::GetLocalOwnershipToken(apThis->formID))
+            World::Get().GetRunner().Trigger(DroppedItemPickedUpEvent{apThis->formID, apObject->formID, apObject->baseForm->formID});
     }
 
     return TiltedPhoques::ThisCall(RealPickUpObject, apThis, apObject, aCount, aUnk1, aUnk2);
@@ -1108,6 +1113,8 @@ void Actor::PickUpObject(TESObjectREFR* apObject, int32_t aCount, bool aUnk1, fl
 
 void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation)
 {
+    const bool cIsOverriden = ScopedInventoryOverride::IsOverriden();
+
     auto& modSystem = World::Get().GetModSystem();
 
     Inventory::Entry item{};
@@ -1117,11 +1124,45 @@ void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* ap
     if (apExtraData)
         apThis->GetItemFromExtraData(item, apExtraData);
 
+    Inventory::Entry droppedItem = item;
+    droppedItem.Count = aCount;
+    // Equipped items are read before they leave the actor, but the copy lying in the world is not worn.
+    droppedItem.ExtraWorn = droppedItem.ExtraWornLeft = false;
+    droppedItem.ExtraEnchantRemoveUnequip = false;
+
     QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item), true));
+
+    const bool cIsLocal = !cIsOverriden && Utils::GetLocalOwnershipToken(apThis->formID).has_value();
+
+    // Without a location the game works one out itself, and with the mod loaded that sometimes fails for single items,
+    // which then land near the world origin instead of in front of the actor. An explicit location always works.
+    NiPoint3 dropLocation{};
+    NiPoint3* pLocation = apLocation;
+    if (!apLocation && cIsLocal)
+    {
+        constexpr float cForwardOffset = 60.f;
+        constexpr float cHeightOffset = 60.f;
+
+        // The z rotation is the heading, 0 faces north (+y).
+        const float heading = apThis->rotation.z;
+        dropLocation = NiPoint3(glm::vec3(
+            apThis->position.x + std::sin(heading) * cForwardOffset, apThis->position.y + std::cos(heading) * cForwardOffset, apThis->position.z + cHeightOffset));
+        pLocation = &dropLocation;
+    }
 
     ScopedInventoryOverride _;
 
-    return TiltedPhoques::ThisCall(RealDropObject, apThis, apResult, apObject, apExtraData, aCount, apLocation, apRotation);
+    void* pResult = TiltedPhoques::ThisCall(RealDropObject, apThis, apResult, apObject, apExtraData, aCount, pLocation, apRotation);
+
+    // The result is the handle of the reference the drop created, which is what other players need to see.
+    const auto* pHandle = static_cast<BSPointerHandle<TESObjectREFR>*>(apResult);
+    if (cIsLocal && pHandle && *pHandle)
+    {
+        if (TESObjectREFR* pRef = TESObjectREFR::GetByHandle(pHandle->handle.iBits))
+            World::Get().GetRunner().Trigger(ItemDroppedEvent{apThis->formID, pRef->formID, std::move(droppedItem)});
+    }
+
+    return pResult;
 }
 
 void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
@@ -1143,11 +1184,12 @@ void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLoca
     // TODO: pick up
 }
 
-void Actor::DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
+BSPointerHandle<TESObjectREFR> Actor::DropObject(TESBoundObject* apObject, ExtraDataList* apExtraData, int32_t aCount, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
 {
     spdlog::debug("Dropping object, form id: {:X}, count: {}, actor: {:X}", apObject->formID, aCount, formID);
     BSPointerHandle<TESObjectREFR> result{};
     TiltedPhoques::ThisCall(RealDropObject, this, &result, apObject, apExtraData, aCount, apLocation, apRotation);
+    return result;
 }
 
 TP_THIS_FUNCTION(TUpdateDetectionState, void, ActorKnowledge, void*);

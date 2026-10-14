@@ -7,6 +7,7 @@
 #include <Games/Overrides.h>
 
 #include <Events/InventoryChangeEvent.h>
+#include <Events/DroppedItemPickedUpEvent.h>
 #include <Events/BeastFormChangeEvent.h>
 #include <Events/AddExperienceEvent.h>
 #include <Events/SetWaypointEvent.h>
@@ -188,6 +189,10 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
         event.OwnershipEpoch = ownershipToken->OwnershipEpoch;
         World::Get().GetRunner().Trigger(std::move(event));
     }
+
+    // Dropped items are temporary references, the DroppedItemService checks whether this one is synced.
+    if (apObject->IsTemporary() && apObject->baseForm)
+        World::Get().GetRunner().Trigger(DroppedItemPickedUpEvent{apThis->formID, apObject->formID, apObject->baseForm->formID});
 
     ScopedInventoryOverride _;
 

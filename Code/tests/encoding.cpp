@@ -527,6 +527,217 @@ TEST_CASE("Packets", "[encoding.packets]")
         REQUIRE(pMessage->GetOpcode() == sendMessage.GetOpcode());
         REQUIRE(*CastUnique<NotifyActionEvents>(std::move(pMessage)) == sendMessage);
     }
+
+    GIVEN("Dropped item messages")
+    {
+        DroppedItemData data;
+        data.ServerId = 1234;
+        data.Item.BaseId = GameId(1, 0x12EB7);
+        data.Item.Count = 3;
+        data.Item.ExtraHealth = 1.5f;
+        data.CellId = GameId(0, 0x9732);
+        data.WorldSpaceId = GameId(0, 0x3C);
+        data.PositionX = -1024.5f;
+        data.PositionY = 2048.25f;
+        data.PositionZ = 12.f;
+        data.RotationZ = 1.57f;
+
+        Buffer buff(1000);
+
+        {
+            DropItemRequest sendMessage;
+            sendMessage.RefId = 0xFF001234;
+            sendMessage.Data = data;
+
+            Buffer::Writer writer(&buff);
+            sendMessage.Serialize(writer);
+            Buffer::Reader reader(&buff);
+
+            const ClientMessageFactory factory;
+            auto pMessage = factory.Extract(reader);
+            REQUIRE(pMessage);
+            REQUIRE(*CastUnique<DropItemRequest>(std::move(pMessage)) == sendMessage);
+        }
+
+        {
+            PickupDroppedItemRequest sendMessage;
+            sendMessage.ServerId = 77;
+
+            Buffer::Writer writer(&buff);
+            sendMessage.Serialize(writer);
+            Buffer::Reader reader(&buff);
+
+            const ClientMessageFactory factory;
+            auto pMessage = factory.Extract(reader);
+            REQUIRE(pMessage);
+            REQUIRE(*CastUnique<PickupDroppedItemRequest>(std::move(pMessage)) == sendMessage);
+        }
+
+        {
+            NotifyDroppedItems sendMessage;
+            sendMessage.Items.push_back(data);
+            data.ServerId = 99;
+            sendMessage.Items.push_back(data);
+
+            Buffer::Writer writer(&buff);
+            sendMessage.Serialize(writer);
+            Buffer::Reader reader(&buff);
+
+            const ServerMessageFactory factory;
+            auto pMessage = factory.Extract(reader);
+            REQUIRE(pMessage);
+            REQUIRE(*CastUnique<NotifyDroppedItems>(std::move(pMessage)) == sendMessage);
+        }
+
+        {
+            DropItemResponse sendMessage;
+            sendMessage.RefId = 0xFF001234;
+            sendMessage.ServerId = 1234;
+
+            Buffer::Writer writer(&buff);
+            sendMessage.Serialize(writer);
+            Buffer::Reader reader(&buff);
+
+            const ServerMessageFactory factory;
+            auto pMessage = factory.Extract(reader);
+            REQUIRE(pMessage);
+            REQUIRE(*CastUnique<DropItemResponse>(std::move(pMessage)) == sendMessage);
+        }
+
+        {
+            NotifyDroppedItemRemoved sendMessage;
+            sendMessage.ServerId = 1234;
+
+            Buffer::Writer writer(&buff);
+            sendMessage.Serialize(writer);
+            Buffer::Reader reader(&buff);
+
+            const ServerMessageFactory factory;
+            auto pMessage = factory.Extract(reader);
+            REQUIRE(pMessage);
+            REQUIRE(*CastUnique<NotifyDroppedItemRemoved>(std::move(pMessage)) == sendMessage);
+        }
+
+        {
+            PickupDroppedItemResponse sendMessage;
+            sendMessage.ServerId = 1234;
+            sendMessage.Accepted = true;
+
+            Buffer::Writer writer(&buff);
+            sendMessage.Serialize(writer);
+            Buffer::Reader reader(&buff);
+
+            const ServerMessageFactory factory;
+            auto pMessage = factory.Extract(reader);
+            REQUIRE(pMessage);
+            REQUIRE(*CastUnique<PickupDroppedItemResponse>(std::move(pMessage)) == sendMessage);
+        }
+    }
+
+    GIVEN("AssignObjectsResponse with container flags")
+    {
+        ObjectData object;
+        object.ServerId = 5;
+        object.Id = GameId(0, 0x1234);
+        object.IsContainer = true;
+        object.MergeInventory = true;
+        Inventory::Entry entry;
+        entry.BaseId = GameId(0, 0xF);
+        entry.Count = 100;
+        object.CurrentInventory.Entries.push_back(entry);
+
+        AssignObjectsResponse sendMessage;
+        sendMessage.Objects.push_back(object);
+
+        Buffer buff(1000);
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+        Buffer::Reader reader(&buff);
+
+        const ServerMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+        REQUIRE(pMessage);
+        REQUIRE(*CastUnique<AssignObjectsResponse>(std::move(pMessage)) == sendMessage);
+    }
+}
+
+TEST_CASE("Container inventories", "[encoding.inventory]")
+{
+    Inventory::Entry gold;
+    gold.BaseId = GameId(0, 0xF);
+    gold.Count = 100;
+
+    Inventory::Entry sword;
+    sword.BaseId = GameId(0, 0x12EB7);
+    sword.Count = 1;
+
+    SECTION("Clamped removal never records negative entries")
+    {
+        Inventory inventory;
+
+        Inventory::Entry removal = sword;
+        removal.Count = -1;
+        inventory.AddOrRemoveEntryClamped(removal);
+        REQUIRE(inventory.Entries.empty());
+
+        inventory.AddOrRemoveEntryClamped(gold);
+        Inventory::Entry goldRemoval = gold;
+        goldRemoval.Count = -150;
+        inventory.AddOrRemoveEntryClamped(goldRemoval);
+        REQUIRE(inventory.Entries.empty());
+    }
+
+    SECTION("Merging adds only what the other copy has more of")
+    {
+        // Server state: the host's gold plus a sword another player stored.
+        Inventory server;
+        server.Entries.push_back(gold);
+        server.Entries.push_back(sword);
+
+        // Entering player's local copy: less gold, the sword is missing, but a helmet they stored offline.
+        Inventory::Entry helmet;
+        helmet.BaseId = GameId(0, 0x12E4D);
+        helmet.Count = 2;
+
+        Inventory local;
+        Inventory::Entry localGold = gold;
+        localGold.Count = 30;
+        local.Entries.push_back(localGold);
+        local.Entries.push_back(helmet);
+
+        auto added = server.MergeMissing(local);
+
+        REQUIRE(added.size() == 1);
+        REQUIRE(added[0].BaseId == helmet.BaseId);
+        REQUIRE(added[0].Count == 2);
+
+        REQUIRE(server.GetEntryCountById(gold.BaseId) == 100);
+        REQUIRE(server.GetEntryCountById(sword.BaseId) == 1);
+        REQUIRE(server.GetEntryCountById(helmet.BaseId) == 2);
+
+        // More of an existing item only adds the difference.
+        Inventory richer;
+        Inventory::Entry moreGold = gold;
+        moreGold.Count = 250;
+        richer.Entries.push_back(moreGold);
+
+        added = server.MergeMissing(richer);
+        REQUIRE(added.size() == 1);
+        REQUIRE(added[0].Count == 150);
+        REQUIRE(server.GetEntryCountById(gold.BaseId) == 250);
+
+        // Split stacks of the same item count as one.
+        Inventory split;
+        Inventory::Entry stack = gold;
+        stack.Count = 200;
+        split.Entries.push_back(stack);
+        split.Entries.push_back(stack);
+
+        added = server.MergeMissing(split);
+        REQUIRE(added.size() == 1);
+        REQUIRE(added[0].Count == 150);
+        REQUIRE(server.GetEntryCountById(gold.BaseId) == 400);
+    }
 }
 
 TEST_CASE("StringCache", "[encoding.string_cache]")
