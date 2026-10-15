@@ -110,6 +110,8 @@ xmake project -k vsxmake                 # regenerate the VS solution; rerun aft
   vtable slots, threading) and no IDA or Ghidra MCP tools are available, stop before implementing.**
   Say what needs verifying in the binary, warn that a source-only version may be wrong or suboptimal (guessed
   offsets, wrong hook point, missed side effects), and ask whether to go ahead.
+- For changes that depend on engine behavior, the PR body must list what was verified (IDA/Ghidra evidence)
+  and what remains assumed; anything not checked through an MCP counts as assumed.
 - With an MCP, check the Skyrim SE 1.6.1170 database first. Use 1.7.104 only when something differs.
 - Map Address Library IDs to IDB addresses and back with `python Tools/Scripts/addrlib.py <decimal id | IDB address>...`
   (1.6.1170 by default, `-v 1.7.104` for another version; usage at the top of the script).
