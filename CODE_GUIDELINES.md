@@ -2,7 +2,7 @@
 
 ## Language
 
-We are using C++20, any C++20 feature supported by vs2019 is allowed.
+We are using C++20, any C++20 feature supported by vs2022 is allowed.
 
 Please try to use templates responsibly, we don't want compilation times to explode and to deal with bloated binaries.
 

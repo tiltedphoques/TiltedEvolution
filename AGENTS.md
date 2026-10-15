@@ -84,7 +84,7 @@ xmake build TPTests && xmake run TPTests # main unit tests (Catch2)
 xmake project -k vsxmake                 # regenerate the VS solution; rerun after adding/removing files
 ```
 
-- The solution is `vsxmake2022/<repo dir>.sln`. Most contributors build and debug from it.
+- The solution is `vsxmake2022/<repo dir>.sln`. Most contributors build and debug from it; agents don't need it.
 - UI: `cd Code/skyrim_ui && pnpm install && pnpm deploy:production`. `xmake install -o distrib` gathers
   binaries.
 - Main targets:
