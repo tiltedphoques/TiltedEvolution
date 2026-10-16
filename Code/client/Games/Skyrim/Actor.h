@@ -260,6 +260,12 @@ struct Actor : TESObjectREFR
         IS_ESSENTIAL = 1 << 18,
     };
 
+    // flags1
+    enum ActorFlags1
+    {
+        HAS_SCENE_DATA = 1 << 3,
+    };
+
     bool IsMount() const noexcept { return flags2 & ActorFlags::IS_A_MOUNT; }
 
     bool IsEssential() const noexcept { return flags2 & ActorFlags::IS_ESSENTIAL; }

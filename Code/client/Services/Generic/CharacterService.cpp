@@ -1132,6 +1132,8 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
     DialogueRequest request{};
     request.ServerId = serverIdRes.value();
     request.SoundFilename = acEvent.VoiceFile;
+    if (acEvent.SceneID)
+        m_world.GetModSystem().GetServerModId(acEvent.SceneID, request.SceneId);
 
     m_transport.Send(request);
 }
@@ -1142,6 +1144,15 @@ void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcep
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
     if (!pActor)
         return;
+
+    // Every client plays scenes itself, so if the line's scene plays here too, the local copy already voices it. Playing
+    // the sender's line would cut that off and end the scene phase early. Menu and other-scene lines still play.
+    BGSScene* pScene = pActor->GetCurrentScene();
+    if (acMessage.SceneId && pScene && pScene->isPlaying && pScene->formID == m_world.GetModSystem().GetGameId(acMessage.SceneId))
+    {
+        spdlog::info("Skipping remote dialogue for actor {:X}, it plays the same scene {:X} here, file: {}", pActor->formID, pScene->formID, acMessage.SoundFilename);
+        return;
+    }
 
     pActor->StopCurrentDialogue(true);
     pActor->SpeakSound(acMessage.SoundFilename.c_str());
@@ -1169,6 +1180,8 @@ void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
     request.ServerId = serverIdRes.value();
     request.Text = acEvent.Text;
     request.TopicFormId = acEvent.TopicFormID;
+    if (acEvent.SceneID)
+        m_world.GetModSystem().GetServerModId(acEvent.SceneID, request.SceneId);
 
     m_transport.Send(request);
 }
@@ -1177,6 +1190,12 @@ void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcep
 {
     Actor* pActor = Utils::GetByServerId<Actor>(acMessage.ServerId);
     if (!pActor)
+        return;
+
+    // The local copy of the scene shows its own subtitle, see OnNotifyDialogue. Only the actor's own voice line ending
+    // hides a subtitle, so a remote one arriving after the local line has finished would stay on screen.
+    BGSScene* pScene = pActor->GetCurrentScene();
+    if (acMessage.SceneId && pScene && pScene->isPlaying && pScene->formID == m_world.GetModSystem().GetGameId(acMessage.SceneId))
         return;
 
     // This is only for fallout 4

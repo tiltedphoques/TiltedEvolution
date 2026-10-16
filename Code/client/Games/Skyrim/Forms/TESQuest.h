@@ -4,12 +4,64 @@
 #include <Misc/BSString.h>
 #include <Components/TESFullName.h>
 #include <Forms/BGSStoryManagerTree.h>
+#include <Components/TESCondition.h>
+
+struct TESQuest;
+
+struct BGSSceneAction
+{
+    enum class Type : uint32_t
+    {
+        kDialogue = 0,
+        kPackage = 1,
+        kTimer = 2
+    };
+
+    virtual ~BGSSceneAction();
+    virtual void sub_1(); // LoadSceneAction
+    virtual void sub_2();
+    virtual void sub_3();
+    virtual void sub_4();
+    virtual void sub_5();
+    virtual void sub_6();
+    virtual Type GetType() const;
+
+    [[nodiscard]] uint32_t GetIndex() const noexcept { return index & 0x3FFFFFFF; }
+    // What the IsSceneActionComplete condition checks (BGSScene::IsActionComplete, 0x1403A18F0 in 1.6.1170)
+    [[nodiscard]] bool IsComplete() const noexcept { return status & 2; }
+
+    uint32_t actorId; // 0x08 ALID, quest alias ID
+    uint16_t startPhase;
+    uint16_t endPhase;
+    uint32_t flags;
+    uint8_t status; // 0x14, bit 1 = complete
+    uint8_t unk15;
+    uint16_t unk16;
+    uint32_t index; // 0x18 INAM in the low 30 bits, the index scene action events carry
+};
+
+static_assert(offsetof(BGSSceneAction, actorId) == 0x8);
+static_assert(offsetof(BGSSceneAction, startPhase) == 0xC);
+static_assert(offsetof(BGSSceneAction, flags) == 0x10);
+static_assert(offsetof(BGSSceneAction, status) == 0x14);
+static_assert(offsetof(BGSSceneAction, index) == 0x18);
 
 struct BGSScene : TESForm
 {
     GameArray<void*> phases;
     GameArray<uint32_t> actorIds;
+    GameArray<uint32_t> actorFlags;
+    GameArray<uint32_t> actorProgressionFlags;
+    GameArray<BGSSceneAction*> actions;
+    TESQuest* owningQuest; // 0x98
+    uint32_t flags;
+    uint32_t padA4;
+    TESCondition conditions;
+    bool isPlaying; // 0xB0
 };
+
+static_assert(offsetof(BGSScene, owningQuest) == 0x98);
+static_assert(offsetof(BGSScene, isPlaying) == 0xB0);
 
 struct TESQuest : BGSStoryManagerTreeForm
 {
