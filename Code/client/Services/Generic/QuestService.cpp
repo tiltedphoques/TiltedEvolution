@@ -505,6 +505,15 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
         }
     }
 
+    // The member reached the held stages before stopping the quest. Once it's stopped here they're dropped, run them first.
+    if (aUpdate.Status == NotifyQuestUpdate::Stopped && GetQuestWithHeldStages(formId))
+    {
+        Vector<uint16_t>& stages = m_deferredStages[formId];
+        spdlog::info("Applying {} held member quest stages for {:X} before it stops", stages.size(), formId);
+        ApplyHeldStages(pQuest, stages, stages.size());
+        m_deferredStages.erase(formId);
+    }
+
     if (pQuest->type == TESQuest::Type::None || pQuest->type == TESQuest::Type::Miscellaneous)
     {
         spdlog::info(__FUNCTION__ ": receiving type none/misc quest update gameId {:X} questStage {} questStatus {} questType {} formId {:X} name {}",
