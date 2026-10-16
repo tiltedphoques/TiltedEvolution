@@ -29,6 +29,7 @@ struct BGSSceneAction
     [[nodiscard]] uint32_t GetIndex() const noexcept { return index & 0x3FFFFFFF; }
     // What the IsSceneActionComplete condition checks (BGSScene::IsActionComplete, 0x1403A18F0 in 1.6.1170)
     [[nodiscard]] bool IsComplete() const noexcept { return status & 2; }
+    [[nodiscard]] bool IsInPhase(uint32_t aPhaseIndex) const noexcept { return aPhaseIndex >= startPhase && aPhaseIndex <= endPhase; }
 
     uint32_t actorId; // 0x08 ALID, quest alias ID
     uint16_t startPhase;
@@ -192,7 +193,8 @@ struct TESQuest : BGSStoryManagerTreeForm
     bool SetStage(uint16_t stage);
     void ScriptSetStage(uint16_t stage);
     void SetStopped();
-    bool IsAnyCutscenePlaying() noexcept;
+    bool IsStageReached(uint16_t aStage) noexcept;
+    bool IsAnyCutscenePlaying(uint32_t aExcludedSceneFormId = 0) noexcept;
 };
 
 static_assert(sizeof(TESQuest) == 0x268);

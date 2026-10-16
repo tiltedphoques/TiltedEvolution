@@ -68,13 +68,13 @@ void QuestService::OnConnected(const ConnectedEvent&) noexcept
 
 void QuestService::OnUpdate(const UpdateEvent&) noexcept
 {
-    if (m_deferredStages.empty())
+    if (m_heldStages.empty())
         return;
 
     // Checked every frame rather than on scene events: an action's done event fires before its fragment runs, and the
     // action only counts as complete afterwards, with no event of its own
     Vector<uint32_t> questFormIds;
-    for (const auto& [questFormId, _] : m_deferredStages)
+    for (const auto& [questFormId, _] : m_heldStages)
         questFormIds.push_back(questFormId);
 
     for (uint32_t questFormId : questFormIds)
@@ -83,12 +83,12 @@ void QuestService::OnUpdate(const UpdateEvent&) noexcept
 
 void QuestService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
-    m_deferredStages.clear();
+    m_heldStages.clear();
 }
 
 void QuestService::OnPartyLeft(const PartyLeftEvent&) noexcept
 {
-    m_deferredStages.clear();
+    m_heldStages.clear();
 }
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
@@ -206,11 +206,14 @@ BSTEventResult QuestService::OnEvent(const TESSceneEvent* apEvent, const EventDi
 {
     spdlog::debug("Scene {:X} {}", apEvent->sceneFormId, apEvent->type == 0 ? "begin" : "end");
 
+    if (apEvent->type == 0)
+        return BSTEventResult::kOk;
+
     BGSScene* pScene = Cast<BGSScene>(TESForm::GetById(apEvent->sceneFormId));
-    if (apEvent->type != 0 && pScene && pScene->owningQuest)
+    if (pScene && pScene->owningQuest)
     {
         m_world.GetRunner().Queue([&, questFormId = pScene->owningQuest->formID, sceneFormId = apEvent->sceneFormId]()
-                                  { ApplyDeferredStages(questFormId, sceneFormId); });
+                                  { ApplyHeldStagesAfterScene(questFormId, sceneFormId); });
     }
 
     return BSTEventResult::kOk;
@@ -235,7 +238,7 @@ BSTEventResult QuestService::OnEvent(const TESScenePhaseEvent* apEvent, const Ev
     String actions;
     for (BGSSceneAction* pAction : pScene->actions)
     {
-        if (!pAction || apEvent->phaseIndex < pAction->startPhase || apEvent->phaseIndex > pAction->endPhase)
+        if (!pAction || !pAction->IsInPhase(apEvent->phaseIndex))
             continue;
 
         constexpr std::array cTypeNames{"dialogue", "package", "timer"};
@@ -305,7 +308,7 @@ static bool IsPhaseWaitingOnConditions(BGSScene* apScene, uint32_t aPhaseIndex) 
 {
     for (BGSSceneAction* pAction : apScene->actions)
     {
-        if (!pAction || aPhaseIndex < pAction->startPhase || aPhaseIndex > pAction->endPhase)
+        if (!pAction || !pAction->IsInPhase(aPhaseIndex))
             continue;
 
         if (pAction->GetType() != BGSSceneAction::Type::kDialogue || pAction->IsComplete() || pAction->Loops())
@@ -341,7 +344,7 @@ static bool IsWaitedOnByOtherScene(TESQuest* apQuest, uint16_t aStage, uint32_t 
 
 void QuestService::HoldStage(TESQuest* apQuest, uint16_t aStage) noexcept
 {
-    Vector<uint16_t>& stages = m_deferredStages[apQuest->formID];
+    Vector<uint16_t>& stages = m_heldStages[apQuest->formID];
     auto it = std::lower_bound(stages.begin(), stages.end(), aStage);
     if (it == stages.end() || *it != aStage)
         stages.insert(it, aStage);
@@ -360,50 +363,56 @@ void QuestService::ApplyHeldStages(TESQuest* apQuest, Vector<uint16_t>& aStages,
     aStages.erase(aStages.begin(), aStages.begin() + aCount);
 }
 
-TESQuest* QuestService::GetQuestWithHeldStages(uint32_t aQuestFormId) noexcept
+Vector<uint16_t>* QuestService::GetHeldStages(uint32_t aQuestFormId, TESQuest*& apQuest) noexcept
 {
-    auto it = m_deferredStages.find(aQuestFormId);
-    if (it == m_deferredStages.end())
+    auto it = m_heldStages.find(aQuestFormId);
+    if (it == m_heldStages.end())
         return nullptr;
 
+    // Left empty by the last release
+    Vector<uint16_t>& stages = it.value();
+    if (stages.empty())
+    {
+        m_heldStages.erase(it);
+        return nullptr;
+    }
+
     // Setting a stage on a stopped quest starts it again, and scenes also end because their quest stopped
-    TESQuest* pQuest = Cast<TESQuest>(TESForm::GetById(aQuestFormId));
-    if (!pQuest || pQuest->IsStopped())
+    apQuest = Cast<TESQuest>(TESForm::GetById(aQuestFormId));
+    if (!apQuest || apQuest->IsStopped())
     {
         spdlog::info("Dropping held member quest stages for {:X}, quest stopped or missing", aQuestFormId);
-        m_deferredStages.erase(it);
+        m_heldStages.erase(it);
         return nullptr;
     }
 
     // Reached by the leader's own scripts in the meantime
-    Vector<uint16_t>& stages = m_deferredStages[aQuestFormId];
     std::erase_if(
         stages,
-        [pQuest](uint16_t aStage)
+        [apQuest](uint16_t aStage)
         {
-            if (pQuest->currentStage != aStage && !pQuest->IsStageDone(aStage))
+            if (!apQuest->IsStageReached(aStage))
                 return false;
 
-            spdlog::info("Dropping held member quest stage {} for {:X}, already reached here", aStage, pQuest->formID);
+            spdlog::info("Dropping held member quest stage {} for {:X}, already reached here", aStage, apQuest->formID);
             return true;
         });
 
     if (stages.empty())
     {
-        m_deferredStages.erase(it);
+        m_heldStages.erase(it);
         return nullptr;
     }
 
-    return pQuest;
+    return &stages;
 }
 
 void QuestService::ReleaseStagesForWaitingPhases(uint32_t aQuestFormId) noexcept
 {
-    TESQuest* pQuest = GetQuestWithHeldStages(aQuestFormId);
-    if (!pQuest)
+    TESQuest* pQuest = nullptr;
+    Vector<uint16_t>* pStages = GetHeldStages(aQuestFormId, pQuest);
+    if (!pStages)
         return;
-
-    Vector<uint16_t>& stages = m_deferredStages[aQuestFormId];
 
     // A phase whose own actions are done and whose completion conditions want a held stage only moves on with it.
     // Release up to the first stage that does it, the leader's scene then carries on at its own pace.
@@ -413,52 +422,42 @@ void QuestService::ReleaseStagesForWaitingPhases(uint32_t aQuestFormId) noexcept
             continue;
 
         BGSScenePhase* pPhase = pScene->phases[pScene->currentPhaseIndex];
-        if (!pPhase || !IsPhaseWaitingOnConditions(pScene, pScene->currentPhaseIndex))
+        if (!pPhase)
             continue;
 
-        for (size_t i = 0; i < stages.size(); ++i)
-        {
-            if (!IsPassedByStage(pPhase->completionConditions, pQuest, stages[i]))
-                continue;
+        // Conditions first, they rarely mention a held stage and are cheaper than walking the phase's actions
+        const auto cStageIt = std::find_if(
+            pStages->begin(), pStages->end(), [&](uint16_t aStage) { return IsPassedByStage(pPhase->completionConditions, pQuest, aStage); });
+        if (cStageIt == pStages->end() || !IsPhaseWaitingOnConditions(pScene, pScene->currentPhaseIndex))
+            continue;
 
-            spdlog::info(
-                "Releasing held member quest stages for {:X} up to {}, scene {:X} phase {} waits on it", aQuestFormId, stages[i], pScene->formID, pScene->currentPhaseIndex);
-            ApplyHeldStages(pQuest, stages, i + 1);
-            break;
-        }
+        spdlog::info(
+            "Releasing held member quest stages for {:X} up to {}, scene {:X} phase {} waits on it", aQuestFormId, *cStageIt, pScene->formID, pScene->currentPhaseIndex);
+        ApplyHeldStages(pQuest, *pStages, cStageIt - pStages->begin() + 1);
 
-        if (stages.empty())
+        if (pStages->empty())
             break;
     }
-
-    if (stages.empty())
-        m_deferredStages.erase(aQuestFormId);
 }
 
-void QuestService::ApplyDeferredStages(uint32_t aQuestFormId, uint32_t aEndedSceneFormId) noexcept
+void QuestService::ApplyHeldStagesAfterScene(uint32_t aQuestFormId, uint32_t aEndedSceneFormId) noexcept
 {
-    TESQuest* pQuest = GetQuestWithHeldStages(aQuestFormId);
-    if (!pQuest)
+    TESQuest* pQuest = nullptr;
+    Vector<uint16_t>* pStages = GetHeldStages(aQuestFormId, pQuest);
+    if (!pStages)
         return;
 
     // The ended scene can still count as playing for a bit. If another scene of this quest took over, wait for it to end.
-    for (BGSScene* pScene : pQuest->scenes)
-    {
-        if (pScene && pScene->isPlaying && pScene->formID != aEndedSceneFormId)
-            return;
-    }
+    if (pQuest->IsAnyCutscenePlaying(aEndedSceneFormId))
+        return;
 
     // Stop at a stage another scene waits on. That scene hasn't started here yet (an earlier held stage usually starts
     // it), and applying the stage now would skip the phases before it. The scene releases it once it gets there.
-    Vector<uint16_t>& stages = m_deferredStages[aQuestFormId];
-    while (!stages.empty() && !IsWaitedOnByOtherScene(pQuest, stages.front(), aEndedSceneFormId))
+    while (!pStages->empty() && !IsWaitedOnByOtherScene(pQuest, pStages->front(), aEndedSceneFormId))
     {
-        spdlog::info("Applying held member quest stage {} for {:X} after scene {:X} ended", stages.front(), aQuestFormId, aEndedSceneFormId);
-        ApplyHeldStages(pQuest, stages, 1);
+        spdlog::info("Applying held member quest stage {} for {:X} after scene {:X} ended", pStages->front(), aQuestFormId, aEndedSceneFormId);
+        ApplyHeldStages(pQuest, *pStages, 1);
     }
-
-    if (stages.empty())
-        m_deferredStages.erase(aQuestFormId);
 }
 
 void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
@@ -472,7 +471,7 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
         return;
     }
 
-    if (aUpdate.Status == NotifyQuestUpdate::StageUpdate && (pQuest->currentStage == aUpdate.Stage || pQuest->IsStageDone(aUpdate.Stage)))
+    if (aUpdate.Status == NotifyQuestUpdate::StageUpdate && pQuest->IsStageReached(aUpdate.Stage))
     {
         spdlog::info("Remote quest {:X} already reached stage {}, current stage: {}", formId, aUpdate.Stage, pQuest->currentStage);
         return;
@@ -482,36 +481,25 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
     // mid-scene can push the leader's scene past its own scripts (Enderal's MQ01 vision ended before it began and
     // never cleaned up), so hold it until a scene phase waits on it or the quest's scenes are over. The leader's
     // scripts usually get there first.
-    if (aUpdate.Status == NotifyQuestUpdate::StageUpdate && m_world.GetPartyService().IsLeader())
+    const bool cIsLeaderStage = aUpdate.Status == NotifyQuestUpdate::StageUpdate && m_world.GetPartyService().IsLeader();
+    if (cIsLeaderStage && pQuest->IsAnyCutscenePlaying())
     {
-        if (pQuest->IsAnyCutscenePlaying())
-        {
-            HoldStage(pQuest, aUpdate.Stage);
-            return;
-        }
-
-        // No scene to wait for anymore, catch up on the stages before this one first
-        if (GetQuestWithHeldStages(formId))
-        {
-            Vector<uint16_t>& stages = m_deferredStages[formId];
-            const size_t cCount = std::lower_bound(stages.begin(), stages.end(), aUpdate.Stage) - stages.begin();
-            if (cCount > 0)
-            {
-                spdlog::info("Applying {} held member quest stages for {:X} before stage {}", cCount, formId, aUpdate.Stage);
-                ApplyHeldStages(pQuest, stages, cCount);
-            }
-            if (stages.empty())
-                m_deferredStages.erase(formId);
-        }
+        HoldStage(pQuest, aUpdate.Stage);
+        return;
     }
 
-    // The member reached the held stages before stopping the quest. Once it's stopped here they're dropped, run them first.
-    if (aUpdate.Status == NotifyQuestUpdate::Stopped && GetQuestWithHeldStages(formId))
+    // Catch up on held stages first. Before a new stage, the ones before it, as no scene waits on them anymore. Before
+    // a stop, all of them: the member reached them before stopping the quest, and once it's stopped here they're dropped.
+    const bool cIsStopping = aUpdate.Status == NotifyQuestUpdate::Stopped;
+    TESQuest* pHeldQuest = nullptr;
+    if (Vector<uint16_t>* pStages = cIsLeaderStage || cIsStopping ? GetHeldStages(formId, pHeldQuest) : nullptr)
     {
-        Vector<uint16_t>& stages = m_deferredStages[formId];
-        spdlog::info("Applying {} held member quest stages for {:X} before it stops", stages.size(), formId);
-        ApplyHeldStages(pQuest, stages, stages.size());
-        m_deferredStages.erase(formId);
+        const size_t cCount = cIsStopping ? pStages->size() : std::lower_bound(pStages->begin(), pStages->end(), aUpdate.Stage) - pStages->begin();
+        if (cCount > 0)
+        {
+            spdlog::info("Applying {} held member quest stages for {:X} before remote update, status: {}, stage: {}", cCount, formId, aUpdate.Status, aUpdate.Stage);
+            ApplyHeldStages(pQuest, *pStages, cCount);
+        }
     }
 
     if (pQuest->type == TESQuest::Type::None || pQuest->type == TESQuest::Type::Miscellaneous)

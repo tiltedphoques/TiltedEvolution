@@ -92,7 +92,7 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
 
     const auto& partyComponent = acMessage.pPlayer->GetParty();
     PartyService::Party* pParty = m_world.GetPartyService().GetPlayerParty(pPlayer);
-    if (!partyComponent.JoinedPartyId.has_value() || !pParty)
+    if (!pParty)
         return;
 
     // Party members' scripts often reach the same stage on their own, only relay it once

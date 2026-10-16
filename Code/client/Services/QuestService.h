@@ -14,7 +14,8 @@ struct TESQuest;
 /**
  * @brief Handles quest sync
  *
- * This service is currently not in use.
+ * Sends local quest starts, stops and stages to the party and applies theirs. The leader holds member stages while
+ * a scene of their quest plays.
  */
 class QuestService final : public BSTEventSink<TESQuestStartStopEvent>,
                            BSTEventSink<TESQuestStageEvent>,
@@ -32,8 +33,6 @@ public:
     static bool StopQuest(uint32_t aformId);
 
 private:
-    friend struct QuestEventHandler;
-
     void OnConnected(const ConnectedEvent&) noexcept;
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnDisconnected(const DisconnectedEvent&) noexcept;
@@ -49,15 +48,15 @@ private:
     void OnQuestUpdate(const NotifyQuestUpdate&) noexcept;
     void HoldStage(TESQuest* apQuest, uint16_t aStage) noexcept;
     void ApplyHeldStages(TESQuest* apQuest, Vector<uint16_t>& aStages, size_t aCount) noexcept;
-    // The quest, if it still has held stages to apply. Drops the ones that can't be anymore.
-    TESQuest* GetQuestWithHeldStages(uint32_t aQuestFormId) noexcept;
+    // The quest's held stages and the quest, if it still has any to apply. Drops the ones that can't be anymore.
+    Vector<uint16_t>* GetHeldStages(uint32_t aQuestFormId, TESQuest*& apQuest) noexcept;
     void ReleaseStagesForWaitingPhases(uint32_t aQuestFormId) noexcept;
-    void ApplyDeferredStages(uint32_t aQuestFormId, uint32_t aEndedSceneFormId) noexcept;
+    void ApplyHeldStagesAfterScene(uint32_t aQuestFormId, uint32_t aEndedSceneFormId) noexcept;
     void NotifyOverlayOfQuestUpdate(uint32_t aFormId) noexcept;
 
     World& m_world;
     // Member stages the leader holds while a scene of their quest plays, sorted, keyed by quest form ID
-    Map<uint32_t, Vector<uint16_t>> m_deferredStages{};
+    Map<uint32_t, Vector<uint16_t>> m_heldStages{};
 
     entt::scoped_connection m_joinedConnection;
     entt::scoped_connection m_updateConnection;
