@@ -5,6 +5,9 @@
 #include <Games/Events.h>
 
 struct NotifyQuestUpdate;
+struct DisconnectedEvent;
+struct PartyLeftEvent;
+struct UpdateEvent;
 
 struct TESQuest;
 
@@ -32,6 +35,9 @@ private:
     friend struct QuestEventHandler;
 
     void OnConnected(const ConnectedEvent&) noexcept;
+    void OnUpdate(const UpdateEvent&) noexcept;
+    void OnDisconnected(const DisconnectedEvent&) noexcept;
+    void OnPartyLeft(const PartyLeftEvent&) noexcept;
 
     BSTEventResult OnEvent(const TESQuestStartStopEvent*, const EventDispatcher<TESQuestStartStopEvent>*) override;
     BSTEventResult OnEvent(const TESQuestStageEvent*, const EventDispatcher<TESQuestStageEvent>*) override;
@@ -41,14 +47,21 @@ private:
     BSTEventResult OnEvent(const TESTopicInfoEvent*, const EventDispatcher<TESTopicInfoEvent>*) override;
 
     void OnQuestUpdate(const NotifyQuestUpdate&) noexcept;
+    void HoldStage(TESQuest* apQuest, uint16_t aStage) noexcept;
+    void ApplyHeldStages(TESQuest* apQuest, Vector<uint16_t>& aStages, size_t aCount) noexcept;
+    // The quest, if it still has held stages to apply. Drops the ones that can't be anymore.
+    TESQuest* GetQuestWithHeldStages(uint32_t aQuestFormId) noexcept;
+    void ReleaseStagesForWaitingPhases(uint32_t aQuestFormId) noexcept;
     void ApplyDeferredStages(uint32_t aQuestFormId, uint32_t aEndedSceneFormId) noexcept;
     void NotifyOverlayOfQuestUpdate(uint32_t aFormId) noexcept;
 
     World& m_world;
-    // Member stages the leader holds while a scene of their quest plays, keyed by quest form ID
+    // Member stages the leader holds while a scene of their quest plays, sorted, keyed by quest form ID
     Map<uint32_t, Vector<uint16_t>> m_deferredStages{};
 
     entt::scoped_connection m_joinedConnection;
+    entt::scoped_connection m_updateConnection;
+    entt::scoped_connection m_disconnectedConnection;
     entt::scoped_connection m_leftConnection;
     entt::scoped_connection m_questUpdateConnection;
 };

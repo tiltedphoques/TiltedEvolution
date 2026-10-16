@@ -22,7 +22,7 @@ struct BGSSceneAction
     virtual void sub_2();
     virtual void sub_3();
     virtual void sub_4();
-    virtual void sub_5();
+    virtual bool Loops() const;
     virtual void sub_6();
     virtual Type GetType() const;
 
@@ -46,9 +46,19 @@ static_assert(offsetof(BGSSceneAction, flags) == 0x10);
 static_assert(offsetof(BGSSceneAction, status) == 0x14);
 static_assert(offsetof(BGSSceneAction, index) == 0x18);
 
+struct BGSScenePhase
+{
+    TESCondition startConditions;
+    // Once the phase has any, it ends as soon as they pass, even with actions still running
+    TESCondition completionConditions;
+    bool isRunning;
+};
+
+static_assert(offsetof(BGSScenePhase, completionConditions) == 0x8);
+
 struct BGSScene : TESForm
 {
-    GameArray<void*> phases;
+    GameArray<BGSScenePhase*> phases;
     GameArray<uint32_t> actorIds;
     GameArray<uint32_t> actorFlags;
     GameArray<uint32_t> actorProgressionFlags;
@@ -58,10 +68,13 @@ struct BGSScene : TESForm
     uint32_t padA4;
     TESCondition conditions;
     bool isPlaying; // 0xB0
+    uint8_t padB1[0xBC - 0xB1];
+    uint32_t currentPhaseIndex; // 0xBC, -1 when not playing
 };
 
 static_assert(offsetof(BGSScene, owningQuest) == 0x98);
 static_assert(offsetof(BGSScene, isPlaying) == 0xB0);
+static_assert(offsetof(BGSScene, currentPhaseIndex) == 0xBC);
 
 struct TESQuest : BGSStoryManagerTreeForm
 {

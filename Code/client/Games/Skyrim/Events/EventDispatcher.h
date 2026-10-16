@@ -190,7 +190,6 @@ struct TESResolveNPCTemplatesEvent
 {
 };
 
-// Scene event layouts as read by the SkyrimVM sinks (BSTEventSink<TESScene*Event> vtables 217121/217123/217125)
 struct TESSceneEvent
 {
     void* callback;
@@ -238,7 +237,6 @@ struct TESPlayerBowShotEvent
 {
 };
 
-// Layout as read by the SkyrimVM sink (BSTEventSink<TESTopicInfoEvent> vtable 217135)
 struct TESTopicInfoEvent
 {
     void* pCallback;
