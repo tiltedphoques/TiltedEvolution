@@ -5,14 +5,20 @@
 #include <Games/Events.h>
 
 struct NotifyQuestUpdate;
-struct NotifyQuestSceneUpdate;
 
 struct TESQuest;
 
 /**
  * @brief Handles quest sync
+ *
+ * This service is currently not in use.
  */
-class QuestService final : public BSTEventSink<TESQuestStartStopEvent>, BSTEventSink<TESQuestStageEvent>, BSTEventSink<TESSceneEvent>, BSTEventSink<TESSceneActionEvent>, BSTEventSink<TESScenePhaseEvent>
+class QuestService final : public BSTEventSink<TESQuestStartStopEvent>,
+                           BSTEventSink<TESQuestStageEvent>,
+                           BSTEventSink<TESSceneEvent>,
+                           BSTEventSink<TESSceneActionEvent>,
+                           BSTEventSink<TESScenePhaseEvent>,
+                           BSTEventSink<TESTopicInfoEvent>
 {
 public:
     QuestService(World&, entt::dispatcher&);
@@ -21,33 +27,28 @@ public:
     static bool IsNonSyncableQuest(TESQuest* apQuest);
     static void DebugDumpQuests();
     static bool StopQuest(uint32_t aformId);
-    const uint32_t PlayerId() const noexcept { return m_playerId; }
 
 private:
     friend struct QuestEventHandler;
 
     void OnConnected(const ConnectedEvent&) noexcept;
-    void Disconnected(const DisconnectedEvent&) noexcept { m_playerId = 0; }
-
 
     BSTEventResult OnEvent(const TESQuestStartStopEvent*, const EventDispatcher<TESQuestStartStopEvent>*) override;
     BSTEventResult OnEvent(const TESQuestStageEvent*, const EventDispatcher<TESQuestStageEvent>*) override;
     BSTEventResult OnEvent(const TESSceneEvent*, const EventDispatcher<TESSceneEvent>*) override;
-#if 1
     BSTEventResult OnEvent(const TESSceneActionEvent*, const EventDispatcher<TESSceneActionEvent>*) override;
     BSTEventResult OnEvent(const TESScenePhaseEvent*, const EventDispatcher<TESScenePhaseEvent>*) override;
-#endif
-    void OnQuestUpdate(const NotifyQuestUpdate&) noexcept;
-    void NotifyOverlayOfQuestUpdate(uint32_t aFormId) noexcept;
-    void OnQuestSceneUpdate(const NotifyQuestSceneUpdate&) noexcept;
+    BSTEventResult OnEvent(const TESTopicInfoEvent*, const EventDispatcher<TESTopicInfoEvent>*) override;
 
-    bool CanAdvanceQuestForParty() const noexcept;
+    void OnQuestUpdate(const NotifyQuestUpdate&) noexcept;
+    void ApplyDeferredStages(uint32_t aQuestFormId, uint32_t aEndedSceneFormId) noexcept;
+    void NotifyOverlayOfQuestUpdate(uint32_t aFormId) noexcept;
 
     World& m_world;
-    uint32_t m_playerId;
+    // Member stages the leader holds while a scene of their quest plays, keyed by quest form ID
+    Map<uint32_t, Vector<uint16_t>> m_deferredStages{};
 
     entt::scoped_connection m_joinedConnection;
     entt::scoped_connection m_leftConnection;
     entt::scoped_connection m_questUpdateConnection;
-    entt::scoped_connection m_questSceneUpdateConnection;
 };

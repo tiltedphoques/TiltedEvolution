@@ -30,8 +30,6 @@ struct BGSSceneAction
     // What the IsSceneActionComplete condition checks (BGSScene::IsActionComplete, 0x1403A18F0 in 1.6.1170)
     [[nodiscard]] bool IsComplete() const noexcept { return status & 2; }
 
-    void Start() { status |= 1u; }
-
     uint32_t actorId; // 0x08 ALID, quest alias ID
     uint16_t startPhase;
     uint16_t endPhase;
@@ -60,9 +58,6 @@ struct BGSScene : TESForm
     uint32_t padA4;
     TESCondition conditions;
     bool isPlaying; // 0xB0
-
-    void ScriptForceStart();
-    void ScriptStop();
 };
 
 static_assert(offsetof(BGSScene, owningQuest) == 0x98);
@@ -133,10 +128,6 @@ struct TESQuest : BGSStoryManagerTreeForm
         uint16_t stageIndex;
         uint8_t flags;
 
-        operator bool() const
-        {
-            return *reinterpret_cast<const std::uintptr_t*>(this) != 0;
-        }
         inline bool IsDone() { return flags & 1; }
     };
 
@@ -151,8 +142,9 @@ struct TESQuest : BGSStoryManagerTreeForm
     Type type;            // 0x00DF
     int32_t scopedStatus; // 0x00E0 default init: -1, if not -1 outside of story manager scope
     uint32_t padE4;
-    GameValueList<Stage>* pExecutedStages; // 0x00E8
-    GameValueList<Stage*>* pWaitingStages; // 0x00F0
+    // Sorted by stageIndex, head node is inline. CommonLibSSE's executedStages/waitingStages (0xE8/0xF0) are
+    // this head's item/next fields, not two separate lists.
+    GameValueList<Stage*> stages;
     GameList<Objective> objectives; // 0x00F8
     char pad108[0x100];             // 0x0108
     GameArray<BGSScene*> scenes;    // 0x0208
@@ -184,18 +176,16 @@ struct TESQuest : BGSStoryManagerTreeForm
 
     bool EnsureQuestStarted(bool& succeded, bool force);
 
-    bool SetStage(uint16_t stageIndex);
-    bool ScriptSetStage(uint16_t stage, bool bForce = false);
-    void ScriptReset();
-    void ScriptResetAndUpdate();
+    bool SetStage(uint16_t stage);
+    void ScriptSetStage(uint16_t stage);
     void SetStopped();
-    bool IsAnyCutscenePlaying();    
+    bool IsAnyCutscenePlaying() noexcept;
 };
 
 static_assert(sizeof(TESQuest) == 0x268);
 static_assert(offsetof(TESQuest, fullName) == 0x28);
 static_assert(offsetof(TESQuest, flags) == 0xDC);
-static_assert(offsetof(TESQuest, pExecutedStages) == 0xE8);
+static_assert(offsetof(TESQuest, stages) == 0xE8);
 static_assert(offsetof(TESQuest, objectives) == 0xF8);
 static_assert(offsetof(TESQuest, currentStage) == 0x228);
 static_assert(offsetof(TESQuest, unkFlags) == 0x248);

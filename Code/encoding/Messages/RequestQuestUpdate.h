@@ -21,10 +21,7 @@ struct RequestQuestUpdate final : ClientMessage
     {
         StageUpdate,
         Started,
-        Stopped,
-        Reset,
-        SceneUpdate,
-        StageUpdateForced
+        Stopped
     };
 
     GameId Id;
