@@ -54,13 +54,9 @@ void TESQuest::SetActive(bool toggle)
 
 bool TESQuest::IsStageDone(uint16_t stageIndex)
 {
-    for (Stage* it : stages)
-    {
-        if (it->stageIndex == stageIndex)
-            return it->IsDone();
-    }
-
-    return false;
+    TP_THIS_FUNCTION(TIsStageDone, bool, TESQuest, uint16_t);
+    POINTER_SKYRIMSE(TIsStageDone, IsStageDone, 25011);
+    return IsStageDone(this, stageIndex);
 }
 
 bool TESQuest::Kill()
@@ -99,7 +95,7 @@ bool TESQuest::SetStage(uint16_t newStage)
 
 void TESQuest::ScriptSetStage(uint16_t stageIndex)
 {
-    if (currentStage == stageIndex || IsStageDone(stageIndex))
+    if (IsStageReached(stageIndex))
         return;
 
     using Quest = TESQuest;
@@ -111,6 +107,22 @@ void TESQuest::SetStopped()
 {
     flags &= 0xFFFE;
     MarkChanged(2);
+}
+
+bool TESQuest::IsStageReached(uint16_t aStage) noexcept
+{
+    return currentStage == aStage || IsStageDone(aStage);
+}
+
+bool TESQuest::IsAnyCutscenePlaying(uint32_t aExcludedSceneFormId) noexcept
+{
+    for (BGSScene* pScene : scenes)
+    {
+        if (pScene && pScene->isPlaying && pScene->formID != aExcludedSceneFormId)
+            return true;
+    }
+
+    return false;
 }
 
 static TiltedPhoques::Initializer s_questInitHooks(
