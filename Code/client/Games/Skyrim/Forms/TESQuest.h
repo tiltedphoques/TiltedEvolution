@@ -30,6 +30,8 @@ struct BGSSceneAction
     // What the IsSceneActionComplete condition checks (BGSScene::IsActionComplete, 0x1403A18F0 in 1.6.1170)
     [[nodiscard]] bool IsComplete() const noexcept { return status & 2; }
 
+    void Start() { status |= 1u; }
+
     uint32_t actorId; // 0x08 ALID, quest alias ID
     uint16_t startPhase;
     uint16_t endPhase;
@@ -46,23 +48,6 @@ static_assert(offsetof(BGSSceneAction, flags) == 0x10);
 static_assert(offsetof(BGSSceneAction, status) == 0x14);
 static_assert(offsetof(BGSSceneAction, index) == 0x18);
 
-struct BGSSceneAction
-{
-    virtual ~BGSSceneAction();
-
-    uint32_t actorID;
-    uint16_t startPhase;
-    uint16_t endPhase;
-    uint32_t flags;
-    uint8_t status;
-
-    void Start()
-    {
-        this->status |= 1u;
-    }
-};
-
-static_assert(offsetof(BGSSceneAction, flags) == 0x10);
 struct BGSScene : TESForm
 {
     GameArray<void*> phases;
@@ -75,6 +60,9 @@ struct BGSScene : TESForm
     uint32_t padA4;
     TESCondition conditions;
     bool isPlaying; // 0xB0
+
+    void ScriptForceStart();
+    void ScriptStop();
 };
 
 static_assert(offsetof(BGSScene, owningQuest) == 0x98);
