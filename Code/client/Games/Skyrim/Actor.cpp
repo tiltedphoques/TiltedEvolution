@@ -1187,7 +1187,7 @@ uint64_t TP_MAKE_THISCALL(HookProcessResponse, void, DialogueItem* apVoice, Acto
     if (apTalkingActor)
     {
         if (apTalkingActor->GetExtension()->IsRemotePlayer())
-            return 0;  
+            return 0;
     }
     return TiltedPhoques::ThisCall(RealProcessResponse, apThis, apVoice, apTalkingActor, apTalkedToActor);
 }
@@ -1208,77 +1208,34 @@ void TP_MAKE_THISCALL(HookUnequipObject, Actor, void* apUnk1, TESBoundObject* ap
     TiltedPhoques::ThisCall(RealUnequipObject, apThis, apUnk1, apObject, aUnk2, apUnk3);
 }
 
+// Returns a float in xmm0, 0 when nothing was played. Callers check it for -1.0 (lip file failed to load).
 TP_THIS_FUNCTION(TSpeakSoundFunction, float, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14);
 static TSpeakSoundFunction* RealSpeakSoundFunction = nullptr;
 
 float TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14)
 {
-    // Note most dialogues invoke SpeakSoundFunction twice, an initial call that queues it to an update thread, then a reinvocation.
-
     spdlog::debug("a3: {:X}, a4: {}, a5: {}, a6: {}, a7: {}, a8: {:X}, a9: {:X}, a10: {}, a11: {:X}, a12: {}, a13: {}, a14: {}", (uint64_t)a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 
     // The player having the conversation may not own this NPC. Ambient
     // speech still comes only from the actor's simulation owner.
-    if (apThis->GetExtension()->IsLocal() || MenuTopicManager::IsPlayerDialogueSpeaker(apThis))
-        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
+    const bool cIsPlayerDialogue = MenuTopicManager::IsPlayerDialogueSpeaker(apThis);
+    const bool cShouldSync = apThis->GetExtension()->IsLocal() || cIsPlayerDialogue;
+
+    // Lines from a scene let other clients that play the same scene skip them. Menu dialogue always plays.
+    BGSScene* pScene = cIsPlayerDialogue ? nullptr : apThis->GetCurrentScene();
+    const uint32_t cSceneId = pScene && pScene->isPlaying ? pScene->formID : 0;
+
+    if (cShouldSync)
+        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName, cSceneId));
 
     return TiltedPhoques::ThisCall(RealSpeakSoundFunction, apThis, apName, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 }
 
-float Actor::SpeakSound(const char* pFile)
+void Actor::SpeakSound(const char* pFile)
 {
     uint32_t handle[3]{};
     handle[0] = -1;
-
-    return TiltedPhoques::ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
-}
-
-bool Actor::IsTalking() noexcept
-{
-    TP_THIS_FUNCTION(TIsTalking, bool, Actor);
-    POINTER_SKYRIMSE(TIsTalking, s_IsTalking, 37266);
-    return TiltedPhoques::ThisCall(s_IsTalking, this);
-}
-
-bool Actor::IsInScene() noexcept
-{
-    // We don't have a solution for Condition Functions
-    //PAPYRUS_FUNCTION(bool, Actor, IsInScene);
-    //bool papyrusValue = s_pIsInScene(this);
-    bool flagsValue= (flags1 & ActorBoolBits::kHasSceneExtra) != 0;
-
-    return flagsValue;
-}
-
-bool Actor::IsInDialogueWithPlayer() noexcept
-{
-    using ObjectReference = TESObjectREFR;
-    PAPYRUS_FUNCTION(bool, ObjectReference, IsInDialogueWithPlayer);
-    return s_pIsInDialogueWithPlayer(this);
-}
-
-float Actor::GetVoiceRecoveryTime() noexcept
-{
-    // Doesn't work. And Wiki only describes w.r.t shouts
-    // PAPYRUS_FUNCTION(float, Actor, GetVoiceRecoveryTime);
-    // float fVRT = s_pGetVoiceRecoveryTime(this);
-    // if (fVRT != fVoiceTimer)
-    //    spdlog::warn(__FUNCTION__ ": fVRT {}, fVoiceTimer {}", fVRT, fVoiceTimer);
-
-    return fVoiceTimer;
-}
-
-bool Actor::IsSpeakingInScene() 
-{
-    auto pScene = GetCurrentScene();
-    bool isSpeakingInScene = IsInScene(); 
-    isSpeakingInScene = isSpeakingInScene && GetVoiceRecoveryTime() > 0.0f;
-    const bool isTalking = IsTalking(); 
-    const bool isLeader = World::Get().GetPartyService().IsLeader(); // Helps distinguish logs in 2-party
-
-    spdlog::debug(__FUNCTION__ ": isSpeakingInScene {}, isTalking {}, voiceRecoveryTime {}, isLeader {}, formId {:X}, name {}", isSpeakingInScene, isTalking, GetVoiceRecoveryTime(), isLeader, formID, baseForm->GetName());
-
-    return isSpeakingInScene;
+    TiltedPhoques::ThisCall(RealSpeakSoundFunction, this, pFile, handle, 0, 0x32, 0, 0, 0, 0, 0, 0, 0, 1, 1);
 }
 
 char TP_MAKE_THISCALL(HookActorProcess, Actor, float aDeltaTime)

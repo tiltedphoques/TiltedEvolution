@@ -80,7 +80,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_47();
     virtual void sub_48();
     virtual void sub_49();
-    virtual BGSScene* GetCurrentScene();
+    virtual BGSScene* GetCurrentScene() const; // ExtraDataType::SceneData; actors only while Actor::HAS_SCENE_DATA is set
     virtual void sub_4B();
     virtual void sub_4C();
     virtual void sub_4D();

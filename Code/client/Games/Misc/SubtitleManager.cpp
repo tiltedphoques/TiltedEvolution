@@ -5,9 +5,9 @@
 
 #include <TESObjectREFR.h>
 #include <Games/ActorExtension.h>
-#include <Forms/TESQuest.h>
 
 #include <Forms/TESTopicInfo.h>
+#include <Forms/TESQuest.h>
 #include <Misc/BSFixedString.h>
 
 SubtitleManager* SubtitleManager::Get() noexcept
@@ -33,11 +33,21 @@ void* SubtitleManager::HideSubtitle(TESObjectREFR* apSpeaker) noexcept
 
 void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeaker, const char* apSubtitleText, bool aIsInDialogue)
 {
+    // spdlog::debug("Subtitle for actor {:X} (bool {}):\n\t{}", apSpeaker ? apSpeaker->formID : 0, aIsInDialogue, apSubtitleText);
+
     Actor* pActor = Cast<Actor>(apSpeaker);
     const bool isNpc = pActor && !pActor->GetExtension()->IsPlayer();
-    const bool shouldSyncSubtitle = apSubtitleText && isNpc && (pActor->GetExtension()->IsLocal() || MenuTopicManager::IsPlayerDialogueSpeaker(pActor));
+    const bool isPlayerDialogue = isNpc && MenuTopicManager::IsPlayerDialogueSpeaker(pActor);
+    const bool shouldSyncSubtitle = apSubtitleText && isNpc && (pActor->GetExtension()->IsLocal() || isPlayerDialogue);
     if (shouldSyncSubtitle)
-        World::Get().GetRunner().Trigger(SubtitleEvent(apSpeaker->formID, apSubtitleText));
+    {
+        // Same as dialogue: clients that play the same scene show their own subtitle for the line
+        BGSScene* pScene = isPlayerDialogue ? nullptr : pActor->GetCurrentScene();
+
+        SubtitleEvent event(apSpeaker->formID, apSubtitleText);
+        event.SceneID = pScene && pScene->isPlaying ? pScene->formID : 0;
+        World::Get().GetRunner().Trigger(event);
+    }
 
     TiltedPhoques::ThisCall(RealShowSubtitle, apThis, apSpeaker, apSubtitleText, aIsInDialogue);
 }

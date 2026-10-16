@@ -1116,51 +1116,26 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
     if (!m_transport.IsConnected())
         return;
 
-    const bool isLeader = World::Get().GetPartyService().IsLeader(); // Helps distinguish in 2-party logs
     auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
-    auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.ActorID](auto entity) {
-        return view.get<FormIdComponent>(entity).Id == formId;
-    });
+    auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.ActorID](auto entity) { return view.get<FormIdComponent>(entity).Id == formId; });
 
     if (entityIt == view.end())
-    {
-        spdlog::debug(__FUNCTION__ ": failed to find speaking Actor's FormIdComponent, formId {:X}, isLeader {}", acEvent.ActorID, isLeader);
         return;
-    }
 
     auto serverIdRes = Utils::GetServerId(*entityIt);
     if (!serverIdRes)
     {
-        spdlog::debug(__FUNCTION__ ": server id not found for formId {:X}, isLeader {}", acEvent.ActorID, isLeader);
+        spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.ActorID);
         return;
     }
-    
-    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.ActorID));
-    if (!pActor)
-        return;
 
-    bool isLocal = pActor->GetExtension()->IsLocal();
-    bool isInScene = pActor->IsInScene();
-    auto sceneId = isInScene ? pActor->GetCurrentScene()->formID : 0;
-    bool isTaskDialogue = pActor->IsTalking() && pActor->IsInDialogueWithPlayer();
-    bool isSpeakingInScene = pActor->IsSpeakingInScene();
+    DialogueRequest request{};
+    request.ServerId = serverIdRes.value();
+    request.SoundFilename = acEvent.VoiceFile;
+    if (acEvent.SceneID)
+        m_world.GetModSystem().GetServerModId(acEvent.SceneID, request.SceneId);
 
-    const bool willSync = isTaskDialogue || isLocal && !isInScene;
-
-    spdlog::debug(
-        __FUNCTION__ ": isLocal {}, isInScene {}, isSpeakingInScene {}, isTaskDialogue {}, willSync {}, scene {:X}, Actor "
-                     "{:X}, serverId {:X}, isLeader {}, name {}, soundFile {}",
-        isLocal, isInScene, isSpeakingInScene, isTaskDialogue, willSync, sceneId, pActor->formID, serverIdRes.value(), isLeader, pActor->baseForm->GetName(),
-        acEvent.VoiceFile);
-
-    if (willSync)
-    {
-        DialogueRequest request{};
-        request.ServerId = serverIdRes.value();
-        request.SoundFilename = acEvent.VoiceFile;
-
-        m_transport.Send(request);
-    }
+    m_transport.Send(request);
 }
 
 void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcept
@@ -1170,9 +1145,14 @@ void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcep
     if (!pActor)
         return;
 
-    spdlog::debug(
-        __FUNCTION__ ": playing dialogue Actor {:X}, serverId {:X}, isLeader {}, name {}, soundFile {}", pActor->formID, acMessage.ServerId, isLeader, pActor->baseForm->GetName(),
-        acMessage.SoundFilename);
+    // Every client plays scenes itself, so if the line's scene plays here too, the local copy already voices it. Playing
+    // the sender's line would cut that off and end the scene phase early. Menu and other-scene lines still play.
+    BGSScene* pScene = pActor->GetCurrentScene();
+    if (acMessage.SceneId && pScene && pScene->isPlaying && pScene->formID == m_world.GetModSystem().GetGameId(acMessage.SceneId))
+    {
+        spdlog::info("Skipping remote dialogue for actor {:X}, it plays the same scene {:X} here, file: {}", pActor->formID, pScene->formID, acMessage.SoundFilename);
+        return;
+    }
 
     pActor->StopCurrentDialogue(true);
     pActor->SpeakSound(acMessage.SoundFilename.c_str());
@@ -1183,49 +1163,27 @@ void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
     if (!m_transport.IsConnected())
         return;
 
-    const bool isLeader = World::Get().GetPartyService().IsLeader(); // Helps distinguish in 2-party logs
     auto view = m_world.view<FormIdComponent>(entt::exclude<ObjectComponent>);
     auto entityIt = std::find_if(view.begin(), view.end(), [view, formId = acEvent.SpeakerID](auto entity) { return view.get<FormIdComponent>(entity).Id == formId; });
 
     if (entityIt == view.end())
-    {
-        spdlog::debug(__FUNCTION__ ": failed to find subtitle Actor's FormIdComponent, formId {:X}, isLeader {}", acEvent.SpeakerID, isLeader);
         return;
-    }
 
     auto serverIdRes = Utils::GetServerId(*entityIt);
     if (!serverIdRes)
     {
-        spdlog::debug(__FUNCTION__ ": server id not found for formId {:X}, isLeader {}", acEvent.SpeakerID, isLeader);
+        spdlog::error("{}: server id not found for form id {:X}", __FUNCTION__, acEvent.SpeakerID);
         return;
     }
 
-    Actor* pActor = Cast<Actor>(TESForm::GetById(acEvent.SpeakerID));
-    if (!pActor)
-        return;
+    SubtitleRequest request{};
+    request.ServerId = serverIdRes.value();
+    request.Text = acEvent.Text;
+    request.TopicFormId = acEvent.TopicFormID;
+    if (acEvent.SceneID)
+        m_world.GetModSystem().GetServerModId(acEvent.SceneID, request.SceneId);
 
-    bool isLocal = pActor->GetExtension()->IsLocal();
-    bool isInScene = pActor->IsInScene();
-    auto isSpeakingInScene = pActor->IsSpeakingInScene();
-    auto sceneId = isInScene ? pActor->GetCurrentScene()->formID : 0;
-    bool isTaskDialogue = pActor->IsTalking() && pActor->IsInDialogueWithPlayer();
-
-    const bool willSync = isTaskDialogue || isLocal && !isInScene;
-
-    spdlog::debug(
-        __FUNCTION__ ": isLocal {}, isInScene {}, isSpeakingInScene {}, isTaskDialogue {}, willSync {}, scene {:X}, Actor "
-                     "{:X}, serverId {:X}, isLeader {}, name {}, subtitle {}",
-        isLocal, isInScene, isSpeakingInScene, isTaskDialogue, willSync, sceneId, pActor->formID, serverIdRes.value(), isLeader, pActor->baseForm->GetName(),
-        acEvent.Text);
-
-    if (willSync)
-    {
-        SubtitleRequest request{};
-        request.ServerId = serverIdRes.value();
-        request.Text = acEvent.Text;
-        request.TopicFormId = acEvent.TopicFormID;
-        m_transport.Send(request);
-    }
+    m_transport.Send(request);
 }
 
 void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcept
@@ -1234,14 +1192,16 @@ void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcep
     if (!pActor)
         return;
 
+    // The local copy of the scene shows its own subtitle, see OnNotifyDialogue. Only the actor's own voice line ending
+    // hides a subtitle, so a remote one arriving after the local line has finished would stay on screen.
+    BGSScene* pScene = pActor->GetCurrentScene();
+    if (acMessage.SceneId && pScene && pScene->isPlaying && pScene->formID == m_world.GetModSystem().GetGameId(acMessage.SceneId))
+        return;
+
     // This is only for fallout 4
     TESTopicInfo* pInfo = nullptr;
     pInfo = Cast<TESTopicInfo>(TESForm::GetById(acMessage.TopicFormId));
 
-    spdlog::debug(__FUNCTION__ ": showing subtitle Actor {:X}, serverId {:X}, isLeader {}, name {}, message: {}",
-                     pActor->formID, acMessage.ServerId, isLeader, pActor->baseForm->GetName(), acMessage.Text);
-
-    SubtitleManager::Get()->HideSubtitle(pActor);   // Subtitle conflicts can hang, this makes it beter at least.
     SubtitleManager::Get()->ShowSubtitle(pActor, acMessage.Text.c_str(), pInfo);
 }
 

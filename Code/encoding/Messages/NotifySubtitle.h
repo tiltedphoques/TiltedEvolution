@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Message.h"
+#include <Structs/GameId.h>
 
 struct NotifySubtitle final : ServerMessage
 {
@@ -14,9 +15,11 @@ struct NotifySubtitle final : ServerMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifySubtitle& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && ServerId == acRhs.ServerId && Text == acRhs.Text && TopicFormId == acRhs.TopicFormId; }
+    bool operator==(const NotifySubtitle& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && ServerId == acRhs.ServerId && Text == acRhs.Text && TopicFormId == acRhs.TopicFormId && SceneId == acRhs.SceneId; }
 
     uint32_t ServerId{};
     TiltedPhoques::String Text{};
     uint32_t TopicFormId{};
+    // The scene the line was spoken in on the sender, if not in the player dialogue menu
+    GameId SceneId{};
 };
