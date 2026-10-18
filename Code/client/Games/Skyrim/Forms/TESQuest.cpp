@@ -54,13 +54,9 @@ void TESQuest::SetActive(bool toggle)
 
 bool TESQuest::IsStageDone(uint16_t stageIndex)
 {
-    for (Stage* it : stages)
-    {
-        if (it->stageIndex == stageIndex)
-            return it->IsDone();
-    }
-
-    return false;
+    TP_THIS_FUNCTION(TIsStageDone, bool, TESQuest, uint16_t);
+    POINTER_SKYRIMSE(TIsStageDone, IsStageDone, 25011);
+    return IsStageDone(this, stageIndex);
 }
 
 bool TESQuest::Kill()
@@ -97,20 +93,46 @@ bool TESQuest::SetStage(uint16_t newStage)
     return SetStage(this, newStage);
 }
 
-void TESQuest::ScriptSetStage(uint16_t stageIndex)
+bool TESQuest::ScriptSetStage(uint16_t stageIndex)
 {
-    if (currentStage == stageIndex || IsStageDone(stageIndex))
-        return;
+    if (IsStageReached(stageIndex))
+        return false;
 
     using Quest = TESQuest;
     PAPYRUS_FUNCTION(void, Quest, SetCurrentStageID, int);
     s_pSetCurrentStageID(this, stageIndex);
+    return IsStageReached(stageIndex);
 }
 
 void TESQuest::SetStopped()
 {
     flags &= 0xFFFE;
     MarkChanged(2);
+}
+
+bool TESQuest::IsStageReached(uint16_t aStage) noexcept
+{
+    return currentStage == aStage || IsStageDone(aStage);
+}
+
+uint32_t TESQuest::GetStageItemCount(uint16_t aStage) noexcept
+{
+    for (Stage* pStage : stages)
+    {
+        if (!pStage || pStage->stageIndex != aStage)
+            continue;
+
+        uint32_t count = 0;
+        for (void* pItem : pStage->items)
+        {
+            if (pItem)
+                ++count;
+        }
+
+        return count;
+    }
+
+    return 0;
 }
 
 static TiltedPhoques::Initializer s_questInitHooks(
