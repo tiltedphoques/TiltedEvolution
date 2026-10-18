@@ -93,14 +93,15 @@ bool TESQuest::SetStage(uint16_t newStage)
     return SetStage(this, newStage);
 }
 
-void TESQuest::ScriptSetStage(uint16_t stageIndex)
+bool TESQuest::ScriptSetStage(uint16_t stageIndex)
 {
     if (IsStageReached(stageIndex))
-        return;
+        return false;
 
     using Quest = TESQuest;
     PAPYRUS_FUNCTION(void, Quest, SetCurrentStageID, int);
     s_pSetCurrentStageID(this, stageIndex);
+    return IsStageReached(stageIndex);
 }
 
 void TESQuest::SetStopped()

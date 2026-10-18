@@ -30,6 +30,11 @@ static TESQuest* FindQuestByNameId(const String& name)
     return it != questRegistry.end() ? *it : nullptr;
 }
 
+using HeldStages = QuestService::HeldStages;
+
+static void ReleaseStagesForWaitingPhases(TESQuest* apQuest, HeldStages& aHeld) noexcept;
+static void ReleaseUncheckedStages(TESQuest* apQuest, HeldStages& aHeld) noexcept;
+
 QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
 {
@@ -40,7 +45,8 @@ QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
     m_questUpdateConnection = aDispatcher.sink<NotifyQuestUpdate>().connect<&QuestService::OnQuestUpdate>(this);
 
     // A note about the Gameevents:
-    // TESQuestStageItemDoneEvent gets fired to late, we instead use TESQuestStageEvent, because it responds immediately.
+    // Stages are sent on TESQuestStageEvent, which fires as soon as the stage is set. TESQuestStageItemDoneEvent comes
+    // too late for that, it only tells held stages when their fragments have run.
     // TESQuestInitEvent can be instead managed by start stop quest management.
     // bind game event listeners
     auto* pEventList = EventDispatcherManager::Get();
@@ -80,7 +86,7 @@ void QuestService::OnUpdate(const UpdateEvent&) noexcept
 
     for (uint32_t questFormId : questFormIds)
     {
-        TESQuest* pQuest = nullptr;
+        TESQuest* pQuest = Cast<TESQuest>(TESForm::GetById(questFormId));
         if (HeldStages* pHeld = GetHeldStages(questFormId, pQuest))
         {
             ReleaseStagesForWaitingPhases(pQuest, *pHeld);
@@ -214,7 +220,7 @@ BSTEventResult QuestService::OnEvent(const TESQuestStageItemDoneEvent* apEvent, 
 {
     // Sent once the fragment of one of the stage's log entries has run, usually from a script thread
     m_world.GetRunner().Queue(
-        [&, questFormId = apEvent->formId, stage = apEvent->stageId]()
+        [this, questFormId = apEvent->formId, stage = apEvent->stageId]()
         {
             auto it = m_heldStages.find(questFormId);
             if (it == m_heldStages.end())
@@ -397,67 +403,24 @@ void QuestService::HoldStage(TESQuest* apQuest, uint16_t aStage) noexcept
     spdlog::info("Holding member quest stage {} for {:X} until no playing scene of it checks it", aStage, apQuest->formID);
 }
 
-void QuestService::ApplyHeldStages(TESQuest* apQuest, HeldStages& aHeld, size_t aCount) noexcept
+static void ApplyHeldStages(TESQuest* apQuest, HeldStages& aHeld, size_t aCount) noexcept
 {
     ScopedQuestOverride _;
 
     // In order, a later stage's scripts can rely on the earlier ones
     for (size_t i = 0; i < aCount; ++i)
     {
-        const uint16_t cStage = aHeld.Stages[i];
-        if (apQuest->IsStageReached(cStage))
-            continue;
-
         // A scene the fragments start only plays once they've run, and the next stage may be what it waits on. Each log
         // entry reports when its fragment is done.
-        apQuest->ScriptSetStage(cStage);
-        if (apQuest->IsStageReached(cStage))
+        const uint16_t cStage = aHeld.Stages[i];
+        if (apQuest->ScriptSetStage(cStage))
             aHeld.PendingItems.insert(aHeld.PendingItems.end(), apQuest->GetStageItemCount(cStage), cStage);
     }
 
     aHeld.Stages.erase(aHeld.Stages.begin(), aHeld.Stages.begin() + aCount);
 }
 
-QuestService::HeldStages* QuestService::GetHeldStages(uint32_t aQuestFormId, TESQuest*& apQuest) noexcept
-{
-    auto it = m_heldStages.find(aQuestFormId);
-    if (it == m_heldStages.end())
-        return nullptr;
-
-    // Setting a stage on a stopped quest starts it again, and scenes also end because their quest stopped
-    HeldStages& held = it.value();
-    apQuest = Cast<TESQuest>(TESForm::GetById(aQuestFormId));
-    if (!apQuest || apQuest->IsStopped())
-    {
-        if (!held.Stages.empty())
-            spdlog::info("Dropping held member quest stages for {:X}, quest stopped or missing", aQuestFormId);
-
-        m_heldStages.erase(it);
-        return nullptr;
-    }
-
-    // Reached by the leader's own scripts in the meantime
-    std::erase_if(
-        held.Stages,
-        [apQuest](uint16_t aStage)
-        {
-            if (!apQuest->IsStageReached(aStage))
-                return false;
-
-            spdlog::info("Dropping held member quest stage {} for {:X}, already reached here", aStage, apQuest->formID);
-            return true;
-        });
-
-    if (held.Stages.empty() && held.PendingItems.empty())
-    {
-        m_heldStages.erase(it);
-        return nullptr;
-    }
-
-    return &held;
-}
-
-void QuestService::ReleaseStagesForWaitingPhases(TESQuest* apQuest, HeldStages& aHeld) noexcept
+static void ReleaseStagesForWaitingPhases(TESQuest* apQuest, HeldStages& aHeld) noexcept
 {
     // A phase whose own actions are done and whose completion conditions want a held stage only moves on with it.
     // Release up to the first stage that does it, the leader's scene then carries on at its own pace.
@@ -489,13 +452,51 @@ void QuestService::ReleaseStagesForWaitingPhases(TESQuest* apQuest, HeldStages& 
 
 // Applies held stages in order while no playing scene checks the next one, e.g. once the scenes that did have ended.
 // Waits for the fragments of the stages it applied first.
-void QuestService::ReleaseUncheckedStages(TESQuest* apQuest, HeldStages& aHeld) noexcept
+static void ReleaseUncheckedStages(TESQuest* apQuest, HeldStages& aHeld) noexcept
 {
     while (!aHeld.Stages.empty() && aHeld.PendingItems.empty() && !IsCheckedByPlayingScene(apQuest, aHeld.Stages.front()))
     {
         spdlog::info("Applying held member quest stage {} for {:X}, no playing scene checks it", aHeld.Stages.front(), apQuest->formID);
         ApplyHeldStages(apQuest, aHeld, 1);
     }
+}
+
+HeldStages* QuestService::GetHeldStages(uint32_t aQuestFormId, TESQuest* apQuest) noexcept
+{
+    auto it = m_heldStages.find(aQuestFormId);
+    if (it == m_heldStages.end())
+        return nullptr;
+
+    // Setting a stage on a stopped quest starts it again, and scenes also end because their quest stopped
+    HeldStages& held = it.value();
+    if (!apQuest || apQuest->IsStopped())
+    {
+        if (!held.Stages.empty())
+            spdlog::info("Dropping held member quest stages for {:X}, quest stopped or missing", aQuestFormId);
+
+        m_heldStages.erase(it);
+        return nullptr;
+    }
+
+    // Reached by the leader's own scripts in the meantime
+    std::erase_if(
+        held.Stages,
+        [apQuest](uint16_t aStage)
+        {
+            if (!apQuest->IsStageReached(aStage))
+                return false;
+
+            spdlog::info("Dropping held member quest stage {} for {:X}, already reached here", aStage, apQuest->formID);
+            return true;
+        });
+
+    if (held.Stages.empty() && held.PendingItems.empty())
+    {
+        m_heldStages.erase(it);
+        return nullptr;
+    }
+
+    return &held;
 }
 
 void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
@@ -518,8 +519,7 @@ void QuestService::OnQuestUpdate(const NotifyQuestUpdate& aUpdate) noexcept
     // A member stage the leader's playing scene checks can push it past its own scripts (a phase ending before its lines
     // and scripts ran), so hold it, and the stages after it, until the scene gets there or reaches it itself.
     const bool cIsLeaderStage = aUpdate.Status == NotifyQuestUpdate::StageUpdate && m_world.GetPartyService().IsLeader();
-    TESQuest* pHeldQuest = nullptr;
-    HeldStages* pHeld = cIsLeaderStage || aUpdate.Status == NotifyQuestUpdate::Stopped ? GetHeldStages(formId, pHeldQuest) : nullptr;
+    HeldStages* pHeld = cIsLeaderStage || aUpdate.Status == NotifyQuestUpdate::Stopped ? GetHeldStages(formId, pQuest) : nullptr;
     if (cIsLeaderStage && (pHeld || IsCheckedByPlayingScene(pQuest, aUpdate.Stage)))
     {
         HoldStage(pQuest, aUpdate.Stage);

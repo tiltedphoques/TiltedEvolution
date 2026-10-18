@@ -47,6 +47,14 @@ public:
     static void DebugDumpQuests();
     static bool StopQuest(uint32_t aformId);
 
+    struct HeldStages
+    {
+        // Member stages not applied yet, sorted
+        Vector<uint16_t> Stages{};
+        // A stage per log entry of the applied stages whose fragment hasn't run yet
+        Vector<uint16_t> PendingItems{};
+    };
+
 private:
     void OnConnected(const ConnectedEvent&) noexcept;
     void OnUpdate(const UpdateEvent&) noexcept;
@@ -61,22 +69,11 @@ private:
     BSTEventResult OnEvent(const TESScenePhaseEvent*, const EventDispatcher<TESScenePhaseEvent>*) override;
     BSTEventResult OnEvent(const TESTopicInfoEvent*, const EventDispatcher<TESTopicInfoEvent>*) override;
 
-    struct HeldStages
-    {
-        // Member stages not applied yet, sorted
-        Vector<uint16_t> Stages{};
-        // A stage per log entry of the applied stages whose fragment hasn't run yet
-        Vector<uint16_t> PendingItems{};
-    };
-
     void OnQuestUpdate(const NotifyQuestUpdate&) noexcept;
     void HoldStage(TESQuest* apQuest, uint16_t aStage) noexcept;
-    void ApplyHeldStages(TESQuest* apQuest, HeldStages& aHeld, size_t aCount) noexcept;
-    // The quest's held stages and the quest, while it has stages to apply or fragments to wait for. Drops the stages
-    // that can't be applied anymore.
-    HeldStages* GetHeldStages(uint32_t aQuestFormId, TESQuest*& apQuest) noexcept;
-    void ReleaseStagesForWaitingPhases(TESQuest* apQuest, HeldStages& aHeld) noexcept;
-    void ReleaseUncheckedStages(TESQuest* apQuest, HeldStages& aHeld) noexcept;
+    // The quest's held stages, while it has stages to apply or fragments to wait for. Drops the stages that can't be
+    // applied anymore.
+    HeldStages* GetHeldStages(uint32_t aQuestFormId, TESQuest* apQuest) noexcept;
     void NotifyOverlayOfQuestUpdate(uint32_t aFormId) noexcept;
 
     World& m_world;

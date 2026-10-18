@@ -25,7 +25,7 @@ struct PartyService
         Vector<Player*> Members;
         GameId CachedWeather{};
         // Stages each quest reached since it started, as relayed to the party
-        Map<GameId, Vector<uint16_t>> QuestStages{};
+        Map<GameId, TiltedPhoques::Set<uint16_t>> QuestStages{};
     };
 
     PartyService(World& aWorld, entt::dispatcher& aDispatcher) noexcept;

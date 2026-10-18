@@ -98,14 +98,11 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     // Party members' scripts often reach the same stage on their own, only relay it once
     if (message.Status == RequestQuestUpdate::StageUpdate)
     {
-        auto& stages = pParty->QuestStages[message.Id];
-        if (std::find(stages.begin(), stages.end(), message.Stage) != stages.end())
+        if (!pParty->QuestStages[message.Id].insert(message.Stage).second)
         {
             spdlog::debug("Dropped duplicate quest stage from player {}, quest: {:X}, stage: {}", pPlayer->GetId(), message.Id.LogFormat(), message.Stage);
             return;
         }
-
-        stages.push_back(message.Stage);
     }
     else
     {
