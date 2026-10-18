@@ -44,11 +44,14 @@ QuestService::QuestService(World& aWorld, entt::dispatcher& aDispatcher)
     m_leftConnection = aDispatcher.sink<PartyLeftEvent>().connect<&QuestService::OnPartyLeft>(this);
     m_questUpdateConnection = aDispatcher.sink<NotifyQuestUpdate>().connect<&QuestService::OnQuestUpdate>(this);
 
-    // A note about the Gameevents:
-    // Stages are sent on TESQuestStageEvent, which fires as soon as the stage is set. TESQuestStageItemDoneEvent comes
-    // too late for that, it only tells held stages when their fragments have run.
-    // TESQuestInitEvent can be instead managed by start stop quest management.
-    // bind game event listeners
+    // Game events:
+    // Starts, stops and stages are sent from TESQuestStartStopEvent and TESQuestStageEvent, which fire while the quest
+    // changes. Outside a party they only prompt the overlay.
+    // TESQuestStageItemDoneEvent fires once for each of a stage's log entries, after its fragment has run. That's too
+    // late to send on, but it tells when an applied held stage is done.
+    // The scene, scene action, phase and dialogue line events are only logged, to follow scenes when debugging held
+    // stages. OnUpdate explains why they can't trigger the release of held stages.
+
     auto* pEventList = EventDispatcherManager::Get();
     pEventList->questStartStopEvent.RegisterSink(this);
     pEventList->questStageEvent.RegisterSink(this);
