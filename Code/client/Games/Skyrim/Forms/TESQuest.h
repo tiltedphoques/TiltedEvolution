@@ -68,6 +68,16 @@ struct BGSScene : TESForm
     uint32_t flags;
     uint32_t padA4;
     TESCondition conditions;
+    // First phase still to run, phases.length if none. Start() leaves currentPhaseIndex at -1 until an update; on end it
+    // moves past the last phase, and isPlaying clears once the end scripts ran (SetSceneActive, 0x1403A0FA0, 1.6.1170)
+    [[nodiscard]] uint32_t GetNextPhaseIndex() const noexcept
+    {
+        if (!isPlaying)
+            return phases.length;
+
+        return currentPhaseIndex == UINT32_MAX ? 0 : std::min(currentPhaseIndex, phases.length);
+    }
+
     bool isPlaying; // 0xB0
     uint8_t padB1[0xBC - 0xB1];
     uint32_t currentPhaseIndex; // 0xBC, -1 when not playing
@@ -141,9 +151,14 @@ struct TESQuest : BGSStoryManagerTreeForm
     {
         uint16_t stageIndex;
         uint8_t flags;
+        uint8_t pad3[5];
+        // Log entries. Setting the stage runs each one's fragment, then sends TESQuestStageItemDoneEvent for it
+        GameValueList<void*> items;
 
         inline bool IsDone() { return flags & 1; }
     };
+
+    static_assert(offsetof(Stage, items) == 0x8);
 
     TESFullName fullName;
     GameArray<void*> instanceData;
@@ -194,7 +209,7 @@ struct TESQuest : BGSStoryManagerTreeForm
     void ScriptSetStage(uint16_t stage);
     void SetStopped();
     bool IsStageReached(uint16_t aStage) noexcept;
-    bool IsAnyCutscenePlaying(uint32_t aExcludedSceneFormId = 0) noexcept;
+    uint32_t GetStageItemCount(uint16_t aStage) noexcept;
 };
 
 static_assert(sizeof(TESQuest) == 0x268);

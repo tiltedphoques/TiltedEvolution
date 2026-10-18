@@ -114,15 +114,24 @@ bool TESQuest::IsStageReached(uint16_t aStage) noexcept
     return currentStage == aStage || IsStageDone(aStage);
 }
 
-bool TESQuest::IsAnyCutscenePlaying(uint32_t aExcludedSceneFormId) noexcept
+uint32_t TESQuest::GetStageItemCount(uint16_t aStage) noexcept
 {
-    for (BGSScene* pScene : scenes)
+    for (Stage* pStage : stages)
     {
-        if (pScene && pScene->isPlaying && pScene->formID != aExcludedSceneFormId)
-            return true;
+        if (!pStage || pStage->stageIndex != aStage)
+            continue;
+
+        uint32_t count = 0;
+        for (void* pItem : pStage->items)
+        {
+            if (pItem)
+                ++count;
+        }
+
+        return count;
     }
 
-    return false;
+    return 0;
 }
 
 static TiltedPhoques::Initializer s_questInitHooks(
