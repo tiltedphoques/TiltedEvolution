@@ -1221,12 +1221,19 @@ float TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32
     const bool cIsPlayerDialogue = MenuTopicManager::IsPlayerDialogueSpeaker(apThis);
     const bool cShouldSync = apThis->GetExtension()->IsLocal() || cIsPlayerDialogue;
 
-    // Lines from a scene let other clients that play the same scene skip them. Menu dialogue always plays.
+    // Lines from a scene let other clients that play the same scene skip them, unless their copy is stuck in an earlier
+    // phase. Menu dialogue always plays.
     BGSScene* pScene = cIsPlayerDialogue ? nullptr : apThis->GetCurrentScene();
-    const uint32_t cSceneId = pScene && pScene->isPlaying ? pScene->formID : 0;
+    uint32_t sceneId = 0;
+    uint32_t scenePhase = 0;
+    if (pScene && pScene->isPlaying)
+    {
+        sceneId = pScene->formID;
+        scenePhase = pScene->currentPhaseIndex;
+    }
 
     if (cShouldSync)
-        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName, cSceneId));
+        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName, sceneId, scenePhase));
 
     return TiltedPhoques::ThisCall(RealSpeakSoundFunction, apThis, apName, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 }

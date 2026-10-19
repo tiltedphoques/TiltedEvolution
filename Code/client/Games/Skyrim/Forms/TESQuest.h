@@ -27,15 +27,22 @@ struct BGSSceneAction
     virtual Type GetType() const;
 
     [[nodiscard]] uint32_t GetIndex() const noexcept { return index & 0x3FFFFFFF; }
+    [[nodiscard]] bool IsRunning() const noexcept { return status & 1; }
     // What the IsSceneActionComplete condition checks (BGSScene::IsActionComplete, 0x1403A18F0 in 1.6.1170)
     [[nodiscard]] bool IsComplete() const noexcept { return status & 2; }
     [[nodiscard]] bool IsInPhase(uint32_t aPhaseIndex) const noexcept { return aPhaseIndex >= startPhase && aPhaseIndex <= endPhase; }
+    // Whether the phase waits for this action to complete before it ends. Actions that loop or continue into the next
+    // phase don't hold it back.
+    [[nodiscard]] bool BlocksPhase(uint32_t aPhaseIndex) const noexcept
+    {
+        return IsInPhase(aPhaseIndex) && !IsInPhase(aPhaseIndex + 1) && IsRunning() && !IsComplete() && !Loops();
+    }
 
     uint32_t actorId; // 0x08 ALID, quest alias ID
     uint16_t startPhase;
     uint16_t endPhase;
     uint32_t flags;
-    uint8_t status; // 0x14, bit 1 = complete
+    uint8_t status; // 0x14, bit 0 = running, bit 1 = complete
     uint8_t unk15;
     uint16_t unk16;
     uint32_t index; // 0x18 INAM in the low 30 bits, the index scene action events carry
@@ -53,6 +60,8 @@ struct BGSScenePhase
     // Once the phase has any, it ends as soon as they pass, even with actions still running
     TESCondition completionConditions;
     bool isRunning;
+
+    [[nodiscard]] bool HasCompletionConditions() const noexcept { return completionConditions.pHead != nullptr; }
 };
 
 static_assert(offsetof(BGSScenePhase, completionConditions) == 0x8);

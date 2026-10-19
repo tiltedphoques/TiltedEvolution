@@ -6,6 +6,7 @@ void SubtitleRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const
     Serialization::WriteString(aWriter, Text);
     Serialization::WriteVarInt(aWriter, TopicFormId);
     SceneId.Serialize(aWriter);
+    Serialization::WriteVarInt(aWriter, ScenePhase);
 }
 
 void SubtitleRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -16,4 +17,5 @@ void SubtitleRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noe
     Text = Serialization::ReadString(aReader);
     TopicFormId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     SceneId.Deserialize(aReader);
+    ScenePhase = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }
