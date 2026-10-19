@@ -1111,6 +1111,45 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
     pPlayer->AddSkillExperience(PlayerCharacter::LastUsedCombatSkill, acMessage.Experience);
 }
 
+// Whether the phase waits on a package of an NPC remote here. Packages only complete on the client running the NPC's AI,
+// so this copy of the scene can't get past the phase on its own.
+static bool IsPhaseStuckOnRemotePackage(BGSScene* apScene, uint32_t aPhaseIndex) noexcept
+{
+    // A phase with completion conditions ends once they pass, even mid-action, so this copy catches up within milliseconds.
+    const BGSScenePhase* pPhase = apScene->phases[aPhaseIndex];
+    if (!pPhase || pPhase->HasCompletionConditions())
+        return false;
+
+    for (BGSSceneAction* pAction : apScene->actions)
+    {
+        if (!pAction || pAction->GetType() != BGSSceneAction::Type::kPackage || !pAction->BlocksPhase(aPhaseIndex))
+            continue;
+
+        Actor* pActor = Cast<Actor>(apScene->owningQuest ? apScene->owningQuest->GetAliasedRef(pAction->actorId) : nullptr);
+        ActorExtension* pExtension = pActor ? pActor->GetExtension() : nullptr;
+        if (pExtension && pExtension->IsRemote())
+            return true;
+    }
+
+    return false;
+}
+
+// Whether the local copy of the line's scene voices it itself or already did, so the sender's would cut it off and end the
+// phase early. A copy stuck in an earlier phase on a remote NPC's package never reaches the line, so it plays the sender's.
+static bool IsLineVoicedByLocalScene(Actor* apActor, const GameId& acSceneId, uint32_t aScenePhase) noexcept
+{
+    BGSScene* pScene = apActor->GetCurrentScene();
+    if (!acSceneId || !pScene || !pScene->isPlaying || pScene->formID != World::Get().GetModSystem().GetGameId(acSceneId))
+        return false;
+
+    // At or past the sender's phase. A phase index past the end means the scene is starting or ending here.
+    const uint32_t cPhase = pScene->currentPhaseIndex;
+    if (cPhase >= aScenePhase || cPhase >= pScene->phases.length)
+        return true;
+
+    return !IsPhaseStuckOnRemotePackage(pScene, cPhase);
+}
+
 void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
 {
     if (!m_transport.IsConnected())
@@ -1132,8 +1171,8 @@ void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
     DialogueRequest request{};
     request.ServerId = serverIdRes.value();
     request.SoundFilename = acEvent.VoiceFile;
-    if (acEvent.SceneID)
-        m_world.GetModSystem().GetServerModId(acEvent.SceneID, request.SceneId);
+    if (acEvent.SceneID && m_world.GetModSystem().GetServerModId(acEvent.SceneID, request.SceneId))
+        request.ScenePhase = acEvent.ScenePhase;
 
     m_transport.Send(request);
 }
@@ -1145,12 +1184,12 @@ void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcep
     if (!pActor)
         return;
 
-    // Every client plays scenes itself, so if the line's scene plays here too, the local copy already voices it. Playing
-    // the sender's line would cut that off and end the scene phase early. Menu and other-scene lines still play.
-    BGSScene* pScene = pActor->GetCurrentScene();
-    if (acMessage.SceneId && pScene && pScene->isPlaying && pScene->formID == m_world.GetModSystem().GetGameId(acMessage.SceneId))
+    // Every client plays scenes itself, the local copy usually voices the line. Menu and other-scene lines still play.
+    if (IsLineVoicedByLocalScene(pActor, acMessage.SceneId, acMessage.ScenePhase))
     {
-        spdlog::info("Skipping remote dialogue for actor {:X}, it plays the same scene {:X} here, file: {}", pActor->formID, pScene->formID, acMessage.SoundFilename);
+        spdlog::info(
+            "Skipping remote dialogue for actor {:X}, sender's phase {}, it plays the same scene {:X} here, file: {}", pActor->formID, acMessage.ScenePhase,
+            pActor->GetCurrentScene()->formID, acMessage.SoundFilename);
         return;
     }
 
@@ -1180,8 +1219,8 @@ void CharacterService::OnSubtitleEvent(const SubtitleEvent& acEvent) noexcept
     request.ServerId = serverIdRes.value();
     request.Text = acEvent.Text;
     request.TopicFormId = acEvent.TopicFormID;
-    if (acEvent.SceneID)
-        m_world.GetModSystem().GetServerModId(acEvent.SceneID, request.SceneId);
+    if (acEvent.SceneID && m_world.GetModSystem().GetServerModId(acEvent.SceneID, request.SceneId))
+        request.ScenePhase = acEvent.ScenePhase;
 
     m_transport.Send(request);
 }
@@ -1194,8 +1233,7 @@ void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcep
 
     // The local copy of the scene shows its own subtitle, see OnNotifyDialogue. Only the actor's own voice line ending
     // hides a subtitle, so a remote one arriving after the local line has finished would stay on screen.
-    BGSScene* pScene = pActor->GetCurrentScene();
-    if (acMessage.SceneId && pScene && pScene->isPlaying && pScene->formID == m_world.GetModSystem().GetGameId(acMessage.SceneId))
+    if (IsLineVoicedByLocalScene(pActor, acMessage.SceneId, acMessage.ScenePhase))
         return;
 
     // This is only for fallout 4
