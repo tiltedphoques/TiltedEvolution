@@ -11,6 +11,10 @@ on:
         required: false
         type: string
         default: releasedbg
+      skyrim-version:
+        required: false
+        type: string
+        default: 'latest'
       upload-build-for-next-job:
         required: false
         type: boolean
@@ -18,6 +22,7 @@ on:
 
 env:
   BUILD_MODE: ${{ inputs.build-mode || 'releasedbg' }}
+  SKYRIM_VERSION: ${{ inputs.skyrim-version || 'latest' }}
 
 jobs:
   build:
@@ -54,6 +59,9 @@ jobs:
         run: |
           version="$(git describe --tags --always)"
           echo "ARTIFACT_VERSION=${version#v}" >> "$GITHUB_ENV"
+          if [ "$SKYRIM_VERSION" != "latest" ]; then
+            echo "ASSET_SUFFIX=-sse${SKYRIM_VERSION}" >> "$GITHUB_ENV"
+          fi
 
       - name: Cache xmake dependencies
         uses: actions/cache@v6
@@ -70,7 +78,7 @@ jobs:
           actions-cache-key: ${{ matrix.os }}
 
       - name: Configure xmake and install dependencies
-        run: xmake config --plat=windows --arch=${{ matrix.arch }} --mode="$BUILD_MODE" --yes -vD
+        run: xmake config --plat=windows --arch=${{ matrix.arch }} --mode="$BUILD_MODE" --skyrim_version="$SKYRIM_VERSION" --yes -vD
 
       # Build the client
       - name: Build with xmake
@@ -129,30 +137,30 @@ jobs:
         run: |
           mkdir -p release-assets
           (cd str-build && 7z a -tzip \
-            "../release-assets/SkyrimTogether-${ARTIFACT_VERSION}-windows-${{ matrix.arch }}.zip" \
+            "../release-assets/SkyrimTogether-${ARTIFACT_VERSION}-windows-${{ matrix.arch }}${{ env.ASSET_SUFFIX }}.zip" \
             .)
           (cd str-pdb && 7z a -tzip \
-            "../release-assets/SkyrimTogether-${ARTIFACT_VERSION}-windows-${{ matrix.arch }}-debug-symbols.zip" \
+            "../release-assets/SkyrimTogether-${ARTIFACT_VERSION}-windows-${{ matrix.arch }}${{ env.ASSET_SUFFIX }}-debug-symbols.zip" \
             .)
 
       - name: Upload playable build
         if: ${{ inputs.upload-build-for-next-job }}
         uses: actions/upload-artifact@v7
         with:
-          name: SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}
+          name: SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}${{ env.ASSET_SUFFIX }}
           # Direct downloads should receive the existing zip without another zip layer
           archive: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
           retention-days: 7
           if-no-files-found: error
-          path: release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}.zip
+          path: release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}${{ env.ASSET_SUFFIX }}.zip
 
       - name: Upload debug symbols
         if: ${{ inputs.upload-build-for-next-job }}
         uses: actions/upload-artifact@v7
         with:
-          name: SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}-debug-symbols
+          name: SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}${{ env.ASSET_SUFFIX }}-debug-symbols
           # Direct downloads should receive the existing zip without another zip layer
           archive: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
           retention-days: 7
           if-no-files-found: error
-          path: release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}-debug-symbols.zip
+          path: release-assets/SkyrimTogether-${{ env.ARTIFACT_VERSION }}-windows-${{ matrix.arch }}${{ env.ASSET_SUFFIX }}-debug-symbols.zip

@@ -8,7 +8,8 @@ questing, combat and exploration for 2-8 players.
 - Platforms: the client and launcher are Windows x64 only. The server also runs on Linux (amd64 and arm64),
   so keep server and shared code portable.
 - Game versions: SE **1.7.104** is the main target (`kSupportedGameVersions` in `Code/client/main.cpp`).
-  1.6.1170 is unofficially supported. Engine code and address IDs are effectively identical.
+  1.6.1170 is also supported (guarded by `#ifdef TP_SKYRIM_1_6_1170`). Engine code and address IDs are
+  effectively identical.
 - Branches: open PRs against `dev`. `master` is the release branch.
 - Logs: `build\windows\x64\<mode>\logs`.
 

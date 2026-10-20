@@ -6,6 +6,11 @@ target(name)
     add_includedirs(".","../../Libraries/")
     set_pcxxheader("TiltedOnlinePCH.h")
 
+    -- latest game version by default (see main.cpp in client)
+    if is_config("skyrim_version", "1.6.1170") then
+        add_defines("TP_SKYRIM_1_6_1170", {public = true})
+    end
+
     -- exclude game specifc stuff
     add_headerfiles("**.h|Games/Skyrim/**")
     add_files("**.cpp|Games/Skyrim/**")
