@@ -918,22 +918,39 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
 
 void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept
 {
-    auto view = m_world.view<RemoteComponent>();
+    const auto entity = Utils::FindEntityByServerId(acMessage.ServerId);
+    if (!entity || !m_world.any_of<LocalComponent, RemoteComponent>(*entity))
+        return;
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.ServerId, view](entt::entity entity) { return view.get<RemoteComponent>(entity).Id == id; });
+    const entt::entity cEntity = *entity;
+    const auto* pFormIdComponent = m_world.try_get<FormIdComponent>(cEntity);
+    Actor* pActor = pFormIdComponent ? Cast<Actor>(TESForm::GetById(pFormIdComponent->Id)) : nullptr;
 
-    if (itor != std::end(view))
+    if (m_world.all_of<LocalComponent>(cEntity))
     {
-        if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
+        // The server only drops an actor once nobody accepts it, so we can still be holding it as local when our assignment
+        // request was answered after we had declined the same grant. Streaming it under the old id would sync nothing.
+        spdlog::warn("Server removed actor {:X} while it is still owned locally", acMessage.ServerId);
+        m_world.remove<LocalAnimationComponent, LocalComponent>(cEntity);
+    }
+    else
+    {
+        if (pActor && pActor->IsTemporary())
         {
-            Actor* pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
-            if (pActor && pActor->IsTemporary())
-                CharacterService::DeleteTempActor(pFormIdComponent->Id);
-            else if (pActor)
-                pActor->GetExtension()->SetRemote(false);
+            CharacterService::DeleteTempActor(pActor->formID);
+            pActor = nullptr;
         }
+        else if (pActor)
+            pActor->GetExtension()->SetRemote(false);
 
-        DeleteRemoteEntityComponents(*itor);
+        DeleteRemoteEntityComponents(cEntity);
+    }
+
+    // Nobody owns the actor on the server anymore, so if it is still loaded here, ask for it instead of running it unsynced.
+    if (pActor && pActor->GetNiNode() && !pActor->GetExtension()->IsPlayer())
+    {
+        spdlog::info("Requesting assignment of actor {:X} after the server removed it, server id: {:X}", pActor->formID, acMessage.ServerId);
+        ProcessNewEntity(cEntity);
     }
 }
 
