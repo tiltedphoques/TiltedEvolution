@@ -15,6 +15,7 @@
 #include <Events/EquipmentChangeEvent.h>
 
 #include <World.h>
+#include <Systems/OwnershipSystem.h>
 #include <Games/Skyrim/Interface/UI.h>
 #include <PlayerCharacter.h>
 #include <Forms/TESObjectCELL.h>
@@ -62,24 +63,16 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     uint32_t ownershipEpoch = 0;
     if (Cast<Actor>(TESForm::GetById(acEvent.FormId)))
     {
-        // Changes to an actor are sent with its current owner's epoch so the server can reject stale ones. The player's own
-        // changes to someone else's actor (looting, pickpocketing) are relayed to its owner.
-        if (const auto* pLocalComponent = m_world.try_get<LocalComponent>(*iter))
-        {
-            serverId = pLocalComponent->Id;
-            ownershipEpoch = pLocalComponent->OwnershipEpoch;
-        }
-        else if (const auto* pRemoteComponent = m_world.try_get<RemoteComponent>(*iter); pRemoteComponent && acEvent.IsPlayerTransfer)
-        {
-            serverId = pRemoteComponent->Id;
-            ownershipEpoch = pRemoteComponent->OwnershipEpoch;
-        }
-
-        if (ownershipEpoch == 0)
+        // The player's own changes to someone else's actor (looting, pickpocketing) are relayed to its owner
+        const auto ownership = OwnershipSystem::GetOutgoingOwnership(m_world, *iter, acEvent.IsPlayerTransfer);
+        if (!ownership)
         {
             spdlog::debug("Discarded an inventory change for actor {:X} that isn't owned locally (item {:X}, count {})", acEvent.FormId, acEvent.Item.BaseId.BaseId, acEvent.Item.Count);
             return;
         }
+
+        serverId = ownership->ServerId;
+        ownershipEpoch = ownership->OwnershipEpoch;
     }
     else
     {
@@ -117,8 +110,8 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     if (iter == std::end(view))
         return;
 
-    const auto* pLocalComponent = m_world.try_get<LocalComponent>(*iter);
-    if (!pLocalComponent || pLocalComponent->OwnershipEpoch == 0)
+    const auto ownership = OwnershipSystem::GetOutgoingOwnership(m_world, *iter, false);
+    if (!ownership)
     {
         spdlog::debug("Discarded an equipment change for actor {:X} that isn't owned locally (item {:X})", acEvent.ActorId, acEvent.ItemId);
         return;
@@ -131,8 +124,8 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     auto& modSystem = World::Get().GetModSystem();
 
     RequestEquipmentChanges request;
-    request.ServerId = pLocalComponent->Id;
-    request.OwnershipEpoch = pLocalComponent->OwnershipEpoch;
+    request.ServerId = ownership->ServerId;
+    request.OwnershipEpoch = ownership->OwnershipEpoch;
 
     if (!modSystem.GetServerModId(acEvent.EquipSlotId, request.EquipSlotId))
         return;
@@ -157,7 +150,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
     {
         Actor* pActor = nullptr;
 
-        const auto remoteEntity = Utils::FindRemoteEntityAtEpoch(acMessage.ServerId, acMessage.OwnershipEpoch);
+        const auto remoteEntity = OwnershipSystem::AcceptRemoteUpdate(m_world, acMessage.ServerId, acMessage.OwnershipEpoch);
         if (remoteEntity)
         {
             // The spawn request's inventory replaces the actor's once its 3D loads, so the change has to go there too
@@ -171,18 +164,11 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
             if (const auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*remoteEntity))
                 pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
         }
-        else
+        else if (const auto localEntity = OwnershipSystem::AcceptOwnerUpdate(m_world, acMessage.ServerId, acMessage.OwnershipEpoch))
         {
             // Remote interactions with our own actor, e.g. a player looting it, are relayed back to the owner.
-            auto localView = m_world.view<LocalComponent, FormIdComponent>();
-            const auto localIt = std::find_if(localView.begin(), localView.end(), [localView, &acMessage](const entt::entity aEntity)
-            {
-                const auto& localComponent = localView.get<LocalComponent>(aEntity);
-                return localComponent.Id == acMessage.ServerId && localComponent.OwnershipEpoch == acMessage.OwnershipEpoch;
-            });
-
-            if (localIt != localView.end())
-                pActor = Cast<Actor>(TESForm::GetById(localView.get<FormIdComponent>(*localIt).Id));
+            if (const auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*localEntity))
+                pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
         }
 
         if (!pActor)
@@ -211,7 +197,7 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
 void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept
 {
-    const auto entity = Utils::FindRemoteEntityAtEpoch(acMessage.ServerId, acMessage.OwnershipEpoch);
+    const auto entity = OwnershipSystem::AcceptRemoteUpdate(m_world, acMessage.ServerId, acMessage.OwnershipEpoch);
     if (!entity)
     {
         spdlog::debug("Discarded an equipment update for actor {:X} because epoch {} is no longer current", acMessage.ServerId, acMessage.OwnershipEpoch);
@@ -311,7 +297,7 @@ void InventoryService::ApplyEquipmentChange(Actor* apActor, const NotifyEquipmen
 
 void InventoryService::OnNotifyInventorySnapshot(const NotifyInventorySnapshot& acMessage) noexcept
 {
-    const auto entity = Utils::FindRemoteEntityAtEpoch(acMessage.ServerId, acMessage.OwnershipEpoch);
+    const auto entity = OwnershipSystem::AcceptRemoteUpdate(m_world, acMessage.ServerId, acMessage.OwnershipEpoch);
     if (!entity)
     {
         spdlog::debug("Discarded an inventory snapshot for actor {:X} because epoch {} is no longer current", acMessage.ServerId, acMessage.OwnershipEpoch);

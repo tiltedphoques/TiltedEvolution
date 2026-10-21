@@ -29,9 +29,6 @@ static void Assert(const char* apExpression, const char* apMessage)
 
 std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept;
 std::optional<entt::entity> FindEntityByServerId(uint32_t aServerId) noexcept;
-// Finds the remote entity a relayed owner update belongs to. The server only relays the current owner at its current
-// epoch, so a newer epoch means this client missed the ownership transfer; it is adopted instead of dropping every later update.
-std::optional<entt::entity> FindRemoteEntityAtEpoch(uint32_t aServerId, uint32_t aOwnershipEpoch) noexcept;
 
 template <class T> T* GetByServerId(const uint32_t acServerId) noexcept
 {

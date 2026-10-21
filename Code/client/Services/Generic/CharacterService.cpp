@@ -23,6 +23,7 @@
 #include <Systems/CacheSystem.h>
 #include <Systems/FaceGenSystem.h>
 #include <Systems/LeveledNpcSystem.h>
+#include <Systems/OwnershipSystem.h>
 
 #include <Events/ActorAddedEvent.h>
 #include <Events/ActorRemovedEvent.h>
@@ -804,14 +805,7 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
     if (entity && !m_world.any_of<LocalComponent, RemoteComponent>(*entity))
         entity.reset();
 
-    uint32_t currentEpoch = 0;
-    if (entity)
-    {
-        if (const auto* pLocalComponent = m_world.try_get<LocalComponent>(*entity))
-            currentEpoch = pLocalComponent->OwnershipEpoch;
-        else if (const auto* pRemoteComponent = m_world.try_get<RemoteComponent>(*entity))
-            currentEpoch = pRemoteComponent->OwnershipEpoch;
-    }
+    const uint32_t currentEpoch = entity ? OwnershipSystem::GetOwnershipEpoch(m_world, *entity) : 0;
 
     if (currentEpoch != 0 && acMessage.OwnershipEpoch <= currentEpoch)
     {

@@ -5,6 +5,7 @@
 #include <Forms/ActorValueInfo.h>
 #include <Games/References.h>
 #include <Components.h>
+#include <Systems/OwnershipSystem.h>
 
 #include <Events/UpdateEvent.h>
 #include <Events/ActorRemovedEvent.h>
@@ -315,7 +316,7 @@ void ActorValueService::OnHealthChangeBroadcast(const NotifyHealthChangeBroadcas
 
 void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMessage) const noexcept
 {
-    const auto entity = Utils::FindRemoteEntityAtEpoch(acMessage.Id, acMessage.OwnershipEpoch);
+    const auto entity = OwnershipSystem::AcceptRemoteUpdate(m_world, acMessage.Id, acMessage.OwnershipEpoch);
     const auto* pFormIdComponent = entity ? m_world.try_get<FormIdComponent>(*entity) : nullptr;
     if (!pFormIdComponent)
         return;
@@ -344,7 +345,7 @@ void ActorValueService::OnActorValueChanges(const NotifyActorValueChanges& acMes
 
 void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges& acMessage) const noexcept
 {
-    const auto entity = Utils::FindRemoteEntityAtEpoch(acMessage.Id, acMessage.OwnershipEpoch);
+    const auto entity = OwnershipSystem::AcceptRemoteUpdate(m_world, acMessage.Id, acMessage.OwnershipEpoch);
     const auto* pFormIdComponent = entity ? m_world.try_get<FormIdComponent>(*entity) : nullptr;
     if (!pFormIdComponent)
         return;
@@ -367,7 +368,7 @@ void ActorValueService::OnActorMaxValueChanges(const NotifyActorMaxValueChanges&
 
 void ActorValueService::OnDeathStateChange(const NotifyDeathStateChange& acMessage) const noexcept
 {
-    const auto entity = Utils::FindRemoteEntityAtEpoch(acMessage.Id, acMessage.OwnershipEpoch);
+    const auto entity = OwnershipSystem::AcceptRemoteUpdate(m_world, acMessage.Id, acMessage.OwnershipEpoch);
     const auto* pFormIdComponent = entity ? m_world.try_get<FormIdComponent>(*entity) : nullptr;
     if (!pFormIdComponent)
     {

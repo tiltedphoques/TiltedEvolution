@@ -54,29 +54,6 @@ std::optional<entt::entity> FindEntityByServerId(const uint32_t aServerId) noexc
     return std::nullopt;
 }
 
-std::optional<entt::entity> FindRemoteEntityAtEpoch(const uint32_t aServerId, const uint32_t aOwnershipEpoch) noexcept
-{
-    if (aOwnershipEpoch == 0)
-        return std::nullopt;
-
-    auto view = World::Get().view<RemoteComponent>(entt::exclude<LocalComponent>);
-    const auto it = std::find_if(view.begin(), view.end(), [view, aServerId](const entt::entity aEntity) { return view.get<RemoteComponent>(aEntity).Id == aServerId; });
-    if (it == view.end())
-        return std::nullopt;
-
-    auto& remoteComponent = view.get<RemoteComponent>(*it);
-    if (aOwnershipEpoch < remoteComponent.OwnershipEpoch)
-        return std::nullopt;
-
-    if (aOwnershipEpoch > remoteComponent.OwnershipEpoch)
-    {
-        spdlog::info("Adopting ownership epoch {} for remote actor {:X}, the transfer from epoch {} was missed", aOwnershipEpoch, aServerId, remoteComponent.OwnershipEpoch);
-        remoteComponent.OwnershipEpoch = aOwnershipEpoch;
-    }
-
-    return *it;
-}
-
 void ShowHudMessage(const TiltedPhoques::String& acMessage)
 {
     using TShowHudMessage = void(const char*, const char*, bool);
