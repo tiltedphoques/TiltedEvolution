@@ -4,6 +4,7 @@
 #include <Services/PartyService.h>
 
 #include <Services/CharacterService.h>
+#include <Services/InventoryService.h>
 #include <Services/QuestService.h>
 #include <Services/TransportService.h>
 
@@ -505,7 +506,35 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     if (remoteItor != std::end(remoteView))
     {
-        spdlog::warn("Character with remote id {:X} is already spawned.", acMessage.ServerId);
+        auto& remoteComponent = remoteView.get<RemoteComponent>(*remoteItor);
+        if (acMessage.OwnershipEpoch <= remoteComponent.OwnershipEpoch)
+        {
+            spdlog::warn("Character with remote id {:X} is already spawned.", acMessage.ServerId);
+            return;
+        }
+
+        // A transfer was missed, so the updates relayed since then were dropped as stale. Catch up from the spawn state.
+        spdlog::info("Adopting ownership epoch {} for spawned actor {:X}, the transfer from epoch {} was missed", acMessage.OwnershipEpoch, acMessage.ServerId, remoteComponent.OwnershipEpoch);
+        remoteComponent.OwnershipEpoch = acMessage.OwnershipEpoch;
+
+        InventoryService::ApplyRemoteInventory(m_world, *remoteItor, acMessage.InventoryContent);
+
+        if (auto* pWaitingFor3D = m_world.try_get<WaitingFor3D>(*remoteItor))
+        {
+            pWaitingFor3D->SpawnRequest.InitialActorValues = acMessage.InitialActorValues;
+            pWaitingFor3D->SpawnRequest.IsDead = acMessage.IsDead;
+            pWaitingFor3D->SpawnRequest.OwnershipEpoch = acMessage.OwnershipEpoch;
+        }
+        else if (const auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*remoteItor))
+        {
+            if (Actor* pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id)))
+            {
+                pActor->SetActorValues(acMessage.InitialActorValues);
+                if (!acMessage.IsPlayer && pActor->IsDead() != acMessage.IsDead)
+                    acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+            }
+        }
+
         return;
     }
 
@@ -863,6 +892,11 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
         ApplyLeveledNpcPick(pActor, acMessage.LeveledNpcPickId);
 
     spdlog::info("Actor {:X} is now owned by player {:X} at epoch {}", acMessage.ServerId, acMessage.OwnerPlayerId, acMessage.OwnershipEpoch);
+
+    // The leader owns every actor it has loaded. It gets here when an actor went to someone else while the leader wasn't
+    // ready for it, or when a stale claim was answered with the current owner. Without 3D the grant would only be declined.
+    if (pFormIdComponent && pActor && pActor->GetNiNode() && !m_world.all_of<WaitingFor3D>(cEntity))
+        ProcessNewEntity(cEntity);
 }
 
 void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept

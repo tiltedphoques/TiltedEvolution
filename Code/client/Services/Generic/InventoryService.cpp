@@ -151,17 +151,15 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
     {
         Actor* pActor = nullptr;
 
-        auto remoteView = m_world.view<RemoteComponent, FormIdComponent>(entt::exclude<LocalComponent>);
-        const auto remoteIt = std::find_if(remoteView.begin(), remoteView.end(), [remoteView, &acMessage](const entt::entity aEntity)
+        const auto remoteEntity = Utils::FindRemoteEntityAtEpoch(acMessage.ServerId, acMessage.OwnershipEpoch);
+        if (remoteEntity)
         {
-            const auto& remoteComponent = remoteView.get<RemoteComponent>(aEntity);
-            return remoteComponent.Id == acMessage.ServerId && remoteComponent.OwnershipEpoch == acMessage.OwnershipEpoch;
-        });
-
-        if (remoteIt != remoteView.end())
-            pActor = Cast<Actor>(TESForm::GetById(remoteView.get<FormIdComponent>(*remoteIt).Id));
+            if (const auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*remoteEntity))
+                pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
+        }
         else
         {
+            // Remote interactions with our own actor, e.g. a player looting it, are relayed back to the owner.
             auto localView = m_world.view<LocalComponent, FormIdComponent>();
             const auto localIt = std::find_if(localView.begin(), localView.end(), [localView, &acMessage](const entt::entity aEntity)
             {
@@ -199,19 +197,15 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 
 void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept
 {
-    auto view = m_world.view<RemoteComponent, FormIdComponent>(entt::exclude<LocalComponent>);
-    const auto it = std::find_if(view.begin(), view.end(), [view, &acMessage](const entt::entity aEntity)
-    {
-        const auto& remoteComponent = view.get<RemoteComponent>(aEntity);
-        return remoteComponent.Id == acMessage.ServerId && remoteComponent.OwnershipEpoch == acMessage.OwnershipEpoch;
-    });
-    if (it == view.end())
+    const auto entity = Utils::FindRemoteEntityAtEpoch(acMessage.ServerId, acMessage.OwnershipEpoch);
+    const auto* pFormIdComponent = entity ? m_world.try_get<FormIdComponent>(*entity) : nullptr;
+    if (!pFormIdComponent)
     {
         spdlog::debug("Discarded an equipment update for actor {:X} because epoch {} is no longer current", acMessage.ServerId, acMessage.OwnershipEpoch);
         return;
     }
 
-    Actor* pActor = Cast<Actor>(TESForm::GetById(view.get<FormIdComponent>(*it).Id));
+    Actor* pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
     if (!pActor)
         return;
 
@@ -285,6 +279,25 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
                 pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
         }
     }
+}
+
+void InventoryService::ApplyRemoteInventory(World& aWorld, const entt::entity aEntity, const Inventory& acInventory) noexcept
+{
+    // The spawn request's inventory is applied once the 3D loads, anything applied before that would be overwritten
+    if (auto* pWaitingFor3D = aWorld.try_get<WaitingFor3D>(aEntity))
+    {
+        pWaitingFor3D->SpawnRequest.InventoryContent = acInventory;
+        return;
+    }
+
+    const auto* pFormIdComponent = aWorld.try_get<FormIdComponent>(aEntity);
+    Actor* pActor = pFormIdComponent ? Cast<Actor>(TESForm::GetById(pFormIdComponent->Id)) : nullptr;
+    if (!pActor || !pActor->GetNiNode())
+        return;
+
+    const Inventory currentInventory = pActor->GetActorInventory();
+    if (currentInventory.Entries != acInventory.Entries || currentInventory.CurrentMagicEquipment != acInventory.CurrentMagicEquipment)
+        pActor->SetActorInventory(acInventory);
 }
 
 void InventoryService::RunWeaponStateUpdates() noexcept
