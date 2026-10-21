@@ -19,12 +19,6 @@ struct TESForm;
 namespace Utils
 {
 
-struct ActorOwnershipToken
-{
-    uint32_t ServerId{};
-    uint32_t OwnershipEpoch{};
-};
-
 static void Assert(const char* apExpression, const char* apMessage)
 {
     spdlog::critical("Assertion failed ({}): {}", apExpression, apMessage);
@@ -35,8 +29,6 @@ static void Assert(const char* apExpression, const char* apMessage)
 
 std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept;
 std::optional<entt::entity> FindEntityByServerId(uint32_t aServerId) noexcept;
-std::optional<ActorOwnershipToken> GetLocalOwnershipToken(uint32_t aFormId) noexcept;
-std::optional<ActorOwnershipToken> GetRemoteOwnershipToken(uint32_t aFormId) noexcept;
 // Finds the remote entity a relayed owner update belongs to. The server only relays the current owner at its current
 // epoch, so a newer epoch means this client missed the ownership transfer; it is adopted instead of dropping every later update.
 std::optional<entt::entity> FindRemoteEntityAtEpoch(uint32_t aServerId, uint32_t aOwnershipEpoch) noexcept;

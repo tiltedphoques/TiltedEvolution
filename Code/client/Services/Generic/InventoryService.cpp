@@ -59,26 +59,30 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
         return;
 
     uint32_t serverId = 0;
-    if (acEvent.OwnershipEpoch != 0)
+    uint32_t ownershipEpoch = 0;
+    if (Cast<Actor>(TESForm::GetById(acEvent.FormId)))
     {
-        const auto* pLocalComponent = m_world.try_get<LocalComponent>(*iter);
-        const auto* pRemoteComponent = m_world.try_get<RemoteComponent>(*iter);
-        const bool ownershipMatches = (pLocalComponent && pLocalComponent->Id == acEvent.ServerId && pLocalComponent->OwnershipEpoch == acEvent.OwnershipEpoch)
-            || (pRemoteComponent && pRemoteComponent->Id == acEvent.ServerId && pRemoteComponent->OwnershipEpoch == acEvent.OwnershipEpoch);
-
-        if (!ownershipMatches)
+        // Changes to an actor are sent with its current owner's epoch so the server can reject stale ones. The player's own
+        // changes to someone else's actor (looting, pickpocketing) are relayed to its owner.
+        if (const auto* pLocalComponent = m_world.try_get<LocalComponent>(*iter))
         {
-            spdlog::debug("Discarded an inventory change for actor {:X} because ownership changed after it was queued (epoch {})", acEvent.ServerId, acEvent.OwnershipEpoch);
-            return;
+            serverId = pLocalComponent->Id;
+            ownershipEpoch = pLocalComponent->OwnershipEpoch;
+        }
+        else if (const auto* pRemoteComponent = m_world.try_get<RemoteComponent>(*iter); pRemoteComponent && acEvent.IsPlayerTransfer)
+        {
+            serverId = pRemoteComponent->Id;
+            ownershipEpoch = pRemoteComponent->OwnershipEpoch;
         }
 
-        serverId = acEvent.ServerId;
+        if (ownershipEpoch == 0)
+        {
+            spdlog::debug("Discarded an inventory change for actor {:X} that isn't owned locally (item {:X}, count {})", acEvent.FormId, acEvent.Item.BaseId.BaseId, acEvent.Item.Count);
+            return;
+        }
     }
     else
     {
-        if (Cast<Actor>(TESForm::GetById(acEvent.FormId)))
-            return;
-
         const std::optional<uint32_t> serverIdRes = Utils::GetServerId(*iter);
         if (!serverIdRes)
         {
@@ -91,7 +95,7 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
 
     RequestInventoryChanges request;
     request.ServerId = serverId;
-    request.OwnershipEpoch = acEvent.OwnershipEpoch;
+    request.OwnershipEpoch = ownershipEpoch;
     request.Item = acEvent.Item;
     request.Drop = acEvent.Drop;
     request.UpdateClients = acEvent.UpdateClients;
@@ -114,9 +118,9 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
         return;
 
     const auto* pLocalComponent = m_world.try_get<LocalComponent>(*iter);
-    if (acEvent.OwnershipEpoch == 0 || !pLocalComponent || pLocalComponent->Id != acEvent.ServerId || pLocalComponent->OwnershipEpoch != acEvent.OwnershipEpoch)
+    if (!pLocalComponent || pLocalComponent->OwnershipEpoch == 0)
     {
-        spdlog::debug("Discarded an equipment change for actor {:X} because ownership changed after it was queued (epoch {})", acEvent.ServerId, acEvent.OwnershipEpoch);
+        spdlog::debug("Discarded an equipment change for actor {:X} that isn't owned locally (item {:X})", acEvent.ActorId, acEvent.ItemId);
         return;
     }
 
@@ -127,8 +131,8 @@ void InventoryService::OnEquipmentChangeEvent(const EquipmentChangeEvent& acEven
     auto& modSystem = World::Get().GetModSystem();
 
     RequestEquipmentChanges request;
-    request.ServerId = acEvent.ServerId;
-    request.OwnershipEpoch = acEvent.OwnershipEpoch;
+    request.ServerId = pLocalComponent->Id;
+    request.OwnershipEpoch = pLocalComponent->OwnershipEpoch;
 
     if (!modSystem.GetServerModId(acEvent.EquipSlotId, request.EquipSlotId))
         return;
