@@ -156,6 +156,14 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
         const auto remoteEntity = Utils::FindRemoteEntityAtEpoch(acMessage.ServerId, acMessage.OwnershipEpoch);
         if (remoteEntity)
         {
+            // The spawn request's inventory replaces the actor's once its 3D loads, so the change has to go there too
+            if (auto* pWaitingFor3D = m_world.try_get<WaitingFor3D>(*remoteEntity))
+            {
+                pWaitingFor3D->SpawnRequest.InventoryContent.AddOrRemoveEntry(acMessage.Item);
+                if (!acMessage.Drop)
+                    return;
+            }
+
             if (const auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*remoteEntity))
                 pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
         }
@@ -200,15 +208,29 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
 void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept
 {
     const auto entity = Utils::FindRemoteEntityAtEpoch(acMessage.ServerId, acMessage.OwnershipEpoch);
-    const auto* pFormIdComponent = entity ? m_world.try_get<FormIdComponent>(*entity) : nullptr;
-    if (!pFormIdComponent)
+    if (!entity)
     {
         spdlog::debug("Discarded an equipment update for actor {:X} because epoch {} is no longer current", acMessage.ServerId, acMessage.OwnershipEpoch);
         return;
     }
 
-    Actor* pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
-    if (!pActor)
+    // Equipping before the 3D loads would be undone by the spawn request's inventory
+    if (auto* pWaitingFor3D = m_world.try_get<WaitingFor3D>(*entity))
+    {
+        pWaitingFor3D->PendingEquipmentChanges.push_back(acMessage);
+        return;
+    }
+
+    const auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*entity);
+    if (!pFormIdComponent)
+        return;
+
+    ApplyEquipmentChange(Cast<Actor>(TESForm::GetById(pFormIdComponent->Id)), acMessage);
+}
+
+void InventoryService::ApplyEquipmentChange(Actor* apActor, const NotifyEquipmentChanges& acMessage) noexcept
+{
+    if (!apActor)
         return;
 
     auto& modSystem = World::Get().GetModSystem();
@@ -234,18 +256,18 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     if (acMessage.IsSpell)
     {
         if (acMessage.Unequip)
-            pEquipManager->UnEquipSpell(pActor, pItem, slotId);
+            pEquipManager->UnEquipSpell(apActor, pItem, slotId);
         else
-            pEquipManager->EquipSpell(pActor, pItem, slotId);
+            pEquipManager->EquipSpell(apActor, pItem, slotId);
 
         return;
     }
     else if (acMessage.IsShout)
     {
         if (acMessage.Unequip)
-            pEquipManager->UnEquipShout(pActor, pItem);
+            pEquipManager->UnEquipShout(apActor, pItem);
         else
-            pEquipManager->EquipShout(pActor, pItem);
+            pEquipManager->EquipShout(apActor, pItem);
 
         return;
     }
@@ -253,7 +275,7 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
     // TODO: ExtraData necessary? probably
     if (acMessage.Unequip)
     {
-        pEquipManager->UnEquip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
+        pEquipManager->UnEquip(apActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false, nullptr);
     }
     else
     {
@@ -261,24 +283,24 @@ void InventoryService::OnNotifyEquipmentChanges(const NotifyEquipmentChanges& ac
         Inventory wornArmor{};
         if (pItem->formType == FormType::Armor)
         {
-            wornArmor = pActor->GetWornArmor();
+            wornArmor = apActor->GetWornArmor();
             for (const auto& armor : wornArmor.Entries)
             {
                 uint32_t armorId = modSystem.GetGameId(armor.BaseId);
                 TESForm* pArmor = TESForm::GetById(armorId);
                 if (pArmor)
-                    pEquipManager->UnEquip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
+                    pEquipManager->UnEquip(apActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false, nullptr);
             }
         }
 
-        pEquipManager->Equip(pActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
+        pEquipManager->Equip(apActor, pItem, nullptr, acMessage.Count, pEquipSlot, false, true, false, false);
 
         for (const auto& armor : wornArmor.Entries)
         {
             uint32_t armorId = modSystem.GetGameId(armor.BaseId);
             TESForm* pArmor = TESForm::GetById(armorId);
             if (pArmor)
-                pEquipManager->Equip(pActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
+                pEquipManager->Equip(apActor, pArmor, nullptr, 1, pEquipSlot, false, true, false, false);
         }
     }
 }
@@ -301,6 +323,7 @@ void InventoryService::ApplyRemoteInventory(World& aWorld, const entt::entity aE
     if (auto* pWaitingFor3D = aWorld.try_get<WaitingFor3D>(aEntity))
     {
         pWaitingFor3D->SpawnRequest.InventoryContent = acInventory;
+        pWaitingFor3D->PendingEquipmentChanges.clear();
         return;
     }
 

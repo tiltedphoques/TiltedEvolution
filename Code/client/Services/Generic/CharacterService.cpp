@@ -139,6 +139,8 @@ void CharacterService::ReconcileActorData(
         pWaitingFor3D->SpawnRequest.IsDead = acActorData.IsDead;
         pWaitingFor3D->SpawnRequest.IsWeaponDrawn = acActorData.IsWeaponDrawn;
         pWaitingFor3D->SpawnRequest.OwnershipEpoch = aOwnershipEpoch;
+        // The server's inventory already contains them
+        pWaitingFor3D->PendingEquipmentChanges.clear();
     }
 
     if (!apActor)
@@ -1995,6 +1997,17 @@ void CharacterService::RunRemoteUpdates() noexcept
 
         pActor->SetActorInventory(waitingFor3D.SpawnRequest.InventoryContent);
         pActor->SetFactions(waitingFor3D.SpawnRequest.FactionsContent);
+
+        const auto& inventoryEntries = waitingFor3D.SpawnRequest.InventoryContent.Entries;
+        for (const auto& change : waitingFor3D.PendingEquipmentChanges)
+        {
+            // Items removed again before the 3D loaded are gone from the inventory, don't equip them back
+            const bool isInventoryItem = !change.IsSpell && !change.IsShout;
+            if (isInventoryItem && std::none_of(inventoryEntries.begin(), inventoryEntries.end(), [&change](const auto& acEntry) { return acEntry.BaseId == change.ItemId && acEntry.Count > 0; }))
+                continue;
+
+            InventoryService::ApplyEquipmentChange(pActor, change);
+        }
 
         if (!waitingFor3D.SpawnRequest.ActionsToReplay.Actions.empty())
         {
