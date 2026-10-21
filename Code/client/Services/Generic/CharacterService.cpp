@@ -52,6 +52,7 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
 #include <Messages/RequestOwnershipClaim.h>
+#include <Messages/RequestInventorySnapshot.h>
 #include <Messages/MountRequest.h>
 #include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
@@ -466,6 +467,20 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         localComponent.IsDead = acMessage.IsDead;
         localComponent.IsWeaponDrawn = acMessage.IsWeaponDrawn;
         pActor->GetExtension()->SetRemote(false);
+
+        // The hooks can't send inventory changes without a LocalComponent, so anything that changed while the request was
+        // in flight (e.g. the outfit being equipped as the actor loads) is missing on the server. Send the whole inventory.
+        const Inventory currentInventory = pActor->GetActorInventory();
+        if (currentInventory.Entries != acMessage.CurrentInventory.Entries || currentInventory.CurrentMagicEquipment != acMessage.CurrentInventory.CurrentMagicEquipment)
+        {
+            spdlog::info("Inventory of local actor {:X} changed while its assignment was in flight, sending it to the server", pActor->formID);
+
+            RequestInventorySnapshot request{};
+            request.ServerId = acMessage.ServerId;
+            request.OwnershipEpoch = acMessage.OwnershipEpoch;
+            request.CurrentInventory = currentInventory;
+            m_transport.Send(request);
+        }
     }
     else
     {
