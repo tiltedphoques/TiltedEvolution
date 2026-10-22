@@ -44,6 +44,8 @@
 #include <ExtraData/ExtraTextDisplayData.h>
 #include <Forms/EnchantmentItem.h>
 #include <Forms/AlchemyItem.h>
+#include <Forms/SpellItem.h>
+#include <Forms/TESShout.h>
 #include <Forms/TESObjectCELL.h>
 
 #include <Structs/Skyrim/AnimationGraphDescriptor_BHR_Master.h>
@@ -701,25 +703,48 @@ void Actor::SetMagicEquipment(const MagicEquipment& acEquipment) noexcept
     auto* pEquipManager = EquipManager::Get();
     auto& modSystem = World::Get().GetModSystem();
 
-    if (acEquipment.LeftHandSpell)
+    // The owner may have magic from a mod this client doesn't have (e.g. a power a werewolf mod
+    // equips after transforming back). Such ids resolve to 0, and equipping a null form leaves the
+    // actor with an empty hand/voice entry that combat AI dereferences later (crash in
+    // Actor::VisitSpells while building the combat inventory). Skip anything that doesn't resolve.
+    const auto equipHandSpell = [&](const GameId& acSpellId, uint32_t aSlot, const char* apHand)
     {
-        uint32_t mainHandWeaponId = modSystem.GetGameId(acEquipment.LeftHandSpell);
-        spdlog::debug("Setting left hand spell: {:X}", mainHandWeaponId);
-        pEquipManager->EquipSpell(this, TESForm::GetById(mainHandWeaponId), 0);
-    }
+        const uint32_t cSpellId = modSystem.GetGameId(acSpellId);
+        auto* pSpell = Cast<MagicItem>(TESForm::GetById(cSpellId));
+        if (!pSpell)
+        {
+            spdlog::warn(
+                "Actor {:X}: skipping {} hand spell {:X}:{:X}, not a spell on this client (missing mod?)", formID, apHand, acSpellId.ModId, acSpellId.BaseId);
+            return;
+        }
+
+        spdlog::debug("Setting {} hand spell: {:X}", apHand, cSpellId);
+        pEquipManager->EquipSpell(this, pSpell, aSlot);
+    };
+
+    if (acEquipment.LeftHandSpell)
+        equipHandSpell(acEquipment.LeftHandSpell, 0, "left");
 
     if (acEquipment.RightHandSpell)
-    {
-        uint32_t secondaryHandWeaponId = modSystem.GetGameId(acEquipment.RightHandSpell);
-        spdlog::debug("Setting right hand spell: {:X}", secondaryHandWeaponId);
-        pEquipManager->EquipSpell(this, TESForm::GetById(secondaryHandWeaponId), 1);
-    }
+        equipHandSpell(acEquipment.RightHandSpell, 1, "right");
 
     if (acEquipment.Shout)
     {
-        uint32_t shoutId = modSystem.GetGameId(acEquipment.Shout);
-        spdlog::debug("Setting shout: {:X}", shoutId);
-        pEquipManager->EquipShout(this, TESForm::GetById(shoutId));
+        const uint32_t cShoutId = modSystem.GetGameId(acEquipment.Shout);
+        TESForm* pShout = TESForm::GetById(cShoutId);
+
+        // The voice slot holds either a shout or a power (a spell)
+        if (!Cast<TESShout>(pShout) && !Cast<MagicItem>(pShout))
+        {
+            spdlog::warn(
+                "Actor {:X}: skipping shout/power {:X}:{:X}, not a shout or power on this client (missing mod?)", formID, acEquipment.Shout.ModId,
+                acEquipment.Shout.BaseId);
+        }
+        else
+        {
+            spdlog::debug("Setting shout: {:X}", cShoutId);
+            pEquipManager->EquipShout(this, pShout);
+        }
     }
 }
 
