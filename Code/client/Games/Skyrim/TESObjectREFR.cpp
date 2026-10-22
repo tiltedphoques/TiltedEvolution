@@ -40,21 +40,10 @@ extern const AnimationGraphDescriptor* BehaviorVarPatch(BSAnimationGraphManager*
 
 namespace
 {
-void QueueReferenceInventoryChange(TESObjectREFR* apReference, InventoryChangeEvent aEvent, TESObjectREFR* apTransferReference)
+// AI updates run on job threads, so ownership is resolved when the runner hands the event to the main thread
+void QueueReferenceInventoryChange(InventoryChangeEvent aEvent, TESObjectREFR* apTransferReference)
 {
-    if (const auto* pActor = Cast<Actor>(apReference))
-    {
-        auto ownershipToken = Utils::GetLocalOwnershipToken(pActor->formID);
-        if (!ownershipToken && apTransferReference == PlayerCharacter::Get())
-            ownershipToken = Utils::GetRemoteOwnershipToken(pActor->formID);
-
-        if (!ownershipToken)
-            return;
-
-        aEvent.ServerId = ownershipToken->ServerId;
-        aEvent.OwnershipEpoch = ownershipToken->OwnershipEpoch;
-    }
-
+    aEvent.IsPlayerTransfer = apTransferReference && apTransferReference == PlayerCharacter::Get();
     World::Get().GetRunner().Trigger(std::move(aEvent));
 }
 
@@ -1061,7 +1050,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apIte
         if (apExtraData)
             apThis->GetItemFromExtraData(item, apExtraData);
 
-        QueueReferenceInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item)), apOldOwner);
+        QueueReferenceInventoryChange(InventoryChangeEvent(apThis->formID, std::move(item)), apOldOwner);
     }
 
     spdlog::debug("Adding inventory item {:X} to {:X}", apItem->formID, apThis->formID);
@@ -1087,7 +1076,7 @@ TP_MAKE_THISCALL(HookRemoveInventoryItem, TESObjectREFR, BSPointerHandle<TESObje
 
         item.Count = -aCount;
 
-        QueueReferenceInventoryChange(apThis, InventoryChangeEvent(apThis->formID, std::move(item)), apMoveToRef);
+        QueueReferenceInventoryChange(InventoryChangeEvent(apThis->formID, std::move(item)), apMoveToRef);
     }
 
     spdlog::debug("Removing inventory item {:X} from {:X}", apItem->formID, apThis->formID);

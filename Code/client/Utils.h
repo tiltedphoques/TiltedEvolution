@@ -19,12 +19,6 @@ struct TESForm;
 namespace Utils
 {
 
-struct ActorOwnershipToken
-{
-    uint32_t ServerId{};
-    uint32_t OwnershipEpoch{};
-};
-
 static void Assert(const char* apExpression, const char* apMessage)
 {
     spdlog::critical("Assertion failed ({}): {}", apExpression, apMessage);
@@ -35,8 +29,6 @@ static void Assert(const char* apExpression, const char* apMessage)
 
 std::optional<uint32_t> GetServerId(entt::entity aEntity) noexcept;
 std::optional<entt::entity> FindEntityByServerId(uint32_t aServerId) noexcept;
-std::optional<ActorOwnershipToken> GetLocalOwnershipToken(uint32_t aFormId) noexcept;
-std::optional<ActorOwnershipToken> GetRemoteOwnershipToken(uint32_t aFormId) noexcept;
 
 template <class T> T* GetByServerId(const uint32_t acServerId) noexcept
 {

@@ -5,6 +5,7 @@
 #endif
 
 #include <Messages/CharacterSpawnRequest.h>
+#include <Messages/NotifyEquipmentChanges.h>
 
 struct WaitingFor3D
 {
@@ -14,4 +15,6 @@ struct WaitingFor3D
     }
 
     CharacterSpawnRequest SpawnRequest{};
+    // Equipment changes relayed before the 3D loaded, replayed after the spawn request's inventory is applied
+    Vector<NotifyEquipmentChanges> PendingEquipmentChanges{};
 };

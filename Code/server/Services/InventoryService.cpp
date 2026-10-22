@@ -7,6 +7,8 @@
 #include <Messages/NotifyObjectInventoryChanges.h>
 #include <Messages/RequestInventoryChanges.h>
 #include <Messages/NotifyInventoryChanges.h>
+#include <Messages/RequestInventorySnapshot.h>
+#include <Messages/NotifyInventorySnapshot.h>
 #include <Messages/RequestEquipmentChanges.h>
 #include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/DrawWeaponRequest.h>
@@ -21,6 +23,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher)
     : m_world(aWorld)
 {
     m_inventoryChangeConnection = aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&InventoryService::OnInventoryChanges>(this);
+    m_inventorySnapshotConnection = aDispatcher.sink<PacketEvent<RequestInventorySnapshot>>().connect<&InventoryService::OnInventorySnapshot>(this);
     m_equipmentChangeConnection = aDispatcher.sink<PacketEvent<RequestEquipmentChanges>>().connect<&InventoryService::OnEquipmentChanges>(this);
     m_drawWeaponConnection = aDispatcher.sink<PacketEvent<DrawWeaponRequest>>().connect<&InventoryService::OnWeaponDrawnRequest>(this);
 }
@@ -93,6 +96,38 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
 
     const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
     if (!GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender()))
+        spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
+}
+
+void InventoryService::OnInventorySnapshot(const PacketEvent<RequestInventorySnapshot>& acMessage) noexcept
+{
+    auto& message = acMessage.Packet;
+
+    auto view = m_world.view<InventoryComponent, OwnerComponent>();
+
+    const auto it = view.find(static_cast<entt::entity>(message.ServerId));
+
+    if (it == view.end())
+        return;
+
+    const auto& ownerComponent = view.get<OwnerComponent>(*it);
+    if (!ownerComponent.IsCurrentOwner(acMessage.pPlayer, message.OwnershipEpoch))
+    {
+        const uint32_t ownerId = ownerComponent.GetOwner() ? ownerComponent.GetOwner()->GetId() : 0;
+        spdlog::debug(
+            "Rejected inventory snapshot from player {:X} for actor {:X}; current owner is {:X} and requested epoch {} does not match {}",
+            acMessage.pPlayer->GetId(), message.ServerId, ownerId, message.OwnershipEpoch, ownerComponent.OwnershipEpoch);
+        return;
+    }
+
+    view.get<InventoryComponent>(*it).Content = message.CurrentInventory;
+
+    NotifyInventorySnapshot notify;
+    notify.ServerId = message.ServerId;
+    notify.OwnershipEpoch = message.OwnershipEpoch;
+    notify.CurrentInventory = message.CurrentInventory;
+
+    if (!GameServer::Get()->SendToPlayersInRange(notify, *it, acMessage.GetSender()))
         spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
 }
 

@@ -54,34 +54,6 @@ std::optional<entt::entity> FindEntityByServerId(const uint32_t aServerId) noexc
     return std::nullopt;
 }
 
-std::optional<ActorOwnershipToken> GetLocalOwnershipToken(const uint32_t aFormId) noexcept
-{
-    auto view = World::Get().view<FormIdComponent, LocalComponent>();
-    const auto it = std::find_if(view.begin(), view.end(), [view, aFormId](const entt::entity aEntity) { return view.get<FormIdComponent>(aEntity).Id == aFormId; });
-    if (it == view.end())
-        return std::nullopt;
-
-    const auto& localComponent = view.get<LocalComponent>(*it);
-    if (localComponent.OwnershipEpoch == 0)
-        return std::nullopt;
-
-    return ActorOwnershipToken{localComponent.Id, localComponent.OwnershipEpoch};
-}
-
-std::optional<ActorOwnershipToken> GetRemoteOwnershipToken(const uint32_t aFormId) noexcept
-{
-    auto view = World::Get().view<FormIdComponent, RemoteComponent>();
-    const auto it = std::find_if(view.begin(), view.end(), [view, aFormId](const entt::entity aEntity) { return view.get<FormIdComponent>(aEntity).Id == aFormId; });
-    if (it == view.end())
-        return std::nullopt;
-
-    const auto& remoteComponent = view.get<RemoteComponent>(*it);
-    if (remoteComponent.OwnershipEpoch == 0)
-        return std::nullopt;
-
-    return ActorOwnershipToken{remoteComponent.Id, remoteComponent.OwnershipEpoch};
-}
-
 void ShowHudMessage(const TiltedPhoques::String& acMessage)
 {
     using TShowHudMessage = void(const char*, const char*, bool);
