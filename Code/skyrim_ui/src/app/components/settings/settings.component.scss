@@ -62,6 +62,12 @@
 
   & > label {
     width: 15em;
+
+    .hint {
+      display: block;
+      font-size: 0.75em;
+      opacity: 0.7;
+    }
   }
 
   & > input,

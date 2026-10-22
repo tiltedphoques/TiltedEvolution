@@ -5,16 +5,23 @@
 
 enum class FormType : uint8_t
 {
+    Scroll = 23,
     Armor = 26,
     Book = 27,
     Container = 28,
     Door = 29,
     Ingredient = 30,
+    Light = 31,
+    Misc = 32,
+    Apparatus = 33,
     Weapon = 41,
     Ammo = 42,
     Npc = 43,
     LeveledCharacter = 44,
+    Key = 45,
     Alchemy = 46,
+    Note = 48,
+    SoulGem = 52,
     LeveledItem = 53,
     Character = 62,
     QuestItem = 77,
@@ -64,7 +71,9 @@ struct TESForm : BaseFormComponent
     virtual void sub_16();
     virtual void sub_17();
     virtual void sub_18();
-    virtual void sub_19();
+    // False for non-playable forms, which the inventory menu hides: armour and most items check form flag 0x4,
+    // weapons and ammo their own data flags.
+    virtual bool IsPlayable() const noexcept;
     virtual void sub_1A();
     virtual void sub_1B();
     virtual void sub_1C();

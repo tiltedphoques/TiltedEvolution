@@ -5,11 +5,16 @@
 
 #include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
+#include <Services/TradeService.h>
+
+#include <Structs/Inventory.h>
 
 #include <Messages/SendChatMessageRequest.h>
 #include <Messages/TeleportRequest.h>
 
 #include <Events/SetTimeCommandEvent.h>
+
+#include <Services/NameTagService.h>
 
 #include <World.h>
 
@@ -47,6 +52,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessDisconnectMessage();
         else if (eventName == "revealPlayers")
             ProcessRevealPlayersMessage();
+        else if (eventName == "setNameTagSettings")
+            ProcessSetNameTagSettings(eventArgs);
         else if (eventName == "sendMessage")
             ProcessChatMessage(eventArgs);
         else if (eventName == "setTime")
@@ -82,6 +89,65 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessToggleDebugUI();
         else if (eventName == "openPlayGuide")
             ProcessOpenPlayGuide();
+        else if (eventName == "sendTradeInvite")
+        {
+            uint32_t aPlayerId = eventArgs->GetInt(0);
+            World::Get().GetRunner().Queue([aPlayerId]() { World::Get().GetTradeService().SendInvite(aPlayerId); });
+        }
+        else if (eventName == "respondTradeInvite")
+        {
+            uint32_t inviterId = eventArgs->GetInt(0);
+            bool accept = eventArgs->GetBool(1);
+            World::Get().GetRunner().Queue([inviterId, accept]() { World::Get().GetTradeService().RespondToInvite(inviterId, accept); });
+        }
+        else if (eventName == "cancelTrade")
+        {
+            World::Get().GetRunner().Queue([]() { World::Get().GetTradeService().CancelTrade(); });
+        }
+        else if (eventName == "setTradeReady")
+        {
+            bool ready = eventArgs->GetBool(0);
+            World::Get().GetRunner().Queue([ready]() { World::Get().GetTradeService().SetReady(ready); });
+        }
+        else if (eventName == "updateTradeOffer")
+        {
+            TiltedPhoques::Vector<TradeService::OfferSelection> selections;
+            auto pList = eventArgs->GetList(0);
+            if (pList)
+            {
+                const auto cCount = pList->GetSize();
+                selections.reserve(cCount);
+                for (size_t i = 0; i < cCount; ++i)
+                {
+                    TradeService::OfferSelection selection{};
+
+                    if (pList->GetType(static_cast<int>(i)) == VTYPE_DICTIONARY)
+                    {
+                        auto pEntry = pList->GetDictionary(static_cast<int>(i));
+                        if (!pEntry)
+                            continue;
+
+                        selection.Index = static_cast<uint32_t>(pEntry->GetInt("index"));
+                        selection.Count = pEntry->GetInt("count");
+                    }
+                    else
+                    {
+                        auto pEntry = pList->GetList(static_cast<int>(i));
+                        if (!pEntry || pEntry->GetSize() < 2)
+                            continue;
+
+                        selection.Index = static_cast<uint32_t>(pEntry->GetInt(0));
+                        selection.Count = pEntry->GetInt(1);
+                    }
+
+                    if (selection.Count <= 0)
+                        continue;
+
+                    selections.push_back(selection);
+                }
+            }
+            World::Get().GetRunner().Queue([selections = std::move(selections)]() { World::Get().GetTradeService().UpdateOffer(selections); });
+        }
 
         return true;
     }
@@ -166,4 +232,57 @@ void OverlayClient::SetUIVisible(bool aVisible) noexcept
     TiltedPhoques::DInputHook::Get().SetEnabled(aVisible);
     World::Get().GetOverlayService().SetActive(aVisible);
     pRenderer->SetCursorVisible(aVisible);
+}
+
+void OverlayClient::ProcessSetNameTagSettings(CefRefPtr<CefListValue> aEventArgs)
+{
+    auto pDict = aEventArgs->GetDictionary(0);
+    if (!pDict)
+        return;
+
+    // JS numbers arrive as int or double depending on their value.
+    auto getNumber = [&pDict](const char* acKey, float aDefault) {
+        switch (pDict->GetType(acKey))
+        {
+        case VTYPE_INT: return static_cast<float>(pDict->GetInt(acKey));
+        case VTYPE_DOUBLE: return static_cast<float>(pDict->GetDouble(acKey));
+        default: return aDefault;
+        }
+    };
+    // A missing key keeps the setting's default.
+    auto getFilter = [&getNumber](const char* acKey, NameTagService::Filter aDefault) {
+        const int value = static_cast<int>(getNumber(acKey, static_cast<float>(aDefault)));
+        return static_cast<NameTagService::Filter>(std::clamp(value, 0, 2));
+    };
+
+    NameTagService::Settings settings{};
+    settings.NameTags = getFilter("nameTags", settings.NameTags);
+    settings.Backdrop = getFilter("backdrop", settings.Backdrop);
+    settings.FontSize = getNumber("fontSize", settings.FontSize);
+    settings.NameFadeStart = getNumber("nameFadeStart", settings.NameFadeStart);
+    settings.NameInvisible = getNumber("nameInvisible", settings.NameInvisible);
+    settings.PartyFadeStart = getNumber("partyFadeStart", settings.PartyFadeStart);
+    settings.PartyInvisible = getNumber("partyInvisible", settings.PartyInvisible);
+
+    const std::string strangerLabel = pDict->GetString("strangerLabel").ToString();
+    if (!strangerLabel.empty())
+        settings.StrangerLabel = strangerLabel.c_str();
+
+    auto readIds = [&pDict](const char* acKey, Set<uint32_t>& aIds) {
+        auto pIds = pDict->GetList(acKey);
+        if (!pIds)
+            return;
+
+        for (size_t i = 0; i < pIds->GetSize(); ++i)
+        {
+            const auto type = pIds->GetType(i);
+            if (type == VTYPE_INT)
+                aIds.insert(static_cast<uint32_t>(pIds->GetInt(i)));
+            else if (type == VTYPE_DOUBLE)
+                aIds.insert(static_cast<uint32_t>(pIds->GetDouble(i)));
+        }
+    };
+    readIds("revealedPlayerIds", settings.RevealedPlayerIds);
+
+    World::Get().GetRunner().Queue([settings = std::move(settings)]() mutable { World::Get().ctx().at<NameTagService>().SetSettings(std::move(settings)); });
 }
