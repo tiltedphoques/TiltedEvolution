@@ -39,7 +39,8 @@
       "DECLINE": "Neka",
       "OPEN_GUIDE": "Öppna guide",
       "DISMISS": "Ignorera",
-      "DONT_SHOW": "Sluta visa"
+      "DONT_SHOW": "Sluta visa",
+      "CANCEL": "Avbryt"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Acceptera inbjudan från {{name}}",
@@ -78,7 +79,9 @@
         "NAME": "Namn",
         "LOCATION": "Plats"
       },
-      "INVITE": "Bjud in"
+      "INVITE": "Bjud in",
+      "TRADE": "Byte",
+      "CANCEL_TRADE_INVITE": "Avbryt bytesinbjudan"
     },
     "PLAYER_MANAGER": {
       "PLAYER_LIST": "Spelarlista",
@@ -180,6 +183,72 @@
         "XL": "Störst"
       },
       "BACK": "Tillbaka"
+    },
+    "TRADE_MENU": {
+      "SEARCH_ITEMS": "Sök efter…",
+      "NO_MATCHING_ITEMS": "Inga föremål matchar din sökning och kategori.",
+      "FILTER_CATEGORY": "Filtrera via föremålskategorier",
+      "NO_CATEGORY_ITEMS": "Inga föremål i kategorin.",
+      "CATEGORIES": {
+        "all": "Alla",
+        "weapons": "Vapen",
+        "armor": "Utrustning",
+        "ammunition": "Ammunition",
+        "potions": "Mixturer",
+        "poisons": "Gifter",
+        "scrolls": "Pergament",
+        "food": "Mat",
+        "ingredients": "Ingredienser",
+        "books": "Böcker",
+        "keys": "Nycklar",
+        "soul_gems": "Själstenar",
+        "misc": "Annat"
+      },
+      "EQUIPPED_ITEM_WARNING": "Ta av dig föremålet innan du byter det.",
+      "INVITES_TITLE": "Bytesinbjudningar",
+      "NO_INVITES": "Inga väntande bytesinbjudningar.",
+      "INVITE_ACTIONS": {
+        "ACCEPT": "Acceptera",
+        "DECLINE": "Neka"
+      },
+      "TRADING_WITH": "Byter med {{name}}",
+      "COUNTDOWN": "Slutförs om {{seconds}}s",
+      "SELF_READY": "Du är redo",
+      "SELF_NOT_READY": "Du är inte redo",
+      "PARTNER_READY": "{{name}} är redo",
+      "PARTNER_NOT_READY": "{{name}} är inte redo",
+      "ACTIONS": {
+        "READY": "Redo",
+        "UNREADY": "Inte redo",
+        "CANCEL_TRADE": "Avbryt",
+        "CLEAR": "Rensa",
+        "OFFER_ALL": "Erbjud alla",
+        "MAX": "Max",
+        "CLOSE": "Stäng fönster"
+      },
+      "INVENTORY_TITLE": "Dina föremål",
+      "NO_INVENTORY": "Inga föremål som kan bytas.",
+      "ITEM_COLUMNS": {
+        "NAME": "Föremål",
+        "AVAILABLE": "Tillgängliga",
+        "OFFERED": "Erbjudna"
+      },
+      "QUEST_ITEM_WARNING": "Quest-föremål kan inte bytas.",
+      "OFFER_TITLE": "Du erbjuder",
+      "EMPTY_OFFER": "Du erbjuder inga föremål.",
+      "PARTNER_OFFER_TITLE": "Partner erbjuder",
+      "EMPTY_PARTNER_OFFER": "Partner erbjuder inga föremål.",
+      "NO_ACTIVE_TRADE": "Ingen aktiv bytessession.",
+      "DETAILS": {
+        "QUEST_ITEM": "Quest-föremål",
+        "ENCHANTED": "Förtrollad",
+        "ENCHANT_REMOVE": "Förtrollning bryts om den tas av",
+        "CHARGE": "Laddning: {{value}}",
+        "POISON": "Förgiftad ({{count}})",
+        "SOUL_LEVEL": "Själsnivå: {{level}}",
+        "EXTRA_HEALTH": "Förbättrad (+{{value}})",
+        "CUSTOM_NAME": "Omdöpt föremål"
+      }
     }
   },
   "SERVICE": {
@@ -214,10 +283,27 @@
       }
     },
     "PLAYER_LIST": {
-      "PARTY_INVITE": "{{from}} bjöd in dig till ett party"
+      "PARTY_INVITE": "{{from}} bjöd in dig till ett party",
+      "TRADE_INVITE": "{{from}} vill byta med dig."
     },
     "PARTY_HINT": {
       "MESSAGE": "Vill du göra en quest tillsammans? Gå med i samma party och håll er nära varandra för att dela framsteg! Läs vår playguide för att lära er mer."
+    },
+    "TRADE": {
+      "UNKNOWN_PLAYER": "Okänd spelare",
+      "CANCELLED": "{{partner}} avbröt bytet ({{reason}}).",
+      "COMPLETED": "Bytet slutfördes med {{partner}}.",
+      "INVITE_SENT": "Bytesinbjudan skickad till {{target}}.",
+      "CANCELLED_REASONS": {
+        "DECLINED": "Inbjudan nekades",
+        "CANCELLED": "Bytet avbröts",
+        "PARTNER_BUSY": "Partner upptagen",
+        "SELF_BUSY": "Du är upptagen",
+        "PLAYER_LEFT": "Spelare lämnade sessionen",
+        "TIMEOUT": "Inbjudan gick ut",
+        "FAILED_VALIDATION": "Bytet kunde inte valideras",
+        "UNKNOWN": "Okänd anledning"
+      }
     }
   }
 }

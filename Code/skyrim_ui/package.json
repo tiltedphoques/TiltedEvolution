@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0 --disable-host-check --configuration=browser",
     "build": "ng build",
+    "test:trading": "node --test test/trade-ui.test.cjs",
     "deploy:develop": "ng build --output-hashing none --configuration=develop --base-href ./ --resources-output-path ./assets/",
     "deploy:production": "ng build --output-hashing none --configuration=production --base-href ./ --resources-output-path ./assets/",
     "lint": "ng lint",

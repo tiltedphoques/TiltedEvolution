@@ -29,6 +29,9 @@
 // #include <imgui_internal.h>
 
 static constexpr wchar_t kMO2DllName[] = L"usvfs_x64.dll";
+static constexpr size_t kScratchSendSize = 1 << 16;
+// GameNetworkingSockets rejects larger messages.
+static constexpr size_t kMaxSendSize = 512 * 1024;
 
 using TiltedPhoques::Packet;
 
@@ -75,23 +78,45 @@ bool TransportService::Send(const ClientMessage& acMessage, const TiltedPhoques:
         ~ScopedReset() { s_allocator.Reset(); }
     } allocatorGuard;
 
-    if (IsConnected())
+    if (!IsConnected())
+        return false;
+
+    // A writer grows its buffer when it fills up, and writes fail silently once the allocator can't, which would
+    // send a truncated message. A buffer that had to grow is therefore treated as too small.
     {
         ScopedAllocator _{s_allocator};
 
-        Buffer buffer(1 << 16);
+        Buffer buffer(kScratchSendSize);
         Buffer::Writer writer(&buffer);
         writer.WriteBits(0, 8); // Write first byte as packet needs it
 
         acMessage.Serialize(writer);
-        TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
-
-        Client::Send(&packet, aPacketFlags);
-
-        return true;
+        if (buffer.GetSize() == kScratchSendSize)
+        {
+            TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+            Client::Send(&packet, aPacketFlags);
+            return true;
+        }
     }
 
-    return false;
+    // Rare large messages, such as a big inventory, are serialized again on the heap.
+    ScopedAllocator _{Allocator::GetDefault()};
+
+    Buffer buffer(kMaxSendSize);
+    Buffer::Writer writer(&buffer);
+    writer.WriteBits(0, 8); // Write first byte as packet needs it
+
+    acMessage.Serialize(writer);
+    if (buffer.GetSize() != kMaxSendSize)
+    {
+        spdlog::error("Message with opcode {} is over the {} byte limit, not sending it", static_cast<uint32_t>(acMessage.GetOpcode()), kMaxSendSize);
+        return false;
+    }
+
+    TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
+    Client::Send(&packet, aPacketFlags);
+
+    return true;
 }
 
 void TransportService::OnConsume(const void* apData, uint32_t aSize)

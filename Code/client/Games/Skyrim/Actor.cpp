@@ -1068,6 +1068,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, Actor, TESBoundObject* apItem, Extra
 
         Inventory::Entry item{};
         modSystem.GetServerModId(apItem->formID, item.BaseId);
+        AlchemyItem::Capture(apItem, item);
         item.Count = aCount;
 
         if (apExtraData)
@@ -1087,6 +1088,7 @@ void* TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t
 
         Inventory::Entry item{};
         modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
+        AlchemyItem::Capture(apObject->baseForm, item);
         item.Count = aCount;
 
         if (apObject->GetExtraDataList())
@@ -1113,6 +1115,7 @@ void* TP_MAKE_THISCALL(HookDropObject, Actor, void* apResult, TESBoundObject* ap
 
     Inventory::Entry item{};
     modSystem.GetServerModId(apObject->formID, item.BaseId);
+    AlchemyItem::Capture(apObject, item);
     item.Count = -aCount;
 
     if (apExtraData)
@@ -1133,6 +1136,8 @@ void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLoca
 
     uint32_t objectId = modSystem.GetGameId(arEntry.BaseId);
     TESBoundObject* pObject = Cast<TESBoundObject>(TESForm::GetById(objectId));
+    if (!arEntry.Potion.Effects.empty())
+        pObject = AlchemyItem::Find(this, arEntry.Potion);
     if (!pObject)
     {
         spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
