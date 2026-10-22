@@ -181,6 +181,12 @@ export class SettingService {
       'playerUi_partyInvites',
       true,
     ),
+    tradeInvites: new SelectSetting(
+      this.storeService,
+      'playerUi_tradeInvites',
+      this.playerUiFilterValues,
+      PlayerUiFilter.ON,
+    ),
     miniChat: new SelectSetting(
       this.storeService,
       'playerUi_miniChat',

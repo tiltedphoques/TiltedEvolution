@@ -14,6 +14,7 @@ import { ChatMessage, MessageTypes } from './chat.service';
 import { ClientService } from './client.service';
 import { GroupService } from './group.service';
 import { PlayerListService } from './player-list.service';
+import { TradeInvitePolicy } from './trade-invite-policy';
 import {
   fontSizeToPixels,
   PlayerUiFilter,
@@ -34,7 +35,7 @@ export interface PlayerUiEntry extends Player {
 @Injectable({
   providedIn: 'root',
 })
-export class PlayerUiService implements OnDestroy {
+export class PlayerUiService implements OnDestroy, TradeInvitePolicy {
   public readonly players$: Observable<PlayerUiEntry[]>;
   /** Players whose name is hidden behind the "Stranger" label. */
   public readonly hiddenPlayerIds$: Observable<Set<number>>;
@@ -104,6 +105,20 @@ export class PlayerUiService implements OnDestroy {
     return this.settings.partyInvites.getValue();
   }
 
+  /** Name for trade popups and the trade window, same rule as the player list. */
+  public displayName(playerId: number, name: string): string {
+    return this.settingService.isNameRevealed(name, this.isPartyMember(playerId))
+      ? name
+      : this.translocoService.translate('COMPONENT.PARTY_LIST.STRANGER');
+  }
+
+  public acceptsTradeInvite(inviterId: number): boolean {
+    return this.matchesFilter(
+      this.settings.tradeInvites.getValue(),
+      this.isPartyMember(inviterId),
+    );
+  }
+
   /** Whether a chat message may show in the in-game preview (F2 closed). */
   public showsInMiniChat(message: ChatMessage): boolean {
     const filter = this.settings.miniChat.getValue();
@@ -123,6 +138,17 @@ export class PlayerUiService implements OnDestroy {
     return !!players?.some(
       player =>
         player.name === message.senderName && members.includes(player.id),
+    );
+  }
+
+  private isPartyMember(playerId: number): boolean {
+    return !!this.groupService.group.getValue()?.members.includes(playerId);
+  }
+
+  private matchesFilter(filter: PlayerUiFilter, isMember: boolean): boolean {
+    return (
+      filter === PlayerUiFilter.ON ||
+      (filter === PlayerUiFilter.PARTY && isMember)
     );
   }
 

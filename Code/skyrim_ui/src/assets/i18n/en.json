@@ -127,6 +127,8 @@
         },
         "PARTY_INVITES": "Party invitations",
         "PARTY_INVITES_HINT": "Off: Incoming party invites are declined silently.",
+        "TRADE_INVITES": "Trade invitations",
+        "TRADE_INVITES_HINT": "Party: Only party members can invite you to trade.",
         "MINI_CHAT": "Preview mini chat",
         "MINI_CHAT_HINT": "Shows the latest white chat text when the F2 UI isn't open.",
         "NAME_TAGS": "Name tags",

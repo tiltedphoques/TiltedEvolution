@@ -127,6 +127,8 @@
         },
         "PARTY_INVITES": "Partyinbjudningar",
         "PARTY_INVITES_HINT": "Av: Inkommande partyinbjudningar avböjs automatiskt.",
+        "TRADE_INVITES": "Bytesinbjudningar",
+        "TRADE_INVITES_HINT": "Party: Bara partymedlemmar kan bjuda in dig till byten.",
         "MINI_CHAT": "Förhandsvisa minichatt",
         "MINI_CHAT_HINT": "Visar den senaste vita chattexten när F2-UI inte är öppet.",
         "NAME_TAGS": "Namnskyltar",

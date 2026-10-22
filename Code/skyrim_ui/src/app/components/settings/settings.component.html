@@ -109,6 +109,25 @@
         />
       </div>
       <div class="setting">
+        <label for="tradeInvites"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.TRADE_INVITES' | transloco }}
+          <small class="hint">{{
+            'COMPONENT.SETTINGS.PLAYER_UI.TRADE_INVITES_HINT' | transloco
+          }}</small>
+        </label>
+        <app-dropdown
+          id="tradeInvites"
+          [ngModel]="settings.tradeInvites | async"
+          (ngModelChange)="settings.tradeInvites.next($event)"
+        >
+          <app-dropdown-option
+            *ngFor="let option of availablePlayerUiFilters"
+            [text]="option.label"
+            [value]="option.id"
+          ></app-dropdown-option>
+        </app-dropdown>
+      </div>
+      <div class="setting">
         <label for="miniChat"
           >{{ 'COMPONENT.SETTINGS.PLAYER_UI.MINI_CHAT' | transloco }}
           <small class="hint">{{

@@ -43,6 +43,8 @@ import { ErrorService } from './services/error.service';
 import { GroupService } from './services/group.service';
 import { PlayerListService } from './services/player-list.service';
 import { SettingService } from './services/setting.service';
+import { PlayerUiService } from './services/player-ui.service';
+import { TRADE_INVITE_POLICY } from './services/trade-invite-policy';
 import { SoundService } from './services/sound.service';
 import { StoreService } from './services/store.service';
 import { TranslocoRootModule } from './transloco-root.module';
@@ -101,6 +103,8 @@ import { TranslocoRootModule } from './transloco-root.module';
     PlayerListService,
     StoreService,
     SettingService,
+    // Player privacy settings decide trade invites and trade names.
+    { provide: TRADE_INVITE_POLICY, useExisting: PlayerUiService },
 
     ...environment.providers,
   ],
