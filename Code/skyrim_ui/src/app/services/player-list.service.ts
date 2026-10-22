@@ -8,6 +8,7 @@ import { View } from '../models/view.enum';
 import { UiRepository } from '../store/ui.repository';
 import { ClientService } from './client.service';
 import { PopupNotificationService } from './popup-notification.service';
+import { SettingService } from './setting.service';
 
 @Injectable({
   providedIn: 'root',
@@ -30,6 +31,7 @@ export class PlayerListService implements OnDestroy {
     private readonly popupNotificationService: PopupNotificationService,
     private readonly uiRepository: UiRepository,
     private readonly translocoService: TranslocoService,
+    private readonly settingService: SettingService,
   ) {
     this.onDebug();
     this.onConnectionStateChanged();
@@ -128,6 +130,10 @@ export class PlayerListService implements OnDestroy {
     this.partyInviteReceivedSubscription =
       this.clientService.partyInviteReceivedChange.subscribe(
         async (inviterId: number) => {
+          if (!this.settingService.settings.partyInvites.getValue()) {
+            return;
+          }
+
           const playerList = this.getPlayerList();
 
           if (playerList) {
@@ -135,7 +141,12 @@ export class PlayerListService implements OnDestroy {
             invitingPlayer.hasInvitedLocalPlayer = true;
             this.playerList.next(playerList);
             this.popupNotificationService.addPartyInvite(
-              invitingPlayer.name,
+              // The inviter can't be in our party yet.
+              this.settingService.isNameRevealed(invitingPlayer.name, false)
+                ? invitingPlayer.name
+                : this.translocoService.translate(
+                    'COMPONENT.PARTY_LIST.STRANGER',
+                  ),
               () => this.acceptPartyInvite(inviterId),
             );
           }

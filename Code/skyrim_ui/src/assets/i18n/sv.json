@@ -68,8 +68,12 @@
       "LEAVE_PARTY": "Lämna party"
     },
     "PARTY_LIST": {
+      "STRANGER": "Främling",
+      "SHOW_NAME": "Visa namn",
+      "HIDE_NAME": "Dölj namn",
       "NO_OTHER_PLAYERS": "Inte en kotte här, bara hönorna",
       "TABLE_HEADERS": {
+        "KNOWN": "Känd",
         "LEVEL": "Lv.",
         "NAME": "Namn",
         "LOCATION": "Plats"
@@ -109,6 +113,38 @@
       "JOIN": "Anslut"
     },
     "SETTINGS": {
+      "PLAYER_UI": {
+        "TITLE": "Filter för spelar-UI",
+        "KNOWN_NAMES": "Kända namn",
+        "KNOWN_NAMES_HINT": "Party: Namn är kända i ert party, andras är okända. Ögat i spelarlistan tar prioritet per namn.",
+        "KNOWN_NAMES_OPTIONS": {
+          "ALL": "Alla",
+          "PARTY": "Party",
+          "NONE": "Inga"
+        },
+        "PARTY_INVITES": "Partyinbjudningar",
+        "PARTY_INVITES_HINT": "Av: Inkommande partyinbjudningar avböjs automatiskt.",
+        "MINI_CHAT": "Förhandsvisa minichatt",
+        "MINI_CHAT_HINT": "Visar den senaste vita chattexten när F2-UI inte är öppet.",
+        "NAME_TAGS": "Namnskyltar",
+        "NAME_TAGS_HINT": "Party: Se namnskyltar bara ovanför partymedlemmar.",
+        "NAME_TAG_BACKPLATE": "Namn i ruta",
+        "NAME_TAG_BACKPLATE_HINT": "Mörk ruta bakom namnet. Party: Visa bara på partymedlemmar.",
+        "NAME_TAG_SIZE": "Namnstorlek",
+        "DISTANCES": "Avstånd",
+        "NAME_FADE_START": "Namnet bleknar från",
+        "NAME_FADE_START_HINT": "Närmare än: 100 % opacitet.",
+        "NAME_INVISIBLE": "Namnet är osynligt",
+        "NAME_INVISIBLE_HINT": "Längre bort än: 0 % opacitet.",
+        "PARTY_FADE_START": "Party bleknar från",
+        "PARTY_INVISIBLE": "Party osynligt från",
+        "UNITS": "enheter",
+        "FILTERS": {
+          "ON": "På",
+          "PARTY": "Party",
+          "OFF": "Av"
+        }
+      },
       "VERSION": {
         "HEADER": "Version",
         "INFO": "Nuvarande installation:",

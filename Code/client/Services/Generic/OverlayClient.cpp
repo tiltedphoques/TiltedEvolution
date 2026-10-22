@@ -11,6 +11,8 @@
 
 #include <Events/SetTimeCommandEvent.h>
 
+#include <Services/NameTagService.h>
+
 #include <World.h>
 
 OverlayClient::OverlayClient(TransportService& aTransport, TiltedPhoques::OverlayRenderHandler* apHandler)
@@ -47,6 +49,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessDisconnectMessage();
         else if (eventName == "revealPlayers")
             ProcessRevealPlayersMessage();
+        else if (eventName == "setNameTagSettings")
+            ProcessSetNameTagSettings(eventArgs);
         else if (eventName == "sendMessage")
             ProcessChatMessage(eventArgs);
         else if (eventName == "setTime")
@@ -166,4 +170,57 @@ void OverlayClient::SetUIVisible(bool aVisible) noexcept
     TiltedPhoques::DInputHook::Get().SetEnabled(aVisible);
     World::Get().GetOverlayService().SetActive(aVisible);
     pRenderer->SetCursorVisible(aVisible);
+}
+
+void OverlayClient::ProcessSetNameTagSettings(CefRefPtr<CefListValue> aEventArgs)
+{
+    auto pDict = aEventArgs->GetDictionary(0);
+    if (!pDict)
+        return;
+
+    // JS numbers arrive as int or double depending on their value.
+    auto getNumber = [&pDict](const char* acKey, float aDefault) {
+        switch (pDict->GetType(acKey))
+        {
+        case VTYPE_INT: return static_cast<float>(pDict->GetInt(acKey));
+        case VTYPE_DOUBLE: return static_cast<float>(pDict->GetDouble(acKey));
+        default: return aDefault;
+        }
+    };
+    // A missing key keeps the setting's default.
+    auto getFilter = [&getNumber](const char* acKey, NameTagService::Filter aDefault) {
+        const int value = static_cast<int>(getNumber(acKey, static_cast<float>(aDefault)));
+        return static_cast<NameTagService::Filter>(std::clamp(value, 0, 2));
+    };
+
+    NameTagService::Settings settings{};
+    settings.NameTags = getFilter("nameTags", settings.NameTags);
+    settings.Backdrop = getFilter("backdrop", settings.Backdrop);
+    settings.FontSize = getNumber("fontSize", settings.FontSize);
+    settings.NameFadeStart = getNumber("nameFadeStart", settings.NameFadeStart);
+    settings.NameInvisible = getNumber("nameInvisible", settings.NameInvisible);
+    settings.PartyFadeStart = getNumber("partyFadeStart", settings.PartyFadeStart);
+    settings.PartyInvisible = getNumber("partyInvisible", settings.PartyInvisible);
+
+    const std::string strangerLabel = pDict->GetString("strangerLabel").ToString();
+    if (!strangerLabel.empty())
+        settings.StrangerLabel = strangerLabel.c_str();
+
+    auto readIds = [&pDict](const char* acKey, Set<uint32_t>& aIds) {
+        auto pIds = pDict->GetList(acKey);
+        if (!pIds)
+            return;
+
+        for (size_t i = 0; i < pIds->GetSize(); ++i)
+        {
+            const auto type = pIds->GetType(i);
+            if (type == VTYPE_INT)
+                aIds.insert(static_cast<uint32_t>(pIds->GetInt(i)));
+            else if (type == VTYPE_DOUBLE)
+                aIds.insert(static_cast<uint32_t>(pIds->GetDouble(i)));
+        }
+    };
+    readIds("revealedPlayerIds", settings.RevealedPlayerIds);
+
+    World::Get().GetRunner().Queue([settings = std::move(settings)]() mutable { World::Get().ctx().at<NameTagService>().SetSettings(std::move(settings)); });
 }
