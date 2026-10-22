@@ -106,7 +106,11 @@ bool TP_MAKE_THISCALL(BGSLoadFormBuffer_LoadFormId, BGSLoadFormBuffer, uint32_t&
     aFormId = 0;
 
     if (modId != 0 || baseId != 0)
+    {
         aFormId = World::Get().GetModSystem().GetGameId(modId, baseId);
+        if (aFormId == 0)
+            spdlog::warn("Failed to resolve form {:X}:{:X} while loading form {:X}", modId, baseId, apThis->formId);
+    }
 
     apThis->position += reader.Size() & 0xFFFFFFFF;
 
