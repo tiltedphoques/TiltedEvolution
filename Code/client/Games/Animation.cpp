@@ -19,6 +19,8 @@ static TPerformAction* RealPerformAction;
 
 // TODO: make scoped override
 thread_local bool g_forceAnimation = false;
+// Result of the last action the game performed while g_forceAnimation was set (-1: none).
+thread_local int g_forcedActionResult = -1;
 
 uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apAction)
 {
@@ -39,6 +41,9 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
         pActor->SaveAnimationVariables(action.Variables);
 
         const auto res = TiltedPhoques::ThisCall(RealPerformAction, apThis, apAction);
+
+        if (g_forceAnimation)
+            g_forcedActionResult = res;
 
         // spdlog::debug("Action event name: {}, target name: {}", apAction->eventName.AsAscii(), apAction->targetEventName.AsAscii());
 
