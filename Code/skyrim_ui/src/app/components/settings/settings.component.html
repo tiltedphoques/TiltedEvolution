@@ -120,7 +120,7 @@
           (ngModelChange)="settings.partyAnchor.next($event)"
         >
           <app-dropdown-option
-            *ngFor="let anchor of availablePartyAnchors"
+            *ngFor="let anchor of availableCorners"
             [text]="anchor.label"
             [value]="anchor.id"
           ></app-dropdown-option>
@@ -168,6 +168,20 @@
           [ngModel]="settings.isDebugShown | async"
           (ngModelChange)="settings.isDebugShown.next($event)"
         />
+      </div>
+      <div class="setting">
+        <label>{{ 'COMPONENT.SETTINGS.DEBUG_ANCHOR' | transloco }}</label>
+        <app-dropdown
+          [disabled]="!(settings.isDebugShown | async)"
+          [ngModel]="settings.debugAnchor | async"
+          (ngModelChange)="settings.debugAnchor.next($event)"
+        >
+          <app-dropdown-option
+            *ngFor="let anchor of availableCorners"
+            [text]="anchor.label"
+            [value]="anchor.id"
+          ></app-dropdown-option>
+        </app-dropdown>
       </div>
     </section>
   </div>

@@ -35,7 +35,10 @@
     "NOTIFICATIONS": {
       "MESSAGE_FROM": "Message de",
       "ACCEPT": "Accepter",
-      "DECLINE": "Décliner"
+      "DECLINE": "Décliner",
+      "OPEN_GUIDE": "Ouvrir le guide",
+      "DISMISS": "Fermer",
+      "DONT_SHOW": "Ne plus afficher"
     },
     "PARTY_MENU": {
       "ACCEPT_INVITE": "Accepter l'invitation de {{name}}",
@@ -166,6 +169,9 @@
     },
     "PLAYER_LIST": {
       "PARTY_INVITE": "{{from}} vous a invité à jouer."
+    },
+    "PARTY_HINT": {
+      "MESSAGE": "Envie de faire des quêtes ensemble ? Formez un groupe et restez à proximité pour partager votre progression ! Consultez notre guide de jeu pour plus d'informations."
     }
   }
 }

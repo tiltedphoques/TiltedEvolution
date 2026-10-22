@@ -95,7 +95,7 @@ void Player::SetCellComponent(const CellIdComponent& aCellComponent) noexcept
     m_cell = aCellComponent;
 }
 
-void Player::Send(const ServerMessage& acServerMessage) const
+void Player::Send(const ServerMessage& acServerMessage, const TiltedPhoques::EPacketFlags aPacketFlags) const
 {
-    GameServer::Get()->Send(GetConnectionId(), acServerMessage);
+    GameServer::Get()->Send(GetConnectionId(), acServerMessage, aPacketFlags);
 }

@@ -1,4 +1,5 @@
 .app-debug {
+  position: fixed;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -21,5 +22,25 @@
     padding-bottom: 0.2vw;
     border: solid grey 1px;
     background-color: rgba($color: #000000, $alpha: 0.5);
+  }
+
+  &.top-left {
+    top: 0;
+    left: 0;
+  }
+
+  &.top-right {
+    top: 0;
+    right: 0;
+  }
+
+  &.bottom-right {
+    bottom: 0;
+    right: 0;
+  }
+
+  &.bottom-left {
+    bottom: 0;
+    left: 0;
   }
 }

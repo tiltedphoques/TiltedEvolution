@@ -9,7 +9,11 @@
 #include <base/dialogues/win/TaskDialog.h>
 
 // 1 - Steam, 2 - GOG
+#ifdef TP_SKYRIM_1_6_1170
+inline constexpr std::string_view kSupportedGameVersions[2] = {"1.6.1170.0", "1.6.1179.0"};
+#else
 inline constexpr std::string_view kSupportedGameVersions[2] = {"1.7.104.0", "1.7.104.0"};
+#endif
 
 std::unique_ptr<TiltedOnlineApp> g_appInstance{nullptr};
 

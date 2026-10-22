@@ -34,6 +34,8 @@ jobs:
           expected_assets=(
             "SkyrimTogether-${version}-windows-x64.zip"
             "SkyrimTogether-${version}-windows-x64-debug-symbols.zip"
+            "SkyrimTogether-${version}-windows-x64-sse1.6.1170.zip"
+            "SkyrimTogether-${version}-windows-x64-sse1.6.1170-debug-symbols.zip"
             "SkyrimTogetherServer-${version}-linux-amd64.tar.gz"
             "SkyrimTogetherServer-${version}-linux-arm64.tar.gz"
           )

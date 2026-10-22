@@ -11,7 +11,6 @@ struct ConnectedEvent;
 struct GameService;
 
 struct PreUpdateEvent;
-struct ActorSpawnedEvent;
 
 struct TESObjectREFR;
 struct TESWorldSpace;

@@ -4,12 +4,97 @@
 #include <Misc/BSString.h>
 #include <Components/TESFullName.h>
 #include <Forms/BGSStoryManagerTree.h>
+#include <Components/TESCondition.h>
+
+struct TESQuest;
+
+struct BGSSceneAction
+{
+    enum class Type : uint32_t
+    {
+        kDialogue = 0,
+        kPackage = 1,
+        kTimer = 2
+    };
+
+    virtual ~BGSSceneAction();
+    virtual void sub_1(); // LoadSceneAction
+    virtual void sub_2();
+    virtual void sub_3();
+    virtual void sub_4();
+    virtual bool Loops() const;
+    virtual void sub_6();
+    virtual Type GetType() const;
+
+    [[nodiscard]] uint32_t GetIndex() const noexcept { return index & 0x3FFFFFFF; }
+    [[nodiscard]] bool IsRunning() const noexcept { return status & 1; }
+    // What the IsSceneActionComplete condition checks (BGSScene::IsActionComplete, 0x1403A18F0 in 1.6.1170)
+    [[nodiscard]] bool IsComplete() const noexcept { return status & 2; }
+    [[nodiscard]] bool IsInPhase(uint32_t aPhaseIndex) const noexcept { return aPhaseIndex >= startPhase && aPhaseIndex <= endPhase; }
+    // Whether the phase waits for this action to complete before it ends. Actions that loop or continue into the next
+    // phase don't hold it back.
+    [[nodiscard]] bool BlocksPhase(uint32_t aPhaseIndex) const noexcept
+    {
+        return IsInPhase(aPhaseIndex) && !IsInPhase(aPhaseIndex + 1) && IsRunning() && !IsComplete() && !Loops();
+    }
+
+    uint32_t actorId; // 0x08 ALID, quest alias ID
+    uint16_t startPhase;
+    uint16_t endPhase;
+    uint32_t flags;
+    uint8_t status; // 0x14, bit 0 = running, bit 1 = complete
+    uint8_t unk15;
+    uint16_t unk16;
+    uint32_t index; // 0x18 INAM in the low 30 bits, the index scene action events carry
+};
+
+static_assert(offsetof(BGSSceneAction, actorId) == 0x8);
+static_assert(offsetof(BGSSceneAction, startPhase) == 0xC);
+static_assert(offsetof(BGSSceneAction, flags) == 0x10);
+static_assert(offsetof(BGSSceneAction, status) == 0x14);
+static_assert(offsetof(BGSSceneAction, index) == 0x18);
+
+struct BGSScenePhase
+{
+    TESCondition startConditions;
+    // Once the phase has any, it ends as soon as they pass, even with actions still running
+    TESCondition completionConditions;
+    bool isRunning;
+
+    [[nodiscard]] bool HasCompletionConditions() const noexcept { return completionConditions.pHead != nullptr; }
+};
+
+static_assert(offsetof(BGSScenePhase, completionConditions) == 0x8);
 
 struct BGSScene : TESForm
 {
-    GameArray<void*> phases;
+    GameArray<BGSScenePhase*> phases;
     GameArray<uint32_t> actorIds;
+    GameArray<uint32_t> actorFlags;
+    GameArray<uint32_t> actorProgressionFlags;
+    GameArray<BGSSceneAction*> actions;
+    TESQuest* owningQuest; // 0x98
+    uint32_t flags;
+    uint32_t padA4;
+    TESCondition conditions;
+    // First phase still to run, phases.length if none. Start() leaves currentPhaseIndex at -1 until an update; on end it
+    // moves past the last phase, and isPlaying clears once the end scripts ran (SetSceneActive, 0x1403A0FA0, 1.6.1170)
+    [[nodiscard]] uint32_t GetNextPhaseIndex() const noexcept
+    {
+        if (!isPlaying)
+            return phases.length;
+
+        return currentPhaseIndex == UINT32_MAX ? 0 : std::min(currentPhaseIndex, phases.length);
+    }
+
+    bool isPlaying; // 0xB0
+    uint8_t padB1[0xBC - 0xB1];
+    uint32_t currentPhaseIndex; // 0xBC, -1 when not playing
 };
+
+static_assert(offsetof(BGSScene, owningQuest) == 0x98);
+static_assert(offsetof(BGSScene, isPlaying) == 0xB0);
+static_assert(offsetof(BGSScene, currentPhaseIndex) == 0xBC);
 
 struct TESQuest : BGSStoryManagerTreeForm
 {
@@ -75,9 +160,14 @@ struct TESQuest : BGSStoryManagerTreeForm
     {
         uint16_t stageIndex;
         uint8_t flags;
+        uint8_t pad3[5];
+        // Log entries. Setting the stage runs each one's fragment, then sends TESQuestStageItemDoneEvent for it
+        GameValueList<void*> items;
 
         inline bool IsDone() { return flags & 1; }
     };
+
+    static_assert(offsetof(Stage, items) == 0x8);
 
     TESFullName fullName;
     GameArray<void*> instanceData;
@@ -90,11 +180,9 @@ struct TESQuest : BGSStoryManagerTreeForm
     Type type;            // 0x00DF
     int32_t scopedStatus; // 0x00E0 default init: -1, if not -1 outside of story manager scope
     uint32_t padE4;
-    GameList<Stage> stages;
-    /*
-    GameList<Stage>* pExecutedStages;  // 0x00E8
-    GameList<Stage>* pWaitingStages;   // 0x00F0
-    */
+    // Sorted by stageIndex, head node is inline. CommonLibSSE's executedStages/waitingStages (0xE8/0xF0) are
+    // this head's item/next fields, not two separate lists.
+    GameValueList<Stage*> stages;
     GameList<Objective> objectives; // 0x00F8
     char pad108[0x100];             // 0x0108
     GameArray<BGSScene*> scenes;    // 0x0208
@@ -127,8 +215,10 @@ struct TESQuest : BGSStoryManagerTreeForm
     bool EnsureQuestStarted(bool& succeded, bool force);
 
     bool SetStage(uint16_t stage);
-    void ScriptSetStage(uint16_t stage);
+    bool ScriptSetStage(uint16_t stage);
     void SetStopped();
+    bool IsStageReached(uint16_t aStage) noexcept;
+    uint32_t GetStageItemCount(uint16_t aStage) noexcept;
 };
 
 static_assert(sizeof(TESQuest) == 0x268);

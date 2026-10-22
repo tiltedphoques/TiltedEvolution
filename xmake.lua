@@ -26,6 +26,18 @@ add_vectorexts("neon")
 -- build configurations
 add_rules("mode.debug", "mode.releasedbg", "mode.release")
 
+option("skyrim_version")
+    set_default("latest")
+    set_values("latest", "1.6.1170")
+    set_description("Skyrim SE runtime the client is built for")
+    after_check(function (option)
+        local values = option:get("values")
+        if not table.contains(values, option:value()) then
+            raise("unknown skyrim_version \"%s\" (expected %s)", tostring(option:value()), table.concat(values, ", "))
+        end
+    end)
+option_end()
+
 if has_config("unitybuild") then
     add_rules("c.unity_build")
     add_rules("c++.unity_build", {batchsize = 12})
@@ -34,7 +46,6 @@ end
 -- direct dependencies version pinning 
 add_requires(
     "entt v3.10.0", 
-    "recastnavigation v1.6.0", 
     "tiltedcore 0.2.9", 
     "cryptopp 8.9.0", 
     "spdlog v1.13.0", 
@@ -61,12 +72,6 @@ if is_plat("linux") then
 end
 
 add_requireconfs("cpp-httplib", {configs = {ssl = true}})
---[[
-add_requireconfs("magnum", { configs = { sdl2 = true }})
-add_requireconfs("magnum-integration",  { configs = { imgui = true }})
-add_requireconfs("magnum-integration.magnum",  { configs = { sdl2 = true }})
-add_requireconfs("magnum-integration.imgui", { override = true })
---]]
 
 before_build(function (target)
     import("modules.version")

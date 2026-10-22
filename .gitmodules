@@ -10,9 +10,3 @@
 [submodule "Libraries/TiltedHooks"]
 	path = Libraries/TiltedHooks
 	url = https://github.com/TiltedPhoques/TiltedHooks
-[submodule "Libraries/TiltedScript"]
-	path = Libraries/TiltedScript
-	url = https://github.com/TiltedPhoques/TiltedScript
-[submodule "Libraries/cpp-httplib"]
-	path = Libraries/cpp-httplib
-	url = https://github.com/yhirose/cpp-httplib.git

@@ -11,6 +11,7 @@ struct AssignCharacterRequest;
 struct AssignCharacterResponse;
 struct CharacterSpawnRequest;
 struct ClientReferencesMoveRequest;
+struct RequestActionEvents;
 struct RequestFactionsChanges;
 struct GridCellCoords;
 struct RequestOwnershipTransfer;
@@ -58,6 +59,7 @@ protected:
     void OnCharacterRemoveEvent(const CharacterRemoveEvent& acEvent) const noexcept;
     void OnCharacterSpawned(const CharacterSpawnedEvent& acEvent) const noexcept;
     void OnReferencesMoveRequest(const PacketEvent<ClientReferencesMoveRequest>& acMessage) const noexcept;
+    void OnActionEventsRequest(const PacketEvent<RequestActionEvents>& acMessage) const noexcept;
     void OnFactionsChanges(const PacketEvent<RequestFactionsChanges>& acMessage) const noexcept;
     void OnMountRequest(const PacketEvent<MountRequest>& acMessage) const noexcept;
     void OnNewPackageRequest(const PacketEvent<NewPackageRequest>& acMessage) const noexcept;
@@ -75,7 +77,6 @@ protected:
     ActorData BuildActorData(const entt::entity acEntity) const noexcept;
 
     void ProcessFactionsChanges() const noexcept;
-    void ProcessMovementChanges() const noexcept;
 
 private:
     World& m_world;
@@ -90,6 +91,7 @@ private:
     entt::scoped_connection m_removeCharacterConnection;
     entt::scoped_connection m_characterSpawnedConnection;
     entt::scoped_connection m_referenceMovementSnapshotConnection;
+    entt::scoped_connection m_actionEventsConnection;
     entt::scoped_connection m_factionsChangesConnection;
     entt::scoped_connection m_mountConnection;
     entt::scoped_connection m_newPackageConnection;
