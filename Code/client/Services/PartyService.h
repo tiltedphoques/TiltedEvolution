@@ -27,6 +27,12 @@ struct PartyService
 
     const Vector<uint32_t>& GetPartyMembers() const noexcept { return m_partyMembers; }
     const Map<uint32_t, String>& GetPlayers() const noexcept { return m_players; }
+    // Last name seen for a player id this session, kept after they drop out of the player list.
+    [[nodiscard]] const String* GetKnownName(uint32_t aPlayerId) const noexcept
+    {
+        auto it = m_knownNames.find(aPlayerId);
+        return it != m_knownNames.end() && !it->second.empty() ? &it->second : nullptr;
+    }
     Map<uint32_t, uint64_t>& GetInvitations() noexcept { return m_invitations; }
     [[nodiscard]] bool HasPendingInvitations() const noexcept { return !m_invitations.empty(); }
 
@@ -50,6 +56,7 @@ private:
     void DestroyParty() noexcept;
 
     Map<uint32_t, String> m_players;
+    Map<uint32_t, String> m_knownNames;
     Map<uint32_t, uint64_t> m_invitations;
     uint64_t m_nextUpdate{0};
 
