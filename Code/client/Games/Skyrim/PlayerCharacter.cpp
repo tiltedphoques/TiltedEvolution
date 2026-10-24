@@ -249,7 +249,10 @@ void TP_MAKE_THISCALL(HookSetWaypoint, PlayerCharacter, NiPoint3* apPosition, TE
     position.y = apPosition->y;
     position.z = apPosition->z;
 
-    World::Get().GetRunner().Trigger(SetWaypointEvent(position, apWorldSpace ? apWorldSpace->formID : 0));
+    // apWorldSpace is the map's worldspace, or its cell on an interior map. A waypoint without one can't be placed
+    // by the other players.
+    if (apWorldSpace)
+        World::Get().GetRunner().Trigger(SetWaypointEvent(position, apWorldSpace->formID));
 
     return TiltedPhoques::ThisCall(RealSetWaypoint, apThis, apPosition, apWorldSpace);
 }
