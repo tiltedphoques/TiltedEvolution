@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { takeUntil } from 'rxjs';
+import { filter, takeUntil } from 'rxjs';
 import { ChatMessage, ChatService } from 'src/app/services/chat.service';
 import { DestroyService } from '../../services/destroy.service';
+import { PlayerUiService } from '../../services/player-ui.service';
 
 interface Notification extends ChatMessage {
   timer: number;
@@ -19,9 +20,13 @@ export class NotificationsComponent {
   public constructor(
     private readonly destroy$: DestroyService,
     private readonly chatService: ChatService,
+    private readonly playerUiService: PlayerUiService,
   ) {
     this.chatService.messageList
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        filter(message => this.playerUiService.showsInMiniChat(message)),
+        takeUntil(this.destroy$),
+      )
       .subscribe(message => {
         this.notifications.push({
           ...message,

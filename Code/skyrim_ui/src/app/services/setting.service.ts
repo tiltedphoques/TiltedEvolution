@@ -18,6 +18,19 @@ export enum ScreenCorner {
   BOTTOM_LEFT,
 }
 
+export enum PlayerUiFilter {
+  ON = 'on',
+  PARTY = 'party',
+  OFF = 'off',
+}
+
+/** Whose names are known by default; the eye in the player list overrides per name. */
+export enum KnownNames {
+  ALL = 'all',
+  PARTY = 'party',
+  NONE = 'none',
+}
+
 export const autoHideTimerLengths = [1, 3, 5];
 
 export const fontSizeToPixels: Record<FontSize, number> = {
@@ -101,6 +114,7 @@ export class SettingService {
     ScreenCorner,
   ) as ScreenCorner[];
   private readonly autoHideTimeValues = autoHideTimerLengths;
+  private readonly playerUiFilterValues = Object.values(PlayerUiFilter);
 
   public settings = {
     volume: new SliderSetting(this.storeService, 'audio_volume', 0.5),
@@ -152,7 +166,76 @@ export class SettingService {
       this.screenCornerValues,
       ScreenCorner.TOP_LEFT,
     ),
+    // Unknown names show as "Stranger", invites included. Replaces the old
+    // "Global stranger names" toggle: checked maps to None, unchecked to All.
+    knownNames: new SelectSetting(
+      this.storeService,
+      'playerUi_knownNames',
+      Object.values(KnownNames),
+      this.storeService.getBool('playerUi_hideStrangerNames', false)
+        ? KnownNames.NONE
+        : KnownNames.ALL,
+    ),
+    partyInvites: new ToggleSetting(
+      this.storeService,
+      'playerUi_partyInvites',
+      true,
+    ),
+    miniChat: new SelectSetting(
+      this.storeService,
+      'playerUi_miniChat',
+      this.playerUiFilterValues,
+      PlayerUiFilter.ON,
+    ),
+    nameTags: new SelectSetting(
+      this.storeService,
+      'playerUi_nameTags',
+      this.playerUiFilterValues,
+      PlayerUiFilter.PARTY,
+    ),
+    // New key: the old backplate setting defaulted to On.
+    nameBackdrop: new SelectSetting(
+      this.storeService,
+      'playerUi_nameBackdrop',
+      this.playerUiFilterValues,
+      PlayerUiFilter.PARTY,
+    ),
+    nameTagSize: new SelectSetting(
+      this.storeService,
+      'playerUi_nameTagSize',
+      this.fontSizeValues,
+      FontSize.M,
+    ),
+    nameFadeStart: new SliderSetting(
+      this.storeService,
+      'playerUi_nameFadeStart',
+      3000,
+    ),
+    nameInvisible: new SliderSetting(
+      this.storeService,
+      'playerUi_nameInvisible',
+      5000,
+    ),
+    partyFadeStart: new SliderSetting(
+      this.storeService,
+      'playerUi_partyFadeStart',
+      3000,
+    ),
+    partyInvisible: new SliderSetting(
+      this.storeService,
+      'playerUi_partyInvisible',
+      5000,
+    ),
   };
+
+  /**
+   * Per-username overrides of the stranger name setting, set with the eye in
+   * the player list. Keyed by username so the choice follows that name across
+   * servers and applies to everyone using it.
+   */
+  public nameOverrides = new BehaviorSubject<Record<string, boolean>>(
+    this.loadNameOverrides(),
+  );
 
   constructor(
     private readonly storeService: StoreService,
@@ -161,5 +244,38 @@ export class SettingService {
     this.settings.language.subscribe(lang =>
       translocoService.setActiveLang(lang),
     );
+  }
+
+  /**
+   * Whether a player's real name may be shown: the eye in the player list
+   * wins, then the known names setting.
+   */
+  public isNameRevealed(name: string, isPartyMember: boolean): boolean {
+    const knownNames = this.settings.knownNames.getValue();
+    return (
+      this.nameOverrides.getValue()[name] ??
+      (knownNames === KnownNames.ALL ||
+        (knownNames === KnownNames.PARTY && isPartyMember))
+    );
+  }
+
+  public setNameOverride(name: string, revealed: boolean) {
+    const overrides = { ...this.nameOverrides.getValue(), [name]: revealed };
+    this.storeService.set(
+      'playerUi_nameOverrides',
+      JSON.stringify(overrides),
+    );
+    this.nameOverrides.next(overrides);
+  }
+
+  private loadNameOverrides(): Record<string, boolean> {
+    try {
+      const parsed = JSON.parse(
+        this.storeService.get('playerUi_nameOverrides', '{}'),
+      );
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
   }
 }

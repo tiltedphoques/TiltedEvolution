@@ -36,19 +36,32 @@
     {{ 'COMPONENT.PARTY_MENU.INVITES' | transloco }}
   </div>
 
-  <div *ngIf="invitations$ | async as invites">
-    <div *ngIf="invites.length === 0" class="no-invites">
-      {{ 'COMPONENT.PARTY_MENU.NO_INVITES' | transloco }}
-    </div>
-    <button
-      *ngFor="let player of invites"
-      class="party-menu-button"
-      (click)="acceptPartyInvite(player.id)"
-    >
-      {{
-        'COMPONENT.PARTY_MENU.ACCEPT_INVITE' | transloco: { name: player.name }
-      }}
-    </button>
+  <div
+    *ngIf="{
+      invites: invitations$ | async,
+      hiddenIds: hiddenPlayerIds$ | async
+    } as data"
+  >
+    <ng-container *ngIf="data.invites as invites">
+      <div *ngIf="invites.length === 0" class="no-invites">
+        {{ 'COMPONENT.PARTY_MENU.NO_INVITES' | transloco }}
+      </div>
+      <button
+        *ngFor="let player of invites"
+        class="party-menu-button"
+        (click)="acceptPartyInvite(player.id)"
+      >
+        {{
+          'COMPONENT.PARTY_MENU.ACCEPT_INVITE'
+            | transloco
+              : {
+                  name: data.hiddenIds?.has(player.id)
+                    ? ('COMPONENT.PARTY_LIST.STRANGER' | transloco)
+                    : player.name
+                }
+        }}
+      </button>
+    </ng-container>
   </div>
 </div>
 
@@ -79,7 +92,17 @@
         <tbody>
           <tr *ngFor="let player of members$ | async">
             <td>{{ player.level }}</td>
-            <td>{{ player.name }}</td>
+            <td>
+              <span
+                *ngIf="!(hiddenPlayerIds$ | async)?.has(player.id); else stranger"
+                >{{ player.name }}</span
+              >
+              <ng-template #stranger>
+                <span class="stranger-name">{{
+                  'COMPONENT.PARTY_LIST.STRANGER' | transloco
+                }}</span>
+              </ng-template>
+            </td>
             <td>{{ player.cellName }}</td>
             <td>
               <button

@@ -103,12 +103,16 @@ void PartyService::OnDisconnected(const DisconnectedEvent& acEvent) noexcept
 {
     DestroyParty();
     m_invitations.clear();
+    m_knownNames.clear();
     m_nextUpdate = 0;
 }
 
 void PartyService::OnPlayerList(const NotifyPlayerList& acPlayerList) noexcept
 {
     m_players = acPlayerList.Players;
+
+    for (const auto& [playerId, name] : m_players)
+        m_knownNames[playerId] = name;
 }
 
 void PartyService::OnPartyInfo(const NotifyPartyInfo& acPartyInfo) noexcept
