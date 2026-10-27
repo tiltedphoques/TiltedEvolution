@@ -622,9 +622,14 @@ ExtraDataList* TESObjectREFR::GetExtraDataFromItem(const Inventory::Entry& arEnt
             pEnchantment = Cast<EnchantmentItem>(TESForm::GetById(enchantId));
         }
 
-        TP_ASSERT(pEnchantment, "No Enchantment created or found.");
-
-        pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge, arEntry.ExtraEnchantRemoveUnequip);
+        // Null when the enchantment (or all of a created one's effects) comes from a mod this client doesn't have.
+        // Attaching a null enchantment crashes later when the item is equipped or shown, so sync the item without it.
+        if (pEnchantment)
+            pExtraDataList->SetEnchantmentData(pEnchantment, arEntry.ExtraEnchantCharge, arEntry.ExtraEnchantRemoveUnequip);
+        else
+            spdlog::warn(
+                "Item {:X}:{:X}: skipping enchantment {:X}:{:X}, not available on this client (missing mod?)", arEntry.BaseId.ModId, arEntry.BaseId.BaseId,
+                arEntry.ExtraEnchantId.ModId, arEntry.ExtraEnchantId.BaseId);
     }
 
     if (arEntry.ExtraPoisonId != 0)
