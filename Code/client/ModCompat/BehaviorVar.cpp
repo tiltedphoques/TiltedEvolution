@@ -315,7 +315,7 @@ const AnimationGraphDescriptor* BehaviorVar::ConstructModdedDescriptor(
 const AnimationGraphDescriptor* BehaviorVar::Patch(BSAnimationGraphManager* apManager, Actor* apActor)
 {
     // Serialize, Actors are multi-threaded. Might not be strictly necessary between being on
-    // the main game loop and under a BSRecursiveLock, but if so it won't hurt anything.
+    // the main game loop and under a BSSpinLock, but if so it won't hurt anything.
     std::lock_guard guard(mutex_lock);
 
     // Check if the animation descriptor has already been built.

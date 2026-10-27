@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Forms/TESForm.h>
+#include <BSCore/BSAtomic.h>
 
 struct TESObjectREFR;
 struct TESWorldSpace;
@@ -67,7 +68,7 @@ struct TESObjectCELL : TESForm
     GameArray<void*> unkD8;
     GameArray<void*> unkF0;
     GameArray<void*> unk108;
-    BSRecursiveLock lock;
+    BSSpinLock lock;
     TESWorldSpace* worldspace;
     LoadedCellData* loadedCellData;
     void* pLightingTemplate;
