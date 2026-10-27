@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Games/Primitives.h>
+#include <BSCore/BSAtomic.h>
 #include <BSCore/BSIntrusiveRefCounted.h>
 
 #include <Havok/BShkbAnimationGraph.h>
@@ -15,7 +16,7 @@ struct BSAnimationGraphManager : BSIntrusiveRefCounted
     void* pad_ptrs[6];
     BSTSmallArray<BShkbAnimationGraph> animationGraphs; // 40 - 20
     void* pad_ptrs2[9];
-    BSRecursiveLock lock;  // 98 - 4C
+    BSSpinLock lock;       // 98 - 4C
     void* unkPtrAfterLock; // A0 - 58
 
 #if TP_PLATFORM_32

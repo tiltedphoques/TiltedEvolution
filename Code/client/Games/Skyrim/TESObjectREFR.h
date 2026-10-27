@@ -225,7 +225,7 @@ struct TESObjectREFR : TESForm
     TESObjectCELL* parentCell;
     void* loadedState;
     ExtraDataList extraData;
-    BSRecursiveLock refLock;
+    uint64_t unk90;
     uint16_t scale;
     uint16_t referenceFlags;
 };

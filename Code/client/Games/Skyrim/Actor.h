@@ -366,7 +366,7 @@ public:
     uint8_t flag197;
 
     uint8_t pad198[8];
-    BSRecursiveLock actorLock;
+    BSSpinLock actorLock;
     uint8_t padActorEnd[0x2B0 - 0x284];
 
     // void Save_Reversed(uint32_t aChangeFlags, Buffer::Writer& aWriter);

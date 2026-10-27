@@ -1,5 +1,7 @@
 #pragma once
 
+#include <BSCore/BSAtomic.h>
+
 struct BSThread
 {
 public:
@@ -10,7 +12,7 @@ public:
     virtual bool Release() = 0;
 
     // private:
-    CRITICAL_SECTION lock; // in reality a BSCriticalSection
+    BSCriticalSection lock;
     void* m_ThreadHandle;
     void* m_ParentHandle;
     uint32_t m_ThreadID;
