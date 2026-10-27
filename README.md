@@ -1,6 +1,11 @@
 # Skyrim Together
 #### codename "TiltedEvolution"
-![Build status](https://github.com/tiltedphoques/TiltedEvolution/workflows/Build%20windows/badge.svg?branch=master) [![Build linux](https://github.com/tiltedphoques/TiltedEvolution/actions/workflows/linux.yml/badge.svg)](https://github.com/tiltedphoques/TiltedEvolution/actions/workflows/linux.yml)  [![Discord](https://img.shields.io/discord/247835175860305931.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/skyrimtogether)
+[![GitHub release](https://img.shields.io/github/v/release/tiltedphoques/TiltedEvolution?color=23314E)](https://github.com/tiltedphoques/TiltedEvolution/releases)
+[![Nexus Mods](https://img.shields.io/badge/Nexus%20Mods-download-FB923C?logo=nexusmods&logoColor=white)](https://www.nexusmods.com/skyrimspecialedition/mods/69993)
+[![Language](https://img.shields.io/github/languages/top/tiltedphoques/TiltedEvolution?logo=cplusplus&color=F34B7D&logoColor=white)](https://github.com/tiltedphoques/TiltedEvolution)
+[![Build status](https://github.com/tiltedphoques/TiltedEvolution/actions/workflows/windows.yml/badge.svg)](https://github.com/tiltedphoques/TiltedEvolution/actions/workflows/windows.yml)
+[![Build linux](https://github.com/tiltedphoques/TiltedEvolution/actions/workflows/linux.yml/badge.svg)](https://github.com/tiltedphoques/TiltedEvolution/actions/workflows/linux.yml)
+[![Discord](https://img.shields.io/discord/247835175860305931.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/skyrimtogether)
 
 <img src="https://avatars.githubusercontent.com/u/52131158?s=200&v=4" align="right"
      alt="Size Limit logo by Anton Lovchikov" width="110" height="100">
