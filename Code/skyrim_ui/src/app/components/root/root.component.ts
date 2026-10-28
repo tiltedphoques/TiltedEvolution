@@ -6,7 +6,9 @@ import { environment } from '../../../environments/environment';
 import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
 import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
+import { TradeUiService } from '../../services/trade-ui.service';
 import { DestroyService } from '../../services/destroy.service';
+import { PlayerUiService } from '../../services/player-ui.service';
 import {
   SettingService,
   fontSizeToPixels,
@@ -38,6 +40,7 @@ export class RootComponent implements OnInit {
   readonly RootView = View;
 
   view$ = this.uiRepository.view$;
+  tradeSession$ = this.tradeUiService.session$;
 
   connected$ = this.client.connectionStateChange.asObservable();
   menuOpen$ = this.client.openingMenuChange.asObservable();
@@ -51,11 +54,14 @@ export class RootComponent implements OnInit {
 
   public constructor(
     private readonly destroy$: DestroyService,
+    // Created here so name tag settings reach the game as soon as the UI loads.
+    private readonly playerUiService: PlayerUiService,
     private readonly client: ClientService,
     private readonly sound: SoundService,
     private readonly uiRepository: UiRepository,
     private readonly translocoService: TranslocoService,
     private readonly settingService: SettingService,
+    private readonly tradeUiService: TradeUiService,
     public readonly overlay: Overlay, // used for mockup
   ) {
     this.translocoService.setActiveLang(
@@ -118,6 +124,10 @@ export class RootComponent implements OnInit {
   }
 
   public closeView() {
+    if (this.uiRepository.getView() === View.TRADE) {
+      // F2 hides the overlay through its activation animation; keep the exchange selected for reopening.
+      return;
+    }
     this.uiRepository.openView(null);
   }
 

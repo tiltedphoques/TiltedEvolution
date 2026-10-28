@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Messages/ClientMessageFactory.h>
+#include <Decoding.h>
 
 static std::function<UniquePtr<ClientMessage>(TiltedPhoques::Buffer::Reader& aReader)> s_clientMessageExtractor[kClientOpcodeMax];
 
@@ -14,10 +15,12 @@ static struct ClientMessageFactoryInit
         {
             using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-            s_clientMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader)
+            s_clientMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader) -> UniquePtr<ClientMessage>
             {
                 auto ptr = TiltedPhoques::MakeUnique<T>();
                 ptr->DeserializeRaw(aReader);
+                if (Decoding::IsMalformed(aReader)) [[unlikely]]
+                    return {nullptr};
                 return TiltedPhoques::CastUnique<ClientMessage>(std::move(ptr));
             };
 
@@ -38,5 +41,9 @@ UniquePtr<ClientMessage> ClientMessageFactory::Extract(TiltedPhoques::Buffer::Re
         return {nullptr};
 
     const auto opcode = static_cast<ClientOpcode>(data);
+    // Calling an empty std::function throws, so opcodes without a registered message are dropped here.
+    if (!s_clientMessageExtractor[opcode]) [[unlikely]]
+        return {nullptr};
+
     return s_clientMessageExtractor[opcode](aReader);
 }
