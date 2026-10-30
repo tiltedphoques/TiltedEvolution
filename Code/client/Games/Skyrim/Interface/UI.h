@@ -41,6 +41,7 @@ public:
     static UI* Get();
 
     bool GetMenuOpen(const BSFixedString& acName) const;
+    bool IsUnpausedMenuOpen() const;
     void CloseAllMenus();
     void DebugLogAllMenus();
 

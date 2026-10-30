@@ -1,6 +1,11 @@
 
 #include "AI/Movement/PlayerControls.h"
 
+#include <Games/Skyrim/Interface/UI.h>
+#include "immersive_launcher/stubs/DllBlocklist.h"
+
+#include <World.h>
+
 PlayerControls* PlayerControls::GetInstance()
 {
     POINTER_SKYRIMSE(PlayerControls*, s_instance, 400864);
@@ -40,3 +45,29 @@ void BSInputEnableManager::EnableOtherEvent(int32_t aFlags, bool aEnable, bool a
 }
 
 // static TiltedPhoques::Initializer s_Init([]() { TiltedPhoques::Put<uint8_t>(0x14072E490, 0xCC); });
+
+TP_THIS_FUNCTION(TProcessInputEvent, uint32_t, PlayerControls, void* apEvent, void* apSource);
+static TProcessInputEvent* RealProcessInputEvent = nullptr;
+
+static uint32_t TP_MAKE_THISCALL(HookProcessInputEvent, PlayerControls, void* apEvent, void* apSource)
+{
+    UI* pUI = UI::Get();
+    if (!pUI || !World::Get().GetTransport().IsConnected() || stubs::g_IsSoulsREActive || !pUI->IsUnpausedMenuOpen())
+        return TiltedPhoques::ThisCall(RealProcessInputEvent, apThis, apEvent, apSource);
+
+    ++pUI->numPausesGame;
+    const uint32_t result = TiltedPhoques::ThisCall(RealProcessInputEvent, apThis, apEvent, apSource);
+    --pUI->numPausesGame;
+
+    return result;
+}
+
+static TiltedPhoques::Initializer s_playerControlsHooks(
+    []()
+    {
+        POINTER_SKYRIMSE(TProcessInputEvent, s_processInputEvent, 42338);
+
+        RealProcessInputEvent = s_processInputEvent.Get();
+
+        TP_HOOK(&RealProcessInputEvent, HookProcessInputEvent);
+    });

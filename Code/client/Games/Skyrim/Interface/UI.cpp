@@ -80,6 +80,17 @@ static constexpr const char* kAllowList[] = {
     //"Journal Menu", // Journal menu, aka pause menu, is disabled until we find a fix for manual save crashing while unpaused.
 };
 
+bool UI::IsUnpausedMenuOpen() const
+{
+    for (const char* item : kAllowList)
+    {
+        if (GetMenuOpen(BSFixedString(item)))
+            return true;
+    }
+
+    return false;
+}
+
 static void* (*UI_AddToActiveQueue)(UI*, IMenu*, void*);
 
 static void* UI_AddToActiveQueue_Hook(UI* apSelf, IMenu* apMenu, void* apFoundItem /*In reality a reference*/)
