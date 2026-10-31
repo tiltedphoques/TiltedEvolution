@@ -109,7 +109,7 @@ static void* (*UI_AddToActiveQueue)(UI*, IMenu*, void*);
 static void* UI_AddToActiveQueue_Hook(UI* apSelf, IMenu* apMenu, void* apFoundItem /*In reality a reference*/)
 {
     // if the menu is empty we let the real function handle it.
-    if (!apMenu || !ShouldUnpauseMenus())
+    if (!apMenu || !UI::ShouldUnpauseMenus())
         return UI_AddToActiveQueue(apSelf, apMenu, apFoundItem);
 
 #if 0
