@@ -1,9 +1,11 @@
 #pragma once
 
-namespace SleepWaitMenu
-{
-bool IsOpen() noexcept;
+#include <Interface/IMenu.h>
 
-// Starts sleeping or waiting for aHours, as if the player confirmed the open menu.
-void Confirm(float aHours) noexcept;
-} // namespace SleepWaitMenu
+struct SleepWaitMenu final : IMenu
+{
+    static bool IsOpen() noexcept;
+
+    // Starts sleeping or waiting for aHours, as if the player confirmed the open menu.
+    static void Confirm(float aHours) noexcept;
+};

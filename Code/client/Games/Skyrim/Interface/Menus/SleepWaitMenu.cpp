@@ -1,7 +1,6 @@
 #include <Interface/Menus/SleepWaitMenu.h>
 
 #include <Events/TimeSkipRequestEvent.h>
-#include <Interface/IMenu.h>
 #include <Interface/UI.h>
 #include <World.h>
 
