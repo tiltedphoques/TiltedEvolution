@@ -39,8 +39,10 @@ class UI
 {
 public:
     static UI* Get();
+    static bool ShouldUnpauseMenus();
 
     bool GetMenuOpen(const BSFixedString& acName) const;
+    bool IsUnpausedMenuOpen() const;
     void CloseAllMenus();
     void DebugLogAllMenus();
 

@@ -80,12 +80,36 @@ static constexpr const char* kAllowList[] = {
     //"Journal Menu", // Journal menu, aka pause menu, is disabled until we find a fix for manual save crashing while unpaused.
 };
 
+bool UI::ShouldUnpauseMenus()
+{
+    return World::Get().GetTransport().IsConnected() && !stubs::g_IsSoulsREActive;
+}
+
+bool UI::IsUnpausedMenuOpen() const
+{
+    static const BSFixedString* s_menuNames = []()
+    {
+        auto* pNames = new BSFixedString[std::size(kAllowList)];
+        for (size_t i = 0; i < std::size(kAllowList); ++i)
+            pNames[i].Set(kAllowList[i]);
+        return pNames;
+    }();
+
+    for (size_t i = 0; i < std::size(kAllowList); ++i)
+    {
+        if (GetMenuOpen(s_menuNames[i]))
+            return true;
+    }
+
+    return false;
+}
+
 static void* (*UI_AddToActiveQueue)(UI*, IMenu*, void*);
 
 static void* UI_AddToActiveQueue_Hook(UI* apSelf, IMenu* apMenu, void* apFoundItem /*In reality a reference*/)
 {
     // if the menu is empty we let the real function handle it.
-    if (!apMenu || !World::Get().GetTransport().IsConnected() || stubs::g_IsSoulsREActive)
+    if (!apMenu || !UI::ShouldUnpauseMenus())
         return UI_AddToActiveQueue(apSelf, apMenu, apFoundItem);
 
 #if 0
