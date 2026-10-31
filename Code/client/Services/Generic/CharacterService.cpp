@@ -4,6 +4,7 @@
 #include <Services/PartyService.h>
 
 #include <Services/CharacterService.h>
+#include <Services/InventoryService.h>
 #include <Services/QuestService.h>
 #include <Services/TransportService.h>
 
@@ -22,6 +23,7 @@
 #include <Systems/CacheSystem.h>
 #include <Systems/FaceGenSystem.h>
 #include <Systems/LeveledNpcSystem.h>
+#include <Systems/OwnershipSystem.h>
 
 #include <Events/ActorAddedEvent.h>
 #include <Events/ActorRemovedEvent.h>
@@ -51,6 +53,7 @@
 #include <Messages/RequestOwnershipTransfer.h>
 #include <Messages/NotifyOwnershipTransfer.h>
 #include <Messages/RequestOwnershipClaim.h>
+#include <Messages/RequestInventorySnapshot.h>
 #include <Messages/MountRequest.h>
 #include <Messages/NotifyMount.h>
 #include <Messages/NewPackageRequest.h>
@@ -137,6 +140,8 @@ void CharacterService::ReconcileActorData(
         pWaitingFor3D->SpawnRequest.IsDead = acActorData.IsDead;
         pWaitingFor3D->SpawnRequest.IsWeaponDrawn = acActorData.IsWeaponDrawn;
         pWaitingFor3D->SpawnRequest.OwnershipEpoch = aOwnershipEpoch;
+        // The server's inventory already contains them
+        pWaitingFor3D->PendingEquipmentChanges.clear();
     }
 
     if (!apActor)
@@ -465,6 +470,20 @@ void CharacterService::OnAssignCharacter(const AssignCharacterResponse& acMessag
         localComponent.IsDead = acMessage.IsDead;
         localComponent.IsWeaponDrawn = acMessage.IsWeaponDrawn;
         pActor->GetExtension()->SetRemote(false);
+
+        // The hooks can't send inventory changes without a LocalComponent, so anything that changed while the request was
+        // in flight (e.g. the outfit being equipped as the actor loads) is missing on the server. Send the whole inventory.
+        const Inventory currentInventory = pActor->GetActorInventory();
+        if (currentInventory.Entries != acMessage.CurrentInventory.Entries || currentInventory.CurrentMagicEquipment != acMessage.CurrentInventory.CurrentMagicEquipment)
+        {
+            spdlog::info("Inventory of local actor {:X} changed while its assignment was in flight, sending it to the server", pActor->formID);
+
+            RequestInventorySnapshot request{};
+            request.ServerId = acMessage.ServerId;
+            request.OwnershipEpoch = acMessage.OwnershipEpoch;
+            request.CurrentInventory = currentInventory;
+            m_transport.Send(request);
+        }
     }
     else
     {
@@ -505,7 +524,35 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
 
     if (remoteItor != std::end(remoteView))
     {
-        spdlog::warn("Character with remote id {:X} is already spawned.", acMessage.ServerId);
+        auto& remoteComponent = remoteView.get<RemoteComponent>(*remoteItor);
+        if (acMessage.OwnershipEpoch <= remoteComponent.OwnershipEpoch)
+        {
+            spdlog::warn("Character with remote id {:X} is already spawned.", acMessage.ServerId);
+            return;
+        }
+
+        // A transfer was missed, so the updates relayed since then were dropped as stale. Catch up from the spawn state.
+        spdlog::info("Adopting ownership epoch {} for spawned actor {:X}, the transfer from epoch {} was missed", acMessage.OwnershipEpoch, acMessage.ServerId, remoteComponent.OwnershipEpoch);
+        remoteComponent.OwnershipEpoch = acMessage.OwnershipEpoch;
+
+        InventoryService::ApplyRemoteInventory(m_world, *remoteItor, acMessage.InventoryContent);
+
+        if (auto* pWaitingFor3D = m_world.try_get<WaitingFor3D>(*remoteItor))
+        {
+            pWaitingFor3D->SpawnRequest.InitialActorValues = acMessage.InitialActorValues;
+            pWaitingFor3D->SpawnRequest.IsDead = acMessage.IsDead;
+            pWaitingFor3D->SpawnRequest.OwnershipEpoch = acMessage.OwnershipEpoch;
+        }
+        else if (const auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*remoteItor))
+        {
+            if (Actor* pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id)))
+            {
+                pActor->SetActorValues(acMessage.InitialActorValues);
+                if (!acMessage.IsPlayer && pActor->IsDead() != acMessage.IsDead)
+                    acMessage.IsDead ? pActor->Kill() : pActor->Respawn();
+            }
+        }
+
         return;
     }
 
@@ -758,14 +805,7 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
     if (entity && !m_world.any_of<LocalComponent, RemoteComponent>(*entity))
         entity.reset();
 
-    uint32_t currentEpoch = 0;
-    if (entity)
-    {
-        if (const auto* pLocalComponent = m_world.try_get<LocalComponent>(*entity))
-            currentEpoch = pLocalComponent->OwnershipEpoch;
-        else if (const auto* pRemoteComponent = m_world.try_get<RemoteComponent>(*entity))
-            currentEpoch = pRemoteComponent->OwnershipEpoch;
-    }
+    const uint32_t currentEpoch = entity ? OwnershipSystem::GetOwnershipEpoch(m_world, *entity) : 0;
 
     if (currentEpoch != 0 && acMessage.OwnershipEpoch <= currentEpoch)
     {
@@ -863,26 +903,48 @@ void CharacterService::OnOwnershipTransfer(const NotifyOwnershipTransfer& acMess
         ApplyLeveledNpcPick(pActor, acMessage.LeveledNpcPickId);
 
     spdlog::info("Actor {:X} is now owned by player {:X} at epoch {}", acMessage.ServerId, acMessage.OwnerPlayerId, acMessage.OwnershipEpoch);
+
+    // The leader owns every actor it has loaded. It gets here when an actor went to someone else while the leader wasn't
+    // ready for it, or when a stale claim was answered with the current owner. Without 3D the grant would only be declined.
+    if (pFormIdComponent && pActor && pActor->GetNiNode() && !m_world.all_of<WaitingFor3D>(cEntity))
+        ProcessNewEntity(cEntity);
 }
 
 void CharacterService::OnRemoveCharacter(const NotifyRemoveCharacter& acMessage) const noexcept
 {
-    auto view = m_world.view<RemoteComponent>();
+    const auto entity = Utils::FindEntityByServerId(acMessage.ServerId);
+    if (!entity || !m_world.any_of<LocalComponent, RemoteComponent>(*entity))
+        return;
 
-    const auto itor = std::find_if(std::begin(view), std::end(view), [id = acMessage.ServerId, view](entt::entity entity) { return view.get<RemoteComponent>(entity).Id == id; });
+    const entt::entity cEntity = *entity;
+    const auto* pFormIdComponent = m_world.try_get<FormIdComponent>(cEntity);
+    Actor* pActor = pFormIdComponent ? Cast<Actor>(TESForm::GetById(pFormIdComponent->Id)) : nullptr;
 
-    if (itor != std::end(view))
+    if (m_world.all_of<LocalComponent>(cEntity))
     {
-        if (auto* pFormIdComponent = m_world.try_get<FormIdComponent>(*itor))
+        // The server only drops an actor once nobody accepts it, so we can still be holding it as local when our assignment
+        // request was answered after we had declined the same grant. Streaming it under the old id would sync nothing.
+        spdlog::warn("Server removed actor {:X} while it is still owned locally", acMessage.ServerId);
+        m_world.remove<LocalAnimationComponent, LocalComponent>(cEntity);
+    }
+    else
+    {
+        if (pActor && pActor->IsTemporary())
         {
-            Actor* pActor = Cast<Actor>(TESForm::GetById(pFormIdComponent->Id));
-            if (pActor && pActor->IsTemporary())
-                CharacterService::DeleteTempActor(pFormIdComponent->Id);
-            else if (pActor)
-                pActor->GetExtension()->SetRemote(false);
+            CharacterService::DeleteTempActor(pActor->formID);
+            pActor = nullptr;
         }
+        else if (pActor)
+            pActor->GetExtension()->SetRemote(false);
 
-        DeleteRemoteEntityComponents(*itor);
+        DeleteRemoteEntityComponents(cEntity);
+    }
+
+    // Nobody owns the actor on the server anymore, so if it is still loaded here, ask for it instead of running it unsynced.
+    if (pActor && pActor->GetNiNode() && !pActor->GetExtension()->IsPlayer())
+    {
+        spdlog::info("Requesting assignment of actor {:X} after the server removed it, server id: {:X}", pActor->formID, acMessage.ServerId);
+        ProcessNewEntity(cEntity);
     }
 }
 
@@ -1946,6 +2008,17 @@ void CharacterService::RunRemoteUpdates() noexcept
 
         pActor->SetActorInventory(waitingFor3D.SpawnRequest.InventoryContent);
         pActor->SetFactions(waitingFor3D.SpawnRequest.FactionsContent);
+
+        const auto& inventoryEntries = waitingFor3D.SpawnRequest.InventoryContent.Entries;
+        for (const auto& change : waitingFor3D.PendingEquipmentChanges)
+        {
+            // Items removed again before the 3D loaded are gone from the inventory, don't equip them back
+            const bool isInventoryItem = !change.IsSpell && !change.IsShout;
+            if (isInventoryItem && std::none_of(inventoryEntries.begin(), inventoryEntries.end(), [&change](const auto& acEntry) { return acEntry.BaseId == change.ItemId && acEntry.Count > 0; }))
+                continue;
+
+            InventoryService::ApplyEquipmentChange(pActor, change);
+        }
 
         if (!waitingFor3D.SpawnRequest.ActionsToReplay.Actions.empty())
         {

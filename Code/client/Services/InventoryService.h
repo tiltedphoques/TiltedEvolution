@@ -9,6 +9,9 @@ struct NotifyInventoryChanges;
 struct InventoryChangeEvent;
 struct EquipmentChangeEvent;
 struct NotifyEquipmentChanges;
+struct NotifyInventorySnapshot;
+struct Inventory;
+struct Actor;
 
 /**
  * @brief Manages inventories of actors and containers.
@@ -49,6 +52,19 @@ struct InventoryService
      * @brief Applies equipment changes sent by the server.
      */
     void OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept;
+    /**
+     * @brief Applies an owner's full inventory to a remote actor.
+     */
+    void OnNotifyInventorySnapshot(const NotifyInventorySnapshot& acMessage) noexcept;
+
+    /**
+     * @brief Applies a full inventory from the server to a remote actor, or to its pending spawn if its 3D isn't loaded yet.
+     */
+    static void ApplyRemoteInventory(World& aWorld, entt::entity aEntity, const Inventory& acInventory) noexcept;
+    /**
+     * @brief Applies an equipment change relayed from an actor's owner.
+     */
+    static void ApplyEquipmentChange(Actor* apActor, const NotifyEquipmentChanges& acMessage) noexcept;
 
 private:
     /**
@@ -66,4 +82,5 @@ private:
     entt::scoped_connection m_equipmentConnection;
     entt::scoped_connection m_inventoryChangeConnection;
     entt::scoped_connection m_equipmentChangeConnection;
+    entt::scoped_connection m_inventorySnapshotConnection;
 };
