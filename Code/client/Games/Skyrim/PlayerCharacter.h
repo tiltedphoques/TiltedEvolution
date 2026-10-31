@@ -121,6 +121,8 @@ struct PlayerCharacter : Actor
     void SetWaypoint(NiPoint3* apPosition, TESWorldSpace* apWorldSpace) noexcept;
     void RemoveWaypoint() noexcept;
 
+    bool IsSleepingOrWaiting() const noexcept;
+
     struct Objective
     {
         BSFixedString name;

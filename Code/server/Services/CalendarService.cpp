@@ -4,8 +4,11 @@
 #include <World.h>
 
 #include <Events/PlayerJoinEvent.h>
+#include <Events/PlayerLeaveEvent.h>
 #include <Events/UpdateEvent.h>
 
+#include <Messages/NotifyTimeSkip.h>
+#include <Messages/RequestTimeSkip.h>
 #include <Messages/ServerTimeSettings.h>
 
 #include "Game/Player.h"
@@ -15,6 +18,8 @@ CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher)
 {
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CalendarService::OnUpdate>(this);
     m_joinConnection = aDispatcher.sink<PlayerJoinEvent>().connect<&CalendarService::OnPlayerJoin>(this);
+    m_leaveConnection = aDispatcher.sink<PlayerLeaveEvent>().connect<&CalendarService::OnPlayerLeave>(this);
+    m_timeSkipConnection = aDispatcher.sink<PacketEvent<RequestTimeSkip>>().connect<&CalendarService::OnTimeSkipRequest>(this);
 }
 
 void CalendarService::OnUpdate(const UpdateEvent&) noexcept
@@ -99,15 +104,49 @@ bool CalendarService::SetDate(int aDay, int aMonth, float aYear) noexcept
     return false;
 }
 
-bool CalendarService::AdvanceTime(float aHours) noexcept
+void CalendarService::OnPlayerLeave(const PlayerLeaveEvent& acEvent) noexcept
 {
-    // The sleep/wait menu allows at most 24 hours; anything beyond that is not a real request.
-    if (!(aHours > 0.f) || aHours > 48.f)
-        return false;
+    m_timeSkipRequests.erase(acEvent.pPlayer);
 
-    m_dateTime.AddHours(aHours);
+    if (!m_timeSkipRequests.empty())
+        UpdateTimeSkip();
+}
+
+void CalendarService::OnTimeSkipRequest(const PacketEvent<RequestTimeSkip>& acMessage) noexcept
+{
+    const float hours = acMessage.Packet.Hours;
+
+    if (hours > 0.f && hours <= 24.f)
+        m_timeSkipRequests[acMessage.pPlayer] = hours;
+    else if (!m_timeSkipRequests.erase(acMessage.pPlayer))
+        return;
+
+    UpdateTimeSkip();
+}
+
+void CalendarService::UpdateTimeSkip() noexcept
+{
+    NotifyTimeSkip notify;
+    notify.Hours = 24.f;
+    notify.ReadyCount = m_timeSkipRequests.size();
+
+    for (const auto& [pPlayer, hours] : m_timeSkipRequests)
+        notify.Hours = std::min(notify.Hours, hours);
+
+    for (const Player* pPlayer : m_world.GetPlayerManager())
+    {
+        if (pPlayer->GetCellComponent())
+            ++notify.PlayerCount;
+    }
+
+    GameServer::Get()->SendToLoaded(notify);
+
+    if (notify.ReadyCount == 0 || notify.ReadyCount < notify.PlayerCount)
+        return;
+
+    m_timeSkipRequests.clear();
+    m_dateTime.AddHours(notify.Hours);
     SendTimeResync();
-    return true;
 }
 
 void CalendarService::SendTimeResync() noexcept

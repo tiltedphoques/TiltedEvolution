@@ -380,6 +380,28 @@ TEST_CASE("Packets", "[encoding.packets]")
         REQUIRE(sendMessage == recvMessage);
     }
 
+    SECTION("NotifyTimeSkip")
+    {
+        Buffer buff(1000);
+
+        NotifyTimeSkip sendMessage, recvMessage;
+        sendMessage.Hours = 7.5f;
+        sendMessage.ReadyCount = 1;
+        sendMessage.PlayerCount = 2;
+
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        uint64_t trash;
+        reader.ReadBits(trash, 8); // pop opcode
+
+        recvMessage.DeserializeRaw(reader);
+
+        REQUIRE(sendMessage == recvMessage);
+    }
+
     SECTION("AuthenticationResponse")
     {
         Buffer buff(1000);

@@ -3,8 +3,7 @@
 #include "Message.h"
 
 /**
- * Sent when the local player finished sleeping or waiting, so that the server can advance the shared
- * game time by the same amount for everyone (#467).
+ * Sent when the local player confirms the sleep/wait menu, or with 0 hours when they leave it.
  */
 struct RequestTimeSkip final : ClientMessage
 {
@@ -20,6 +19,5 @@ struct RequestTimeSkip final : ClientMessage
 
     bool operator==(const RequestTimeSkip& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && Hours == acRhs.Hours; }
 
-    // Game hours to skip, as requested in the sleep/wait menu.
     float Hours{};
 };
