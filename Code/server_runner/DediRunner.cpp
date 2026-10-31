@@ -2,6 +2,7 @@
 #include "DediRunner.h"
 
 #include <console/CommandSettingsProvider.h>
+#include <console/EnvSettingsProvider.h>
 
 #include <chrono>
 #include <cstring>
@@ -79,10 +80,16 @@ bool DediRunner::LoadSettings(int argc, char** argv)
         {
             create_directory(fs::current_path() / kConfigPathName);
             SaveSettingsToIni(m_console, m_SettingsPath);
+            // Environment variables override the defaults in the fresh ini too.
+            LoadSettingsFromEnvironment(m_console);
             return true;
         }
         LoadSettingsFromIni(m_console, m_SettingsPath);
     }
+
+    // Environment variables override both the ini file and the command line,
+    // so a container can be configured without touching either.
+    LoadSettingsFromEnvironment(m_console);
 
     return true;
 }
