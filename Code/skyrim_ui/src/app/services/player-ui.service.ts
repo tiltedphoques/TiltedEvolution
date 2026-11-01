@@ -3,6 +3,7 @@ import { TranslocoService } from '@ngneat/transloco';
 import {
   combineLatest,
   debounceTime,
+  distinctUntilChanged,
   map,
   Observable,
   ReplaySubject,
@@ -140,9 +141,9 @@ export class PlayerUiService implements OnDestroy {
       this.settings.partyFadeStart,
       this.settings.partyInvisible,
       this.translocoService.selectTranslate('COMPONENT.PARTY_LIST.STRANGER'),
-    ])
-      .pipe(debounceTime(100))
-      .subscribe(
+    ]).pipe(
+      debounceTime(100),
+      map(
         ([
           players,
           nameTags,
@@ -153,21 +154,37 @@ export class PlayerUiService implements OnDestroy {
           partyFadeStart,
           partyInvisible,
           strangerLabel,
-        ]) => {
-          this.clientService.setNameTagSettings({
-            nameTags: filterIndex(nameTags),
-            backdrop: filterIndex(backdrop),
-            fontSize: fontSizeToPixels[size],
-            nameFadeStart: Number(nameFadeStart),
-            nameInvisible: Number(nameInvisible),
-            partyFadeStart: Number(partyFadeStart),
-            partyInvisible: Number(partyInvisible),
-            strangerLabel,
-            revealedPlayerIds: players
-              .filter(player => player.isNameRevealed)
-              .map(player => player.id),
-          });
-        },
-      );
+        ]) => ({
+          nameTags: filterIndex(nameTags),
+          backdrop: filterIndex(backdrop),
+          fontSize: fontSizeToPixels[size],
+          nameFadeStart: Number(nameFadeStart),
+          nameInvisible: Number(nameInvisible),
+          partyFadeStart: Number(partyFadeStart),
+          partyInvisible: Number(partyInvisible),
+          strangerLabel,
+          // The order of the player list is not a settings change.
+          revealedPlayerIds: players
+            .filter(player => player.isNameRevealed)
+            .map(player => player.id)
+            .sort((a, b) => a - b),
+        }),
+      ),
+      distinctUntilChanged(
+        (previous, current) =>
+          previous.nameTags === current.nameTags &&
+          previous.backdrop === current.backdrop &&
+          previous.fontSize === current.fontSize &&
+          previous.nameFadeStart === current.nameFadeStart &&
+          previous.nameInvisible === current.nameInvisible &&
+          previous.partyFadeStart === current.partyFadeStart &&
+          previous.partyInvisible === current.partyInvisible &&
+          previous.strangerLabel === current.strangerLabel &&
+          previous.revealedPlayerIds.length === current.revealedPlayerIds.length &&
+          previous.revealedPlayerIds.every(
+            (id, index) => id === current.revealedPlayerIds[index],
+          ),
+      ),
+    ).subscribe(settings => this.clientService.setNameTagSettings(settings));
   }
 }
