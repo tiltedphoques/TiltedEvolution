@@ -152,6 +152,19 @@ void NameTagService::SetSettings(Settings aSettings) noexcept
     aSettings.PartyInvisible = std::max(aSettings.PartyInvisible, aSettings.PartyFadeStart + 1.f);
     aSettings.FontSize = std::clamp(aSettings.FontSize, 8.f, 48.f);
 
+    // UI health updates can re-emit identical settings; avoid replacing the
+    // game-thread state when nothing affecting the tags has changed.
+    if (m_settings.NameTags == aSettings.NameTags &&
+        m_settings.Backdrop == aSettings.Backdrop &&
+        m_settings.FontSize == aSettings.FontSize &&
+        m_settings.NameFadeStart == aSettings.NameFadeStart &&
+        m_settings.NameInvisible == aSettings.NameInvisible &&
+        m_settings.PartyFadeStart == aSettings.PartyFadeStart &&
+        m_settings.PartyInvisible == aSettings.PartyInvisible &&
+        m_settings.StrangerLabel == aSettings.StrangerLabel &&
+        m_settings.RevealedPlayerIds == aSettings.RevealedPlayerIds)
+        return;
+
     m_settings = std::move(aSettings);
 }
 
