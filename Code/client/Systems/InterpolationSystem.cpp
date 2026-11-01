@@ -119,6 +119,9 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     const auto finalZ = TiltedPhoques::Mod(rotA.z + deltaZ, float(TiltedPhoques::Pi * 2));
 
     apActor->SetRotation(finalX, finalY, finalZ);
+
+    if (apActor->currentProcess && apActor->currentProcess->middleProcess)
+        apActor->currentProcess->middleProcess->pitch = -finalX;
 }
 
 void InterpolationSystem::AddPoint(InterpolationComponent& aInterpolationComponent, InterpolationComponent::TimePoint aPoint, const double aArrivalTime) noexcept
