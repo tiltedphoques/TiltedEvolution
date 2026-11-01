@@ -1261,6 +1261,18 @@ char TP_MAKE_THISCALL(HookActorProcess, Actor, float aDeltaTime)
     return TiltedPhoques::ThisCall(RealActorProcess, apThis, aDeltaTime);
 }
 
+TP_THIS_FUNCTION(TProcessTracking, void, Actor, float aDelta);
+static TProcessTracking* RealProcessTracking = nullptr;
+
+void TP_MAKE_THISCALL(HookProcessTracking, Actor, float aDelta)
+{
+    // See InterpolationSystem's `lookAt` logic
+    if (apThis->GetExtension()->IsRemotePlayer())
+        return;
+
+    TiltedPhoques::ThisCall(RealProcessTracking, apThis, aDelta);
+}
+
 TP_THIS_FUNCTION(TAddDeathItems, void, Actor);
 static TAddDeathItems* RealAddDeathItems = nullptr;
 
@@ -1310,6 +1322,7 @@ static TiltedPhoques::Initializer s_actorHooks(
         POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
         POINTER_SKYRIMSE(TAddDeathItems, addDeathItems, 37198);
         POINTER_SKYRIMSE(TIsFleeing, isFleeing, 37577);
+        POINTER_SKYRIMSE(TProcessTracking, s_processTracking, 38009);
 
         RealActorProcess = s_actorProcess.Get();
         RealSetPosition = s_setPosition.Get();
@@ -1332,8 +1345,10 @@ static TiltedPhoques::Initializer s_actorHooks(
         RealSpeakSoundFunction = s_speakSoundFunction.Get();
         RealAddDeathItems = addDeathItems.Get();
         RealIsFleeing = isFleeing.Get();
+        RealProcessTracking = s_processTracking.Get();
 
         TP_HOOK(&RealActorProcess, HookActorProcess);
+        TP_HOOK(&RealProcessTracking, HookProcessTracking);
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRemoveSpell, HookRemoveSpell);
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);

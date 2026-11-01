@@ -25,4 +25,6 @@ struct Movement
     Rotator2_NetQuantize Rotation{};
     AnimationVariables Variables{};
     float Direction{};
+    bool HasLookAt{};
+    Rotator2_NetQuantize LookDirection{}; // Pitch, yaw
 };

@@ -4,6 +4,14 @@
 
 #include <BSAnimationGraphManager.h>
 
+bool IAnimationGraphManagerHolder::GetVariableNiPoint3(BSFixedString* apVariable, NiPoint3* apReturn)
+{
+    TP_THIS_FUNCTION(TGetNiPoint3Variable, bool, IAnimationGraphManagerHolder, BSFixedString*, NiPoint3*);
+    POINTER_SKYRIMSE(TGetNiPoint3Variable, InternalGetNiPoint3Variable, 32884);
+
+    return TiltedPhoques::ThisCall(InternalGetNiPoint3Variable, this, apVariable, apReturn);
+}
+
 bool IAnimationGraphManagerHolder::SetVariableFloat(BSFixedString* apVariable, float aValue)
 {
     TP_THIS_FUNCTION(TSetFloatVariable, bool, IAnimationGraphManagerHolder, BSFixedString*, float);

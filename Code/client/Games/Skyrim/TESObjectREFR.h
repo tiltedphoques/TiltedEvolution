@@ -97,7 +97,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_58();
     virtual void sub_59();
     virtual void AddObjectToContainer(TESBoundObject* apObj, ExtraDataList* aspExtra, int32_t aicount, TESObjectREFR* apOldContainer);
-    virtual void sub_5B();
+    virtual NiPoint3 GetLookingAtLocation() const;
     virtual MagicCaster* GetMagicCaster(MagicSystem::CastingSource aeSource);
     virtual MagicTarget* GetMagicTarget();
     virtual void sub_5E();

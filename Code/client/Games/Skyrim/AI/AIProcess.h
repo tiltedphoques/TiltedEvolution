@@ -11,6 +11,7 @@ struct AIProcess
     bool SetCurrentAmmo(TESAmmo* apAmmo) noexcept;
 
     void KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, float afMagnitude);
+    void SetHeadTrackTarget(Actor* apOwner, const NiPoint3& acTarget) noexcept;
 
     void* unk0;
     MiddleProcess* middleProcess;

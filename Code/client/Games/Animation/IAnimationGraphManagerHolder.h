@@ -4,6 +4,7 @@
 
 struct BSAnimationGraphManager;
 struct BSFixedString;
+struct NiPoint3;
 
 struct IAnimationGraphManagerHolder
 {
@@ -30,6 +31,7 @@ struct IAnimationGraphManagerHolder
     virtual bool GetVariableInt(BSFixedString* apVariable, uint32_t* apReturn);
     virtual bool GetVariableBool(BSFixedString* apVariable, bool* apReturn);
 
+    bool GetVariableNiPoint3(BSFixedString* apVariable, NiPoint3* apReturn);
     bool SetVariableFloat(BSFixedString* apVariable, float aValue);
     bool SetVariableInt(BSFixedString* apVariable, int32_t aValue);
     bool SetVariableBool(BSFixedString* apVariable, bool aValue);

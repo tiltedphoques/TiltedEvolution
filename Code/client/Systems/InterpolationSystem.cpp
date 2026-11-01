@@ -120,8 +120,32 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 
     apActor->SetRotation(finalX, finalY, finalZ);
 
-    if (apActor->currentProcess && apActor->currentProcess->middleProcess)
-        apActor->currentProcess->middleProcess->pitch = -finalX;
+    auto* pProcess = apActor->currentProcess;
+    if (!pProcess || !pProcess->middleProcess)
+        return;
+
+    pProcess->middleProcess->pitch = -finalX;
+
+    if (apActor->GetExtension()->IsRemotePlayer())
+    {
+        if (second.HasLookAt)
+        {
+            constexpr float cLookDistance = 500.f;
+            const float cPitch = second.LookDirection.x;
+            const float cYaw = second.LookDirection.y;
+
+            NiPoint3 target = apActor->GetLookingAtLocation();
+            target.x += std::cos(cPitch) * std::sin(cYaw) * cLookDistance;
+            target.y += std::cos(cPitch) * std::cos(cYaw) * cLookDistance;
+            target.z += std::sin(cPitch) * cLookDistance;
+
+            pProcess->SetHeadTrackTarget(apActor, target);
+        }
+        else
+        {
+            pProcess->middleProcess->lookAt = false;
+        }
+    }
 }
 
 void InterpolationSystem::AddPoint(InterpolationComponent& aInterpolationComponent, InterpolationComponent::TimePoint aPoint, const double aArrivalTime) noexcept

@@ -127,6 +127,19 @@ void AnimationSystem::SerializeMovement(World& aWorld, Actor* apActor, Movement&
     if (apActor->currentProcess && apActor->currentProcess->middleProcess)
     {
         aMovement.Direction = apActor->currentProcess->middleProcess->direction;
+
+        static BSFixedString s_targetLocation("TargetLocation");
+        NiPoint3 target{};
+
+        if (apActor == PlayerCharacter::Get() && apActor->currentProcess->middleProcess->lookAt &&
+            apActor->animationGraphHolder.GetVariableNiPoint3(&s_targetLocation, &target))
+        {
+            const glm::vec3 cDirection = target - apActor->GetLookingAtLocation();
+
+            aMovement.HasLookAt = true;
+            aMovement.LookDirection.x = std::atan2(cDirection.z, std::hypot(cDirection.x, cDirection.y));
+            aMovement.LookDirection.y = std::atan2(cDirection.x, cDirection.y);
+        }
     }
 }
 

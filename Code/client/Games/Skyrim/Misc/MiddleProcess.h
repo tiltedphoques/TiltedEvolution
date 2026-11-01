@@ -23,12 +23,12 @@ struct MiddleProcess
     uint8_t pad228[0x260 - 0x228];
     InventoryEntry* rightEquippedObject;
     InventoryEntry* ammoEquippedObject; // could be more than just ammo
-    // 0xB8 - direction
-    //
-    // 0x326 - bool lookat
+    uint8_t pad270[0x326 - 0x270];
+    bool lookAt;
 };
 
 static_assert(offsetof(MiddleProcess, pitch) == 0xB0);
 static_assert(offsetof(MiddleProcess, direction) == 0xB8);
 static_assert(offsetof(MiddleProcess, leftEquippedObject) == 0x220);
 static_assert(offsetof(MiddleProcess, rightEquippedObject) == 0x260);
+static_assert(offsetof(MiddleProcess, lookAt) == 0x326);
