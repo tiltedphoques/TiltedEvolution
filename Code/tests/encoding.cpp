@@ -527,6 +527,88 @@ TEST_CASE("Packets", "[encoding.packets]")
         REQUIRE(pMessage->GetOpcode() == sendMessage.GetOpcode());
         REQUIRE(*CastUnique<NotifyActionEvents>(std::move(pMessage)) == sendMessage);
     }
+
+    SECTION("VoiceDataRequest")
+    {
+        Buffer buff(1000);
+
+        VoiceDataRequest sendMessage;
+        sendMessage.Frame.Sequence = 65535;
+        for (uint32_t i = 0; i < 97; ++i)
+            sendMessage.Frame.Data.push_back(static_cast<uint8_t>(i * 7));
+
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        const ClientMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == sendMessage.GetOpcode());
+        REQUIRE(*CastUnique<VoiceDataRequest>(std::move(pMessage)) == sendMessage);
+    }
+
+    SECTION("NotifyVoiceData")
+    {
+        Buffer buff(1000);
+
+        NotifyVoiceData sendMessage;
+        sendMessage.PlayerId = 123456;
+        sendMessage.Frame.Sequence = 42;
+        for (uint32_t i = 0; i < 60; ++i)
+            sendMessage.Frame.Data.push_back(static_cast<uint8_t>(255 - i));
+
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        const ServerMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == sendMessage.GetOpcode());
+        REQUIRE(*CastUnique<NotifyVoiceData>(std::move(pMessage)) == sendMessage);
+    }
+
+    SECTION("VoiceFrame rejects oversized data")
+    {
+        Buffer buff(2000);
+
+        // Written by hand, Serialize itself never writes more than kMaxSize
+        Buffer::Writer writer(&buff);
+        writer.WriteBits(7, 16);
+        Serialization::WriteVarInt(writer, VoiceFrame::kMaxSize + 1);
+
+        Buffer::Reader reader(&buff);
+
+        VoiceFrame frame;
+        REQUIRE_FALSE(frame.Deserialize(reader));
+        REQUIRE(frame.Data.empty());
+    }
+
+    SECTION("VoiceStateRequest")
+    {
+        Buffer buff(1000);
+
+        VoiceStateRequest sendMessage;
+        sendMessage.Listening = true;
+        sendMessage.ListenChannel = VoiceStateRequest::kStrangers;
+
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        const ClientMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == sendMessage.GetOpcode());
+        REQUIRE(*CastUnique<VoiceStateRequest>(std::move(pMessage)) == sendMessage);
+    }
 }
 
 TEST_CASE("StringCache", "[encoding.string_cache]")

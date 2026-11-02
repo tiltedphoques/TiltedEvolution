@@ -64,6 +64,16 @@ void SaveSettingsToIni(ConsoleRegistry& aReg, const std::filesystem::path& aPath
 {
     CSimpleIni ini;
 
+    // Start from the file on disk so keys that aren't settings here survive, the game client keeps its own
+    // [Voice] keys in the same STServer.ini
+    std::error_code existsError{};
+    if (std::filesystem::exists(aPath, existsError) && !existsError)
+    {
+        const auto existing = TiltedPhoques::LoadFile(aPath);
+        if (ini.LoadData(existing.c_str()) != SI_Error::SI_OK)
+            ini.Reset();
+    }
+
     SI_Error error{SI_Error::SI_OK};
     aReg.ForAllSettings(
         [&](SettingBase* setting)

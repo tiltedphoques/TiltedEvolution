@@ -45,6 +45,8 @@ Console::Setting bAutoPartyJoin{"Gameplay:bAutoPartyJoin", "Join parties automat
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Refuse clients whose mods do not match Data/loadorder.txt", false, Console::SettingsFlags::kLocked};
 Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow players using SKSE to join. Applies even when bEnableModCheck is off", true, Console::SettingsFlags::kLocked};
 Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow players using Mod Organizer 2 to join. Applies even when bEnableModCheck is off", true, Console::SettingsFlags::kLocked};
+// Voice, the game client reads and writes this section too when the server runs from the game folder
+Console::Setting bVoip{"Voice:bVoip", "Built-in proximity voice chat. On a server: lets players talk to players nearby. For a player: the Connect to voip checkbox in Settings", false};
 
 // -- Commands --
 Console::Command<> TogglePremium(
@@ -141,6 +143,7 @@ ServerSettings GetSettings()
     settings.DeathSystemEnabled = bEnableDeathSystem;
     settings.SyncPlayerCalendar = bSyncPlayerCalendar;
     settings.AutoPartyJoin = bAutoPartyJoin;
+    settings.VoipEnabled = bVoip;
     return settings;
 }
 
