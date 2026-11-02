@@ -325,7 +325,7 @@ struct VoiceAudio::Impl
 };
 
 VoiceAudio::VoiceAudio() noexcept
-    : m_pImpl(MakeUnique<Impl>())
+    : m_pImpl(TiltedPhoques::MakeUnique<Impl>())
 {
 }
 
