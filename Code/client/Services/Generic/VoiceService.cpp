@@ -46,7 +46,10 @@ constexpr float kMaxPan = 0.7f;
 constexpr size_t kNiAVObjectWorldRotateOffset = 0x7C;
 constexpr size_t kNiAVObjectWorldTranslateOffset = 0xA0;
 static_assert(kNiAVObjectWorldTranslateOffset + sizeof(float) * 3 <= sizeof(NiAVObject));
-static_assert(offsetof(TESCamera, cameraNode) == 0x20);
+// TESCamera's camera root node pointer. Read by offset because the member is named cameraNode (NiNode*) on our
+// master and cameraRoot (NiPointer<NiNode>) on upstream dev, both a single pointer at 0x20.
+constexpr size_t kTESCameraRootOffset = 0x20;
+static_assert(kTESCameraRootOffset + sizeof(NiNode*) <= sizeof(TESCamera));
 
 struct Listener
 {
@@ -70,7 +73,9 @@ bool GetListener(Listener& aOutListener) noexcept
 
     PlayerCamera* pCamera = PlayerCamera::Get();
     // PlayerCamera redeclares the TESCamera members at the wrong offsets, go through the base on purpose
-    const NiNode* pCameraRoot = pCamera ? static_cast<TESCamera*>(pCamera)->cameraNode : nullptr;
+    const NiNode* pCameraRoot = nullptr;
+    if (pCamera)
+        std::memcpy(&pCameraRoot, reinterpret_cast<const uint8_t*>(static_cast<TESCamera*>(pCamera)) + kTESCameraRootOffset, sizeof(pCameraRoot));
     if (!pCameraRoot)
         return true;
 
