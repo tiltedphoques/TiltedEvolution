@@ -58,7 +58,10 @@ add_requires(
 if is_plat("windows") then
     add_requires(
         "discord 3.2.1", 
-        "imgui v1.89.7"
+        "imgui v1.89.7",
+        -- built-in voice chat: Opus codec (BSD-3-Clause) and audio devices (miniaudio, MIT-0 or public domain)
+        "libopus 1.5.2",
+        "miniaudio 0.11.22"
     )
 end
 

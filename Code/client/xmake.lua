@@ -59,7 +59,9 @@ target(name)
         "entt",
         "glm",
         "mem",
-        "xbyak")
+        "xbyak",
+        "libopus",
+        "miniaudio")
 
     add_syslinks(
         "version",
