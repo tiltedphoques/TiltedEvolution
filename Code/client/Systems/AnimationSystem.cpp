@@ -9,6 +9,7 @@
 
 #include <Forms/BGSAction.h>
 #include <AI/AIProcess.h>
+#include <Camera/PlayerCamera.h>
 #include <Misc/MiddleProcess.h>
 
 #include <Messages/RequestActionEvents.h>
@@ -131,14 +132,11 @@ void AnimationSystem::SerializeMovement(World& aWorld, Actor* apActor, Movement&
         static BSFixedString s_targetLocation("TargetLocation");
         NiPoint3 target{};
 
-        if (apActor == PlayerCharacter::Get() && apActor->currentProcess->middleProcess->lookAt &&
+        if (apActor == PlayerCharacter::Get() && apActor->currentProcess->middleProcess->lookAt && PlayerCamera::Get()->IsThirdPerson() &&
             apActor->animationGraphHolder.GetVariableNiPoint3(&s_targetLocation, &target))
         {
-            const glm::vec3 cDirection = target - apActor->GetLookingAtLocation();
-
             aMovement.HasLookAt = true;
-            aMovement.LookDirection.x = std::atan2(cDirection.z, std::hypot(cDirection.x, cDirection.y));
-            aMovement.LookDirection.y = std::atan2(cDirection.x, cDirection.y);
+            aMovement.LookOffset = target - apActor->GetLookingAtLocation();
         }
     }
 }

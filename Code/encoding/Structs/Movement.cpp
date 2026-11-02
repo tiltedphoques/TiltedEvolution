@@ -5,7 +5,7 @@ using TiltedPhoques::Serialization;
 
 bool Movement::operator==(const Movement& acRhs) const noexcept
 {
-    return CellId == acRhs.CellId && WorldSpaceId == acRhs.WorldSpaceId && Position == acRhs.Position && Rotation == acRhs.Rotation && Variables == acRhs.Variables && Direction == acRhs.Direction && HasLookAt == acRhs.HasLookAt && LookDirection == acRhs.LookDirection;
+    return CellId == acRhs.CellId && WorldSpaceId == acRhs.WorldSpaceId && Position == acRhs.Position && Rotation == acRhs.Rotation && Variables == acRhs.Variables && Direction == acRhs.Direction && HasLookAt == acRhs.HasLookAt && LookOffset == acRhs.LookOffset;
 }
 
 bool Movement::operator!=(const Movement& acRhs) const noexcept
@@ -24,7 +24,7 @@ void Movement::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 
     Serialization::WriteBool(aWriter, HasLookAt);
     if (HasLookAt)
-        LookDirection.Serialize(aWriter);
+        LookOffset.Serialize(aWriter);
 }
 
 void Movement::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -42,7 +42,7 @@ void Movement::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
     Direction = *reinterpret_cast<float*>(&tmp32);
 
     HasLookAt = Serialization::ReadBool(aReader);
-    LookDirection = {};
+    LookOffset = glm::vec3{};
     if (HasLookAt)
-        LookDirection.Deserialize(aReader);
+        LookOffset.Deserialize(aReader);
 }

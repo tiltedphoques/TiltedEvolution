@@ -26,5 +26,5 @@ struct Movement
     AnimationVariables Variables{};
     float Direction{};
     bool HasLookAt{};
-    Rotator2_NetQuantize LookDirection{}; // Pitch, yaw
+    Vector3_NetQuantize LookOffset{}; // From the head to the look-at target
 };

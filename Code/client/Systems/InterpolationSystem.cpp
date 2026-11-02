@@ -130,16 +130,8 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     {
         if (second.HasLookAt)
         {
-            constexpr float cLookDistance = 500.f;
-            const float cPitch = second.LookDirection.x;
-            const float cYaw = second.LookDirection.y;
-
-            NiPoint3 target = apActor->GetLookingAtLocation();
-            target.x += std::cos(cPitch) * std::sin(cYaw) * cLookDistance;
-            target.y += std::cos(cPitch) * std::cos(cYaw) * cLookDistance;
-            target.z += std::sin(cPitch) * cLookDistance;
-
-            pProcess->SetHeadTrackTarget(apActor, target);
+            const NiPoint3 cTarget = apActor->GetLookingAtLocation() + second.LookOffset;
+            pProcess->SetHeadTrackTarget(apActor, cTarget);
         }
         else
         {

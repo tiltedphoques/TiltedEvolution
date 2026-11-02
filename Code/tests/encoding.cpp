@@ -435,8 +435,9 @@ TEST_CASE("Packets", "[encoding.packets]")
         move.Position.x = 1234.5f;
         move.Direction = 0.75f;
         move.HasLookAt = true;
-        move.LookDirection.x = -1.87f;
-        move.LookDirection.y = 45.35f;
+        move.LookOffset.x = -320.f;
+        move.LookOffset.y = 215.f;
+        move.LookOffset.z = -48.f;
 
         AnimationVariables vars;
         vars.Booleans.resize(76);

@@ -7,6 +7,7 @@ struct PlayerCamera : public TESCamera
     static PlayerCamera* Get() noexcept;
 
     bool IsFirstPerson() noexcept;
+    bool IsThirdPerson() const noexcept;
 
     bool WorldPtToScreenPt3(const NiPoint3& in, NiPoint3& out, float zeroTolerance = 1e-5f);
 

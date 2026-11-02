@@ -20,6 +20,11 @@ bool PlayerCamera::IsFirstPerson() noexcept
     return firstPerson == 1.0;
 }
 
+bool PlayerCamera::IsThirdPerson() const noexcept
+{
+    return currentState && currentState->id >= TESCameraState::kThirdPerson;
+}
+
 bool PlayerCamera::WorldPtToScreenPt3(const NiPoint3& in, NiPoint3& out, float zeroTolerance /* = 1e-5f */)
 {
     auto* pCam = GetNiCamera();
