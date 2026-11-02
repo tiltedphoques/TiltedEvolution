@@ -1,0 +1,55 @@
+<ng-container *ngIf="state$ | async as state">
+  <button
+    type="button"
+    class="voip-icon-button"
+    cdkOverlayOrigin
+    #origin="cdkOverlayOrigin"
+    [class.off]="state === 'off'"
+    [class.muted]="state === 'muted'"
+    [class.party]="
+      (state === 'quiet' || state === 'talking') && (isMember$ | async)
+    "
+    [attr.aria-label]="
+      'COMPONENT.VOIP.PLAYER_VOLUME' | transloco : { name: name$ | async }
+    "
+    (click)="toggle()"
+  >
+    <fa-icon [icon]="icon(state)"></fa-icon>
+  </button>
+
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="origin"
+    [cdkConnectedOverlayOpen]="isOpen"
+    (overlayOutsideClick)="close()"
+    (detach)="close()"
+  >
+    <div class="voip-popup" *ngIf="settings$ | async as settings">
+      <div class="row">
+        <span>{{
+          'COMPONENT.VOIP.PLAYER_VOLUME' | transloco : { name: name$ | async }
+        }}</span>
+        <b>{{ volume$ | async }}%</b>
+      </div>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        step="5"
+        [attr.aria-label]="
+          'COMPONENT.VOIP.PLAYER_VOLUME' | transloco : { name: name$ | async }
+        "
+        [ngModel]="volume$ | async"
+        (ngModelChange)="setVolume($event)"
+      />
+      <div class="hint">
+        {{
+          (settings.connect
+            ? 'COMPONENT.VOIP.MUTES_PLAYER'
+            : 'COMPONENT.VOIP.SAVED_UNTIL_CONNECTED'
+          ) | transloco
+        }}
+      </div>
+    </div>
+  </ng-template>
+</ng-container>

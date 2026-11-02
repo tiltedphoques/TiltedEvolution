@@ -11,6 +11,7 @@
       <thead class="list-header">
         <tr>
           <th>{{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.LEVEL' | transloco }}</th>
+          <th class="voip-col"><app-voip-mic></app-voip-mic></th>
           <th>{{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.NAME' | transloco }}</th>
           <th></th>
         </tr>
@@ -18,6 +19,13 @@
       <tbody class="listBody">
         <tr *ngFor="let player of playerList$ | async">
           <td>{{ player.level }}</td>
+          <td class="voip-col">
+            <app-voip-speaker
+              [playerId]="player.id"
+              [playerName]="player.name"
+              [isMember]="player.isMember"
+            ></app-voip-speaker>
+          </td>
           <td>{{ player.name }}</td>
           <td class="actions-col">
             <button

@@ -1,0 +1,96 @@
+// Shared by the Voip column's mic header and speaker buttons. The popups render in the CDK overlay container,
+// outside the component, so their styles are global through ::ng-deep.
+
+.voip-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.voip-icon-button {
+  background: none;
+  border: 0;
+  padding: 0.1rem 0.3rem;
+  cursor: pointer;
+  color: #e8e4dc;
+  line-height: 1;
+
+  &.off {
+    color: #8a857c;
+  }
+
+  &.muted {
+    color: #d9534f;
+  }
+
+  // Same colour as the party chat
+  &.party {
+    color: #9affe6;
+  }
+}
+
+::ng-deep .voip-popup {
+  display: grid;
+  gap: 0.35rem;
+  width: 16rem;
+  margin-top: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  background: #151515;
+  border: 1px solid grey;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+  color: #e8e4dc;
+  font-size: 0.9rem;
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    color: #a9a49b;
+
+    b {
+      color: #e8e4dc;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  input[type='range'] {
+    width: 100%;
+  }
+
+  .voip-separator {
+    border-top: 1px solid #3a3833;
+    margin: 0.25rem 0 0.1rem;
+  }
+
+  .meter {
+    position: relative;
+    height: 0.5rem;
+    background: #0d0d0c;
+    border: 1px solid #3a3833;
+
+    .level {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      background: #6f6a60;
+      transition: width 60ms linear;
+
+      &.open {
+        background: #8fd18a;
+      }
+    }
+
+    .gate {
+      position: absolute;
+      top: -3px;
+      bottom: -3px;
+      width: 2px;
+      background: #e8e4dc;
+    }
+  }
+
+  .hint {
+    font-size: 0.8rem;
+    color: #a9a49b;
+  }
+}

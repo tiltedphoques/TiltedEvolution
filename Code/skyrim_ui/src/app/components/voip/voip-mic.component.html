@@ -1,0 +1,84 @@
+<span class="voip-head">
+  {{ 'COMPONENT.VOIP.HEADER' | transloco }}
+  <button
+    type="button"
+    class="voip-icon-button"
+    cdkOverlayOrigin
+    #origin="cdkOverlayOrigin"
+    [class.off]="(state$ | async) === 'off'"
+    [class.muted]="(state$ | async) === 'muted'"
+    [attr.aria-label]="'COMPONENT.VOIP.MIC_VOLUME' | transloco"
+    (click)="toggle()"
+  >
+    <fa-icon
+      [icon]="(state$ | async) === 'on' ? faMicrophone : faMicrophoneSlash"
+    ></fa-icon>
+  </button>
+</span>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="isOpen"
+  (overlayOutsideClick)="close()"
+  (detach)="close()"
+>
+  <div class="voip-popup" *ngIf="settings$ | async as settings">
+    <div class="row">
+      <span>{{ 'COMPONENT.VOIP.MIC_VOLUME' | transloco }}</span>
+      <b>{{ settings.micVolume }}%</b>
+    </div>
+    <input
+      type="range"
+      min="0"
+      max="100"
+      step="5"
+      [attr.aria-label]="'COMPONENT.VOIP.MIC_VOLUME' | transloco"
+      [ngModel]="settings.micVolume"
+      (ngModelChange)="setMicVolume($event)"
+    />
+
+    <div class="voip-separator"></div>
+
+    <div class="row">
+      <span>{{ 'COMPONENT.VOIP.NOISE_GATE' | transloco }}</span>
+      <b>{{ settings.noiseGate }}%</b>
+    </div>
+    <div class="meter" aria-hidden="true">
+      <div
+        class="level"
+        [class.open]="
+          settings.micVolume > 0 && (micLevel$ | async)! >= settings.noiseGate
+        "
+        [style.width.%]="micLevel$ | async"
+      ></div>
+      <div
+        class="gate"
+        [style.left]="'calc(' + settings.noiseGate + '% - 1px)'"
+      ></div>
+    </div>
+    <input
+      type="range"
+      min="0"
+      max="100"
+      step="1"
+      [attr.aria-label]="'COMPONENT.VOIP.NOISE_GATE' | transloco"
+      [ngModel]="settings.noiseGate"
+      (ngModelChange)="setNoiseGate($event)"
+    />
+    <div class="hint">
+      {{
+        (settings.inputDevice
+          ? 'COMPONENT.VOIP.NOISE_GATE_HINT'
+          : 'COMPONENT.VOIP.NO_DEVICE_HINT'
+        ) | transloco
+      }}
+    </div>
+    <div class="hint" *ngIf="!settings.inputDevice">
+      {{ 'COMPONENT.VOIP.NO_DEVICE' | transloco }}
+    </div>
+    <div class="hint" *ngIf="settings.inputDevice && !settings.connect">
+      {{ 'COMPONENT.VOIP.SAVED_UNTIL_CONNECTED' | transloco }}
+    </div>
+  </div>
+</ng-template>
