@@ -181,6 +181,7 @@ struct TESObjectREFR : TESForm
     void SaveAnimationVariables(AnimationVariables& aWriter) const noexcept;
     void LoadAnimationVariables(const AnimationVariables& aReader) const noexcept;
     uint32_t GetAnimationVariableInt(BSFixedString* apVariableName) noexcept;
+    bool GetAnimationVariableBool(BSFixedString* apVariableName) noexcept;
 
     void RemoveAllItems() noexcept;
     Vector<uint32_t> RemoveNonQuestItems(Inventory& aCurrentInventory) noexcept;

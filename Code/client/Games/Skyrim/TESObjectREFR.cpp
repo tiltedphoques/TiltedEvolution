@@ -969,6 +969,15 @@ uint32_t TESObjectREFR::GetAnimationVariableInt(BSFixedString* apVariableName) n
     return s_pGetAnimationVariableInt(this, apVariableName);
 }
 
+bool TESObjectREFR::GetAnimationVariableBool(BSFixedString* apVariableName) noexcept
+{
+    using ObjectReference = TESObjectREFR;
+
+    PAPYRUS_FUNCTION(bool, ObjectReference, GetAnimationVariableBool, BSFixedString*);
+
+    return s_pGetAnimationVariableBool(this, apVariableName);
+}
+
 static thread_local bool s_cancelAnimationWaitEvent = false;
 
 bool TESObjectREFR::PlayAnimationAndWait(BSFixedString* apAnimation, BSFixedString* apEventName) noexcept

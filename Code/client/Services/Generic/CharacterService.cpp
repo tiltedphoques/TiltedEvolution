@@ -72,11 +72,6 @@
 #include <Messages/NotifyActorTeleport.h>
 
 #include <World.h>
-#include <cstring>
-#include <BSAnimationGraphManager.h>
-#include <Havok/BShkbAnimationGraph.h>
-#include <Havok/hkbBehaviorGraph.h>
-#include <Havok/hkbVariableValueSet.h>
 #include <Games/TES.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
@@ -1130,35 +1125,6 @@ bool CharacterService::IsMountOccupiedByOther(const uint32_t aMountFormId, const
 
 namespace
 {
-// Reads an int animation graph variable of an actor by name (the index is looked up once per graph type); -1 when unavailable
-int32_t ReadGraphInt(Actor* apActor, const char* apName)
-{
-    const auto spManager = apActor->animationGraphHolder.GetAnimationGraphManagerPtr();
-    if (!spManager)
-        return -1;
-    BSAnimationGraphManager* pManager = spManager.get();
-    BSSpinLockGuard _{pManager->lock};
-    if (pManager->animationGraphIndex >= pManager->animationGraphs.size)
-        return -1;
-    const BShkbAnimationGraph* pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
-    if (!pGraph || !pGraph->behaviorGraph || !pGraph->behaviorGraph->animationVariables)
-        return -1;
-    const auto* pSet = pGraph->behaviorGraph->animationVariables;
-    // Variable indices differ between graphs (humanoid, horse...), so they are cached per graph descriptor
-    static std::unordered_map<std::string, uint32_t> s_index;
-    const std::string cKey = std::string(apName) + '#' + std::to_string(apActor->GetExtension()->GraphDescriptorHash);
-    auto it = s_index.find(cKey);
-    if (it == s_index.end())
-    {
-        uint32_t idx = 0xFFFFFFFF;
-        for (const auto& [i, name] : pManager->DumpAnimationVariables(false))
-            if (std::strcmp(name.c_str(), apName) == 0)
-                idx = i;
-        it = s_index.emplace(cKey, idx).first;
-    }
-    return it->second < pSet->size ? static_cast<int32_t>(pSet->data[it->second]) : -1;
-}
-
 // World translate of a NiAVObject is at 0xA0 (world NiTransform at 0x7C, translate at +0x24, layout from CommonLibSSE-NG)
 bool ReadNodeWorld(NiAVObject* apNode, glm::vec3& aOut) noexcept
 {
@@ -2147,7 +2113,8 @@ void CancelPairRootMotion(Actor* apActor, const InterpolationComponent& acInterp
     // Only paired animations: walking turns and idles also turn the bone a little and must be left alone. A pair starts with
     // bIsSynced and ends when the bone is back on the actor, a few frames after bIsSynced drops.
     static std::unordered_set<uint32_t> s_inPair;
-    if (ReadGraphInt(apActor, "bIsSynced") == 1)
+    static BSFixedString s_isSynced("bIsSynced");
+    if (apActor->GetAnimationVariableBool(&s_isSynced))
         s_inPair.insert(apActor->formID);
     else if (cBoneHome)
         s_inPair.erase(apActor->formID);
