@@ -7,6 +7,8 @@
 #include <Misc/MiddleProcess.h>
 
 #include <Games/References.h>
+#include <Misc/BSFixedString.h>
+#include <Structs/Skyrim/AnimationGraphDescriptor_HorseRootBehavior.h>
 #include <World.h>
 
 namespace
@@ -20,6 +22,11 @@ constexpr float cMaxPositionCorrection = 256.f;
 // Time constant of the correction fading out, ~95% of it is gone after three times this
 constexpr double cPositionCorrectionTime = 50.0;
 constexpr size_t cMaxTimePoints = 64;
+// Speed of a horse above which it counts as moving, and below which it counts as stopped (hysteresis against flicker)
+constexpr float cMountStartSpeed = 10.f;
+constexpr float cMountStopSpeed = 1.f;
+// The owner can report Speed 0 for a single snapshot while the horse is still running, a stop needs it to last this long (ms)
+constexpr uint64_t cMountStopDelay = 300;
 } // namespace
 
 void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterpolationComponent, const double aNow) noexcept
@@ -98,6 +105,52 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 
     apActor->ForcePosition(aInterpolationComponent.Position);
     apActor->LoadAnimationVariables(second.Variables);
+
+    // The horse behavior enters and leaves locomotion only on moveStart/moveStop. The owner's engine raises them outside
+    // ActorMediator and remote actors skip the engine update, so derive them from the synced Speed (first float of the descriptor).
+    // STR doesn't forward PairEnd either, which leaves a remote horse parked in its mount state, so send it before moveStart.
+    if (apActor->GetExtension()->GraphDescriptorHash == AnimationGraphDescriptor_HorseRootBehavior::m_key && !second.Variables.Floats.empty())
+    {
+        const float cSpeed = second.Variables.Floats[0];
+        const bool cWasMoving = aInterpolationComponent.IsMountMoving;
+        if (!cWasMoving && cSpeed > cMountStartSpeed)
+            aInterpolationComponent.IsMountMoving = true;
+        else if (cWasMoving)
+        {
+            if (cSpeed >= cMountStopSpeed)
+                aInterpolationComponent.MountLowSpeedSince = 0;
+            else
+            {
+                if (aInterpolationComponent.MountLowSpeedSince == 0)
+                    aInterpolationComponent.MountLowSpeedSince = second.Tick;
+                if (second.Tick - aInterpolationComponent.MountLowSpeedSince >= cMountStopDelay)
+                {
+                    aInterpolationComponent.IsMountMoving = false;
+                    aInterpolationComponent.MountLowSpeedSince = 0;
+                }
+            }
+        }
+
+        if (cWasMoving != aInterpolationComponent.IsMountMoving)
+        {
+            if (aInterpolationComponent.IsMountMoving)
+            {
+                // After mounting, the graph stays in MountSynced/DismountSynced until PairEnd and moveStart is refused there.
+                // The state change only applies on the next graph update, so a refused moveStart is retried on the next
+                // snapshot. shortcut: retries every snapshot while refused, cap it if some state ever never accepts it.
+                BSFixedString pairEnd("PairEnd");
+                apActor->SendAnimationEvent(&pairEnd);
+                BSFixedString moveStart("moveStart");
+                if (!apActor->SendAnimationEvent(&moveStart))
+                    aInterpolationComponent.IsMountMoving = false;
+            }
+            else
+            {
+                BSFixedString moveStop("moveStop");
+                apActor->SendAnimationEvent(&moveStop);
+            }
+        }
+    }
 
     if (apActor->currentProcess && apActor->currentProcess->middleProcess)
     {

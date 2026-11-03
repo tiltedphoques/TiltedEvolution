@@ -83,10 +83,8 @@ AnimationGraphDescriptor_HorseRootBehavior::AnimationGraphDescriptor_HorseRootBe
         kisMoving = 75,
     };
 
-    uint64_t key = 3064138997224155673;
-
     AnimationGraphDescriptorManager::Builder s_builder(
-        aManager, key,
+        aManager, m_key,
         AnimationGraphDescriptor(
             {
                 kbHeadTrackingOn,
