@@ -24,6 +24,8 @@ struct InterpolationComponent
     List<TimePoint> TimePoints;
     // Last displayed position
     glm::vec3 Position;
+    // Last displayed heading (rotation z)
+    float Yaw{};
 
     PlaybackClock Clock;
 

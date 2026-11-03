@@ -20,6 +20,12 @@ static TPerformAction* RealPerformAction;
 // TODO: make scoped override
 thread_local bool g_forceAnimation = false;
 
+static bool IsMountRef(TESObjectREFR* apRef) noexcept
+{
+    auto* pActor = Cast<Actor>(apRef);
+    return pActor && pActor->IsMount();
+}
+
 uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apAction)
 {
     auto pActor = apAction->actor;
@@ -41,6 +47,11 @@ uint8_t TP_MAKE_THISCALL(HookPerformAction, ActorMediator, TESActionData* apActi
         const auto res = TiltedPhoques::ThisCall(RealPerformAction, apThis, apAction);
 
         // spdlog::debug("Action event name: {}, target name: {}", apAction->eventName.AsAscii(), apAction->targetEventName.AsAscii());
+
+        // The rider's mount pair is retried while it walks to the horse and aborted until it is close enough;
+        // replaying the aborted tries starts the animation on the remote copy before the real climb
+        if (!res && apAction->action && apAction->action->formID == 0x13009 && !g_forceAnimation && (pActor->IsMount() || IsMountRef(*apAction->target)))
+            return res;
 
         // This is a weird case where it gets spammed and doesn't do much, not sure if it still needs to be sent over the network
         if (apAction->someFlag == 1 || g_forceAnimation)

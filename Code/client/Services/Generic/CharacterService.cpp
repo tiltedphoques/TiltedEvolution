@@ -19,6 +19,9 @@
 
 #include <BranchInfo.h>
 #include <Components.h>
+#include <NetImmerse/NiNode.h>
+#include <ModCompat/BehaviorVar.h>
+#include <Misc/BSFixedString.h>
 
 #include <Systems/InterpolationSystem.h>
 #include <Systems/AnimationSystem.h>
@@ -69,6 +72,11 @@
 #include <Messages/NotifyActorTeleport.h>
 
 #include <World.h>
+#include <cstring>
+#include <BSAnimationGraphManager.h>
+#include <Havok/BShkbAnimationGraph.h>
+#include <Havok/hkbBehaviorGraph.h>
+#include <Havok/hkbVariableValueSet.h>
 #include <Games/TES.h>
 
 CharacterService::CharacterService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept
@@ -1120,6 +1128,48 @@ bool CharacterService::IsMountOccupiedByOther(const uint32_t aMountFormId, const
     return true;
 }
 
+namespace
+{
+// Reads an int animation graph variable of an actor by name (the index is looked up once per graph type); -1 when unavailable
+int32_t ReadGraphInt(Actor* apActor, const char* apName)
+{
+    const auto spManager = apActor->animationGraphHolder.GetAnimationGraphManagerPtr();
+    if (!spManager)
+        return -1;
+    BSAnimationGraphManager* pManager = spManager.get();
+    BSSpinLockGuard _{pManager->lock};
+    if (pManager->animationGraphIndex >= pManager->animationGraphs.size)
+        return -1;
+    const BShkbAnimationGraph* pGraph = pManager->animationGraphs.Get(pManager->animationGraphIndex);
+    if (!pGraph || !pGraph->behaviorGraph || !pGraph->behaviorGraph->animationVariables)
+        return -1;
+    const auto* pSet = pGraph->behaviorGraph->animationVariables;
+    // Variable indices differ between graphs (humanoid, horse...), so they are cached per graph descriptor
+    static std::unordered_map<std::string, uint32_t> s_index;
+    const std::string cKey = std::string(apName) + '#' + std::to_string(apActor->GetExtension()->GraphDescriptorHash);
+    auto it = s_index.find(cKey);
+    if (it == s_index.end())
+    {
+        uint32_t idx = 0xFFFFFFFF;
+        for (const auto& [i, name] : pManager->DumpAnimationVariables(false))
+            if (std::strcmp(name.c_str(), apName) == 0)
+                idx = i;
+        it = s_index.emplace(cKey, idx).first;
+    }
+    return it->second < pSet->size ? static_cast<int32_t>(pSet->data[it->second]) : -1;
+}
+
+// World translate of a NiAVObject is at 0xA0 (world NiTransform at 0x7C, translate at +0x24, layout from CommonLibSSE-NG)
+bool ReadNodeWorld(NiAVObject* apNode, glm::vec3& aOut) noexcept
+{
+    if (!apNode)
+        return false;
+    const auto* f = reinterpret_cast<const float*>(reinterpret_cast<const uint8_t*>(apNode) + 0xA0);
+    aOut = glm::vec3(f[0], f[1], f[2]);
+    return true;
+}
+} // namespace
+
 // The rider's client is the only one that sees its mount as ridden, so it tells the server when the rider gets off.
 void CharacterService::RunMountDismountUpdates() noexcept
 {
@@ -2034,6 +2084,86 @@ void CharacterService::RunLocalUpdates() const noexcept
         m_transport.Send(movementMessage, TiltedPhoques::kUnreliableNoNagle);
 }
 
+namespace
+{
+float WrapPi(float aAngle) noexcept
+{
+    while (aAngle > 3.14159265f)
+        aAngle -= 6.2831853f;
+    while (aAngle < -3.14159265f)
+        aAngle += 6.2831853f;
+    return aAngle;
+}
+
+// Heading (Skyrim rotation z) of a node's world rotation (NiMatrix3 at 0x7C). aConvention picks the matrix layout, found once.
+float NodeHeading(NiAVObject* apNode, int aConvention) noexcept
+{
+    const auto* m = reinterpret_cast<const float*>(reinterpret_cast<const uint8_t*>(apNode) + 0x7C);
+    return aConvention == 1 ? std::atan2(m[1], m[4]) : std::atan2(m[3], m[4]);
+}
+
+// A paired animation (mounting a horse) moves and turns the skeleton's root bone away from the actor. On the owner's client
+// the engine moves and turns the actor along and the bone stays on it, so the network position and heading already contain
+// that motion. Remote actors skip that engine update, so it was applied a second time (rider in the air and turned 90 degrees
+// while climbing). Measured each frame from the bone itself, so it follows any mount, angle or timing. Not gated on
+// bIsSynced alone: the graph leaves the synced state a few frames before the bone returns to the actor.
+void CancelPairRootMotion(Actor* apActor, const InterpolationComponent& acInterpolation) noexcept
+{
+    // Riders only: the horse plays its half of the pair too, and moving it here stops its legs
+    if (!apActor || apActor->GetExtension()->GraphDescriptorHash != BehaviorVar::GetHumanoidHash())
+        return;
+
+    NiNode* pRoot = apActor->GetNiNode();
+    if (!pRoot)
+        return;
+
+    static BSFixedString s_npcRoot("NPC Root [Root]");
+    NiAVObject* pBone = pRoot->GetByName(s_npcRoot);
+    glm::vec3 root{}, bone{};
+    if (!ReadNodeWorld(pRoot, root) || !ReadNodeWorld(pBone, bone))
+        return;
+
+    const glm::vec3 offset = bone - root;
+    if (glm::length(offset) > 500.f)
+        return;
+
+    // Find which matrix layout gives the actor's heading, once, on an actor standing still with a clearly signed heading.
+    static int s_convention = 0;
+    if (s_convention == 0 && glm::length(offset) < 2.f && std::abs(std::sin(acInterpolation.Yaw)) > 0.3f)
+    {
+        for (int convention = 1; convention <= 2; ++convention)
+        {
+            if (std::abs(WrapPi(NodeHeading(pRoot, convention) - acInterpolation.Yaw)) < 0.05f)
+            {
+                s_convention = convention;
+                spdlog::info("PairRoot heading layout {}", convention);
+            }
+        }
+    }
+
+    const float extraYaw = s_convention ? WrapPi(NodeHeading(pBone, s_convention) - NodeHeading(pRoot, s_convention)) : 0.f;
+    const bool cBoneHome = glm::length(offset) < 2.f && std::abs(extraYaw) < 0.02f;
+
+    // Only paired animations: walking turns and idles also turn the bone a little and must be left alone. A pair starts with
+    // bIsSynced and ends when the bone is back on the actor, a few frames after bIsSynced drops.
+    static std::unordered_set<uint32_t> s_inPair;
+    if (ReadGraphInt(apActor, "bIsSynced") == 1)
+        s_inPair.insert(apActor->formID);
+    else if (cBoneHome)
+        s_inPair.erase(apActor->formID);
+    if (cBoneHome || !s_inPair.contains(apActor->formID))
+        return;
+
+    // Turn the actor back by the bone's extra turn, and turn the bone's offset with it, so the body lands on the network pose.
+    const float rootYaw = s_convention ? NodeHeading(pRoot, s_convention) : apActor->rotation.z;
+    const float yaw = WrapPi(acInterpolation.Yaw - extraYaw);
+    const float d = yaw - rootYaw;
+    const glm::vec3 turned(offset.x * std::cos(d) + offset.y * std::sin(d), -offset.x * std::sin(d) + offset.y * std::cos(d), offset.z);
+    apActor->ForcePosition(acInterpolation.Position - turned);
+    apActor->SetRotation(apActor->rotation.x, apActor->rotation.y, yaw);
+}
+} // namespace
+
 void CharacterService::RunRemoteUpdates() noexcept
 {
     // Each remote actor is played back on its owner's timeline, only as far behind as its snapshots need, see PlaybackClock.
@@ -2056,6 +2186,7 @@ void CharacterService::RunRemoteUpdates() noexcept
         }
 
         InterpolationSystem::Update(pActor, interpolationComponent, cNow);
+        CancelPairRootMotion(pActor, interpolationComponent);
     }
 
     auto animatedView = m_world.view<RemoteComponent, RemoteAnimationComponent, InterpolationComponent, FormIdComponent>();
