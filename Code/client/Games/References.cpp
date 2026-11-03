@@ -94,11 +94,17 @@ bool TP_MAKE_THISCALL(HookCheckForNewPackage, void, Actor* apActor, uint64_t aUn
     return TiltedPhoques::ThisCall(RealCheckForNewPackage, apThis, apActor, aUnk1);
 }
 
+extern thread_local bool s_execInitPackage;
+
 TP_THIS_FUNCTION(TInitFromPackage, void, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor);
 static TInitFromPackage* RealInitFromPackage = nullptr;
 
 void TP_MAKE_THISCALL(HookInitFromPackage, void, TESPackage* apPackage, TESObjectREFR* apTarget, Actor* arActor)
 {
+    // Only mounts sync their package (e.g. PlayerHorseStayPut after a dismount); without it the horse keeps wandering on the other client.
+    if (arActor && apPackage && arActor->IsMount() && (apPackage->formID >> 24) != 0xFF && !s_execInitPackage && arActor->GetExtension()->IsLocal())
+        World::Get().GetRunner().Trigger(InitPackageEvent(arActor->formID, apPackage->formID));
+
 #if AI_SYNC
     // This guard is here for when the client sets the package based on a remote message
     if (s_execInitPackage)

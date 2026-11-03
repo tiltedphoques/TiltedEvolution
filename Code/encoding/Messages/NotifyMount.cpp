@@ -4,6 +4,7 @@ void NotifyMount::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noe
 {
     Serialization::WriteVarInt(aWriter, RiderId);
     Serialization::WriteVarInt(aWriter, MountId);
+    Serialization::WriteBool(aWriter, Dismount);
 }
 
 void NotifyMount::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -12,4 +13,5 @@ void NotifyMount::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcep
 
     RiderId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     MountId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    Dismount = Serialization::ReadBool(aReader);
 }

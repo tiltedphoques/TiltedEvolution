@@ -23,6 +23,7 @@
 
 #include <Games/TES.h>
 #include <World.h>
+#include <Services/CharacterService.h>
 #include <Services/PapyrusService.h>
 
 #include <Forms/ActorValueInfo.h>
@@ -312,7 +313,7 @@ void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
     g_forceAnimation = false;
 }
 
-static thread_local bool s_execInitPackage = false;
+thread_local bool s_execInitPackage = false;
 
 void Actor::SetPackage(TESPackage* apPackage) noexcept
 {
@@ -1194,6 +1195,13 @@ uint64_t TP_MAKE_THISCALL(HookProcessResponse, void, DialogueItem* apVoice, Acto
 
 bool TP_MAKE_THISCALL(HookInitiateMountPackage, Actor, Actor* apMount)
 {
+    // The server tells every client who rides what. Taking over a ridden mount would steal the reins from its rider.
+    if (apMount && apThis->GetExtension()->IsLocal() && World::Get().GetCharacterService().IsMountOccupiedByOther(apMount->formID, apThis->formID))
+    {
+        spdlog::info("Mount {:X} is already ridden, {:X} cannot mount it", apMount->formID, apThis->formID);
+        return false;
+    }
+
     if (apMount && apThis->GetExtension()->IsLocal())
         World::Get().GetRunner().Trigger(MountEvent(apThis->formID, apMount->formID));
 

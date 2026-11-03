@@ -504,6 +504,21 @@ void CharacterService::OnMountRequest(const PacketEvent<MountRequest>& acMessage
         return;
     }
 
+    if (message.Dismount)
+    {
+        // Only the mount's controller (the rider's client) can free it
+        if (mountOwner.GetOwner() != acMessage.pPlayer)
+            return;
+
+        NotifyMount freed;
+        freed.RiderId = message.RiderId;
+        freed.MountId = message.MountId;
+        freed.Dismount = true;
+        if (!GameServer::Get()->SendToPlayersInRange(freed, cMountEntity, acMessage.GetSender()))
+            spdlog::error("{}: SendToPlayersInRange failed", __FUNCTION__);
+        return;
+    }
+
     const auto& mountCell = view.get<CellIdComponent>(*mountIt);
     if (!acMessage.pPlayer->GetCellComponent().IsInRange(mountCell, view.get<CharacterComponent>(*mountIt).IsDragon()))
     {

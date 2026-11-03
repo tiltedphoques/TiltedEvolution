@@ -14,8 +14,9 @@ struct NotifyMount final : ServerMessage
     void SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const noexcept override;
     void DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept override;
 
-    bool operator==(const NotifyMount& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && RiderId == acRhs.RiderId && MountId == acRhs.MountId; }
+    bool operator==(const NotifyMount& acRhs) const noexcept { return GetOpcode() == acRhs.GetOpcode() && RiderId == acRhs.RiderId && MountId == acRhs.MountId && Dismount == acRhs.Dismount; }
 
     uint32_t RiderId;
     uint32_t MountId;
+    bool Dismount{false};
 };

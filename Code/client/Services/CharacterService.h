@@ -1,4 +1,6 @@
 #pragma once
+#include <unordered_map>
+#include <unordered_set>
 #include "Structs/Inventory.h"
 #include "Structs/ActorData.h"
 
@@ -89,7 +91,14 @@ struct CharacterService
 
     void ProcessNewEntity(entt::entity aEntity) const noexcept;
 
+    // True when someone other than the rider is already riding the mount, as told by the server
+    bool IsMountOccupiedByOther(uint32_t aMountFormId, uint32_t aRiderFormId) const noexcept;
+
 private:
+    void RunMountDismountUpdates() noexcept;
+    // Mount server id -> rider server id
+    mutable std::unordered_map<uint32_t, uint32_t> m_occupiedMounts;
+
     void MoveActor(const Actor* apActor, const GameId& acWorldSpaceId, const GameId& acCellId, const Vector3_NetQuantize& acPosition) const noexcept;
 
     void RequestServerAssignment(entt::entity aEntity) const noexcept;

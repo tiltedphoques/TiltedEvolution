@@ -16,11 +16,12 @@ struct MountRequest final : ClientMessage
 
     bool operator==(const MountRequest& acRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() && RiderId == acRhs.RiderId && RiderOwnershipEpoch == acRhs.RiderOwnershipEpoch && MountId == acRhs.MountId && MountOwnershipEpoch == acRhs.MountOwnershipEpoch;
+        return GetOpcode() == acRhs.GetOpcode() && RiderId == acRhs.RiderId && RiderOwnershipEpoch == acRhs.RiderOwnershipEpoch && MountId == acRhs.MountId && MountOwnershipEpoch == acRhs.MountOwnershipEpoch && Dismount == acRhs.Dismount;
     }
 
     uint32_t RiderId{};
     uint32_t RiderOwnershipEpoch{};
     uint32_t MountId{};
     uint32_t MountOwnershipEpoch{};
+    bool Dismount{false};
 };

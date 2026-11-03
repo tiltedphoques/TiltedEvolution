@@ -6,6 +6,7 @@ void MountRequest::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const no
     Serialization::WriteVarInt(aWriter, RiderOwnershipEpoch);
     Serialization::WriteVarInt(aWriter, MountId);
     Serialization::WriteVarInt(aWriter, MountOwnershipEpoch);
+    Serialization::WriteBool(aWriter, Dismount);
 }
 
 void MountRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -16,4 +17,5 @@ void MountRequest::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexce
     RiderOwnershipEpoch = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     MountId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     MountOwnershipEpoch = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    Dismount = Serialization::ReadBool(aReader);
 }
