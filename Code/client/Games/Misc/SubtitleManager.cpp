@@ -7,6 +7,7 @@
 #include <Games/ActorExtension.h>
 
 #include <Forms/TESTopicInfo.h>
+#include <Forms/TESQuest.h>
 #include <Misc/BSFixedString.h>
 
 SubtitleManager* SubtitleManager::Get() noexcept
@@ -58,9 +59,23 @@ void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeake
 
     Actor* pActor = Cast<Actor>(apSpeaker);
     const bool isNpc = pActor && !pActor->GetExtension()->IsPlayer();
-    const bool shouldSyncSubtitle = apSubtitleText && isNpc && (pActor->GetExtension()->IsLocal() || MenuTopicManager::IsPlayerDialogueSpeaker(pActor));
+    const bool isPlayerDialogue = isNpc && MenuTopicManager::IsPlayerDialogueSpeaker(pActor);
+    const bool shouldSyncSubtitle = apSubtitleText && isNpc && (pActor->GetExtension()->IsLocal() || isPlayerDialogue);
     if (shouldSyncSubtitle)
-        World::Get().GetRunner().Trigger(SubtitleEvent(apSpeaker->formID, apSubtitleText));
+    {
+        SubtitleEvent event(apSpeaker->formID, apSubtitleText);
+#if !defined(TP_FALLOUT4)
+        // Same as dialogue: clients that play the same scene show their own subtitle for the line
+        BGSScene* pScene = isPlayerDialogue ? nullptr : pActor->GetCurrentScene();
+
+        if (pScene && pScene->isPlaying)
+        {
+            event.SceneID = pScene->formID;
+            event.ScenePhase = pScene->currentPhaseIndex;
+        }
+#endif
+        World::Get().GetRunner().Trigger(event);
+    }
 
 #ifdef TP_FALLOUT4
     TiltedPhoques::ThisCall(RealShowSubtitle, apThis, apSpeaker, acSubtitleText, apTopicInfo, aIsInDialogue);

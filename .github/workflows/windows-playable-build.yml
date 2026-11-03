@@ -13,7 +13,12 @@ on:
 jobs:
   build-windows:
     if: ${{ github.repository_owner == 'tiltedphoques' || github.event_name != 'schedule' }} # Disable cron runs in forks
+    strategy:
+      fail-fast: false
+      matrix:
+        skyrim-version: ['latest', '1.6.1170']
     uses: ./.github/workflows/windows.yml
     with:
       build-mode: release
+      skyrim-version: ${{ matrix.skyrim-version }}
       upload-build-for-next-job: true

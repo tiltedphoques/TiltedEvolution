@@ -1,5 +1,3 @@
-local function istable(t) return type(t) == 'table' end
-
 local function build_launcher()
     set_kind("binary")
     set_group("Client")

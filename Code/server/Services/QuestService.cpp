@@ -91,8 +91,24 @@ void QuestService::OnQuestChanges(const PacketEvent<RequestQuestUpdate>& acMessa
     }
 
     const auto& partyComponent = acMessage.pPlayer->GetParty();
-    if (!partyComponent.JoinedPartyId.has_value())
+    PartyService::Party* pParty = m_world.GetPartyService().GetPlayerParty(pPlayer);
+    if (!pParty)
         return;
+
+    // Party members' scripts often reach the same stage on their own, only relay it once
+    if (message.Status == RequestQuestUpdate::StageUpdate)
+    {
+        if (!pParty->QuestStages[message.Id].insert(message.Stage).second)
+        {
+            spdlog::debug("Dropped duplicate quest stage from player {}, quest: {:X}, stage: {}", pPlayer->GetId(), message.Id.LogFormat(), message.Stage);
+            return;
+        }
+    }
+    else
+    {
+        // A started quest has run none of its stages yet, a stopped one may run them again when restarted
+        pParty->QuestStages.erase(message.Id);
+    }
 
     GameServer::Get()->SendToParty(notify, partyComponent, acMessage.GetSender());
 }

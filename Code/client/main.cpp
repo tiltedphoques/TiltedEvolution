@@ -12,8 +12,17 @@
 
 #include <base/dialogues/win/TaskDialog.h>
 
+#if defined(TP_FALLOUT4)
 // 0 - Steam, 1 - GOG. One supported patch per game for now.
 inline constexpr std::string_view kSupportedGameVersions[2] = {SUPPORTED_GAME_VERSION, SUPPORTED_GAME_VERSION};
+#else
+// 1 - Steam, 2 - GOG
+#ifdef TP_SKYRIM_1_6_1170
+inline constexpr std::string_view kSupportedGameVersions[2] = {"1.6.1170.0", "1.6.1179.0"};
+#else
+inline constexpr std::string_view kSupportedGameVersions[2] = {"1.7.104.0", "1.7.104.0"};
+#endif
+#endif
 
 std::unique_ptr<TiltedOnlineApp> g_appInstance{nullptr};
 

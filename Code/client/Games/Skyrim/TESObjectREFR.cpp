@@ -194,10 +194,11 @@ using TiltedPhoques::Serialization;
 
 void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const noexcept
 {
-    BSAnimationGraphManager* pManager = nullptr;
-    if (animationGraphHolder.GetBSAnimationGraph(&pManager))
+    const auto spManager = animationGraphHolder.GetAnimationGraphManagerPtr();
+    if (spManager)
     {
-        BSScopedLock<BSRecursiveLock> _{pManager->lock};
+        BSAnimationGraphManager* pManager = spManager.get();
+        BSSpinLockGuard _{pManager->lock};
 
         if (pManager->animationGraphIndex < pManager->animationGraphs.size)
         {
@@ -264,17 +265,16 @@ void TESObjectREFR::SaveAnimationVariables(AnimationVariables& aVariables) const
                     aVariables.Integers[i] = *reinterpret_cast<uint32_t*>(&pVariableSet->data[idx]);
             }
         }
-
-        pManager->Release();
     }
 }
 
 void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables) const noexcept
 {
-    BSAnimationGraphManager* pManager = nullptr;
-    if (animationGraphHolder.GetBSAnimationGraph(&pManager))
+    const auto spManager = animationGraphHolder.GetAnimationGraphManagerPtr();
+    if (spManager)
     {
-        BSScopedLock<BSRecursiveLock> _{pManager->lock};
+        BSAnimationGraphManager* pManager = spManager.get();
+        BSSpinLockGuard _{pManager->lock};
 
         if (pManager->animationGraphIndex < pManager->animationGraphs.size)
         {
@@ -340,8 +340,6 @@ void TESObjectREFR::LoadAnimationVariables(const AnimationVariables& aVariables)
                 }
             }
         }
-
-        pManager->Release();
     }
 }
 

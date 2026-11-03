@@ -287,6 +287,7 @@ static_assert(sizeof(NiPoint2) == 8);
 static_assert(offsetof(NiPoint2, x) == 0);
 static_assert(offsetof(NiPoint2, y) == 4);
 
+#if defined(TP_FALLOUT4)
 struct BSRecursiveLock
 {
     volatile DWORD m_tid;
@@ -308,6 +309,8 @@ template <class T> struct BSScopedLock
 private:
     T& m_lock;
 };
+
+#endif
 
 template <class T> struct GamePtr
 {
@@ -383,12 +386,15 @@ private:
     T* m_pPointer;
 };
 
+#if defined(TP_FALLOUT4)
 struct alignas(sizeof(void*)) BSIntrusiveRefCounted
 {
     volatile int32_t refCount;
 };
 
 static_assert(sizeof(BSIntrusiveRefCounted) == sizeof(void*));
+
+#endif
 
 enum ETiltedFlags : uint8_t
 {
@@ -414,8 +420,10 @@ template <class T, class THandle = BSUntypedPointerHandle<>> struct BSPointerHan
     THandle handle{};
 };
 
+#if defined(TP_FALLOUT4)
 struct BSReadWriteLock
 {
     uint32_t uiWriterThread;
     volatile uint32_t uiLock;
 };
+#endif

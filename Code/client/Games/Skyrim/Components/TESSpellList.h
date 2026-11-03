@@ -21,6 +21,9 @@ struct TESSpellList : BaseFormComponent
     Lists* lists;
 
     void Initialize();
+    uint32_t RemoveNullEntries() noexcept;
 };
 
+static_assert(offsetof(TESSpellList::Lists, shouts) == 0x10);
+static_assert(offsetof(TESSpellList::Lists, shoultCount) == 0x20);
 static_assert(sizeof(TESSpellList::Lists) == 0x28);

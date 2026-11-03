@@ -18,6 +18,7 @@ bool NiRefObject::Release()
     return InterlockedDecrement(&refCount) == 0;
 }
 
+#if defined(TP_FALLOUT4)
 void BSRecursiveLock::Lock()
 {
     const auto tid = GetCurrentThreadId();
@@ -66,3 +67,4 @@ void BSRecursiveLock::Unlock()
         }
     }
 }
+#endif

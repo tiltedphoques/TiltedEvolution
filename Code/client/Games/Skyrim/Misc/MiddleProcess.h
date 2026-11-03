@@ -10,8 +10,9 @@ struct MiddleProcess
     // void SaveActiveEffects()
     void LoadActiveEffects(BGSLoadFormBuffer* apLoadGameBuffer);
 
-    // 0xB0 - pitch
-    uint8_t pad0[0xB8];
+    uint8_t pad0[0xB0];
+    float pitch;
+    uint8_t padB4[0xB8 - 0xB4];
     float direction; // B8
     uint8_t padBC[0x1A0 - 0xBC];
     GameList<ActiveEffect>* ActiveEffects;
@@ -22,11 +23,12 @@ struct MiddleProcess
     uint8_t pad228[0x260 - 0x228];
     InventoryEntry* rightEquippedObject;
     InventoryEntry* ammoEquippedObject; // could be more than just ammo
-    // 0xB8 - direction
-    //
-    // 0x326 - bool lookat
+    uint8_t pad270[0x326 - 0x270];
+    bool lookAt;
 };
 
+static_assert(offsetof(MiddleProcess, pitch) == 0xB0);
 static_assert(offsetof(MiddleProcess, direction) == 0xB8);
 static_assert(offsetof(MiddleProcess, leftEquippedObject) == 0x220);
 static_assert(offsetof(MiddleProcess, rightEquippedObject) == 0x260);
+static_assert(offsetof(MiddleProcess, lookAt) == 0x326);

@@ -65,6 +65,87 @@ TEST_CASE("Encoding factory", "[encoding.factory]")
     }
 }
 
+TEST_CASE("Fallout and upstream message factories", "[encoding.factory]")
+{
+    const auto checkRoundTrip = []<class TMessage, class TFactory>(const TMessage& acMessage, const TFactory& acFactory)
+    {
+        Buffer buffer(1000);
+        Buffer::Writer writer(&buffer);
+        acMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buffer);
+        auto pMessage = acFactory.Extract(reader);
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == acMessage.GetOpcode());
+        REQUIRE(*CastUnique<TMessage>(std::move(pMessage)) == acMessage);
+    };
+
+    SECTION("Power armor request")
+    {
+        PowerArmorRequest request;
+        request.Id = 42;
+        request.OwnershipEpoch = 7;
+        request.FurnitureId = {1, 0x1234};
+        request.FurnitureBaseId = {2, 0x5678};
+        request.Data.FrameToken = 9;
+        request.Data.BatteryCharge = 0.5f;
+        checkRoundTrip(request, ClientMessageFactory{});
+    }
+
+    SECTION("Power armor notification")
+    {
+        NotifyPowerArmor notification;
+        notification.Id = 42;
+        notification.OwnershipEpoch = 7;
+        notification.FurnitureId = {1, 0x1234};
+        notification.FurnitureBaseId = {2, 0x5678};
+        notification.Data.FrameToken = 9;
+        notification.Data.BatteryCharge = 0.5f;
+        checkRoundTrip(notification, ServerMessageFactory{});
+    }
+
+    ActionEvent action;
+    action.Tick = 1712345678901;
+    action.ActionId = 42;
+    action.EventName = "attackStart";
+
+    SECTION("Action event request")
+    {
+        RequestActionEvents request;
+        request.Actions[7] = {action};
+        checkRoundTrip(request, ClientMessageFactory{});
+    }
+
+    SECTION("Action event notification")
+    {
+        NotifyActionEvents notification;
+        notification.Actions[7] = {action};
+        checkRoundTrip(notification, ServerMessageFactory{});
+    }
+
+    SECTION("Subtitle request preserves Fallout topic and Skyrim scene")
+    {
+        SubtitleRequest request;
+        request.ServerId = 42;
+        request.Text = "A shared line";
+        request.TopicFormId = 0x123456;
+        request.SceneId = {1, 0x5678};
+        request.ScenePhase = 3;
+        checkRoundTrip(request, ClientMessageFactory{});
+    }
+
+    SECTION("Subtitle notification preserves Fallout topic and Skyrim scene")
+    {
+        NotifySubtitle notification;
+        notification.ServerId = 42;
+        notification.Text = "A shared line";
+        notification.TopicFormId = 0x123456;
+        notification.SceneId = {1, 0x5678};
+        notification.ScenePhase = 3;
+        checkRoundTrip(notification, ServerMessageFactory{});
+    }
+}
+
 TEST_CASE("Static structures", "[encoding.static]")
 {
     GIVEN("GameId")
@@ -430,8 +511,14 @@ TEST_CASE("Packets", "[encoding.packets]")
     GIVEN("ClientReferencesMoveRequest")
     {
         ClientReferencesMoveRequest sendMessage, recvMessage;
-        auto& update = sendMessage.Updates[1];
-        auto& move = update.UpdatedMovement;
+        sendMessage.Tick = 1712345678901;
+        auto& move = sendMessage.Updates[1];
+        move.Position.x = 1234.5f;
+        move.Direction = 0.75f;
+        move.HasLookAt = true;
+        move.LookOffset.x = -320.f;
+        move.LookOffset.y = 215.f;
+        move.LookOffset.z = -48.f;
 
         AnimationVariables vars;
         vars.Booleans.resize(76);
@@ -465,7 +552,65 @@ TEST_CASE("Packets", "[encoding.packets]")
 
         recvMessage.DeserializeRaw(reader);
 
-        REQUIRE(recvMessage.Updates[1].UpdatedMovement == sendMessage.Updates[1].UpdatedMovement);
+        REQUIRE(recvMessage.Tick == sendMessage.Tick);
+        REQUIRE(recvMessage.Updates[1] == sendMessage.Updates[1]);
+    }
+
+    GIVEN("RequestActionEvents")
+    {
+        ActionEvent firstAction;
+        firstAction.Tick = 1712345678901;
+        firstAction.ActionId = 42;
+        firstAction.TargetId = 963741;
+        firstAction.State1 = 6547;
+        firstAction.EventName = "jumpStandingStart";
+
+        ActionEvent secondAction = firstAction;
+        secondAction.Tick += 120;
+        secondAction.ActionId = 43;
+        secondAction.EventName = "attackStart";
+        secondAction.TargetEventName = "toast";
+
+        RequestActionEvents sendMessage, recvMessage;
+        sendMessage.Actions[1] = {firstAction, secondAction};
+        sendMessage.Actions[7] = {secondAction};
+
+        Buffer buff(1000);
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        uint64_t trash;
+        reader.ReadBits(trash, 8); // pop opcode
+
+        recvMessage.DeserializeRaw(reader);
+
+        REQUIRE(sendMessage == recvMessage);
+    }
+
+    GIVEN("NotifyActionEvents")
+    {
+        ActionEvent action;
+        action.Tick = 1712345678901;
+        action.ActionId = 42;
+        action.EventName = "blockStart";
+
+        NotifyActionEvents sendMessage;
+        sendMessage.Actions[3] = {action, action};
+
+        Buffer buff(1000);
+        Buffer::Writer writer(&buff);
+        sendMessage.Serialize(writer);
+
+        Buffer::Reader reader(&buff);
+
+        const ServerMessageFactory factory;
+        auto pMessage = factory.Extract(reader);
+
+        REQUIRE(pMessage);
+        REQUIRE(pMessage->GetOpcode() == sendMessage.GetOpcode());
+        REQUIRE(*CastUnique<NotifyActionEvents>(std::move(pMessage)) == sendMessage);
     }
 }
 

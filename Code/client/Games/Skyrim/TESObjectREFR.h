@@ -18,6 +18,7 @@ struct TESWorldSpace;
 struct TESBoundObject;
 struct TESActorBase;
 struct TESContainer;
+struct BGSScene;
 
 enum class ITEM_REMOVE_REASON
 {
@@ -79,7 +80,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_47();
     virtual void sub_48();
     virtual void sub_49();
-    virtual void sub_4A();
+    virtual BGSScene* GetCurrentScene() const; // ExtraDataType::SceneData; actors only while Actor::HAS_SCENE_DATA is set
     virtual void sub_4B();
     virtual void sub_4C();
     virtual void sub_4D();
@@ -96,7 +97,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_58();
     virtual void sub_59();
     virtual void AddObjectToContainer(TESBoundObject* apObj, ExtraDataList* aspExtra, int32_t aicount, TESObjectREFR* apOldContainer);
-    virtual void sub_5B();
+    virtual NiPoint3 GetLookingAtLocation() const;
     virtual MagicCaster* GetMagicCaster(MagicSystem::CastingSource aeSource);
     virtual MagicTarget* GetMagicTarget();
     virtual void sub_5E();
@@ -224,7 +225,7 @@ struct TESObjectREFR : TESForm
     TESObjectCELL* parentCell;
     void* loadedState;
     ExtraDataList extraData;
-    BSRecursiveLock refLock;
+    uint64_t unk90;
     uint16_t scale;
     uint16_t referenceFlags;
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <AI/AITimer.h>
+#include <BSCore/BSAtomic.h>
 #include <Games/Misc/BGSWorldLocation.h>
 
 struct CombatTarget

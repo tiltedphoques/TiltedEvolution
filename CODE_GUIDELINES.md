@@ -2,7 +2,7 @@
 
 ## Language
 
-We are using C++20, any C++20 feature supported by vs2019 is allowed.
+We are using C++20, any C++20 feature supported by vs2022 is allowed.
 
 Please try to use templates responsibly, we don't want compilation times to explode and to deal with bloated binaries.
 
@@ -45,10 +45,3 @@ Names must be self explanatory, ``size_t a;`` is not acceptable, ``size_t incomi
 Don't use java style blocks, a ``{`` needs to be on a new line.
 
 Don't use exceptions, don't use STL code that can throw, use the nothrow version if available or the unsafe version.
-
-## Commit Naming
-Preface commit messages with one of the following tags:
-* `feat:` for new features
-* `tweak:` for tweaks to an existing system
-* `fix:` for bug fixes and crash fixes
-* `refactor:` for refactoring

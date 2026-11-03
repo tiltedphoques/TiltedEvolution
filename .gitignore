@@ -55,16 +55,7 @@ Code/ui/.vscode/*
 npm-debug.log
 .pnpm-debug.log
 
-Code/protocol/cpp/*.h
-Code/protocol/cpp/*.cc
-Code/skyrimtogether/include/buildver.h
-
 distrib
-
-Libraries/discord_game_sdk
-Libraries/DXSDK
-Libraries/Vivox
-!Libraries/Vivox/xmake.lua
 
 *__pycache__*
 Artifacts/Server

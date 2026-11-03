@@ -109,6 +109,7 @@ uint64_t BSAnimationGraphManager::GetDescriptorKey(int aForceIndex)
 }
 #endif
 
+#if !defined(TP_FALLOUT4)
 uint64_t BSAnimationGraphManager::GetProjectKey(int aForceIndex)
 {
     using TiltedPhoques::FHash::Crc64;
@@ -126,3 +127,5 @@ uint64_t BSAnimationGraphManager::GetProjectKey(int aForceIndex)
 
     return 0;
 }
+
+#endif

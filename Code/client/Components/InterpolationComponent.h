@@ -5,22 +5,32 @@
 #endif
 
 #include <Structs/AnimationVariables.h>
+#include <Systems/PlaybackClock.h>
 
 struct InterpolationComponent
 {
     struct TimePoint
     {
+        // The owner's capture tick
         uint64_t Tick{};
         glm::vec3 Position{};
         glm::vec3 Rotation{};
         AnimationVariables Variables{};
         float Direction{};
+        bool HasLookAt{};
+        glm::vec3 LookOffset{};
 
         TimePoint() = default;
-        TimePoint(const TimePoint&) = default;
-        TimePoint& operator=(const TimePoint&) = default;
     };
 
     List<TimePoint> TimePoints;
+    // Last displayed position
     glm::vec3 Position;
+
+    PlaybackClock Clock;
+
+    // Left over from correcting an extrapolation, decays over a few frames instead of popping the actor into place
+    glm::vec3 PositionError{};
+    bool IsExtrapolating{false};
+    bool HasNewTimePoint{false};
 };

@@ -25,4 +25,6 @@ struct Movement
     Rotator2_NetQuantize Rotation{};
     AnimationVariables Variables{};
     float Direction{};
+    bool HasLookAt{};
+    Vector3_NetQuantize LookOffset{}; // From the head to the look-at target
 };

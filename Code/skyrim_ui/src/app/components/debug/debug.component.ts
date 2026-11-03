@@ -5,10 +5,17 @@ import {
   faWifi,
   IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
-import { Observable, startWith } from 'rxjs';
-import { SettingService } from 'src/app/services/setting.service';
+import { map, Observable, startWith } from 'rxjs';
+import { ScreenCorner, SettingService } from 'src/app/services/setting.service';
 import { Debug } from '../../models/debug';
 import { ClientService } from '../../services/client.service';
+
+const cornerClasses: Record<ScreenCorner, string> = {
+  [ScreenCorner.TOP_LEFT]: 'top-left',
+  [ScreenCorner.TOP_RIGHT]: 'top-right',
+  [ScreenCorner.BOTTOM_RIGHT]: 'bottom-right',
+  [ScreenCorner.BOTTOM_LEFT]: 'bottom-left',
+};
 
 @Component({
   selector: 'app-debug',
@@ -23,6 +30,7 @@ export class DebugComponent {
 
   isShown$: Observable<boolean>;
   debugData$: Observable<Debug>;
+  cornerClass$: Observable<string>;
 
   constructor(
     private readonly client: ClientService,
@@ -30,5 +38,8 @@ export class DebugComponent {
   ) {
     this.isShown$ = this.settingService.settings.isDebugShown;
     this.debugData$ = this.client.debugDataChange.pipe(startWith(new Debug()));
+    this.cornerClass$ = this.settingService.settings.debugAnchor.pipe(
+      map(corner => cornerClasses[corner]),
+    );
   }
 }

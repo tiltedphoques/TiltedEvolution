@@ -48,6 +48,11 @@ void TESNPC::Deserialize(const String& acBuffer, uint32_t aChangeFlags) noexcept
     Load(&loadBuffer);
 
     loadBuffer.buffer = nullptr;
+
+#if !defined(TP_FALLOUT4)
+    if (const uint32_t cRemoved = spellList.RemoveNullEntries())
+        spdlog::warn("Removed {} unresolved spell list entries from NPC {:X}", cRemoved, formID);
+#endif
 }
 
 void TESNPC::Initialize() noexcept

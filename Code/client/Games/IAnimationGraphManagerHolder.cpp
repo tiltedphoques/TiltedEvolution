@@ -4,6 +4,17 @@
 
 #include <BSAnimationGraphManager.h>
 
+#if !defined(TP_FALLOUT4)
+bool IAnimationGraphManagerHolder::GetVariableNiPoint3(BSFixedString* apVariable, NiPoint3* apReturn)
+{
+    TP_THIS_FUNCTION(TGetNiPoint3Variable, bool, IAnimationGraphManagerHolder, BSFixedString*, NiPoint3*);
+    POINTER_SKYRIMSE(TGetNiPoint3Variable, InternalGetNiPoint3Variable, 32884);
+
+    return TiltedPhoques::ThisCall(InternalGetNiPoint3Variable, this, apVariable, apReturn);
+}
+
+#endif
+
 bool IAnimationGraphManagerHolder::SetVariableFloat(BSFixedString* apVariable, float aValue)
 {
     TP_THIS_FUNCTION(TSetFloatVariable, bool, IAnimationGraphManagerHolder, BSFixedString*, float);
@@ -44,6 +55,7 @@ bool IAnimationGraphManagerHolder::RevertAnimationGraphManager()
 #endif
 }
 
+#if defined(TP_FALLOUT4)
 bool IAnimationGraphManagerHolder::IsReady()
 {
     BSAnimationGraphManager* pAnimationGraph = nullptr;
@@ -54,3 +66,29 @@ bool IAnimationGraphManagerHolder::IsReady()
 
     return result;
 }
+
+IAnimationGraphManagerHolder::AnimationGraphManagerPtr IAnimationGraphManagerHolder::GetAnimationGraphManagerPtr() const noexcept
+{
+    BSAnimationGraphManager* pManager = nullptr;
+    GetBSAnimationGraph(&pManager);
+    return {
+        pManager, [](BSAnimationGraphManager* apManager)
+        {
+            apManager->Release();
+        }};
+}
+#else
+bool IAnimationGraphManagerHolder::IsReady()
+{
+    BSTSmartPointer<BSAnimationGraphManager> spManager;
+    return GetBSAnimationGraph(spManager);
+}
+
+IAnimationGraphManagerHolder::AnimationGraphManagerPtr IAnimationGraphManagerHolder::GetAnimationGraphManagerPtr() const noexcept
+{
+    BSTSmartPointer<BSAnimationGraphManager> spManager;
+    GetBSAnimationGraph(spManager);
+
+    return spManager;
+}
+#endif

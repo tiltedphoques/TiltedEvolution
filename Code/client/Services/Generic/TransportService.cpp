@@ -21,6 +21,7 @@
 #include <Messages/ServerMessageFactory.h>
 #include <Messages/NotifySettingsChange.h>
 #include <Packet.hpp>
+#include <steam/isteamnetworkingutils.h>
 
 #include <ScriptExtender.h>
 #include <Services/DiscordService.h>
@@ -65,7 +66,7 @@ TransportService::TransportService(World& aWorld, entt::dispatcher& aDispatcher)
     };
 }
 
-bool TransportService::Send(const ClientMessage& acMessage) const noexcept
+bool TransportService::Send(const ClientMessage& acMessage, const TiltedPhoques::EPacketFlags aPacketFlags) const noexcept
 {
     static thread_local ScratchAllocator s_allocator(1 << 18);
 
@@ -85,7 +86,7 @@ bool TransportService::Send(const ClientMessage& acMessage) const noexcept
         acMessage.Serialize(writer);
         TiltedPhoques::PacketView packet(reinterpret_cast<char*>(buffer.GetWriteData()), writer.Size());
 
-        Client::Send(&packet);
+        Client::Send(&packet, aPacketFlags);
 
         return true;
     }
@@ -178,8 +179,16 @@ void TransportService::OnUpdate()
 {
 }
 
+double TransportService::GetMessageReceiveTime() const noexcept
+{
+    return static_cast<double>(GetCurrentMessageReceiveTime()) / 1000.0;
+}
+
 void TransportService::HandleUpdate(const UpdateEvent& acEvent) noexcept
 {
+    // Taken before polling, so that every message that arrived before this time gets handled by this update
+    m_lastPollTime = static_cast<double>(SteamNetworkingUtils()->GetLocalTimestamp()) / 1000.0;
+
     Update();
 }
 

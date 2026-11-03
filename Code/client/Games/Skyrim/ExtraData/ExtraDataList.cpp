@@ -6,7 +6,8 @@ ExtraDataList* ExtraDataList::New() noexcept
 {
     ExtraDataList* pExtraDataList = Memory::Allocate<ExtraDataList>();
     pExtraDataList->data = nullptr;
-    pExtraDataList->lock.m_counter = pExtraDataList->lock.m_tid = 0;
+    pExtraDataList->lock.uiWriterThread = 0;
+    pExtraDataList->lock.uiLock = 0;
     pExtraDataList->bitfield = Memory::Allocate<ExtraDataList::Bitfield>();
     memset(pExtraDataList->bitfield, 0, 0x18);
     return pExtraDataList;
@@ -30,12 +31,12 @@ bool ExtraDataList::Contains(ExtraDataType aType) const
 BSExtraData* ExtraDataList::GetByType(ExtraDataType aType) const
 {
     if (!ScopedExtraDataOverride::IsOverriden())
-        lock.Lock();
+        lock.LockForRead();
 
     if (!Contains(aType))
     {
         if (!ScopedExtraDataOverride::IsOverriden())
-            lock.Unlock();
+            lock.UnlockRead();
         return nullptr;
     }
 
@@ -46,7 +47,7 @@ BSExtraData* ExtraDataList::GetByType(ExtraDataType aType) const
     }
 
     if (!ScopedExtraDataOverride::IsOverriden())
-        lock.Unlock();
+        lock.UnlockRead();
 
     return pEntry;
 }
@@ -56,7 +57,7 @@ bool ExtraDataList::Add(ExtraDataType aType, BSExtraData* apNewData)
     if (Contains(aType))
         return false;
 
-    BSScopedLock<BSRecursiveLock> _(lock);
+    BSWriteLockGuard _(lock);
 
     BSExtraData* pNext = data;
     data = apNewData;

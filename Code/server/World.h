@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Services/AdminService.h"
-
 #include <Services/PlayerService.h>
 #include <Services/PartyService.h>
 #include <Services/CharacterService.h>
@@ -49,7 +47,6 @@ struct World : entt::registry
 private:
     entt::dispatcher m_dispatcher;
 
-    TiltedPhoques::SharedPtr<AdminService> m_spAdminService;
     TiltedPhoques::UniquePtr<ScriptService> m_pScriptService;
     PlayerManager m_playerManager;
     UniquePtr<ESLoader::RecordCollection> m_recordCollection;

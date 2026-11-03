@@ -7,6 +7,13 @@ bhkCharacterController* AIProcess::GetCharController() noexcept
     return TiltedPhoques::ThisCall(getCharController, this);
 }
 
+void AIProcess::SetHeadTrackTarget(Actor* apOwner, const NiPoint3& acTarget) noexcept
+{
+    TP_THIS_FUNCTION(TSetHeadTrackTarget, void, AIProcess, Actor*, const NiPoint3&);
+    POINTER_SKYRIMSE(TSetHeadTrackTarget, setHeadTrackTarget, 39887);
+    TiltedPhoques::ThisCall(setHeadTrackTarget, this, apOwner, acTarget);
+}
+
 void AIProcess::KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, float afMagnitude)
 {
     TP_THIS_FUNCTION(TKnockExplosion, void, AIProcess, Actor*, const NiPoint3*, float);

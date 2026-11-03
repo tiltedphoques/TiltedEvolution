@@ -6,6 +6,7 @@
 #include <DefaultObjectManager.h>
 #include <Forms/TESNPC.h>
 #include <Forms/TESFaction.h>
+#include <Forms/TESQuest.h>
 #include <Components/TESActorBaseData.h>
 #include <ExtraData/ExtraFactionChanges.h>
 #include <ExtraData/ExtraLeveledCreature.h>
@@ -1207,17 +1208,32 @@ void TP_MAKE_THISCALL(HookUnequipObject, Actor, void* apUnk1, TESBoundObject* ap
     TiltedPhoques::ThisCall(RealUnequipObject, apThis, apUnk1, apObject, aUnk2, apUnk3);
 }
 
-TP_THIS_FUNCTION(TSpeakSoundFunction, bool, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14);
+// Returns a float in xmm0, 0 when nothing was played. Callers check it for -1.0 (lip file failed to load).
+TP_THIS_FUNCTION(TSpeakSoundFunction, float, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14);
 static TSpeakSoundFunction* RealSpeakSoundFunction = nullptr;
 
-bool TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14)
+float TP_MAKE_THISCALL(HookSpeakSoundFunction, Actor, const char* apName, uint32_t* a3, uint32_t a4, uint32_t a5, uint32_t a6, uint64_t a7, uint64_t a8, uint64_t a9, bool a10, uint64_t a11, bool a12, bool a13, bool a14)
 {
     spdlog::debug("a3: {:X}, a4: {}, a5: {}, a6: {}, a7: {}, a8: {:X}, a9: {:X}, a10: {}, a11: {:X}, a12: {}, a13: {}, a14: {}", (uint64_t)a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 
     // The player having the conversation may not own this NPC. Ambient
     // speech still comes only from the actor's simulation owner.
-    if (apThis->GetExtension()->IsLocal() || MenuTopicManager::IsPlayerDialogueSpeaker(apThis))
-        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName));
+    const bool cIsPlayerDialogue = MenuTopicManager::IsPlayerDialogueSpeaker(apThis);
+    const bool cShouldSync = apThis->GetExtension()->IsLocal() || cIsPlayerDialogue;
+
+    // Lines from a scene let other clients that play the same scene skip them, unless their copy is stuck in an earlier
+    // phase. Menu dialogue always plays.
+    BGSScene* pScene = cIsPlayerDialogue ? nullptr : apThis->GetCurrentScene();
+    uint32_t sceneId = 0;
+    uint32_t scenePhase = 0;
+    if (pScene && pScene->isPlaying)
+    {
+        sceneId = pScene->formID;
+        scenePhase = pScene->currentPhaseIndex;
+    }
+
+    if (cShouldSync)
+        World::Get().GetRunner().Trigger(DialogueEvent(apThis->formID, apName, sceneId, scenePhase));
 
     return TiltedPhoques::ThisCall(RealSpeakSoundFunction, apThis, apName, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
 }
@@ -1243,6 +1259,18 @@ char TP_MAKE_THISCALL(HookActorProcess, Actor, float aDeltaTime)
     }
 
     return TiltedPhoques::ThisCall(RealActorProcess, apThis, aDeltaTime);
+}
+
+TP_THIS_FUNCTION(TProcessTracking, void, Actor, float aDelta);
+static TProcessTracking* RealProcessTracking = nullptr;
+
+void TP_MAKE_THISCALL(HookProcessTracking, Actor, float aDelta)
+{
+    // See InterpolationSystem's `lookAt` logic
+    if (apThis->GetExtension()->IsRemotePlayer())
+        return;
+
+    TiltedPhoques::ThisCall(RealProcessTracking, apThis, aDelta);
 }
 
 TP_THIS_FUNCTION(TAddDeathItems, void, Actor);
@@ -1294,6 +1322,7 @@ static TiltedPhoques::Initializer s_actorHooks(
         POINTER_SKYRIMSE(TSpeakSoundFunction, s_speakSoundFunction, 37542);
         POINTER_SKYRIMSE(TAddDeathItems, addDeathItems, 37198);
         POINTER_SKYRIMSE(TIsFleeing, isFleeing, 37577);
+        POINTER_SKYRIMSE(TProcessTracking, s_processTracking, 38009);
 
         RealActorProcess = s_actorProcess.Get();
         RealSetPosition = s_setPosition.Get();
@@ -1316,8 +1345,10 @@ static TiltedPhoques::Initializer s_actorHooks(
         RealSpeakSoundFunction = s_speakSoundFunction.Get();
         RealAddDeathItems = addDeathItems.Get();
         RealIsFleeing = isFleeing.Get();
+        RealProcessTracking = s_processTracking.Get();
 
         TP_HOOK(&RealActorProcess, HookActorProcess);
+        TP_HOOK(&RealProcessTracking, HookProcessTracking);
         TP_HOOK(&RealSetPosition, HookSetPosition);
         TP_HOOK(&RealRemoveSpell, HookRemoveSpell);
         TP_HOOK(&RealCharacterConstructor, HookCharacterConstructor);
