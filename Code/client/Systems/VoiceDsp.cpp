@@ -7,7 +7,7 @@ namespace VoiceDsp
 {
 float ClampMasterVolume(float aVolume) noexcept
 {
-    return std::isfinite(aVolume) ? std::clamp(aVolume, 0.f, 5.f) : 2.5f;
+    return std::isfinite(aVolume) ? std::clamp(aVolume, 0.f, 5.f) : 1.f;
 }
 
 float Peak(const float* apSamples, size_t aCount) noexcept

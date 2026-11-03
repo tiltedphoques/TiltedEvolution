@@ -104,8 +104,8 @@ TEST_CASE("Voice master volume supports amplification and rejects invalid settin
     REQUIRE(ClampMasterVolume(5.f) == 5.f);
     REQUIRE(ClampMasterVolume(10.f) == 5.f);
     REQUIRE(ClampMasterVolume(-1.f) == 0.f);
-    REQUIRE(ClampMasterVolume(std::numeric_limits<float>::quiet_NaN()) == 2.5f);
-    REQUIRE(ClampMasterVolume(std::numeric_limits<float>::infinity()) == 2.5f);
+    REQUIRE(ClampMasterVolume(std::numeric_limits<float>::quiet_NaN()) == 1.f);
+    REQUIRE(ClampMasterVolume(std::numeric_limits<float>::infinity()) == 1.f);
 
     JitterBuffer buffer;
     std::vector<float> frame(JitterBuffer::kStartSamples, 0.1f);

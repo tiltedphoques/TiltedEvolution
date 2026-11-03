@@ -34,8 +34,8 @@ export const defaultVoipSettings: VoipSettings = {
   channel: VoipChannel.EVERYONE,
   fadeStart: 2500,
   micVolume: 100,
-  noiseGate: 10,
-  masterVolume: 250,
+  noiseGate: 5,
+  masterVolume: 100,
 };
 
 /** Per player voice volumes by username, 0 to 1, kept across servers and sessions like the name overrides. */
@@ -92,7 +92,7 @@ export class VoipService {
     settings.noiseGate = this.clampPercent(settings.noiseGate);
     settings.masterVolume = Number.isFinite(settings.masterVolume)
       ? Math.max(0, Math.min(500, Math.round(settings.masterVolume)))
-      : 250;
+      : 100;
     this.settings.next(settings);
 
     skyrimtogether.setVoiceSettings(
@@ -150,7 +150,7 @@ export class VoipService {
     fadeStart: number,
     micVolume: number,
     noiseGate: number,
-    masterVolume: number = 250,
+    masterVolume: number = 100,
   ): void {
     const knownChannel = Object.values(VoipChannel).includes(
       channel as VoipChannel,

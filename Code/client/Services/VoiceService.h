@@ -40,8 +40,8 @@ struct VoiceService
         Channel ListenChannel{Channel::kEveryone};
         float FadeStart{2500.f};
         float MicVolume{1.f};
-        float NoiseGate{0.1f};
-        float MasterVolume{2.5f};
+        float NoiseGate{0.05f};
+        float MasterVolume{1.f};
     };
 
     VoiceService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;

@@ -38,7 +38,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     number,
     number,
     number,
-  ] = ['', 0, '', 'everyone', 2500, 100, 10, 250];
+  ] = ['', 0, '', 'everyone', 2500, 100, 5, 100];
   private voiceMeterTimer: ReturnType<typeof setInterval> | undefined;
   private voiceTalkingTimer: ReturnType<typeof setInterval> | undefined;
 

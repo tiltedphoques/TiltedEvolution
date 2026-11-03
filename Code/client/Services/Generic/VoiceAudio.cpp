@@ -311,7 +311,7 @@ struct VoiceAudio::Impl
     uint16_t NextSequence{0};
 
     std::atomic<float> MicVolume{1.f};
-    std::atomic<float> NoiseGate{0.1f};
+    std::atomic<float> NoiseGate{0.05f};
     std::atomic<float> MicLevel{0.f};
     std::atomic<bool> Transmitting{false};
 
