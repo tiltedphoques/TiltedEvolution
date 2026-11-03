@@ -1,7 +1,12 @@
 #pragma once
-// Utility to import the 3rd-party Script Extender made by Ian Patterson et al.
-// Required for non-Creation Kit mods such as SkyUI
-void LoadScriptExtender();
+
+#include <array>
+#include <cstdint>
+#include <filesystem>
+
+// Loads the installed F4SE or SKSE core before the game's CRT startup, letting
+// the extender initialize its own plugins and scripting interfaces normally.
+void LoadScriptExtender(const std::filesystem::path& acGamePath, const std::array<uint32_t, 4>& acRuntimeVersion);
 
 // Check if the SE is active
 bool IsScriptExtenderLoaded();

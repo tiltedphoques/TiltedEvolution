@@ -1,31 +1,19 @@
 
 #include <ScriptExtender.h>
-#include <TiltedOnlinePCH.h>
-#include <VersionDb.h>
+#include <ScriptExtenderInfo.h>
+
+#include <Windows.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/fmt/xchar.h>
+#include <string>
+
+#pragma comment(lib, "version.lib")
 
 namespace
 {
-#if defined(TP_FALLOUT4)
-constexpr wchar_t kScriptExtenderName[] = L"f4se";
-constexpr char kScriptExtenderEntrypoint[] = "StartF4SE";
-constexpr char kScriptExtenderLabel[] = "F4SE";
-constexpr int kScriptExtenderMinBuild = 709;
-#else
-constexpr wchar_t kScriptExtenderName[] = L"skse64";
-constexpr char kScriptExtenderEntrypoint[] = "StartSKSE";
-constexpr char kScriptExtenderLabel[] = "SKSE";
-constexpr int kScriptExtenderMinBuild = 20100;
-#endif
+HMODULE s_scriptExtenderModule{nullptr};
 
-HMODULE g_SKSEModuleHandle{nullptr};
-
-struct FileVersion
-{
-    static constexpr uint8_t scVersionSize = 4;
-    DWORD versions[scVersionSize];
-};
-
-int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersion)
+int GetFileVersion(const std::filesystem::path& acFilePath, std::array<uint32_t, 4>& aVersion)
 {
     const auto filename = acFilePath.c_str();
 
@@ -41,73 +29,71 @@ int GetFileVersion(const std::filesystem::path& acFilePath, FileVersion& aVersio
     }
     VS_FIXEDFILEINFO* pvi;
     sz = sizeof(VS_FIXEDFILEINFO);
-    if (!VerQueryValueA(&buf[0], "\\", reinterpret_cast<LPVOID*>(&pvi), reinterpret_cast<unsigned int*>(&sz)))
+    if (!VerQueryValueA(&buf[0], "\\", reinterpret_cast<LPVOID*>(&pvi), reinterpret_cast<unsigned int*>(&sz)) || sz < sizeof(VS_FIXEDFILEINFO) ||
+        pvi->dwSignature != VS_FFI_SIGNATURE)
     {
         return 3;
     }
 
-    aVersion.versions[0] = pvi->dwProductVersionMS >> 16;
-    aVersion.versions[1] = pvi->dwFileVersionMS & 0xFFFF;
-    aVersion.versions[2] = pvi->dwFileVersionLS >> 16;
-    aVersion.versions[3] = pvi->dwFileVersionLS & 0xFFFF;
+    aVersion[0] = pvi->dwFileVersionMS >> 16;
+    aVersion[1] = pvi->dwFileVersionMS & 0xFFFF;
+    aVersion[2] = pvi->dwFileVersionLS >> 16;
+    aVersion[3] = pvi->dwFileVersionLS & 0xFFFF;
 
     return 0;
 }
 
-std::string GetSKSEStyleExeVersion()
+std::wstring GetCoreFilename(const std::array<uint32_t, 4>& acRuntimeVersion)
 {
-    auto exeBuild = VersionDb::Get().GetLoadedVersionString();
-    if (exeBuild.ends_with(".0"))
-        exeBuild.resize(exeBuild.size() - 2);
-    std::replace(exeBuild.begin(), exeBuild.end(), '.', '_');
-
-    return exeBuild;
+    std::wstring filename = fmt::format(L"{}_{}_{}_{}", ScriptExtender::kDllPrefix, acRuntimeVersion[0], acRuntimeVersion[1], acRuntimeVersion[2]);
+    if (acRuntimeVersion[3] != 0)
+        filename += fmt::format(L"_{}", acRuntimeVersion[3]);
+    return filename + L".dll";
 }
 } // namespace
 
 bool IsScriptExtenderLoaded()
 {
-    return g_SKSEModuleHandle;
+    return s_scriptExtenderModule != nullptr;
 }
 
-void LoadScriptExtender()
+void LoadScriptExtender(const std::filesystem::path& acGamePath, const std::array<uint32_t, 4>& acRuntimeVersion)
 {
-    if (g_SKSEModuleHandle)
+    if (s_scriptExtenderModule)
         return;
 
-    const auto gameDir = std::filesystem::current_path();
-    const auto exeVersion = GetSKSEStyleExeVersion();
-    const auto filename = fmt::format(L"{}_{}.dll", kScriptExtenderName, std::wstring(exeVersion.begin(), exeVersion.end()));
-    const auto path = gameDir / filename;
+    const auto path = acGamePath / GetCoreFilename(acRuntimeVersion);
     std::error_code error;
     if (!std::filesystem::is_regular_file(path, error))
+    {
+        spdlog::info("{} is not installed for this runtime; continuing without the script extender", ScriptExtender::kName);
         return;
+    }
 
-    FileVersion version{};
+    std::array<uint32_t, 4> version{};
     if (GetFileVersion(path, version) != 0)
     {
-        spdlog::error("Unable to verify {} version", kScriptExtenderLabel);
+        spdlog::error("Unable to verify {} version", ScriptExtender::kName);
         return;
     }
 
-    const auto build = version.versions[0] * 1000000 + version.versions[1] * 10000 + version.versions[2] * 100 + version.versions[3];
-    if (build < kScriptExtenderMinBuild)
+    if (version < ScriptExtender::kMinimumFileVersion)
     {
-        spdlog::error("{} version is too old for this runtime", kScriptExtenderLabel);
+        spdlog::error("{} version is too old for this runtime", ScriptExtender::kName);
         return;
     }
 
-    const auto module = LoadLibraryW(path.c_str());
+    const auto module = LoadLibraryExW(path.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
     if (!module)
     {
-        spdlog::error("Failed to load {} (error {})", path.string(), GetLastError());
+        spdlog::error("Failed to load {} (error {})", ScriptExtender::kName, GetLastError());
         return;
     }
 
-    const auto pStart = reinterpret_cast<void (*)()>(GetProcAddress(module, kScriptExtenderEntrypoint));
+    const auto pStart = reinterpret_cast<void (*)()>(GetProcAddress(module, ScriptExtender::kEntrypoint));
     if (!pStart)
     {
-        spdlog::error("{} does not export {}", path.string(), kScriptExtenderEntrypoint);
+        spdlog::error("{} does not export {}", ScriptExtender::kName, ScriptExtender::kEntrypoint);
         FreeLibrary(module);
         return;
     }
@@ -119,9 +105,8 @@ void LoadScriptExtender()
         uint32_t runtimeVersion;
     };
     const auto* pCore = reinterpret_cast<const CoreVersion*>(GetProcAddress(module, "F4SECore_Version"));
-    int major, minor, revision, patch;
-    VersionDb::Get().GetLoadedVersion(major, minor, revision, patch);
-    const uint32_t runtime = (major << 24) | (minor << 16) | (revision << 4) | patch;
+    // Matches MAKE_EXE_VERSION_EX in F4SE's public f4se_version.h.
+    const uint32_t runtime = ((acRuntimeVersion[0] & 0xFF) << 24) | ((acRuntimeVersion[1] & 0xFF) << 16) | ((acRuntimeVersion[2] & 0xFFF) << 4) | (acRuntimeVersion[3] & 0xF);
     if (!pCore || pCore->dataVersion != 1 || pCore->runtimeVersion != runtime)
     {
         spdlog::error("F4SE runtime does not match the loaded Fallout 4 executable");
@@ -130,7 +115,7 @@ void LoadScriptExtender()
     }
 #endif
 
-    g_SKSEModuleHandle = module;
+    s_scriptExtenderModule = module;
     pStart();
-    spdlog::info("{} {}.{}.{}.{} startup hooks installed", kScriptExtenderLabel, version.versions[0], version.versions[1], version.versions[2], version.versions[3]);
+    spdlog::info("{} {}.{}.{}.{} startup hooks installed", ScriptExtender::kName, version[0], version[1], version[2], version[3]);
 }

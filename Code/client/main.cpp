@@ -117,7 +117,9 @@ void RunTiltedInit(const std::filesystem::path& acGamePath, const String& aExeVe
     TiltedOnlineApp::InstallHooks2();
     TP_HOOK_COMMIT;
 
-    LoadScriptExtender();
+    int major, minor, revision, patch;
+    VersionDb::Get().GetLoadedVersion(major, minor, revision, patch);
+    LoadScriptExtender(acGamePath, {static_cast<uint32_t>(major), static_cast<uint32_t>(minor), static_cast<uint32_t>(revision), static_cast<uint32_t>(patch)});
 }
 
 void RunTiltedApp()

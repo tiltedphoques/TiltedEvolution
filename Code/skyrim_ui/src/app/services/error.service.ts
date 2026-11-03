@@ -29,7 +29,7 @@ export interface ModsMismatchErrorEvent extends ErrorEvent {
 
 export interface ClientModsDisallowedErrorEvent extends ErrorEvent {
   error: 'client_mods_disallowed';
-  data: { mods: ('SKSE' | 'MO2')[] };
+  data: { mods: ('SKSE' | 'F4SE' | 'MO2')[] };
 }
 
 export type ErrorEvents =

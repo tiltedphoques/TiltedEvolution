@@ -3,6 +3,7 @@
 
 #include "PathRerouting.h"
 #include <TiltedCore/Filesystem.hpp>
+#include <ScriptExtenderInfo.h>
 #include <Windows.h>
 
 namespace loader
@@ -16,6 +17,10 @@ void InstallPathRouting(const std::filesystem::path& gamePath)
     AddDllDirectory(appPath.c_str());
     AddDllDirectory(gamePath.c_str());
     SetCurrentDirectoryW(gamePath.c_str());
+
+    // F4SE/SKSE load plugins by absolute path, but their sibling dependencies
+    // are excluded by our restricted default search path unless added here.
+    AddDllDirectory((gamePath / ScriptExtender::kPluginDirectory).c_str());
 
     // Mod support exception: KiLoader appends <game>\Data\KiLoader\Dependencies to PATH at runtime so its
     // plugins can find KiHalloc.dll etc., but SetDefaultDllDirectories above excludes PATH from the search order.

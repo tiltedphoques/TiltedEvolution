@@ -1,5 +1,6 @@
 ﻿#include <Components.h>
 #include <GameServer.h>
+#include <ScriptExtenderInfo.h>
 #include <Packet.hpp>
 
 #include <Events/CharacterRemoveEvent.h>
@@ -44,7 +45,20 @@ Console::Setting bAutoPartyJoin{"Gameplay:bAutoPartyJoin", "Join parties automat
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Refuse clients whose mods do not match Data/loadorder.txt", false, Console::SettingsFlags::kLocked};
 Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow players using SKSE to join. Applies even when bEnableModCheck is off", true, Console::SettingsFlags::kLocked};
+#if defined(TP_FALLOUT4)
+Console::Setting bAllowF4SE{"ModPolicy:bAllowF4SE", "Allow players using F4SE to join. The legacy bAllowSKSE setting must also be enabled", true, Console::SettingsFlags::kLocked};
+#endif
 Console::Setting bAllowMO2{"ModPolicy:bAllowMO2", "Allow players using Mod Organizer 2 to join. Applies even when bEnableModCheck is off", true, Console::SettingsFlags::kLocked};
+
+static bool IsScriptExtenderAllowed()
+{
+#if defined(TP_FALLOUT4)
+    // Keep existing Fallout server configurations that disabled bAllowSKSE restrictive.
+    return bAllowF4SE && bAllowSKSE;
+#else
+    return bAllowSKSE;
+#endif
+}
 
 // -- Commands --
 Console::Command<> TogglePremium(
@@ -105,7 +119,9 @@ Console::Command<> ShowMoPoStatus(
             return aToggle ? "yes" : "no";
         };
 
-        spdlog::get("ConOut")->info("Modcheck enabled: {}\nSKSE allowed: {}\nMO2 allowed: {}", formatStatus(bEnableModCheck), formatStatus(bAllowSKSE), formatStatus(bAllowMO2));
+        spdlog::get("ConOut")->info(
+            "Modcheck enabled: {}\n{} allowed: {}\nMO2 allowed: {}", formatStatus(bEnableModCheck), ScriptExtender::kName, formatStatus(IsScriptExtenderAllowed()),
+            formatStatus(bAllowMO2));
     });
 
 // -- Constants --
@@ -800,21 +816,26 @@ void GameServer::HandleAuthenticationRequest(const ConnectionId_t aConnectionId,
         return;
     }
 
-    bool skseProblem = !bAllowSKSE && acRequest->SKSEActive;
+    bool scriptExtenderProblem = !IsScriptExtenderAllowed() && acRequest->SKSEActive;
     bool mo2Problem = !bAllowMO2 && acRequest->MO2Active;
 
-    if (skseProblem || mo2Problem)
+    if (scriptExtenderProblem || mo2Problem)
     {
         TiltedPhoques::String response;
-        if (skseProblem)
-            response += "SKSE ";
+        if (scriptExtenderProblem)
+        {
+            response += ScriptExtender::kName;
+            response += " ";
+        }
         if (mo2Problem)
             response += "MO2 ";
 
-        spdlog::info("New player {:x} '{}' tried to connect, but {}{} disallowed - Kicked.", aConnectionId, remoteAddress, response.c_str(), skseProblem && mo2Problem ? "are" : "is");
+        spdlog::info(
+            "New player {:x} '{}' tried to connect, but {}{} disallowed - Kicked.", aConnectionId, remoteAddress, response.c_str(),
+            scriptExtenderProblem && mo2Problem ? "are" : "is");
 
-        serverResponse.SKSEActive = acRequest->SKSEActive;
-        serverResponse.MO2Active = acRequest->MO2Active;
+        serverResponse.SKSEActive = scriptExtenderProblem;
+        serverResponse.MO2Active = mo2Problem;
         sendKick(RT::kClientModsDisallowed);
         return;
     }

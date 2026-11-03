@@ -1,0 +1,26 @@
+#include <winver.h>
+
+1 VERSIONINFO
+#if defined(TP_FALLOUT4)
+#if defined(SCRIPT_EXTENDER_FIXTURE_OLD)
+ FILEVERSION 0,0,7,8
+#else
+ FILEVERSION 0,0,7,9
+#endif
+#else
+#if defined(SCRIPT_EXTENDER_FIXTURE_OLD)
+ FILEVERSION 0,2,0,20
+#else
+ FILEVERSION 0,2,1,0
+#endif
+#endif
+ // Deliberately differs: the minimum-version check must use FILEVERSION.
+ PRODUCTVERSION 9,0,0,0
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_DLL
+BEGIN
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

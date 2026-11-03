@@ -28,7 +28,7 @@ struct AuthenticationRequest final : ClientMessage
     }
 
     uint64_t DiscordId{};
-    bool SKSEActive{};
+    bool SKSEActive{}; // Current game's script extender (SKSE or F4SE); legacy wire field name.
     bool MO2Active{};
     String Token{};
     String Version{};

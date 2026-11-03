@@ -15,6 +15,7 @@
 
 #include <Forms/TESNPC.h>
 #include <TiltedOnlinePCH.h>
+#include <ScriptExtenderInfo.h>
 #include <World.h>
 
 #include <Messages/AuthenticationRequest.h>
@@ -248,11 +249,13 @@ void TransportService::HandleAuthenticationResponse(const AuthenticationResponse
     {
         ErrorInfo += "\"error\": \"client_mods_disallowed\", \"data\": { \"mods\": [";
         if (acMessage.SKSEActive)
-            ErrorInfo += "\"SKSE\"";
+            ErrorInfo += fmt::format("\"{}\"", ScriptExtender::kName);
         if (acMessage.MO2Active)
+        {
             if (acMessage.SKSEActive)
                 ErrorInfo += ",";
-        ErrorInfo += "\"MO2\"";
+            ErrorInfo += "\"MO2\"";
+        }
         ErrorInfo += "]}";
         break;
     }

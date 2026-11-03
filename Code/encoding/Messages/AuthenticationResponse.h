@@ -29,7 +29,7 @@ struct AuthenticationResponse final : ServerMessage
     bool operator==(const AuthenticationResponse& achRhs) const noexcept { return GetOpcode() == achRhs.GetOpcode() && Type == achRhs.Type && UserMods == achRhs.UserMods && Settings == achRhs.Settings && PlayerId == achRhs.PlayerId; }
 
     ResponseType Type;
-    bool SKSEActive{false};
+    bool SKSEActive{false}; // Current game's script extender (SKSE or F4SE); legacy wire field name.
     bool MO2Active{false};
     String Version;
     Mods UserMods{};
