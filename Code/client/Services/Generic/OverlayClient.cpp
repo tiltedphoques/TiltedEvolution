@@ -187,6 +187,8 @@ void OverlayClient::ProcessSetVoiceSettings(CefRefPtr<CefListValue> aEventArgs)
     settings.FadeStart = static_cast<float>(aEventArgs->GetInt(4));
     settings.MicVolume = static_cast<float>(aEventArgs->GetInt(5)) / 100.f;
     settings.NoiseGate = static_cast<float>(aEventArgs->GetInt(6)) / 100.f;
+    if (aEventArgs->GetSize() > 7)
+        settings.MasterVolume = static_cast<float>(aEventArgs->GetInt(7)) / 100.f;
 
     World::Get().GetRunner().Queue([settings]() { World::Get().ctx().at<VoiceService>().ApplySettings(settings); });
 }

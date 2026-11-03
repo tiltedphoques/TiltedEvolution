@@ -23,6 +23,8 @@ export interface VoipSettings {
   micVolume: number;
   /** 0 to 100, like the Windows "Test your microphone" bar. */
   noiseGate: number;
+  /** Playback gain, 0 to 500 percent. */
+  masterVolume: number;
 }
 
 export const defaultVoipSettings: VoipSettings = {
@@ -33,6 +35,7 @@ export const defaultVoipSettings: VoipSettings = {
   fadeStart: 2500,
   micVolume: 100,
   noiseGate: 10,
+  masterVolume: 250,
 };
 
 /** Per player voice volumes by username, 0 to 1, kept across servers and sessions like the name overrides. */
@@ -87,6 +90,9 @@ export class VoipService {
     );
     settings.micVolume = this.clampPercent(settings.micVolume);
     settings.noiseGate = this.clampPercent(settings.noiseGate);
+    settings.masterVolume = Number.isFinite(settings.masterVolume)
+      ? Math.max(0, Math.min(500, Math.round(settings.masterVolume)))
+      : 250;
     this.settings.next(settings);
 
     skyrimtogether.setVoiceSettings(
@@ -97,6 +103,7 @@ export class VoipService {
       settings.fadeStart,
       settings.micVolume,
       settings.noiseGate,
+      settings.masterVolume,
     );
   }
 
@@ -143,6 +150,7 @@ export class VoipService {
     fadeStart: number,
     micVolume: number,
     noiseGate: number,
+    masterVolume: number = 250,
   ): void {
     const knownChannel = Object.values(VoipChannel).includes(
       channel as VoipChannel,
@@ -159,6 +167,7 @@ export class VoipService {
         fadeStart,
         micVolume,
         noiseGate,
+        masterVolume,
       });
     });
   }

@@ -126,6 +126,7 @@
         "CONNECT": "Connect to voip",
         "CONNECT_HINT": "Hear and talk to nearby players on servers that allow it",
         "OUTPUT_DEVICE": "Voip output device",
+        "MASTER_VOLUME": "Voice master volume",
         "OUTPUT_HINT": "Default follows the game's sound device",
         "OUTPUT_GAME": "Game audio device (same as the game)",
         "CHANNEL": "Voip channel",

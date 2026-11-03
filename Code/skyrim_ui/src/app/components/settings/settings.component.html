@@ -109,6 +109,21 @@
         </app-dropdown>
       </div>
       <div class="setting">
+        <label for="voipMasterVolume">
+          {{ 'COMPONENT.SETTINGS.VOICE.MASTER_VOLUME' | transloco }}
+          <span class="hint">{{ voip.masterVolume }}%</span>
+        </label>
+        <input
+          type="range"
+          id="voipMasterVolume"
+          min="0"
+          max="500"
+          step="5"
+          [ngModel]="voip.masterVolume"
+          (ngModelChange)="updateVoip({ masterVolume: +$event })"
+        />
+      </div>
+      <div class="setting">
         <label>
           {{ 'COMPONENT.SETTINGS.VOICE.CHANNEL' | transloco }}
           <span class="hint">{{

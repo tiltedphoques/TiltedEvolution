@@ -15,6 +15,9 @@ namespace VoiceDsp
 constexpr uint32_t kSampleRate = 48000;
 constexpr uint32_t kFrameSamples = 960;
 
+// Playback multiplier: 0 mutes, 1 is unchanged, 5 is the maximum. Invalid values use 250%.
+float ClampMasterVolume(float aVolume) noexcept;
+
 // Peak of a frame, 0 to 1. This is what the Windows "Test your microphone" bar shows.
 float Peak(const float* apSamples, size_t aCount) noexcept;
 

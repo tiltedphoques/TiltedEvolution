@@ -1,3 +1,4 @@
+#include <limits>
 #include <catch2/catch.hpp>
 
 #include "../client/Systems/VoiceDsp.h"
@@ -93,4 +94,27 @@ TEST_CASE("Voice jitter buffer", "[voice.dsp]")
         buffer.Push(frame.data(), frame.size());
     REQUIRE(buffer.GetBuffered() <= JitterBuffer::kMaxSamples);
     REQUIRE(buffer.IsPlaying());
+}
+
+TEST_CASE("Voice master volume supports amplification and rejects invalid settings", "[voice.dsp]")
+{
+    REQUIRE(ClampMasterVolume(0.f) == 0.f);
+    REQUIRE(ClampMasterVolume(1.f) == 1.f);
+    REQUIRE(ClampMasterVolume(2.5f) == 2.5f);
+    REQUIRE(ClampMasterVolume(5.f) == 5.f);
+    REQUIRE(ClampMasterVolume(10.f) == 5.f);
+    REQUIRE(ClampMasterVolume(-1.f) == 0.f);
+    REQUIRE(ClampMasterVolume(std::numeric_limits<float>::quiet_NaN()) == 2.5f);
+    REQUIRE(ClampMasterVolume(std::numeric_limits<float>::infinity()) == 2.5f);
+
+    JitterBuffer buffer;
+    std::vector<float> frame(JitterBuffer::kStartSamples, 0.1f);
+    std::vector<float> out(6, 0.f);
+    buffer.Push(frame.data(), frame.size());
+    REQUIRE(buffer.MixInto(out.data(), 1, 2.5f, 2.5f) == 1);
+    REQUIRE(out[0] == Approx(0.25f));
+    REQUIRE(buffer.MixInto(out.data() + 2, 1, 5.f, 5.f) == 1);
+    REQUIRE(out[2] == Approx(0.5f));
+    REQUIRE(buffer.MixInto(out.data() + 4, 1, 0.f, 0.f) == 1);
+    REQUIRE(out[4] == 0.f);
 }

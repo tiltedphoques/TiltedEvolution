@@ -189,6 +189,7 @@ void VoiceService::ApplySettings(const Settings& acSettings) noexcept
     m_settings.FadeStart = std::isfinite(m_settings.FadeStart) ? std::clamp(m_settings.FadeStart, 0.f, kMaxFadeStart) : 2500.f;
     m_settings.MicVolume = Clamp01(m_settings.MicVolume, 1.f);
     m_settings.NoiseGate = Clamp01(m_settings.NoiseGate, 0.1f);
+    m_settings.MasterVolume = VoiceDsp::ClampMasterVolume(m_settings.MasterVolume);
 
     m_audio.SetCaptureSettings(m_settings.MicVolume, m_settings.NoiseGate);
     SaveSettings();
@@ -339,7 +340,7 @@ void VoiceService::UpdateSpeakerGains() noexcept
             const float dz = pActor->position.z - listener.Position.z;
             const float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
 
-            const float gain = volume * VoiceDsp::DistanceGain(distance, m_settings.FadeStart);
+            const float gain = m_settings.MasterVolume * volume * VoiceDsp::DistanceGain(distance, m_settings.FadeStart);
 
             const float horizontal = std::sqrt(dx * dx + dy * dy);
             const float pan = horizontal > 1.f ? (dx * listener.RightX + dy * listener.RightY) / horizontal * kMaxPan : 0.f;
@@ -409,6 +410,7 @@ void VoiceService::LoadSettings() noexcept
             settings.FadeStart = static_cast<float>(ini.GetDoubleValue(kSection, "fVoipFadeStart", 2500.0));
             settings.MicVolume = static_cast<float>(ini.GetDoubleValue(kSection, "fMicVolume", 1.0));
             settings.NoiseGate = static_cast<float>(ini.GetDoubleValue(kSection, "fNoiseGate", 0.1));
+            settings.MasterVolume = static_cast<float>(ini.GetDoubleValue(kSection, "fVoipMasterVolume", 2.5));
         }
         else
         {
@@ -419,6 +421,7 @@ void VoiceService::LoadSettings() noexcept
     settings.FadeStart = std::isfinite(settings.FadeStart) ? std::clamp(settings.FadeStart, 0.f, kMaxFadeStart) : 2500.f;
     settings.MicVolume = Clamp01(settings.MicVolume, 1.f);
     settings.NoiseGate = Clamp01(settings.NoiseGate, 0.1f);
+    settings.MasterVolume = VoiceDsp::ClampMasterVolume(settings.MasterVolume);
 
     m_settings = settings;
 }
@@ -444,6 +447,7 @@ void VoiceService::SaveSettings() const noexcept
     ini.SetValue(kSection, "sOutputDevice", m_settings.OutputDevice.c_str(), "; Player: where voices play. Empty uses the Windows default device, like the game");
     ini.SetValue(kSection, "sVoipChannel", ChannelToString(m_settings.ListenChannel), "; Player: who you hear, everyone, party or strangers");
     ini.SetDoubleValue(kSection, "fVoipFadeStart", m_settings.FadeStart, "; Player: voices are full volume up to this distance in game units, silent at twice it");
+    ini.SetDoubleValue(kSection, "fVoipMasterVolume", m_settings.MasterVolume, "; Player: all received voices, 0 to 5 (0-500%), default 2.5 (250%)");
     ini.SetDoubleValue(kSection, "fMicVolume", m_settings.MicVolume, "; Player: microphone volume, 0 to 1");
     ini.SetDoubleValue(kSection, "fNoiseGate", m_settings.NoiseGate, "; Player: microphone level below which nothing is sent, 0 to 1 like the Windows mic test bar");
 
@@ -465,5 +469,6 @@ void VoiceService::SendSettingsToUi() const noexcept
     pArguments->SetInt(4, static_cast<int>(std::lround(m_settings.FadeStart)));
     pArguments->SetInt(5, static_cast<int>(std::lround(m_settings.MicVolume * 100.f)));
     pArguments->SetInt(6, static_cast<int>(std::lround(m_settings.NoiseGate * 100.f)));
+    pArguments->SetInt(7, static_cast<int>(std::lround(m_settings.MasterVolume * 100.f)));
     pOverlay->ExecuteAsync("voiceSettings", pArguments);
 }

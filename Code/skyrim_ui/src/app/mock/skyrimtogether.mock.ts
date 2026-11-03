@@ -37,7 +37,8 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     number,
     number,
     number,
-  ] = ['', 0, '', 'everyone', 2500, 100, 10];
+    number,
+  ] = ['', 0, '', 'everyone', 2500, 100, 10, 250];
   private voiceMeterTimer: ReturnType<typeof setInterval> | undefined;
   private voiceTalkingTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -344,6 +345,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     fadeStart: number,
     micVolume: number,
     noiseGate: number,
+    masterVolume: number,
   ): void {
     this.voiceSettings = [
       inputDevice,
@@ -353,6 +355,7 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
       fadeStart,
       micVolume,
       noiseGate,
+      masterVolume,
     ];
     this.emit('voiceSettings', ...this.voiceSettings);
 

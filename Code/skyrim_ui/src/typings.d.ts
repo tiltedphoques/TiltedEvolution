@@ -106,6 +106,7 @@ declare namespace SkyrimTogetherTypes {
     fadeStart: number,
     micVolume: number,
     noiseGate: number,
+    masterVolume: number,
   ) => void;
 
   /** Audio devices Windows knows about, by name. */
@@ -511,6 +512,7 @@ interface SkyrimTogether {
     fadeStart: number,
     micVolume: number,
     noiseGate: number,
+    masterVolume: number,
   ): void;
 
   /** Volume of one player's voice, 0 to 100. */

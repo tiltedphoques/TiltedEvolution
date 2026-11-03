@@ -41,6 +41,7 @@ struct VoiceService
         float FadeStart{2500.f};
         float MicVolume{1.f};
         float NoiseGate{0.1f};
+        float MasterVolume{2.5f};
     };
 
     VoiceService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport) noexcept;
