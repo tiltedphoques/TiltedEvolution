@@ -97,6 +97,7 @@
       "SERVER_COUNT": "Mostrando {{filteredCount}} de {{count}} servidores",
       "TABLE_HEADERS": {
         "NAME": "Nombre del servidor",
+        "ADDRESS": "Dirección",
         "PLAYERS": "Jugadores / Máx.",
         "COUNTRY": "País",
         "FAVORITE": "Favorito"

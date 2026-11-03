@@ -96,6 +96,7 @@
       "SERVER_COUNT": "Viser {{filteredCount}} av {{count}} servere",
       "TABLE_HEADERS": {
         "NAME": "Server Navn",
+        "ADDRESS": "Nettadresse",
         "PLAYERS": "Spillere / Max.",
         "COUNTRY": "Land",
         "FAVORITE": "Favoritt"

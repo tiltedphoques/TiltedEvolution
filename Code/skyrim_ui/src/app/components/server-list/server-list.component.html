@@ -100,6 +100,9 @@
                 (sorted)="sortServerName($event)"
               ></app-order>
             </div>
+            <div style="width: 9.5em">
+              {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.ADDRESS' | transloco }}
+            </div>
             <div style="width: 7em">
               {{ 'COMPONENT.SERVER_LIST.TABLE_HEADERS.PLAYERS' | transloco }}
               <app-order
@@ -143,6 +146,7 @@
               <fa-icon *ngIf="server.hasPassword" [icon]="fasLock"></fa-icon>
             </div>
             <div>{{ server.name }}</div>
+            <div style="width: 9.5em">{{ server.ip }}:{{ server.port }}</div>
             <div style="width: 7em">
               {{ server.player_count }} / {{ server.max_player_count }}
             </div>

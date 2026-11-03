@@ -99,6 +99,7 @@
       "SERVER_COUNT": "{{count}} sunucudan {{filteredCount}} tanesi gösteriliyor",
       "TABLE_HEADERS": {
         "NAME": "Sunucu ismi",
+        "ADDRESS": "Adres",
         "PLAYERS": "Oyuncular / Max.",
         "COUNTRY": "Ülke",
         "FAVORITE": "Favori"

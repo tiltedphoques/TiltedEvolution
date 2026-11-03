@@ -96,6 +96,7 @@
       "SERVER_COUNT": "显示{{count}}个服务器中的{{filteredCount}}个",
       "TABLE_HEADERS": {
         "NAME": "服务器名称",
+        "ADDRESS": "地址",
         "PLAYERS": "玩家数",
         "COUNTRY": "国家/地区",
         "FAVORITE": "已收藏"

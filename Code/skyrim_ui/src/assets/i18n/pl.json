@@ -100,6 +100,7 @@
       "SERVER_COUNT": "Pokazywanie {{filteredCount}} z {{count}} serwerów",
       "TABLE_HEADERS": {
         "NAME": "Nazwa Serwera",
+        "ADDRESS": "Adres",
         "PLAYERS": "Gracze / Max",
         "COUNTRY": "Kraj",
         "FAVORITE": "Ulubione"

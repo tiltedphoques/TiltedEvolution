@@ -96,6 +96,7 @@
       "SERVER_COUNT": "Zobrazeno  {{filteredCount}} z {{count}} serverů",
       "TABLE_HEADERS": {
         "NAME": "Jméno serveru",
+        "ADDRESS": "Adresa",
         "PLAYERS": "Hráčů / Max.",
         "COUNTRY": "Země",
         "FAVORITE": "Oblíbené"

@@ -96,6 +96,7 @@
       "SERVER_COUNT": "{{count}}の内から{{filteredCount}}を表示しています",
       "TABLE_HEADERS": {
         "NAME": "サーバーネーム",
+        "ADDRESS": "IPアドレス",
         "PLAYERS": "プレイヤー",
         "COUNTRY": "国",
         "FAVORITE": "お気に入り"

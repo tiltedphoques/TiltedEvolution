@@ -59,7 +59,7 @@
 }
 
 .scrollbar-offset {
-  margin-right: 1rem;
+  margin-right: var(--scrollbar-thickness);
   //overflow-y: scroll;
 }
 
@@ -121,12 +121,17 @@
       }
 
       :nth-child(2) {
-        flex: 1 1 auto;
+        flex: 1 1 0;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
       }
 
       > div {
         padding-left: 5px;
         padding-right: 5px;
+        overflow-wrap: anywhere;
       }
 
       &.header {

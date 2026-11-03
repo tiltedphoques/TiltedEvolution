@@ -102,6 +102,7 @@
       "SERVER_COUNT": "Visar {{filteredCount}} av {{count}} servrar",
       "TABLE_HEADERS": {
         "NAME": "Servernamn",
+        "ADDRESS": "Adress",
         "PLAYERS": "Spelare / Max.",
         "COUNTRY": "Land",
         "FAVORITE": "Favorit"

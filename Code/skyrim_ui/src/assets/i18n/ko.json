@@ -96,6 +96,7 @@
       "SERVER_COUNT": "서버 {{count}}대 중 {{filteredCount}}대 표시 중",
       "TABLE_HEADERS": {
         "NAME": "서버 이름",
+        "ADDRESS": "주소",
         "PLAYERS": "플레이어 수 / 최대 수.",
         "COUNTRY": "지역",
         "FAVORITE": "즐겨찾기"
