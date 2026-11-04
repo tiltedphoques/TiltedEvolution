@@ -134,7 +134,7 @@ struct Actor
     virtual void UpdateAlpha();
     virtual void sub_FC();
     virtual void sub_FD();
-    virtual void sub_FE();
+    virtual bool IsInCombat() const;
     virtual void sub_FF();
     virtual void StopCombat();
     virtual void sub_101();
@@ -220,7 +220,6 @@ struct Actor
     [[nodiscard]] bool IsDead() const noexcept;
     [[nodiscard]] bool IsDragon() const noexcept;
     [[nodiscard]] bool IsPlayerSummon() const noexcept;
-    [[nodiscard]] bool IsInCombat() const noexcept;
     [[nodiscard]] Actor* GetCombatTarget() const noexcept;
     [[nodiscard]] bool HasPerk(uint32_t aPerkFormId) const noexcept;
     [[nodiscard]] uint8_t GetPerkRank(uint32_t aPerkFormId) const noexcept;

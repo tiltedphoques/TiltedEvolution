@@ -589,15 +589,12 @@ void CharacterService::OnCharacterSpawn(const CharacterSpawnRequest& acMessage) 
             return;
         }
 
-#if !defined(TP_FALLOUT4)
         // Moving an uninitialized reference crashes (e.g. null race); discovery will request its assignment once it loads
         if (pActor->IsStillLoading())
         {
             spdlog::info("Skipped spawn for actor {:X} because it is still loading, server id: {:X}", cActorId, acMessage.ServerId);
             return;
         }
-
-#endif
 
         const auto view = m_world.view<FormIdComponent>();
         const auto itor = std::find_if(std::begin(view), std::end(view), [cActorId, view](entt::entity entity) { return view.get<FormIdComponent>(entity).Id == cActorId; });
@@ -1854,41 +1851,30 @@ void CharacterService::ProcessLeveledConforms() noexcept
 
 void CharacterService::RunLocalUpdates() const noexcept
 {
-#if defined(TP_FALLOUT4)
-    // Keep Fallout's snapshot cadence until its combat-state binding is available.
-    constexpr auto cDelayBetweenSnapshots = 100ms;
-#else
     // Remote clients show actors about one snapshot interval late, so players, mounts and actors in combat get every snapshot
     // and the rest every few. Assumes 60+ fps: 30ms keeps 60 fps gaps at two frames, with 33ms most were three (~25 Hz).
     constexpr auto cDelayBetweenSnapshots = 30ms;
     constexpr uint32_t cLowPrioritySnapshotDivider = 3;
-#endif
     // Movement is unreliable, keeping each message around a single packet (~120 bytes per humanoid) means a lost packet
     // only drops a few actors
     constexpr size_t cMaxActorsPerMovementMessage = 8;
 
     static std::chrono::steady_clock::time_point lastSnapshotTimePoint;
-#if !defined(TP_FALLOUT4)
     static uint32_t snapshotCount = 0;
-#endif
 
     const auto now = std::chrono::steady_clock::now();
     if (now - lastSnapshotTimePoint < cDelayBetweenSnapshots)
         return;
 
     lastSnapshotTimePoint = now;
-#if !defined(TP_FALLOUT4)
     const bool cIsFullSnapshot = ++snapshotCount % cLowPrioritySnapshotDivider == 0;
-#endif
 
     RequestActionEvents actionsMessage;
 
     ClientReferencesMoveRequest movementMessage;
     movementMessage.Tick = m_transport.GetClock().GetCurrentTick();
 
-#if !defined(TP_FALLOUT4)
     const auto* pPlayer = PlayerCharacter::Get();
-#endif
     auto animatedLocalView = m_world.view<LocalComponent, LocalAnimationComponent, FormIdComponent>();
 
     for (auto entity : animatedLocalView)
@@ -1905,10 +1891,8 @@ void CharacterService::RunLocalUpdates() const noexcept
         // for the snapshot after it anyway, so sending actions along with that snapshot doesn't delay them
         AnimationSystem::SerializeActions(actionsMessage, localComponent, animationComponent);
 
-#if !defined(TP_FALLOUT4)
         if (!cIsFullSnapshot && pActor != pPlayer && !pActor->IsMount() && !pActor->IsInCombat())
             continue;
-#endif
 
         if (movementMessage.Updates.size() == cMaxActorsPerMovementMessage)
         {
