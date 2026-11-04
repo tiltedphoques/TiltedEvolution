@@ -455,7 +455,7 @@ void VoiceService::SaveSettings() const noexcept
                      "; Built-in proximity voice chat. On a server: lets players talk to players nearby. For a player: the Connect to voip checkbox in Settings");
     ini.SetValue(kSection, "sOutputDevice", m_settings.OutputDevice.c_str(), "; Player: where voices play. Empty uses the Windows default device, like the game");
     ini.SetValue(kSection, "sVoipChannel", ChannelToString(m_settings.ListenChannel), "; Player: who you hear, everyone, party or strangers");
-    ini.SetDoubleValue(kSection, "fVoipFadeStart", m_settings.FadeStart, "; Player: voices are full volume up to this distance in game units, then -6 dB per doubling, silent at 4 times it");
+    ini.SetDoubleValue(kSection, "fVoipFadeStart", m_settings.FadeStart, "; Player: voices are full volume up to this distance in game units, silent at 4 times it");
     ini.SetDoubleValue(kSection, "fVoipMasterVolume", m_settings.MasterVolume, "; Player: all received voices, 0 to 5 (0-500%), default 1 (100%)");
     ini.SetDoubleValue(kSection, "fMicVolume", m_settings.MicVolume, "; Player: microphone volume, 0 to 1");
     ini.SetDoubleValue(kSection, "fNoiseGate", m_settings.NoiseGate, "; Player: microphone level below which nothing is sent, 0 to 1 like the Windows mic test bar");
