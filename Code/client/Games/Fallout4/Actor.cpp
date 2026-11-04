@@ -20,6 +20,7 @@
 #include <Events/InventoryChangeEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Games/Misc/MenuTopicManager.h>
+#include <Forms/TESQuest.h>
 
 ActorExtension* Actor::GetExtension() noexcept
 {
@@ -500,13 +501,22 @@ void TP_MAKE_THISCALL(HookSpeakSoundHelper, TESObjectREFR, const char* apFile, B
 {
     if (auto* pActor = Cast<Actor>(apThis); pActor && apFile)
     {
-        // The player having the conversation may not own the NPC. Scene lines are voiced by each client's own copy
-        // of the scene until Fallout has Skyrim's scene phase tracking.
+        // The player having the conversation may not own the NPC. Ambient speech only comes from the actor's owner.
         const bool cIsPlayerDialogue = MenuTopicManager::IsPlayerDialogueSpeaker(pActor);
-        const bool cShouldSync = cIsPlayerDialogue || (pActor->GetExtension()->IsLocal() && !pActor->GetCurrentScene());
+        if (cIsPlayerDialogue || pActor->GetExtension()->IsLocal())
+        {
+            // Clients that play the same scene skip the line, unless their copy is stuck in an earlier phase
+            BGSScene* pScene = cIsPlayerDialogue ? nullptr : pActor->GetCurrentScene();
+            uint32_t sceneId = 0;
+            uint32_t scenePhase = 0;
+            if (pScene && pScene->IsPlaying())
+            {
+                sceneId = pScene->formID;
+                scenePhase = pScene->currentPhaseIndex;
+            }
 
-        if (cShouldSync)
-            World::Get().GetRunner().Trigger(DialogueEvent(pActor->formID, apFile, 0, 0));
+            World::Get().GetRunner().Trigger(DialogueEvent(pActor->formID, apFile, sceneId, scenePhase));
+        }
     }
 
     TiltedPhoques::ThisCall(s_speakSoundHelper, apThis, apFile, aHandle, apOutputModel, apTopic);

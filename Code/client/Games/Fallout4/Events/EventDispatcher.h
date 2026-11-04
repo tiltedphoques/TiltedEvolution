@@ -179,7 +179,7 @@ struct TESQuestStageItemDoneEvent
 {
     uint32_t formId;
     uint16_t stageId;
-    bool unk;
+    uint8_t itemId;
 };
 
 struct TESResetEvent
@@ -192,14 +192,29 @@ struct TESResolveNPCTemplatesEvent
 
 struct TESSceneEvent
 {
+    uint32_t sceneFormId;
+    uint32_t type; // 0 = begin, otherwise end
+    uint16_t questStageId;
+    void* callback;
 };
 
 struct TESSceneActionEvent
 {
+    uint32_t sceneFormId;
+    uint32_t actionIndex;
+    uint32_t questFormId;
+    uint32_t aliasId;
+    uint16_t questStageId;
+    void* callback;
 };
 
 struct TESScenePhaseEvent
 {
+    uint32_t sceneFormId;
+    uint32_t phaseIndex;
+    uint32_t type; // 0 = begin, otherwise end
+    uint16_t questStageId;
+    void* callback;
 };
 
 struct TESSellEvent
@@ -224,10 +239,10 @@ struct TESPlayerBowShotEvent
 
 struct TESTopicInfoEvent
 {
-    TESObjectREFR* hSpeakerRef;
+    TESObjectREFR* pSpeakerRef;
     void* pCallback;
     uint32_t uiTopicInfoFormID;
-    int32_t eType;
+    uint32_t eType; // 0 = begin, otherwise end
     uint16_t usStage;
 };
 
@@ -300,5 +315,10 @@ struct EventDispatcherManager
     GlobalEventSource<TESActivateEvent> activateEvent{2201553, 2201554};
     GlobalEventSource<TESLoadGameEvent> loadGameEvent{2201657, 2201658};
     GlobalEventSource<TESQuestStageEvent> questStageEvent{2201684, 2201685};
+    GlobalEventSource<TESQuestStageItemDoneEvent> questStageItemDoneEvent{2201687, 2201688};
     GlobalEventSource<TESQuestStartStopEvent> questStartStopEvent{2201690, 2201691};
+    GlobalEventSource<TESSceneEvent> sceneEvent{2201699, 2201700};
+    GlobalEventSource<TESSceneActionEvent> sceneActionEvent{2201702, 2201703};
+    GlobalEventSource<TESScenePhaseEvent> scenePhaseEvent{2201705, 2201706};
+    GlobalEventSource<TESTopicInfoEvent> topicInfoEvent{2201720, 2201721};
 };

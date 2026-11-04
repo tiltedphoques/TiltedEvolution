@@ -79,6 +79,7 @@ struct BGSScene : TESForm
     TESCondition conditions;
     // First phase still to run, phases.length if none. Start() leaves currentPhaseIndex at -1 until an update; on end it
     // moves past the last phase, and isPlaying clears once the end scripts ran (SetSceneActive, 0x1403A0FA0, 1.6.1170)
+    [[nodiscard]] bool IsPlaying() const noexcept { return isPlaying; }
     [[nodiscard]] uint32_t GetNextPhaseIndex() const noexcept
     {
         if (!isPlaying)

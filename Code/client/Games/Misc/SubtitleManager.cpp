@@ -64,16 +64,14 @@ void TP_MAKE_THISCALL(HookShowSubtitle, SubtitleManager, TESObjectREFR* apSpeake
     if (shouldSyncSubtitle)
     {
         SubtitleEvent event(apSpeaker->formID, apSubtitleText);
-#if !defined(TP_FALLOUT4)
         // Same as dialogue: clients that play the same scene show their own subtitle for the line
         BGSScene* pScene = isPlayerDialogue ? nullptr : pActor->GetCurrentScene();
 
-        if (pScene && pScene->isPlaying)
+        if (pScene && pScene->IsPlaying())
         {
             event.SceneID = pScene->formID;
             event.ScenePhase = pScene->currentPhaseIndex;
         }
-#endif
         World::Get().GetRunner().Trigger(event);
     }
 

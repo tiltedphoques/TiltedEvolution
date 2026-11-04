@@ -1,7 +1,5 @@
 #include <TiltedOnlinePCH.h>
 
-#if !defined(TP_FALLOUT4)
-
 #include <Events/ConnectedEvent.h>
 #include <Events/DisconnectedEvent.h>
 #include <Events/PartyLeftEvent.h>
@@ -112,6 +110,19 @@ void QuestService::OnPartyLeft(const PartyLeftEvent&) noexcept
 
 BSTEventResult QuestService::OnEvent(const TESQuestStartStopEvent* apEvent, const EventDispatcher<TESQuestStartStopEvent>*)
 {
+#if defined(TP_FALLOUT4)
+    // A stage set while the quest was still starting waits for it to start, see TESQuest::ScriptSetStage
+    if (apEvent->started)
+    {
+        m_world.GetRunner().Queue(
+            [formId = apEvent->formId]()
+            {
+                ScopedQuestOverride _;
+                TESQuest::ApplyPendingStage(formId);
+            });
+    }
+#endif
+
     if (ScopedQuestOverride::IsOverriden())
         return BSTEventResult::kOk;
 
@@ -438,7 +449,7 @@ static void ReleaseStagesForWaitingPhases(TESQuest* apQuest, HeldStages& aHeld) 
         if (aHeld.Stages.empty())
             break;
 
-        if (!pScene || !pScene->isPlaying || pScene->currentPhaseIndex >= pScene->phases.length)
+        if (!pScene || !pScene->IsPlaying() || pScene->currentPhaseIndex >= pScene->phases.length)
             continue;
 
         BGSScenePhase* pPhase = pScene->phases[pScene->currentPhaseIndex];
@@ -613,6 +624,9 @@ bool QuestService::StopQuest(uint32_t aformId)
     return false;
 }
 
+#if defined(TP_FALLOUT4)
+static constexpr std::array<uint32_t, 0> kNonSyncableQuestIds{};
+#else
 static constexpr std::array kNonSyncableQuestIds = std::to_array<uint32_t>({
     0x2BA16,   // Werewolf transformation quest
     0x20071D0, // Vampire transformation quest
@@ -620,6 +634,7 @@ static constexpr std::array kNonSyncableQuestIds = std::to_array<uint32_t>({
     // 0xFE014801,  // Unknown dynamic ID, kept as note, maybe lookup correct ID this game?
     0xF2593 // Skill experience quest
 });
+#endif
 
 bool QuestService::IsNonSyncableQuest(TESQuest* apQuest)
 {
@@ -636,5 +651,3 @@ void QuestService::DebugDumpQuests()
     for (TESQuest* pQuest : quests)
         spdlog::info("{:X}|{}|{}|{}", pQuest->formID, (uint8_t)pQuest->type, pQuest->priority, pQuest->idName.AsAscii());
 }
-
-#endif

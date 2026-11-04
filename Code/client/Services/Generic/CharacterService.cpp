@@ -1133,7 +1133,6 @@ void CharacterService::OnNotifySyncExperience(const NotifySyncExperience& acMess
     pPlayer->AddSkillExperience(PlayerCharacter::LastUsedCombatSkill, acMessage.Experience);
 }
 
-#if !defined(TP_FALLOUT4)
 // Whether the phase waits on a package of an NPC remote here. Packages only complete on the client running the NPC's AI,
 // so this copy of the scene can't get past the phase on its own.
 static bool IsPhaseStuckOnRemotePackage(BGSScene* apScene, uint32_t aPhaseIndex) noexcept
@@ -1162,7 +1161,7 @@ static bool IsPhaseStuckOnRemotePackage(BGSScene* apScene, uint32_t aPhaseIndex)
 static bool IsLineVoicedByLocalScene(Actor* apActor, const GameId& acSceneId, uint32_t aScenePhase) noexcept
 {
     BGSScene* pScene = apActor->GetCurrentScene();
-    if (!acSceneId || !pScene || !pScene->isPlaying || pScene->formID != World::Get().GetModSystem().GetGameId(acSceneId))
+    if (!acSceneId || !pScene || !pScene->IsPlaying() || pScene->formID != World::Get().GetModSystem().GetGameId(acSceneId))
         return false;
 
     // At or past the sender's phase. A phase index past the end means the scene is starting or ending here.
@@ -1172,8 +1171,6 @@ static bool IsLineVoicedByLocalScene(Actor* apActor, const GameId& acSceneId, ui
 
     return !IsPhaseStuckOnRemotePackage(pScene, cPhase);
 }
-
-#endif
 
 void CharacterService::OnDialogueEvent(const DialogueEvent& acEvent) noexcept
 {
@@ -1209,7 +1206,6 @@ void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcep
     if (!pActor)
         return;
 
-#if !defined(TP_FALLOUT4)
     // Every client plays scenes itself, the local copy usually voices the line. Menu and other-scene lines still play.
     if (IsLineVoicedByLocalScene(pActor, acMessage.SceneId, acMessage.ScenePhase))
     {
@@ -1218,8 +1214,6 @@ void CharacterService::OnNotifyDialogue(const NotifyDialogue& acMessage) noexcep
             pActor->GetCurrentScene()->formID, acMessage.SoundFilename);
         return;
     }
-
-#endif
 
     pActor->StopCurrentDialogue(true);
     pActor->SpeakSound(acMessage.SoundFilename.c_str());
@@ -1259,13 +1253,10 @@ void CharacterService::OnNotifySubtitle(const NotifySubtitle& acMessage) noexcep
     if (!pActor)
         return;
 
-#if !defined(TP_FALLOUT4)
     // The local copy of the scene shows its own subtitle, see OnNotifyDialogue. Only the actor's own voice line ending
     // hides a subtitle, so a remote one arriving after the local line has finished would stay on screen.
     if (IsLineVoicedByLocalScene(pActor, acMessage.SceneId, acMessage.ScenePhase))
         return;
-
-#endif
 
     // This is only for fallout 4
     TESTopicInfo* pInfo = nullptr;

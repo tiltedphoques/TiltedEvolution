@@ -4,16 +4,105 @@
 #include <Misc/BSString.h>
 #include <Components/TESFullName.h>
 #include <Forms/BGSStoryManagerTree.h>
+#include <Components/TESCondition.h>
+
+struct TESQuest;
+
+struct BGSSceneAction
+{
+    enum class Type : uint32_t
+    {
+        kDialogue = 0,
+        kPackage = 1,
+        kTimer = 2,
+        kPlayerDialogue = 3,
+        kStartScene = 4,
+        kNpcResponseDialogue = 5,
+        kRadio = 6
+    };
+
+    virtual ~BGSSceneAction();
+    virtual void sub_1(); // Load
+    virtual void sub_2();
+    virtual void sub_3();
+    virtual void sub_4();
+    virtual void sub_5();
+    virtual bool Loops() const; // QIsLooping
+    virtual void sub_7();
+    virtual Type GetType() const;
+
+    [[nodiscard]] uint32_t GetIndex() const noexcept { return index & 0x3FFFFFFF; }
+    [[nodiscard]] bool IsRunning() const noexcept { return status & 1; }
+    [[nodiscard]] bool IsComplete() const noexcept { return status & 2; }
+    [[nodiscard]] bool IsInPhase(uint32_t aPhaseIndex) const noexcept { return aPhaseIndex >= startPhase && aPhaseIndex <= endPhase; }
+    // Whether the phase waits for this action to complete before it ends
+    [[nodiscard]] bool BlocksPhase(uint32_t aPhaseIndex) const noexcept
+    {
+        return IsInPhase(aPhaseIndex) && !IsInPhase(aPhaseIndex + 1) && IsRunning() && !IsComplete() && !Loops();
+    }
+
+    uint32_t actorId; // 0x08 quest alias ID
+    uint16_t startPhase;
+    uint16_t endPhase;
+    uint32_t flags;
+    uint8_t status; // 0x14, bit 0 = active, bit 1 = complete
+    uint8_t unk15;
+    uint16_t unk16;
+    uint32_t index; // 0x18 unique ID in the low 30 bits
+};
+
+static_assert(offsetof(BGSSceneAction, actorId) == 0x8);
+static_assert(offsetof(BGSSceneAction, startPhase) == 0xC);
+static_assert(offsetof(BGSSceneAction, status) == 0x14);
+static_assert(offsetof(BGSSceneAction, index) == 0x18);
+
+struct BGSScenePhase
+{
+    TESCondition startConditions;
+    // Once the phase has any, it ends as soon as they pass, even with actions still running
+    TESCondition completionConditions;
+    uint16_t phaseFlags;
+    bool isRunning;
+
+    [[nodiscard]] bool HasCompletionConditions() const noexcept { return completionConditions.pHead != nullptr; }
+};
+
+static_assert(offsetof(BGSScenePhase, completionConditions) == 0x8);
 
 // Fallout 4 BGSScene: 0xE8.
 struct BGSScene : TESForm
 {
-    uint8_t pad20[0x30 - 0x20];
-    GameArray<void*> phases;      // 0x30
-    GameArray<uint32_t> actorIds; // 0x48
-    uint8_t pad60[0xE8 - 0x60];
+    // Same as Skyrim's: SetSceneActive moves currentPhaseIndex past the last phase on end, and resets it to -1 once the
+    // end scripts ran
+    [[nodiscard]] bool IsPlaying() const noexcept { return sceneFlags & 1; }
+    [[nodiscard]] uint32_t GetNextPhaseIndex() const noexcept
+    {
+        if (!IsPlaying())
+            return phases.length;
+
+        return currentPhaseIndex == UINT32_MAX ? 0 : std::min(currentPhaseIndex, phases.length);
+    }
+
+    void* keywordFormBase;                // 0x20 IKeywordFormBase
+    uint32_t sceneFlags;                  // 0x28 bit 0 = playing
+    GameArray<BGSScenePhase*> phases;     // 0x30
+    GameArray<uint32_t> actorIds;         // 0x48
+    GameArray<uint32_t> actorFlags;       // 0x60
+    GameArray<uint32_t> actorProgression; // 0x78
+    GameArray<BGSSceneAction*> actions;   // 0x90
+    TESQuest* owningQuest;                // 0xA8
+    BGSScene* templateScene;              // 0xB0
+    uint32_t flags;                       // 0xB8
+    TESCondition conditions;              // 0xC0
+    uint32_t speakerId;                   // 0xC8
+    uint32_t currentPhaseIndex;           // 0xCC, -1 when not playing
+    uint8_t padD0[0xE8 - 0xD0];
 };
+static_assert(offsetof(BGSScene, phases) == 0x30);
 static_assert(offsetof(BGSScene, actorIds) == 0x48);
+static_assert(offsetof(BGSScene, actions) == 0x90);
+static_assert(offsetof(BGSScene, owningQuest) == 0xA8);
+static_assert(offsetof(BGSScene, currentPhaseIndex) == 0xCC);
 static_assert(sizeof(BGSScene) == 0xE8);
 
 // Fallout 4 TESQuest: 0x2F0.
@@ -105,7 +194,11 @@ struct TESQuest : BGSStoryManagerTreeForm
     bool EnsureQuestStarted(bool& aStartDelayed, bool aImmediate);
 
     bool SetStage(uint16_t stage);
-    void ScriptSetStage(uint16_t stage);
+    // Returns whether the stage was reached, false when it waits for the quest to start
+    bool ScriptSetStage(uint16_t stage);
+    bool IsStageReached(uint16_t aStage) noexcept;
+    // The stage's log entries, each sends TESQuestStageItemDoneEvent once its fragment ran
+    uint32_t GetStageItemCount(uint16_t aStage) noexcept;
     // Applies a stage that was requested while the quest was still starting.
     static void ApplyPendingStage(uint32_t aFormId) noexcept;
     void SetStopped();

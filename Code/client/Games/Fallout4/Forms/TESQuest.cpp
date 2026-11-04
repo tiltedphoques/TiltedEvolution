@@ -47,22 +47,47 @@ TiltedPhoques::Map<uint32_t, uint16_t> s_pendingStages;
 // Papyrus is not bridged on Fallout 4 yet, so this follows Quest.SetCurrentStageID
 // natively: start the quest, then set the stage. Starting is deferred to a task, so
 // like Papyrus the stage waits for the quest's start event.
-void TESQuest::ScriptSetStage(uint16_t aStageIndex)
+bool TESQuest::ScriptSetStage(uint16_t aStageIndex)
 {
-    if (currentStage == aStageIndex || IsStageDone(aStageIndex))
-        return;
+    if (IsStageReached(aStageIndex))
+        return false;
 
     bool startDelayed = false;
     if (!EnsureQuestStarted(startDelayed, false))
-        return;
+        return false;
 
     if (startDelayed)
     {
         s_pendingStages[formID] = aStageIndex;
-        return;
+        return false;
     }
 
     SetStage(aStageIndex);
+    return IsStageReached(aStageIndex);
+}
+
+bool TESQuest::IsStageReached(uint16_t aStage) noexcept
+{
+    return currentStage == aStage || IsStageDone(aStage);
+}
+
+uint32_t TESQuest::GetStageItemCount(uint16_t aStage) noexcept
+{
+    for (Stage* pStage : stages)
+    {
+        if (!pStage || pStage->stageIndex != aStage)
+            continue;
+
+        uint32_t count = 0;
+        for (void* pItem : pStage->items)
+        {
+            if (pItem)
+                ++count;
+        }
+        return count;
+    }
+
+    return 0;
 }
 
 void TESQuest::ApplyPendingStage(uint32_t aFormId) noexcept
