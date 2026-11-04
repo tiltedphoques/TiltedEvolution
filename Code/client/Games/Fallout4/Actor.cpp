@@ -18,6 +18,8 @@
 #include <Events/HitEvent.h>
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
+#include <Events/DialogueEvent.h>
+#include <Games/Misc/MenuTopicManager.h>
 
 ActorExtension* Actor::GetExtension() noexcept
 {
@@ -480,9 +482,49 @@ void Actor::SetWeaponDrawnEx(bool aDraw) noexcept
     DrawWeaponMagicHands(aDraw);
 }
 
-void Actor::SpeakSound(const char*)
+namespace
 {
-    // Fallout 4 voice playback for remote dialogue is not implemented yet.
+struct BSSoundHandle
+{
+    uint32_t soundId = 0xFFFFFFFF;
+    bool assumeSuccess = false;
+    int8_t state = 0;
+};
+static_assert(sizeof(BSSoundHandle) == 0x8);
+
+TP_THIS_FUNCTION(TSpeakSoundHelper, void, TESObjectREFR, const char* apFile, BSSoundHandle& aHandle, void* apOutputModel, void* apTopic);
+TSpeakSoundHelper* s_speakSoundHelper = nullptr;
+
+// Every line an actor voices goes through here, menu dialogue included.
+void TP_MAKE_THISCALL(HookSpeakSoundHelper, TESObjectREFR, const char* apFile, BSSoundHandle& aHandle, void* apOutputModel, void* apTopic)
+{
+    if (auto* pActor = Cast<Actor>(apThis); pActor && apFile)
+    {
+        // The player having the conversation may not own the NPC. Scene lines are voiced by each client's own copy
+        // of the scene until Fallout has Skyrim's scene phase tracking.
+        const bool cIsPlayerDialogue = MenuTopicManager::IsPlayerDialogueSpeaker(pActor);
+        const bool cShouldSync = cIsPlayerDialogue || (pActor->GetExtension()->IsLocal() && !pActor->GetCurrentScene());
+
+        if (cShouldSync)
+            World::Get().GetRunner().Trigger(DialogueEvent(pActor->formID, apFile, 0, 0));
+    }
+
+    TiltedPhoques::ThisCall(s_speakSoundHelper, apThis, apFile, aHandle, apOutputModel, apTopic);
+}
+
+TiltedPhoques::Initializer s_speakSoundHooks(
+    []()
+    {
+        static VersionDbPtr<TSpeakSoundHelper> speakSoundHelper(2201212);
+        s_speakSoundHelper = speakSoundHelper.Get();
+        TP_HOOK(&s_speakSoundHelper, HookSpeakSoundHelper);
+    });
+} // namespace
+
+void Actor::SpeakSound(const char* apFile)
+{
+    BSSoundHandle handle{};
+    TiltedPhoques::ThisCall(s_speakSoundHelper, this, apFile, handle, nullptr, nullptr);
 }
 
 void Actor::GenerateMagicCasters() noexcept

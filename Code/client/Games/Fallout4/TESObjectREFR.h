@@ -25,6 +25,7 @@ template <class T> struct BSTSmartPointer
 #include <ExtraData/ExtraDataList.h>
 
 struct AnimationVariables;
+struct BGSScene;
 struct TESWorldSpace;
 struct TESBoundObject;
 struct TESActorBase;
@@ -159,7 +160,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_59();
     virtual void sub_5A();
     virtual void sub_5B();
-    virtual void sub_5C();
+    virtual BGSScene* GetCurrentScene() const;
     virtual void sub_5D();
     virtual void sub_5E();
     virtual void sub_5F();
