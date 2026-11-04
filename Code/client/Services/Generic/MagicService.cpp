@@ -452,7 +452,7 @@ void MagicService::OnNotifyAddTarget(const NotifyAddTarget& acMessage) noexcept
         pActor = PlayerCharacter::Get();
 
 #if defined(TP_FALLOUT4)
-    static_cast<MagicTarget*>(pActor)->AddTarget(data);
+    static_cast<MagicTarget*>(pActor)->AddTarget(data, acMessage.ApplyHealPerkBonus, acMessage.ApplyStaminaPerkBonus);
 #else
     pActor->magicTarget.AddTarget(data, acMessage.ApplyHealPerkBonus, acMessage.ApplyStaminaPerkBonus);
 #endif
@@ -710,7 +710,7 @@ void MagicService::UpdateRevealOtherPlayersEffect(bool aForceTrigger) noexcept
             continue;
 
 #if defined(TP_FALLOUT4)
-        static_cast<MagicTarget*>(pRemotePlayer)->AddTarget(data);
+        static_cast<MagicTarget*>(pRemotePlayer)->AddTarget(data, false, false);
 #else
         pRemotePlayer->magicTarget.AddTarget(data, false, false);
 #endif

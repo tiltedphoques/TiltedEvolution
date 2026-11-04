@@ -28,6 +28,9 @@ struct MagicTarget
         MagicSystem::CastingSource eCastingSource;    // 40
         bool bAreaTarget;                             // 44
         bool bDualCast;                               // 45
+
+        bool ShouldSync();
+        bool IsForbiddenEffect(Actor* apTarget);
     };
     static_assert(sizeof(AddTargetData) == 0x48);
 
@@ -45,6 +48,10 @@ struct MagicTarget
     virtual void EffectRemoved(ActiveEffect* apEffect);
     virtual void EffectActiveStatusChanged(ActiveEffect* apEffect);
     virtual bool CheckAbsorb(Actor* apCaster, MagicItem* apSpell, const EffectItem* apEffectItem);
+
+    Actor* GetTargetAsActor();
+    // Applies a synced effect without syncing it again or rolling resistance
+    bool AddTarget(AddTargetData& arData, bool aHealPerkBonus, bool aApplyStaminaPerkBonus) noexcept;
 
     SpellDispelData* postUpdateDispelList; // 0x08
     int8_t flags;                          // 0x10
