@@ -124,9 +124,9 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
     if (!pProcess || !pProcess->middleProcess)
         return;
 
-#if !defined(TP_FALLOUT4)
     pProcess->middleProcess->pitch = -finalX;
 
+#if !defined(TP_FALLOUT4)
     if (apActor->GetExtension()->IsRemotePlayer())
     {
         if (second.HasLookAt)
