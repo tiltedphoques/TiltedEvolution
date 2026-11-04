@@ -36,6 +36,9 @@ constexpr char kSection[] = "Voice";
 constexpr float kMaxFadeStart = 100000.f;
 // How often talking icons and the mic meter are pushed to the UI
 constexpr double kUiInterval = 0.066;
+// Past this distance from the character (game units, about 14 m) the camera is not where the player is listening from.
+// Third person zoomed out, camera mods and ragdolls stay well inside it.
+constexpr float kMaxCameraDistance = 1000.f;
 // Voices are panned this much at most, fully one sided sounds odd on headphones
 constexpr float kMaxPan = 0.7f;
 
@@ -59,7 +62,7 @@ struct Listener
     float RightY{0.f};
 };
 
-// Voices are heard from the camera, so free look, camera mods and ragdolls don't matter
+// Voices are heard from the camera, so free look, camera mods and ragdolls don't matter, unless the camera is far away
 bool GetListener(Listener& aOutListener) noexcept
 {
     PlayerCharacter* pPlayer = PlayerCharacter::Get();
@@ -86,6 +89,14 @@ bool GetListener(Listener& aOutListener) noexcept
     std::memcpy(translate, pBytes + kNiAVObjectWorldTranslateOffset, sizeof(translate));
 
     if (!std::isfinite(translate[0]) || !std::isfinite(translate[1]) || !std::isfinite(translate[2]))
+        return true;
+
+    // The world map, free camera and some cutscenes move the camera far from the character. Hear from the character
+    // then, so nearby players don't go silent while you look at the map.
+    const float dx = translate[0] - pPlayer->position.x;
+    const float dy = translate[1] - pPlayer->position.y;
+    const float dz = translate[2] - pPlayer->position.z;
+    if (dx * dx + dy * dy + dz * dz > kMaxCameraDistance * kMaxCameraDistance)
         return true;
 
     aOutListener.Position = glm::vec3(translate[0], translate[1], translate[2]);
