@@ -15,7 +15,8 @@ struct NotifyPlayerLeft;
  *
  * The microphone is captured, gated and Opus encoded by VoiceAudio, sent to the server over the game connection
  * and relayed to players nearby. Remote voices get louder or quieter with distance from the camera: full volume up to
- * the fade start, silent at twice that. Nothing else is needed, no separate program and no extra port.
+ * the fade start, then -6 dB per doubling of distance like real sound, silent at four times the fade start.
+ * Nothing else is needed, no separate program and no extra port.
  *
  * Voice runs while the server's Voice:bVoip is on and the player ticked Connect to voip, which is the same key in
  * the player's own Data/SkyrimTogetherReborn/config/STServer.ini. The other [Voice] keys there are the player's
@@ -38,7 +39,7 @@ struct VoiceService
         // Empty plays on the Windows default device, the one the game uses
         String OutputDevice{};
         Channel ListenChannel{Channel::kEveryone};
-        float FadeStart{2500.f};
+        float FadeStart{2000.f};
         float MicVolume{1.f};
         float NoiseGate{0.05f};
         float MasterVolume{1.f};

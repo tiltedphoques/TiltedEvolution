@@ -21,7 +21,12 @@ float ClampMasterVolume(float aVolume) noexcept;
 // Peak of a frame, 0 to 1. This is what the Windows "Test your microphone" bar shows.
 float Peak(const float* apSamples, size_t aCount) noexcept;
 
-// Full volume up to aFadeStart, then linear down to silent at twice that distance
+// Voices fall off like real sound past the fade start, and ease out to silence over the last stretch
+constexpr float kTaperFromFadeStarts = 2.f;
+constexpr float kSilentAtFadeStarts = 4.f;
+
+// Full volume up to aFadeStart, then -6 dB each time the distance doubles (inverse square law), easing to silent at
+// kSilentAtFadeStarts times aFadeStart
 float DistanceGain(float aDistance, float aFadeStart) noexcept;
 
 // aPan is -1 (all left) to 1 (all right), constant power so a voice moving around doesn't change loudness

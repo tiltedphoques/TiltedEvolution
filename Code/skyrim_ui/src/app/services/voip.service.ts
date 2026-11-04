@@ -17,7 +17,7 @@ export interface VoipSettings {
   /** Empty plays on the game's (the Windows default) device. */
   outputDevice: string;
   channel: VoipChannel;
-  /** Full volume up to this distance in game units, silent at twice it. */
+  /** Full volume up to this distance in game units, then quieter like real sound, silent at four times it. */
   fadeStart: number;
   /** 0 to 100 */
   micVolume: number;
@@ -32,7 +32,7 @@ export const defaultVoipSettings: VoipSettings = {
   connect: false,
   outputDevice: '',
   channel: VoipChannel.EVERYONE,
-  fadeStart: 2500,
+  fadeStart: 2000,
   micVolume: 100,
   noiseGate: 5,
   masterVolume: 100,

@@ -105,7 +105,7 @@ export class SettingsComponent {
 
   updateVoipFade(event: Event): void {
     const value = Number((event.target as HTMLInputElement).value);
-    this.voipService.update({ fadeStart: isFinite(value) ? value : 2500 });
+    this.voipService.update({ fadeStart: isFinite(value) ? value : 2000 });
   }
 
   close() {

@@ -27,11 +27,20 @@ float DistanceGain(float aDistance, float aFadeStart) noexcept
     if (aDistance <= aFadeStart)
         return 1.f;
 
-    const float silentAt = aFadeStart * 2.f;
+    const float silentAt = aFadeStart * kSilentAtFadeStarts;
     if (aDistance >= silentAt)
         return 0.f;
 
-    return (silentAt - aDistance) / aFadeStart;
+    // Inverse square law: intensity falls with distance squared, so amplitude falls with distance, 6 dB per doubling
+    const float inverse = aFadeStart / aDistance;
+
+    // Ease the last stretch down to silence so a voice fades out instead of cutting off at the edge
+    const float taperFrom = aFadeStart * kTaperFromFadeStarts;
+    if (aDistance <= taperFrom)
+        return inverse;
+
+    const float t = (aDistance - taperFrom) / (silentAt - taperFrom);
+    return inverse * (1.f - t * t * (3.f - 2.f * t));
 }
 
 void PanGains(float aPan, float& aOutLeft, float& aOutRight) noexcept

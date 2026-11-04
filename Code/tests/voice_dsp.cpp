@@ -9,11 +9,25 @@ using namespace VoiceDsp;
 
 TEST_CASE("Voice distance falloff", "[voice.dsp]")
 {
-    REQUIRE(DistanceGain(0.f, 2500.f) == 1.f);
-    REQUIRE(DistanceGain(2500.f, 2500.f) == 1.f);
-    REQUIRE(DistanceGain(3750.f, 2500.f) == Approx(0.5f));
-    REQUIRE(DistanceGain(5000.f, 2500.f) == 0.f);
-    REQUIRE(DistanceGain(9000.f, 2500.f) == 0.f);
+    REQUIRE(DistanceGain(0.f, 2000.f) == 1.f);
+    REQUIRE(DistanceGain(2000.f, 2000.f) == 1.f);
+    // -6 dB per doubling: half the amplitude at twice the fade start, a third at three times before the taper
+    REQUIRE(DistanceGain(3000.f, 2000.f) == Approx(2.f / 3.f));
+    REQUIRE(DistanceGain(4000.f, 2000.f) == Approx(0.5f));
+    // Halfway through the taper the inverse law (1/3) is halved
+    REQUIRE(DistanceGain(6000.f, 2000.f) == Approx(1.f / 6.f));
+    REQUIRE(DistanceGain(8000.f, 2000.f) == 0.f);
+    REQUIRE(DistanceGain(9000.f, 2000.f) == 0.f);
+
+    // Never gets louder further away
+    float previous = 1.f;
+    for (float distance = 0.f; distance <= 8400.f; distance += 50.f)
+    {
+        const float gain = DistanceGain(distance, 2000.f);
+        REQUIRE(gain <= previous);
+        previous = gain;
+    }
+
     // A fade start of 0 would divide by zero, it means nobody is heard
     REQUIRE(DistanceGain(10.f, 0.f) == 0.f);
 }

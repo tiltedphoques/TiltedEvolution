@@ -135,7 +135,7 @@
         "CHANNEL_PARTY": "Party",
         "CHANNEL_STRANGERS": "Strangers",
         "FADE_START": "Voip fade start",
-        "FADE_HINT": "Full volume up to this distance, silent at {{ silent }} units"
+        "FADE_HINT": "Full volume up to this distance, then fades like real sound, silent at {{ silent }} units"
       },
       "PARTY": "Party",
       "SHOW_PARTY": "Show Party",

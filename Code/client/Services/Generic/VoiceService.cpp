@@ -195,7 +195,7 @@ void VoiceService::RefreshUi() noexcept
 void VoiceService::ApplySettings(const Settings& acSettings) noexcept
 {
     m_settings = acSettings;
-    m_settings.FadeStart = std::isfinite(m_settings.FadeStart) ? std::clamp(m_settings.FadeStart, 0.f, kMaxFadeStart) : 2500.f;
+    m_settings.FadeStart = std::isfinite(m_settings.FadeStart) ? std::clamp(m_settings.FadeStart, 0.f, kMaxFadeStart) : 2000.f;
     m_settings.MicVolume = Clamp01(m_settings.MicVolume, 1.f);
     m_settings.NoiseGate = Clamp01(m_settings.NoiseGate, 0.05f);
     m_settings.MasterVolume = VoiceDsp::ClampMasterVolume(m_settings.MasterVolume);
@@ -416,7 +416,7 @@ void VoiceService::LoadSettings() noexcept
             settings.Connect = ini.GetBoolValue(kSection, "bVoip", false);
             settings.OutputDevice = ini.GetValue(kSection, "sOutputDevice", "");
             settings.ListenChannel = ChannelFromString(ini.GetValue(kSection, "sVoipChannel", "everyone"));
-            settings.FadeStart = static_cast<float>(ini.GetDoubleValue(kSection, "fVoipFadeStart", 2500.0));
+            settings.FadeStart = static_cast<float>(ini.GetDoubleValue(kSection, "fVoipFadeStart", 2000.0));
             settings.MicVolume = static_cast<float>(ini.GetDoubleValue(kSection, "fMicVolume", 1.0));
             settings.NoiseGate = static_cast<float>(ini.GetDoubleValue(kSection, "fNoiseGate", 0.05));
             settings.MasterVolume = static_cast<float>(ini.GetDoubleValue(kSection, "fVoipMasterVolume", 1.0));
@@ -427,7 +427,7 @@ void VoiceService::LoadSettings() noexcept
         }
     }
 
-    settings.FadeStart = std::isfinite(settings.FadeStart) ? std::clamp(settings.FadeStart, 0.f, kMaxFadeStart) : 2500.f;
+    settings.FadeStart = std::isfinite(settings.FadeStart) ? std::clamp(settings.FadeStart, 0.f, kMaxFadeStart) : 2000.f;
     settings.MicVolume = Clamp01(settings.MicVolume, 1.f);
     settings.NoiseGate = Clamp01(settings.NoiseGate, 0.05f);
     settings.MasterVolume = VoiceDsp::ClampMasterVolume(settings.MasterVolume);
@@ -455,7 +455,7 @@ void VoiceService::SaveSettings() const noexcept
                      "; Built-in proximity voice chat. On a server: lets players talk to players nearby. For a player: the Connect to voip checkbox in Settings");
     ini.SetValue(kSection, "sOutputDevice", m_settings.OutputDevice.c_str(), "; Player: where voices play. Empty uses the Windows default device, like the game");
     ini.SetValue(kSection, "sVoipChannel", ChannelToString(m_settings.ListenChannel), "; Player: who you hear, everyone, party or strangers");
-    ini.SetDoubleValue(kSection, "fVoipFadeStart", m_settings.FadeStart, "; Player: voices are full volume up to this distance in game units, silent at twice it");
+    ini.SetDoubleValue(kSection, "fVoipFadeStart", m_settings.FadeStart, "; Player: voices are full volume up to this distance in game units, then -6 dB per doubling, silent at 4 times it");
     ini.SetDoubleValue(kSection, "fVoipMasterVolume", m_settings.MasterVolume, "; Player: all received voices, 0 to 5 (0-500%), default 1 (100%)");
     ini.SetDoubleValue(kSection, "fMicVolume", m_settings.MicVolume, "; Player: microphone volume, 0 to 1");
     ini.SetDoubleValue(kSection, "fNoiseGate", m_settings.NoiseGate, "; Player: microphone level below which nothing is sent, 0 to 1 like the Windows mic test bar");
