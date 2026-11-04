@@ -279,6 +279,40 @@ void TP_MAKE_THISCALL(HookUpdateMovementPrimary, Actor, float aDeltaTime)
     TiltedPhoques::ThisCall(s_updateMovementPrimary, apThis, aDeltaTime);
 }
 
+TP_THIS_FUNCTION(TIsFleeing, bool, Actor);
+TIsFleeing* s_isFleeing = nullptr;
+
+bool TP_MAKE_THISCALL(HookIsFleeing, Actor)
+{
+    if (apThis->GetExtension()->IsPlayer())
+        return false;
+
+    return TiltedPhoques::ThisCall(s_isFleeing, apThis);
+}
+
+TP_THIS_FUNCTION(TAddDeathItems, void, Actor);
+TAddDeathItems* s_addDeathItems = nullptr;
+
+// The owner adds death items and syncs the inventory.
+void TP_MAKE_THISCALL(HookAddDeathItems, Actor)
+{
+    if (apThis->GetExtension()->IsRemote())
+        return;
+
+    TiltedPhoques::ThisCall(s_addDeathItems, apThis);
+}
+
+TP_THIS_FUNCTION(TProcessResponse, void, AIProcess, void* apVoice, Actor* apTalkingActor, Actor* apTalkedToActor);
+TProcessResponse* s_processResponse = nullptr;
+
+void TP_MAKE_THISCALL(HookProcessResponse, AIProcess, void* apVoice, Actor* apTalkingActor, Actor* apTalkedToActor)
+{
+    if (apTalkingActor && apTalkingActor->GetExtension()->IsRemotePlayer())
+        return;
+
+    TiltedPhoques::ThisCall(s_processResponse, apThis, apVoice, apTalkingActor, apTalkedToActor);
+}
+
 TiltedPhoques::Initializer s_actorHooks(
     []()
     {
@@ -308,6 +342,18 @@ TiltedPhoques::Initializer s_actorHooks(
         static VersionDbPtr<TUpdateMovementPrimary> updateMovementPrimary(2229759);
         s_updateMovementPrimary = updateMovementPrimary.Get();
         TP_HOOK(&s_updateMovementPrimary, HookUpdateMovementPrimary);
+
+        static VersionDbPtr<TIsFleeing> isFleeing(2230011);
+        s_isFleeing = isFleeing.Get();
+        TP_HOOK(&s_isFleeing, HookIsFleeing);
+
+        static VersionDbPtr<TAddDeathItems> addDeathItems(2229588);
+        s_addDeathItems = addDeathItems.Get();
+        TP_HOOK(&s_addDeathItems, HookAddDeathItems);
+
+        static VersionDbPtr<TProcessResponse> processResponse(2232103);
+        s_processResponse = processResponse.Get();
+        TP_HOOK(&s_processResponse, HookProcessResponse);
     });
 }
 
