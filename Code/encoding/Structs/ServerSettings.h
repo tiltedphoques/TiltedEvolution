@@ -17,4 +17,6 @@ struct ServerSettings
     bool DeathSystemEnabled{};
     bool SyncPlayerCalendar{};
     bool AutoPartyJoin{};
+    // Built-in proximity voice chat, players also need Connect to voip on
+    bool VoipEnabled{};
 };

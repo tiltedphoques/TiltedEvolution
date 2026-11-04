@@ -117,6 +117,26 @@
       "AUDIO": "Audio",
       "MUTE_UI": "Mute User Interface",
       "UI_VOLUME": "User Interface Volume",
+      "VOICE": {
+        "HEADER": "Voice chat",
+        "INPUT_DEVICE": "Voip input device",
+        "INPUT_HINT": "None sends nothing, not even to test",
+        "INPUT_NONE": "None",
+        "INPUT_DEFAULT": "Windows default",
+        "CONNECT": "Connect to voip",
+        "CONNECT_HINT": "Hear and talk to nearby players on servers that allow it",
+        "OUTPUT_DEVICE": "Voip output device",
+        "MASTER_VOLUME": "Voice master volume",
+        "OUTPUT_HINT": "Default follows the game's sound device",
+        "OUTPUT_GAME": "Game audio device (same as the game)",
+        "CHANNEL": "Voip channel",
+        "CHANNEL_HINT": "Party: only your party. Strangers: everyone but your party, e.g. when your party is on Discord",
+        "CHANNEL_EVERYONE": "Everyone",
+        "CHANNEL_PARTY": "Party",
+        "CHANNEL_STRANGERS": "Strangers",
+        "FADE_START": "Voip fade start",
+        "FADE_HINT": "Full volume up to this distance, silent at {{ silent }} units"
+      },
       "PARTY": "Party",
       "SHOW_PARTY": "Show Party",
       "AUTO_HIDE_PARTY": "Auto Hide Party",
@@ -145,6 +165,17 @@
         "XL": "Extra Large"
       },
       "BACK": "Back"
+    },
+    "VOIP": {
+      "HEADER": "Voip",
+      "MIC_VOLUME": "Your microphone volume",
+      "NOISE_GATE": "Noise gate",
+      "NOISE_GATE_HINT": "Sound below the line is not sent.",
+      "NO_DEVICE_HINT": "Pick an input device in Settings to see your level.",
+      "NO_DEVICE": "No input device picked in Settings",
+      "SAVED_UNTIL_CONNECTED": "Saved, applies when Connected to Voip",
+      "PLAYER_VOLUME": "{{ name }} volume",
+      "MUTES_PLAYER": "0 mutes this player"
     }
   },
   "SERVICE": {

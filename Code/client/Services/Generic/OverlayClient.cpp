@@ -5,6 +5,7 @@
 
 #include <Services/OverlayClient.h>
 #include <Services/TransportService.h>
+#include <Services/VoiceService.h>
 
 #include <Messages/SendChatMessageRequest.h>
 #include <Messages/TeleportRequest.h>
@@ -82,6 +83,21 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessToggleDebugUI();
         else if (eventName == "openPlayGuide")
             ProcessOpenPlayGuide();
+        else if (eventName == "voiceRefresh")
+            World::Get().GetRunner().Queue([]() { World::Get().ctx().at<VoiceService>().RefreshUi(); });
+        else if (eventName == "setVoiceSettings")
+            ProcessSetVoiceSettings(eventArgs);
+        else if (eventName == "setVoicePlayerVolume")
+        {
+            const uint32_t playerId = eventArgs->GetInt(0);
+            const float volume = static_cast<float>(eventArgs->GetInt(1)) / 100.f;
+            World::Get().GetRunner().Queue([playerId, volume]() { World::Get().ctx().at<VoiceService>().SetPlayerVolume(playerId, volume); });
+        }
+        else if (eventName == "setVoiceMeter")
+        {
+            const bool enabled = eventArgs->GetInt(0) != 0;
+            World::Get().GetRunner().Queue([enabled]() { World::Get().ctx().at<VoiceService>().SetMeterEnabled(enabled); });
+        }
 
         return true;
     }
@@ -155,6 +171,26 @@ void OverlayClient::ProcessToggleDebugUI()
 void OverlayClient::ProcessOpenPlayGuide()
 {
     ShellExecuteW(nullptr, L"open", LR"(https://wiki.tiltedphoques.com/tilted-online/general-information/playguide)", nullptr, nullptr, SW_SHOWNORMAL);
+}
+
+// Numbers come as whole numbers from the UI: percentages for the volumes and units for the fade start
+void OverlayClient::ProcessSetVoiceSettings(CefRefPtr<CefListValue> aEventArgs)
+{
+    VoiceService::Settings settings{};
+    settings.InputDevice = aEventArgs->GetString(0).ToString().c_str();
+    settings.Connect = aEventArgs->GetInt(1) != 0;
+    settings.OutputDevice = aEventArgs->GetString(2).ToString().c_str();
+
+    const auto channel = aEventArgs->GetString(3).ToString();
+    settings.ListenChannel = channel == "party" ? VoiceService::Channel::kParty : channel == "strangers" ? VoiceService::Channel::kStrangers : VoiceService::Channel::kEveryone;
+
+    settings.FadeStart = static_cast<float>(aEventArgs->GetInt(4));
+    settings.MicVolume = static_cast<float>(aEventArgs->GetInt(5)) / 100.f;
+    settings.NoiseGate = static_cast<float>(aEventArgs->GetInt(6)) / 100.f;
+    if (aEventArgs->GetSize() > 7)
+        settings.MasterVolume = static_cast<float>(aEventArgs->GetInt(7)) / 100.f;
+
+    World::Get().GetRunner().Queue([settings]() { World::Get().ctx().at<VoiceService>().ApplySettings(settings); });
 }
 
 void OverlayClient::SetUIVisible(bool aVisible) noexcept

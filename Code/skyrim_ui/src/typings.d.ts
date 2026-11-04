@@ -96,6 +96,30 @@ declare namespace SkyrimTogetherTypes {
   type PartyInviteReceivedCallback = (inviterId: number) => void;
 
   type QuestUpdatedCallback = () => void;
+
+  /** Voice chat settings, as saved in the player's STServer.ini. Volumes are 0 to 100. */
+  type VoiceSettingsCallback = (
+    inputDevice: string,
+    connect: number,
+    outputDevice: string,
+    channel: string,
+    fadeStart: number,
+    micVolume: number,
+    noiseGate: number,
+    masterVolume: number,
+  ) => void;
+
+  /** Audio devices Windows knows about, by name. */
+  type VoiceDevicesCallback = (
+    inputs: Array<string>,
+    outputs: Array<string>,
+  ) => void;
+
+  /** Players whose voice is getting through their noise gate right now. */
+  type VoiceTalkingCallback = (playerIds: Array<number>) => void;
+
+  /** The local microphone's peak level, 0 to 100, while the meter is on. */
+  type VoiceMicLevelCallback = (level: number) => void;
 }
 
 /** Global Skyrim: Together object. */
@@ -449,4 +473,51 @@ interface SkyrimTogether {
    * Open the play guide on the wiki in the default browser.
    */
   openPlayGuide(): void;
+
+  /** Add listener to voice chat settings. */
+  on(
+    event: 'voiceSettings',
+    callback: SkyrimTogetherTypes.VoiceSettingsCallback,
+  ): void;
+
+  /** Add listener to the audio device lists. */
+  on(
+    event: 'voiceDevices',
+    callback: SkyrimTogetherTypes.VoiceDevicesCallback,
+  ): void;
+
+  /** Add listener to who is talking. */
+  on(
+    event: 'voiceTalking',
+    callback: SkyrimTogetherTypes.VoiceTalkingCallback,
+  ): void;
+
+  /** Add listener to the local microphone level. */
+  on(
+    event: 'voiceMicLevel',
+    callback: SkyrimTogetherTypes.VoiceMicLevelCallback,
+  ): void;
+
+  /** Re-read the voice settings and audio devices, they arrive as voiceSettings and voiceDevices. */
+  voiceRefresh(): void;
+
+  /**
+   * Save and apply voice chat settings. Numbers are whole numbers: volumes 0 to 100, the fade start in game units.
+   */
+  setVoiceSettings(
+    inputDevice: string,
+    connect: number,
+    outputDevice: string,
+    channel: string,
+    fadeStart: number,
+    micVolume: number,
+    noiseGate: number,
+    masterVolume: number,
+  ): void;
+
+  /** Volume of one player's voice, 0 to 100. */
+  setVoicePlayerVolume(playerId: number, volume: number): void;
+
+  /** Turn the microphone meter on (1) or off (0). */
+  setVoiceMeter(enabled: number): void;
 }

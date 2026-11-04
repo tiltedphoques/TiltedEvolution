@@ -12,6 +12,11 @@ import { Sound, SoundService } from '../../services/sound.service';
 import { environment } from 'src/environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { ClientService } from 'src/app/services/client.service';
+import {
+  VoipChannel,
+  VoipService,
+  VoipSettings,
+} from 'src/app/services/voip.service';
 
 @Component({
   selector: 'app-settings',
@@ -46,6 +51,21 @@ export class SettingsComponent {
     },
   ];
   readonly availableAutoHideTimes = autoHideTimerLengths;
+  readonly availableVoipChannels: { id: VoipChannel; label: string }[] = [
+    {
+      id: VoipChannel.EVERYONE,
+      label: 'COMPONENT.SETTINGS.VOICE.CHANNEL_EVERYONE',
+    },
+    { id: VoipChannel.PARTY, label: 'COMPONENT.SETTINGS.VOICE.CHANNEL_PARTY' },
+    {
+      id: VoipChannel.STRANGERS,
+      label: 'COMPONENT.SETTINGS.VOICE.CHANNEL_STRANGERS',
+    },
+  ];
+
+  readonly voipSettings$ = this.voipService.settings;
+  readonly inputDevices$ = this.voipService.inputDevices;
+  readonly outputDevices$ = this.voipService.outputDevices;
 
   public settings = this.settingService.settings;
   public autoHideTime: number;
@@ -68,12 +88,24 @@ export class SettingsComponent {
     private readonly translocoService: TranslocoService,
     private readonly http: HttpClient,
     private readonly client: ClientService,
+    private readonly voipService: VoipService,
   ) {
     this.clientVersion$ = this.client.versionSet.pipe(map(version => version.split('-')[0]));
   }
 
   ngOnInit(): void {
     this.isVersionOutdated = this.isGameVersionOutdated();
+    // Picks up ini edits made while the game runs and devices plugged in since
+    this.voipService.refresh();
+  }
+
+  updateVoip(changes: Partial<VoipSettings>): void {
+    this.voipService.update(changes);
+  }
+
+  updateVoipFade(event: Event): void {
+    const value = Number((event.target as HTMLInputElement).value);
+    this.voipService.update({ fadeStart: isFinite(value) ? value : 2000 });
   }
 
   close() {

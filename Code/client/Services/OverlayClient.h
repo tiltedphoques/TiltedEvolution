@@ -30,6 +30,7 @@ private:
     void ProcessTeleportMessage(CefRefPtr<CefListValue> aEventArgs);
     void ProcessToggleDebugUI();
     void ProcessOpenPlayGuide();
+    void ProcessSetVoiceSettings(CefRefPtr<CefListValue> aEventArgs);
     void SetUIVisible(bool aVisible) noexcept;
 
     TransportService& m_transport;

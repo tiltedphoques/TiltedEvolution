@@ -26,6 +26,8 @@ target(name)
         local uidir = path.join(target:scriptdir(), "..", "skyrim_ui", "src")
         os.cp(path.join(uidir, "assets", "images", "cursor.dds"), path.join(target:installdir(), "bin", "assets", "images", "cursor.dds"))
         os.cp(path.join(uidir, "assets", "images", "cursor.png"), path.join(target:installdir(), "bin", "assets", "images", "cursor.png"))
+        -- licence notices of bundled libraries (Opus asks for its notice to ship with the binaries)
+        os.cp(path.join(target:scriptdir(), "..", "..", "THIRD_PARTY_NOTICES.txt"), path.join(target:installdir(), "bin", "THIRD_PARTY_NOTICES.txt"))
         os.rm(path.join(target:installdir(), "bin", "**Tests.exe"))
     end)
 
@@ -59,7 +61,9 @@ target(name)
         "entt",
         "glm",
         "mem",
-        "xbyak")
+        "xbyak",
+        "libopus",
+        "miniaudio")
 
     add_syslinks(
         "version",

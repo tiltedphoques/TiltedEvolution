@@ -29,6 +29,18 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
   private showEvents = true;
   private localPlayerId: number;
   public readonly players$ = playerStore.pipe(selectAllEntities());
+  private voiceSettings: [
+    string,
+    number,
+    string,
+    string,
+    number,
+    number,
+    number,
+    number,
+  ] = ['', 0, '', 'everyone', 2000, 100, 5, 100];
+  private voiceMeterTimer: ReturnType<typeof setInterval> | undefined;
+  private voiceTalkingTimer: ReturnType<typeof setInterval> | undefined;
 
   connect(host: string, port: number, password: string): void {
     if (!this.connected) {
@@ -308,6 +320,80 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
         .map(p => p.id),
       this.localPlayerId,
     );
+  }
+
+  voiceRefresh(): void {
+    this.emit(
+      'voiceDevices',
+      [
+        'Microphone (Realtek High Definition Audio)',
+        'Headset Microphone (HyperX Cloud II)',
+      ],
+      [
+        'Speakers (Realtek High Definition Audio)',
+        'Headphones (HyperX Cloud II)',
+      ],
+    );
+    this.emit('voiceSettings', ...this.voiceSettings);
+  }
+
+  setVoiceSettings(
+    inputDevice: string,
+    connect: number,
+    outputDevice: string,
+    channel: string,
+    fadeStart: number,
+    micVolume: number,
+    noiseGate: number,
+    masterVolume: number,
+  ): void {
+    this.voiceSettings = [
+      inputDevice,
+      connect,
+      outputDevice,
+      channel,
+      fadeStart,
+      micVolume,
+      noiseGate,
+      masterVolume,
+    ];
+    this.emit('voiceSettings', ...this.voiceSettings);
+
+    // Pretend some connected players talk now and then
+    clearInterval(this.voiceTalkingTimer);
+    this.voiceTalkingTimer = undefined;
+    if (connect) {
+      let tick = 0;
+      this.voiceTalkingTimer = setInterval(() => {
+        tick++;
+        const ids = playerStore
+          .query(getAllEntities())
+          .filter((p, i) => (tick + i * 3) % 7 < 4)
+          .map(p => p.id);
+        this.emit('voiceTalking', ids);
+      }, 500);
+    } else {
+      this.emit('voiceTalking', []);
+    }
+  }
+
+  setVoicePlayerVolume(playerId: number, volume: number): void {}
+
+  setVoiceMeter(enabled: number): void {
+    clearInterval(this.voiceMeterTimer);
+    this.voiceMeterTimer = undefined;
+    if (enabled && this.voiceSettings[0] !== '') {
+      let tick = 0;
+      this.voiceMeterTimer = setInterval(() => {
+        tick++;
+        const speaking = tick % 40 < 22;
+        const raw = speaking ? 25 + Math.random() * 45 : 2 + Math.random() * 7;
+        this.emit(
+          'voiceMicLevel',
+          Math.round((raw * this.voiceSettings[5]) / 100),
+        );
+      }, 90);
+    }
   }
 
   openPlayGuide(): void {

@@ -69,6 +69,7 @@
             <th>
               {{ 'COMPONENT.PARTY_MENU.TABLE_HEADERS.LEVEL' | transloco }}
             </th>
+            <th class="voip-col"><app-voip-mic></app-voip-mic></th>
             <th>{{ 'COMPONENT.PARTY_MENU.TABLE_HEADERS.NAME' | transloco }}</th>
             <th>
               {{ 'COMPONENT.PARTY_MENU.TABLE_HEADERS.LOCATION' | transloco }}
@@ -79,6 +80,13 @@
         <tbody>
           <tr *ngFor="let player of members$ | async">
             <td>{{ player.level }}</td>
+            <td class="voip-col">
+              <app-voip-speaker
+                [playerId]="player.id"
+                [playerName]="player.name"
+                [isMember]="true"
+              ></app-voip-speaker>
+            </td>
             <td>{{ player.name }}</td>
             <td>{{ player.cellName }}</td>
             <td>

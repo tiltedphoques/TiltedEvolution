@@ -6,6 +6,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { VoipMicComponent } from './components/voip/voip-mic.component';
+import { VoipSpeakerComponent } from './components/voip/voip-speaker.component';
 import { environment } from '../environments/environment';
 import { ActionButtonsComponent } from './components/action-buttons/action-buttons.component';
 import { ChatComponent } from './components/chat/chat.component';
@@ -71,6 +73,8 @@ import { TranslocoRootModule } from './transloco-root.module';
     ServerListComponent,
     SettingsComponent,
     ToggleComponent,
+    VoipMicComponent,
+    VoipSpeakerComponent,
     WindowComponent,
 
     CheckboxDirective,
