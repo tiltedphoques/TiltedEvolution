@@ -20,6 +20,7 @@ struct EffectItem
     bool IsWerewolfEffect() const noexcept;
     bool IsVampireLordEffect() const noexcept;
     bool IsNightVisionEffect() const noexcept;
+    bool IsDetectLifeEffect() const noexcept;
 
     EffectItemData data;
     uint32_t padC;
