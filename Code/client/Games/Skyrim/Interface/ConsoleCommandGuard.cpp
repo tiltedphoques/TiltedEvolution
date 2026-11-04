@@ -1,56 +1,69 @@
 #include <TiltedOnlinePCH.h>
 
 #include <World.h>
+#include <Interface/IMenu.h>
 
-// Lets a server turn off console commands that players type and send with Enter (Gameplay:bAllowConsoleCommands).
-// The console still opens, so clicking a reference to read its id keeps working, and commands that code runs
-// (ConsoleUtil, Papyrus ExecuteCommand, the F2 chat /wave) are untouched: none of them go through this callback.
+// Refuses typed console commands while connected to a server with Gameplay:bAllowConsoleCommands off.
+// Commands run by code (ConsoleUtil, Papyrus ExecuteCommand) don't go through this callback.
 //
-// Engine notes, checked in the 1.6.1170 and 1.7.104 databases (same bodies, only the addresses differ):
-// - 51083 is the Console menu's FxDelegate Accept; it registers "ExecuteCommand" -> 51084.
-// - 51084 is that callback, void(const FxDelegateArgs&). It builds a Script from the typed line (Script::SetText,
-//   21883) and queues a task that compiles and runs it later. It echoes nothing and keeps no history itself.
-// - 51109 is ConsoleLog::Print(ConsoleLog*, const char* fmt, ...), 401203 the ConsoleLog* singleton.
+// 51084 is the Console menu's "ExecuteCommand" callback (registered by 51083). It queues the typed line as a
+// Script to be compiled and run later. 51109 is ConsoleLog::Print, 401203 the ConsoleLog singleton.
 
 namespace
 {
-// Minimal Scaleform layouts used by the callback (CommonLibSSE-NG GFxValue / FxDelegateArgs).
-struct GFxValueRaw
-{
-    void* pObjectInterface; // 00
-    uint32_t type;          // 08
-    uint32_t pad0C;         // 0C
-    void* pValue;           // 10
+// Commands that stay allowed while typed commands are turned off, by short and full name.
+constexpr std::string_view kAllowedCommands[]{
+    "tcl", "ToggleCollision",
+    "tfc", "ToggleFreeCamera",
+    "tgm", "ToggleGodMode",
+    "tm",  "ToggleMenus",
+    "coc", "CenterOnCell",
 };
-static_assert(sizeof(GFxValueRaw) == 0x18);
 
-struct FxDelegateArgsRaw
+bool EqualsIgnoreCase(std::string_view aLhs, std::string_view aRhs) noexcept
 {
-    GFxValueRaw responseId;    // 00
-    void* pHandler;            // 18
-    void* pMovie;              // 20
-    const GFxValueRaw* pArgs;  // 28
-    uint32_t numArgs;          // 30
-};
-static_assert(offsetof(FxDelegateArgsRaw, pArgs) == 0x28);
+    return aLhs.size() == aRhs.size() && _strnicmp(aLhs.data(), aRhs.data(), aLhs.size()) == 0;
+}
 
-constexpr uint32_t kGFxTypeString = 4;
-constexpr uint32_t kGFxManagedBit = 0x40;
-
-const char* GetTypedLine(const FxDelegateArgsRaw& acArgs) noexcept
+bool IsSpace(char aChar) noexcept
 {
-    if (!acArgs.pArgs || acArgs.numArgs == 0)
+    return aChar == ' ' || aChar == '\t';
+}
+
+// Only the command name is checked. A reference prefix ("player.tcl") isn't allowed, so the command can't be
+// aimed at another reference.
+bool IsAllowedCommand(std::string_view aLine) noexcept
+{
+    if (aLine.find_first_of("\r\n") != std::string_view::npos)
+        return false;
+
+    while (!aLine.empty() && IsSpace(aLine.front()))
+        aLine.remove_prefix(1);
+
+    size_t nameLength = 0;
+    while (nameLength < aLine.size() && !IsSpace(aLine[nameLength]))
+        ++nameLength;
+
+    const std::string_view cName = aLine.substr(0, nameLength);
+    for (const std::string_view cAllowed : kAllowedCommands)
+    {
+        if (EqualsIgnoreCase(cName, cAllowed))
+            return true;
+    }
+
+    return false;
+}
+
+const char* GetTypedLine(const FxDelegateArgs* apArgs) noexcept
+{
+    if (!apArgs || !apArgs->pArgs || apArgs->GetArgCount() == 0)
         return nullptr;
 
-    const GFxValueRaw& cValue = acArgs.pArgs[0];
-    if ((cValue.type & 0x8F) != kGFxTypeString || !cValue.pValue)
+    const GFxValue& cValue = (*apArgs)[0];
+    if (!cValue.IsString() || !cValue.value.pObject)
         return nullptr;
 
-    // A managed string holds a pointer to the string's data pointer.
-    if (cValue.type & kGFxManagedBit)
-        return *static_cast<const char* const*>(cValue.pValue);
-
-    return static_cast<const char*>(cValue.pValue);
+    return cValue.GetString();
 }
 
 void PrintToConsole(const char* acpText) noexcept
@@ -71,18 +84,24 @@ bool AreTypedCommandsBlocked() noexcept
 }
 } // namespace
 
-using TExecuteCommand = void(const FxDelegateArgsRaw&);
+using TExecuteCommand = void(const FxDelegateArgs* apArgs);
 static TExecuteCommand* RealExecuteCommand = nullptr;
 
-static void HookExecuteCommand(const FxDelegateArgsRaw& acArgs)
+static void HookExecuteCommand(const FxDelegateArgs* apArgs)
 {
     if (!AreTypedCommandsBlocked())
     {
-        RealExecuteCommand(acArgs);
+        RealExecuteCommand(apArgs);
         return;
     }
 
-    const char* cpLine = GetTypedLine(acArgs);
+    const char* cpLine = GetTypedLine(apArgs);
+    if (cpLine && IsAllowedCommand(cpLine))
+    {
+        RealExecuteCommand(apArgs);
+        return;
+    }
+
     spdlog::info("Console command refused, the server has turned console commands off: {}", cpLine ? cpLine : "<none>");
     PrintToConsole("Console commands are turned off on this server.");
 }

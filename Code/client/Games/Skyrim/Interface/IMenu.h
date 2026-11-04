@@ -76,9 +76,71 @@ struct GStatGroups
     };
 };
 
+// Layout from powerof3's CommonLibSSE (RE/G/GFxValue.h).
+struct GFxValue
+{
+    enum ValueType : uint32_t
+    {
+        kUndefined = 0x00,
+        kNull = 0x01,
+        kBoolean = 0x02,
+        kNumber = 0x03,
+        kString = 0x04,
+        kStringW = 0x05,
+        kObject = 0x06,
+        kArray = 0x07,
+        kDisplayObject = 0x08,
+
+        kManagedBit = 1 << 6,
+        kConvertBit = 1 << 7,
+        kValueMask = 0x0F,
+        kTypeMask = kConvertBit | kValueMask,
+    };
+
+    [[nodiscard]] uint32_t GetType() const noexcept { return type & kTypeMask; }
+    [[nodiscard]] bool IsString() const noexcept { return GetType() == kString; }
+    [[nodiscard]] const char* GetString() const noexcept { return (type & kManagedBit) ? *value.pManagedString : value.pString; }
+
+    union ValueUnion
+    {
+        double number;
+        bool boolean;
+        const char* pString;
+        const char** pManagedString;
+        const wchar_t* pWideString;
+        const wchar_t** pManagedWideString;
+        void* pObject;
+    };
+    static_assert(sizeof(ValueUnion) == 0x8);
+
+    void* pObjectInterface; // 00
+    uint32_t type;          // 08
+    uint32_t pad0C;         // 0C
+    ValueUnion value;       // 10
+};
+static_assert(sizeof(GFxValue) == 0x18);
+
+struct FxDelegateHandler;
+
+// Layout from powerof3's CommonLibSSE (RE/F/FxDelegateArgs.h).
+struct FxDelegateArgs
+{
+    [[nodiscard]] uint32_t GetArgCount() const noexcept { return numArgs; }
+    [[nodiscard]] const GFxValue& operator[](uint32_t aIndex) const noexcept { return pArgs[aIndex]; }
+
+    GFxValue responseId;          // 00
+    FxDelegateHandler* pHandler;  // 18
+    void* pMovieView;             // 20
+    const GFxValue* pArgs;        // 28
+    uint32_t numArgs;             // 30
+    uint32_t pad34;               // 34
+};
+static_assert(offsetof(FxDelegateArgs, pArgs) == 0x28);
+static_assert(sizeof(FxDelegateArgs) == 0x38);
+
 struct FxDelegateHandler : GRefCountBase<FxDelegateHandler, GStatGroups::kGStat_Default_Mem>
 {
-    using CallbackFn = void(const void*);
+    using CallbackFn = void(const FxDelegateArgs* apArgs);
 
     class CallbackProcessor
     {
