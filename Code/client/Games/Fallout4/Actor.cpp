@@ -10,6 +10,7 @@
 #include <Games/Overrides.h>
 #include <Forms/TESFaction.h>
 #include <AI/AIProcess.h>
+#include <Havok/bhkCharacterController.h>
 #include <Misc/MiddleProcess.h>
 #include <ExtraData/ExtraFactionChanges.h>
 #include <Magic/ActorMagicCaster.h>
@@ -258,6 +259,26 @@ bool TP_MAKE_THISCALL(HookPlayerPickUpObject, Actor, TESObjectREFR* apObject, in
     return TiltedPhoques::ThisCall(s_playerPickUpObject, apThis, apObject, aCount, aPlaySounds);
 }
 
+TP_THIS_FUNCTION(TUpdateMovementPrimary, void, Actor, float);
+TUpdateMovementPrimary* s_updateMovementPrimary = nullptr;
+
+// Remote actors replay the owner's movement, so skip local movement but keep the
+// controller step valid for ForcePosition.
+void TP_MAKE_THISCALL(HookUpdateMovementPrimary, Actor, float aDeltaTime)
+{
+    if (apThis->GetExtension()->IsRemote())
+    {
+        if (apThis->currentProcess)
+        {
+            if (auto* pController = apThis->currentProcess->GetCharController())
+                pController->UpdateStepTiming(aDeltaTime);
+        }
+        return;
+    }
+
+    TiltedPhoques::ThisCall(s_updateMovementPrimary, apThis, aDeltaTime);
+}
+
 TiltedPhoques::Initializer s_actorHooks(
     []()
     {
@@ -283,6 +304,10 @@ TiltedPhoques::Initializer s_actorHooks(
         static VersionDbPtr<TModActorValue> modActorValue(2230987);
         s_modActorValue = modActorValue.Get();
         TP_HOOK(&s_modActorValue, HookModActorValue);
+
+        static VersionDbPtr<TUpdateMovementPrimary> updateMovementPrimary(2229759);
+        s_updateMovementPrimary = updateMovementPrimary.Get();
+        TP_HOOK(&s_updateMovementPrimary, HookUpdateMovementPrimary);
     });
 }
 
@@ -337,7 +362,16 @@ bool Actor::RemoveSpell(MagicItem* apSpell) noexcept
 void Actor::ForcePosition(const NiPoint3& acPosition) noexcept
 {
     ScopedReferencesOverride recursionGuard;
-    SetPosition(acPosition, true);
+
+    bool updateController = true;
+    if (GetExtension()->IsRemote() && currentProcess)
+    {
+        // A new controller can be positioned before its first movement update, without a step
+        if (auto* pController = currentProcess->GetCharController())
+            updateController = pController->UpdateStepTiming();
+    }
+
+    SetPosition(acPosition, updateController);
 }
 
 void Actor::Kill() noexcept

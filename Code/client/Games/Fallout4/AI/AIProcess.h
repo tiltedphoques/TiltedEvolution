@@ -2,10 +2,12 @@
 
 struct Actor;
 struct MiddleProcess;
+struct bhkCharacterController;
 
 // Fallout 4 AIProcess: 0xE8. Middle-low, middle-high and high process data.
 struct AIProcess
 {
+    bhkCharacterController* GetCharController() noexcept;
     void KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, float afMagnitude) noexcept;
 
     void* middleLowProcess;       // 0x00
