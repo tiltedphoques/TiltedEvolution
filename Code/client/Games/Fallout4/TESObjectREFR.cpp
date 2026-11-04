@@ -3,6 +3,7 @@
 #include <TESObjectREFR.h>
 #include <Forms/TESObjectCELL.h>
 #include <Actor.h>
+#include <Games/ActorExtension.h>
 #include <PlayerCharacter.h>
 #include <EquipManager.h>
 #include <Games/Overrides.h>
@@ -613,6 +614,48 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveItem, TESObjectREFR, 
 
     return TiltedPhoques::ThisCall(RealRemoveItem, apThis, apResult, apData);
 }
+
+// Remote actors only move through interpolation, which sets ScopedReferencesOverride.
+bool IsRemoteActor(TESObjectREFR* apRef) noexcept
+{
+    if (apRef->formType != FormType::Character || ScopedReferencesOverride::IsOverriden())
+        return false;
+
+    return static_cast<Actor*>(apRef)->GetExtension()->IsRemote();
+}
+
+TP_THIS_FUNCTION(TSetLocation, bool, TESObjectREFR, const NiPoint3&);
+TP_THIS_FUNCTION(TSetAngle, void, TESObjectREFR, float);
+static TSetLocation* RealSetLocation = nullptr;
+static TSetAngle* RealSetAngleX = nullptr;
+static TSetAngle* RealSetAngleY = nullptr;
+static TSetAngle* RealSetAngleZ = nullptr;
+
+bool TP_MAKE_THISCALL(HookSetLocation, TESObjectREFR, const NiPoint3& acPosition)
+{
+    if (IsRemoteActor(apThis))
+        return true;
+
+    return TiltedPhoques::ThisCall(RealSetLocation, apThis, acPosition);
+}
+
+void TP_MAKE_THISCALL(HookSetAngleX, TESObjectREFR, float aAngle)
+{
+    if (!IsRemoteActor(apThis))
+        TiltedPhoques::ThisCall(RealSetAngleX, apThis, aAngle);
+}
+
+void TP_MAKE_THISCALL(HookSetAngleY, TESObjectREFR, float aAngle)
+{
+    if (!IsRemoteActor(apThis))
+        TiltedPhoques::ThisCall(RealSetAngleY, apThis, aAngle);
+}
+
+void TP_MAKE_THISCALL(HookSetAngleZ, TESObjectREFR, float aAngle)
+{
+    if (!IsRemoteActor(apThis))
+        TiltedPhoques::ThisCall(RealSetAngleZ, apThis, aAngle);
+}
 } // namespace
 
 static TiltedPhoques::Initializer s_referenceHooks(
@@ -632,4 +675,20 @@ static TiltedPhoques::Initializer s_referenceHooks(
         TP_HOOK(&RealAddLockChange, HookAddLockChange);
         TP_HOOK(&RealAddObjectToContainer, HookAddObjectToContainer);
         TP_HOOK(&RealRemoveItem, HookRemoveItem);
+
+        // TESObjectREFR::SetLocationOnReference and SetAngleOnReferenceX/Y/Z
+        static VersionDbPtr<TSetLocation> setLocation(2201138);
+        static VersionDbPtr<TSetAngle> setAngleX(2201135);
+        static VersionDbPtr<TSetAngle> setAngleY(2201136);
+        static VersionDbPtr<TSetAngle> setAngleZ(2201137);
+
+        RealSetLocation = setLocation.Get();
+        RealSetAngleX = setAngleX.Get();
+        RealSetAngleY = setAngleY.Get();
+        RealSetAngleZ = setAngleZ.Get();
+
+        TP_HOOK(&RealSetLocation, HookSetLocation);
+        TP_HOOK(&RealSetAngleX, HookSetAngleX);
+        TP_HOOK(&RealSetAngleY, HookSetAngleY);
+        TP_HOOK(&RealSetAngleZ, HookSetAngleZ);
     });
