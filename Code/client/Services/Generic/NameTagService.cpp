@@ -316,8 +316,12 @@ void NameTagService::OnDraw() noexcept
 
         if (isLeader)
         {
-            // Same icon as the party widget, a square crownWidth wide, centred on the text.
-            const ImVec2 origin(contentPos.x, contentPos.y + (textSize.y - crownWidth) * 0.5f);
+            // Same icon as the party widget, a square crownWidth wide. The line height includes room for
+            // accents and descenders, so centre the crown on the capital letters instead of on the line.
+            float textCenterY = textSize.y * 0.5f;
+            if (const ImFontGlyph* pCapital = font->FindGlyph('H'))
+                textCenterY = (pCapital->Y0 + pCapital->Y1) * 0.5f * (fontSize / font->FontSize);
+            const ImVec2 origin(contentPos.x, contentPos.y + textCenterY - crownWidth * 0.5f);
             DrawPartyCrown(drawList, ImVec2(origin.x + 1.f, origin.y + 1.f), crownWidth, shadowColor);
             DrawPartyCrown(drawList, origin, crownWidth, ColorWithAlpha(ImVec4(0.95f, 0.95f, 0.95f, 1.f), alpha));
         }

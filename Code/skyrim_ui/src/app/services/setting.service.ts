@@ -209,22 +209,22 @@ export class SettingService {
     nameFadeStart: new SliderSetting(
       this.storeService,
       'playerUi_nameFadeStart',
-      3000,
+      2000,
     ),
     nameInvisible: new SliderSetting(
       this.storeService,
       'playerUi_nameInvisible',
-      5000,
+      8000,
     ),
     partyFadeStart: new SliderSetting(
       this.storeService,
       'playerUi_partyFadeStart',
-      3000,
+      2000,
     ),
     partyInvisible: new SliderSetting(
       this.storeService,
       'playerUi_partyInvisible',
-      5000,
+      8000,
     ),
   };
 
