@@ -625,7 +625,20 @@ bool QuestService::StopQuest(uint32_t aformId)
 }
 
 #if defined(TP_FALLOUT4)
-static constexpr std::array<uint32_t, 0> kNonSyncableQuestIds{};
+static constexpr std::array kNonSyncableQuestIds = std::to_array<uint32_t>({
+    0x21666E, // Achievements
+    0x21666D, // Achievements_LevelUpCheck
+    0x80E,    // HC_Manager, survival mode needs
+    0x89C,    // HC_ChangeLocationRainingHandler
+    0x160147, // Tutorial
+    0x2407D8, // Tutorial_PerkMessage
+    0x1A5096, // WorkshopTutorial
+    0x4A09E,  // PerksQuest
+    0x1D33DA, // GhoulishPerkManager
+    0xCF78E,  // modskill_CraftingPerksQuest
+    0x211C2D, // PlayerLockpickSuccess
+    0x1C5099, // CompanionAffinity
+});
 #else
 static constexpr std::array kNonSyncableQuestIds = std::to_array<uint32_t>({
     0x2BA16,   // Werewolf transformation quest
