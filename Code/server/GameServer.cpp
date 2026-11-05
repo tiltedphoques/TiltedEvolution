@@ -41,6 +41,7 @@ Console::Setting bEnableDeathSystem{"Gameplay:bEnableDeathSystem", "Enables the 
 Console::Setting uTimeScale{"Gameplay:uTimeScale", "How many seconds pass ingame for every real second (0 to 1000). Changing this can make the game unstable", 20u};
 Console::Setting bSyncPlayerCalendar{"Gameplay:bSyncPlayerCalendar", "Syncs up all player calendars to be the same day, month, and year. This uses the date of the player with the furthest ahead date at connection.", false};
 Console::Setting bAutoPartyJoin{"Gameplay:bAutoPartyJoin", "Join parties automatically, as long as there is only one party in the server", true};
+Console::Setting bAllowConsoleCommands{"Gameplay:bAllowConsoleCommands", "Lets players run console commands they type while connected. Turn it off to stop console trolling such as spawning enemies or killing NPCs. The console still opens for reading ids, and mods can still run commands", true};
 // ModPolicy Stuff
 Console::Setting bEnableModCheck{"ModPolicy:bEnableModCheck", "Refuse clients whose mods do not match Data/loadorder.txt", false, Console::SettingsFlags::kLocked};
 Console::Setting bAllowSKSE{"ModPolicy:bAllowSKSE", "Allow players using SKSE to join. Applies even when bEnableModCheck is off", true, Console::SettingsFlags::kLocked};
@@ -61,6 +62,15 @@ Console::Command<> TogglePvp(
     {
         bEnablePvp = !bEnablePvp;
         spdlog::get("ConOut")->info("PvP has been {}.", bEnablePvp == true ? "enabled" : "disabled");
+        GameServer::Get()->UpdateSettings();
+    });
+
+Console::Command<> ToggleConsoleCommands(
+    "ToggleConsoleCommands", "Toggle whether players can run console commands they type",
+    [](Console::ArgStack&)
+    {
+        bAllowConsoleCommands = !bAllowConsoleCommands;
+        spdlog::get("ConOut")->info("Typed console commands have been {}.", bAllowConsoleCommands == true ? "allowed" : "turned off");
         GameServer::Get()->UpdateSettings();
     });
 
@@ -141,6 +151,7 @@ ServerSettings GetSettings()
     settings.DeathSystemEnabled = bEnableDeathSystem;
     settings.SyncPlayerCalendar = bSyncPlayerCalendar;
     settings.AutoPartyJoin = bAutoPartyJoin;
+    settings.ConsoleCommandsAllowed = bAllowConsoleCommands;
     return settings;
 }
 
