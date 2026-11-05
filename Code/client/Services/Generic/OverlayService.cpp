@@ -67,6 +67,27 @@ private:
     RenderSystemD3D11* m_pRenderSystem;
 };
 
+/**
+ * @brief Makes CEF draw the UI on the CPU instead of the GPU.
+ *
+ * On the GPU, CEF copies every frame back to memory for OnPaint, and that waits behind the game's frames when
+ * the game keeps the GPU busy: CEF drops UI frames and the UI shows up half drawn.
+ */
+struct CpuRenderedOverlayApp final : OverlayApp
+{
+    using OverlayApp::OverlayApp;
+
+    void OnBeforeCommandLineProcessing(const CefString& acProcessType, CefRefPtr<CefCommandLine> apCommandLine) override
+    {
+        OverlayApp::OnBeforeCommandLineProcessing(acProcessType, apCommandLine);
+
+        apCommandLine->AppendSwitch("disable-gpu");
+        apCommandLine->AppendSwitch("disable-gpu-compositing");
+
+        spdlog::info("Overlay: CEF draws the UI on the CPU (disable-gpu, disable-gpu-compositing)");
+    }
+};
+
 String GetCellName(const GameId& aWorldSpaceId, const GameId& aCellId) noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
@@ -136,7 +157,7 @@ OverlayService::~OverlayService() noexcept
 void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
 {
     m_pProvider = TiltedPhoques::MakeUnique<D3D11RenderProvider>(apRenderSystem);
-    m_pOverlay = new OverlayApp(m_pProvider.get(), new ::OverlayClient(m_transport, m_pProvider->Create()));
+    m_pOverlay = new CpuRenderedOverlayApp(m_pProvider.get(), new ::OverlayClient(m_transport, m_pProvider->Create()));
 
     if (!m_pOverlay->Initialize())
     {
