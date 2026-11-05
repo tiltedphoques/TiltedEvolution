@@ -162,15 +162,18 @@ void OverlayClient::ProcessOpenPlayGuide()
 void OverlayClient::ProcessPingServersMessage(CefRefPtr<CefListValue> aEventArgs)
 {
     auto pServers = aEventArgs->GetList(0);
+    if (!pServers)
+        return;
+
+    OverlayService::ServerAddresses servers;
     for (size_t i = 0; i < pServers->GetSize(); ++i)
     {
         auto pServer = pServers->GetList(i);
-        const uint32_t cId = pServer->GetInt(0);
-        std::string ip = pServer->GetString(1);
-        const uint16_t cPort = static_cast<uint16_t>(pServer->GetInt(2));
-
-        World::Get().GetRunner().Queue([cId, ip, cPort] { World::Get().GetOverlayService().PingServer(cId, ip, cPort); });
+        if (pServer)
+            servers.emplace_back(pServer->GetInt(0), pServer->GetString(1).ToString(), static_cast<uint16_t>(pServer->GetInt(2)));
     }
+
+    World::Get().GetRunner().Queue([servers] { World::Get().GetOverlayService().PingServers(servers); });
 }
 
 void OverlayClient::SetUIVisible(bool aVisible) noexcept

@@ -9,6 +9,8 @@
 
 #include <ws2tcpip.h>
 
+#include <base/threading/ThreadUtils.h>
+
 #include <Systems/RenderSystemD3D11.h>
 
 #include <World.h>
@@ -196,8 +198,7 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
 
 OverlayService::~OverlayService() noexcept
 {
-    if (m_pingSocket != INVALID_SOCKET)
-        closesocket(m_pingSocket);
+    ClosePingSocket();
 }
 
 void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
@@ -342,23 +343,47 @@ void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
     m_pOverlay->ExecuteAsync("setHealth", pArguments);
 }
 
+void OverlayService::PingServers(const ServerAddresses& acServers) noexcept
+{
+    ClosePingSocket();
+
+    DWORD v6Only = 0;
+    sockaddr_in6 local{};
+    local.sin6_family = AF_INET6;
+
+    m_pingSocket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+    if (m_pingSocket == INVALID_SOCKET || setsockopt(m_pingSocket, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char*>(&v6Only), sizeof(v6Only)) == SOCKET_ERROR ||
+        bind(m_pingSocket, reinterpret_cast<const sockaddr*>(&local), sizeof(local)) == SOCKET_ERROR)
+    {
+        spdlog::warn("Server ping socket setup failed: {}", WSAGetLastError());
+        ClosePingSocket();
+        return;
+    }
+
+    m_pingThread = CreateThread(
+        nullptr, 0,
+        [](LPVOID apThis) -> DWORD
+        {
+            static_cast<OverlayService*>(apThis)->ReceiveServerPings();
+            return 0;
+        },
+        this, 0, nullptr);
+    if (!m_pingThread)
+    {
+        spdlog::warn("Server ping thread creation failed: {}", GetLastError());
+        ClosePingSocket();
+        return;
+    }
+
+    for (const auto& [cId, cIp, cPort] : acServers)
+        PingServer(cId, cIp, cPort);
+}
+
 void OverlayService::PingServer(uint32_t aId, const std::string& acIp, uint16_t aPort) noexcept
 {
     SteamNetworkingIPAddr ip{};
     if (!ip.ParseString(acIp.c_str()))
         return;
-
-    if (m_pingSocket == INVALID_SOCKET)
-    {
-        m_pingSocket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
-        if (m_pingSocket == INVALID_SOCKET)
-            return;
-
-        DWORD v6Only = 0;
-        u_long nonBlocking = 1;
-        setsockopt(m_pingSocket, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char*>(&v6Only), sizeof(v6Only));
-        ioctlsocket(m_pingSocket, FIONBIO, &nonBlocking);
-    }
 
     sockaddr_in6 address{};
     address.sin6_family = AF_INET6;
@@ -606,15 +631,49 @@ void OverlayService::RunServerPingUpdates() noexcept
     if (m_pingSocket == INVALID_SOCKET)
         return;
 
+    std::scoped_lock lock(m_pingMutex);
+    for (const auto& [id, ping] : m_serverPings)
+    {
+        auto pArguments = CefListValue::Create();
+        pArguments->SetInt(0, id);
+        pArguments->SetInt(1, ping);
+        m_pOverlay->ExecuteAsync("serverPing", pArguments);
+    }
+    m_serverPings.clear();
+}
+
+void OverlayService::ClosePingSocket() noexcept
+{
+    if (m_pingSocket != INVALID_SOCKET)
+        closesocket(m_pingSocket);
+
+    if (m_pingThread)
+    {
+        WaitForSingleObject(m_pingThread, INFINITE);
+        CloseHandle(m_pingThread);
+        m_pingThread = nullptr;
+    }
+
+    m_pingSocket = INVALID_SOCKET;
+}
+
+void OverlayService::ReceiveServerPings() noexcept
+{
+    Base::SetCurrentThreadName("ServerPings");
+
     while (true)
     {
         uint8_t buffer[64];
         const int cSize = recv(m_pingSocket, reinterpret_cast<char*>(buffer), sizeof(buffer), 0);
+        const uint64_t cNow = GetPingTime();
         if (cSize == SOCKET_ERROR)
         {
             const int cError = WSAGetLastError();
-            if (cError == WSAECONNRESET || cError == WSAEMSGSIZE)
+            if (cError == WSAECONNRESET || cError == WSAENETRESET || cError == WSAEMSGSIZE)
                 continue;
+
+            if (cError != WSAEINTR && cError != WSAENOTSOCK)
+                spdlog::warn("Server ping receive failed: {}", cError);
 
             return;
         }
@@ -627,13 +686,10 @@ void OverlayService::RunServerPingUpdates() noexcept
         if (reply.MsgId != kChallengeReplyMsgId || reply.ConnectionIdKey != kConnectionIdKey || reply.ChallengeKey != kChallengeKey || reply.YourTimestampKey != kTimestampKey)
             continue;
 
-        const uint64_t cNow = GetPingTime();
         if (reply.YourTimestamp > cNow)
             continue;
 
-        auto pArguments = CefListValue::Create();
-        pArguments->SetInt(0, reply.ConnectionId);
-        pArguments->SetInt(1, static_cast<int>((cNow - reply.YourTimestamp) / 1000));
-        m_pOverlay->ExecuteAsync("serverPing", pArguments);
+        std::scoped_lock lock(m_pingMutex);
+        m_serverPings.emplace_back(reply.ConnectionId, static_cast<int>((cNow - reply.YourTimestamp) / 1000));
     }
 }
