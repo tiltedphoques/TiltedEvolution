@@ -1686,11 +1686,6 @@ void CharacterService::ApplyLeveledNpcPick(Actor* apActor, const GameId& acPickI
     if (acPickId == GameId{})
         return;
 
-#if defined(TP_FALLOUT4)
-    // LeveledNpcSystem::ApplyPick is not implemented for Fallout 4; keep the local pick.
-    return;
-#endif
-
     TESNPC* pBase = Cast<TESNPC>(apActor->baseForm);
     if (!pBase)
         return;

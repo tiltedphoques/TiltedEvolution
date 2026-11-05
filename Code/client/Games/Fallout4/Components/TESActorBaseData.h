@@ -50,7 +50,7 @@ struct TESActorBaseData : BaseFormComponent
             actorBaseFlags &= ~BaseFlags::IS_ESSENTIAL;
     }
 
-    static TESActorBase* CreateTemplateActorBase(TESActorBase* apOriginalBase, TESActorBase* apTemplateBase) noexcept;
+    static TESActorBase* CreateTemplateActorBase(TESActorBase* apOriginalBase, TESActorBase** appTemplates) noexcept;
 
     GameArray<FactionRank> factions;
 };

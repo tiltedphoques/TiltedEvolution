@@ -13,6 +13,7 @@
 #include <Havok/bhkCharacterController.h>
 #include <Misc/MiddleProcess.h>
 #include <ExtraData/ExtraFactionChanges.h>
+#include <ExtraData/ExtraLeveledCreature.h>
 #include <Magic/ActorMagicCaster.h>
 #include <World.h>
 #include <Events/HitEvent.h>
@@ -563,7 +564,22 @@ TESForm* Actor::GetEquippedWeapon(uint32_t aSlotId) const noexcept
 
 TESNPC* Actor::GetLeveledPick() const noexcept
 {
-    // Fallout 4 keeps one template per template-use flag; remote picks are not applied yet.
+    // Fallout 4 keeps one template per template-use flag. The first one set (traits when used) decides
+    // the identity.
+    const ExtraDataList* pExtraList = extraData;
+    const auto* pExtra = pExtraList ? static_cast<ExtraLeveledCreature*>(pExtraList->GetByType(ExtraDataType::LeveledCreature)) : nullptr;
+    if (!pExtra)
+        return nullptr;
+
+    for (TESActorBase* pTemplate : pExtra->templateBases)
+    {
+        if (!pTemplate)
+            continue;
+        if (pTemplate->formType != FormType::Npc || pTemplate->IsTemporary())
+            return nullptr;
+        return static_cast<TESNPC*>(pTemplate);
+    }
+
     return nullptr;
 }
 

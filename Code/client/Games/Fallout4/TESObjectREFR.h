@@ -271,7 +271,7 @@ struct TESObjectREFR : TESForm
     virtual void sub_C5();
 
     void SetRotation(float aX, float aY, float aZ) noexcept;
-    void SetLeveledCreature(TESActorBase* apOriginalBase, TESActorBase* apTemplateA) noexcept;
+    void SetLeveledCreature(TESActorBase* apOriginalBase, TESActorBase** appTemplates) noexcept;
 
     BSPointerHandle<TESObjectREFR> GetHandle() const noexcept;
     uint32_t GetCellId() const noexcept;

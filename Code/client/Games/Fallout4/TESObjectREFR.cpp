@@ -102,6 +102,13 @@ void TESObjectREFR::SetRotation(float aX, float aY, float aZ) noexcept
     TiltedPhoques::ThisCall(setAngle, this, angle);
 }
 
+void TESObjectREFR::SetLeveledCreature(TESActorBase* apOriginalBase, TESActorBase** appTemplates) noexcept
+{
+    TP_THIS_FUNCTION(TSetLeveledCreature, void, TESObjectREFR, TESActorBase*, TESActorBase**);
+    static VersionDbPtr<TSetLeveledCreature> setLeveledCreature(2202657);
+    TiltedPhoques::ThisCall(setLeveledCreature, this, apOriginalBase, appTemplates);
+}
+
 const float TESObjectREFR::GetHeight() noexcept
 {
     return GetBoundMax().z - GetBoundMin().z;
