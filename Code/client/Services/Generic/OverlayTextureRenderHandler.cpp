@@ -156,29 +156,56 @@ void OverlayTextureRenderHandler::OnPaint(CefRefPtr<CefBrowser> aBrowser, PaintE
     }
 }
 
-void OverlayTextureRenderHandler::UpdateRenderTargetSize() noexcept
+bool OverlayTextureRenderHandler::GetScreenSize(uint32_t& aWidth, uint32_t& aHeight) const noexcept
 {
+    // The back buffer has the size of the window's client area, which mouse coordinates are relative to.
+    // The render target bound when the UI is drawn is not always the back buffer: while the game loads it
+    // can be a 512x512 texture, and sizing the view after it made CEF lay out and repaint the whole UI twice.
+    IDXGISwapChain* pSwapChain = m_pRenderer->GetSwapChain();
+    DXGI_SWAP_CHAIN_DESC swapChainDescription{};
+
+    if (pSwapChain && SUCCEEDED(pSwapChain->GetDesc(&swapChainDescription)) && swapChainDescription.BufferDesc.Width > 0 && swapChainDescription.BufferDesc.Height > 0)
+    {
+        aWidth = swapChainDescription.BufferDesc.Width;
+        aHeight = swapChainDescription.BufferDesc.Height;
+        return true;
+    }
+
+    // Without a swap chain, fall back to the bound render target
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pRenderTargetView;
 
     m_pImmediateContext->OMGetRenderTargets(1, pRenderTargetView.ReleaseAndGetAddressOf(), nullptr);
     if (!pRenderTargetView)
-        return;
+        return false;
 
     Microsoft::WRL::ComPtr<ID3D11Resource> pResource;
     pRenderTargetView->GetResource(pResource.ReleaseAndGetAddressOf());
 
     Microsoft::WRL::ComPtr<ID3D11Texture2D> pRenderTarget;
     if (!pResource || FAILED(pResource.As(&pRenderTarget)))
+        return false;
+
+    D3D11_TEXTURE2D_DESC textureDescription;
+    pRenderTarget->GetDesc(&textureDescription);
+
+    aWidth = textureDescription.Width;
+    aHeight = textureDescription.Height;
+    return aWidth > 0 && aHeight > 0;
+}
+
+void OverlayTextureRenderHandler::UpdateRenderTargetSize() noexcept
+{
+    uint32_t width = 0;
+    uint32_t height = 0;
+
+    if (!GetScreenSize(width, height))
         return;
 
-    D3D11_TEXTURE2D_DESC description;
-    pRenderTarget->GetDesc(&description);
-
-    if ((m_width == description.Width && m_height == description.Height) || !m_pParent)
+    if ((m_width == width && m_height == height) || !m_pParent)
         return;
 
-    m_width = description.Width;
-    m_height = description.Height;
+    m_width = width;
+    m_height = height;
 
     // We now know the size of the view, CEF can get it
     if (m_isCreateLockLocked)

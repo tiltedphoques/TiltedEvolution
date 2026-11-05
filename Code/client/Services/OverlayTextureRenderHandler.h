@@ -38,6 +38,8 @@ struct OverlayTextureRenderHandler final : TiltedPhoques::OverlayRenderHandler
     IMPLEMENT_REFCOUNTING(OverlayTextureRenderHandler);
 
 private:
+    // Size of the game's back buffer, or of the bound render target when there is no swap chain
+    [[nodiscard]] bool GetScreenSize(uint32_t& aWidth, uint32_t& aHeight) const noexcept;
     void UpdateRenderTargetSize() noexcept;
     void CreateRenderTexture() noexcept;
     void UploadDirtyPixels() noexcept;
@@ -46,7 +48,7 @@ private:
 
     Renderer* m_pRenderer;
 
-    // Size of the game's render target, which is also the size of the CEF view
+    // Size of the game's back buffer, which is also the size of the CEF view
     std::atomic<uint32_t> m_width{0};
     std::atomic<uint32_t> m_height{0};
 
