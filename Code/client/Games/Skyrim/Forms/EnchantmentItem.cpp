@@ -14,25 +14,41 @@ EnchantmentItem* EnchantmentItem::Create(const Inventory::EnchantmentData& aData
 
     ModSystem& modSystem = World::Get().GetModSystem();
 
-    GameArray<EffectItem> effects{};
-    effects.Resize(aData.Effects.size());
-    for (int i = 0; i < aData.Effects.size(); i++)
+    // Effects from a mod this client doesn't have resolve to null. Keep only the ones that exist here; a created
+    // enchantment with a null effect crashes the game as soon as it is displayed, equipped or applied.
+    Vector<EffectItem> resolvedEffects;
+    resolvedEffects.reserve(aData.Effects.size());
+    for (const Inventory::EffectItem& effect : aData.Effects)
     {
-        Inventory::EffectItem effect = aData.Effects[i];
+        auto* pEffectSetting = Cast<EffectSetting>(TESForm::GetById(modSystem.GetGameId(effect.EffectId)));
+        if (!pEffectSetting)
+        {
+            spdlog::warn("Dropping enchantment effect {:X}:{:X}, not found on this client (missing mod?)", effect.EffectId.ModId, effect.EffectId.BaseId);
+            continue;
+        }
 
         EffectItem effectItem{};
         effectItem.data.fMagnitude = effect.Magnitude;
         effectItem.data.iArea = effect.Area;
         effectItem.data.iDuration = effect.Duration;
         effectItem.fRawCost = effect.RawCost;
-        effectItem.pEffectSetting = Cast<EffectSetting>(TESForm::GetById(modSystem.GetGameId(effect.EffectId)));
-        if (!effectItem.pEffectSetting)
-            spdlog::error("Effect setting not found: {:X}:{:X}", effect.EffectId.ModId, effect.EffectId.BaseId);
+        effectItem.pEffectSetting = pEffectSetting;
 
         // TODO: TESCondition?
 
-        effects[i] = effectItem;
+        resolvedEffects.push_back(effectItem);
     }
+
+    if (resolvedEffects.empty())
+    {
+        spdlog::warn("Not creating enchantment, none of its {} effects exist on this client", aData.Effects.size());
+        return nullptr;
+    }
+
+    GameArray<EffectItem> effects{};
+    effects.Resize(resolvedEffects.size());
+    for (size_t i = 0; i < resolvedEffects.size(); i++)
+        effects[i] = resolvedEffects[i];
 
     BGSCreatedObjectManager* objManager = BGSCreatedObjectManager::Get();
 

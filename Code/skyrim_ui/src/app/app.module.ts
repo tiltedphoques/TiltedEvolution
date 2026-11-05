@@ -25,6 +25,7 @@ import { OrderComponent } from './components/order/order.component';
 import { PartyMenuComponent } from './components/party-menu/party-menu.component';
 import { PlayerListComponent } from './components/player-list/player-list.component';
 import { PlayerManagerComponent } from './components/player-manager/player-manager.component';
+import { TradePopupComponent } from './components/trade-popup/trade-popup.component';
 import { PopupComponent } from './components/popup/popup.component';
 import { RootComponent } from './components/root/root.component';
 import { ServerListComponent } from './components/server-list/server-list.component';
@@ -42,6 +43,8 @@ import { ErrorService } from './services/error.service';
 import { GroupService } from './services/group.service';
 import { PlayerListService } from './services/player-list.service';
 import { SettingService } from './services/setting.service';
+import { PlayerUiService } from './services/player-ui.service';
+import { TRADE_INVITE_POLICY } from './services/trade-invite-policy';
 import { SoundService } from './services/sound.service';
 import { StoreService } from './services/store.service';
 import { TranslocoRootModule } from './transloco-root.module';
@@ -65,6 +68,7 @@ import { TranslocoRootModule } from './transloco-root.module';
     PartyMenuComponent,
     PlayerListComponent,
     PlayerManagerComponent,
+    TradePopupComponent,
     ActionButtonsComponent,
     PopupComponent,
     RootComponent,
@@ -99,6 +103,8 @@ import { TranslocoRootModule } from './transloco-root.module';
     PlayerListService,
     StoreService,
     SettingService,
+    // Player privacy settings decide trade invites and trade names.
+    { provide: TRADE_INVITE_POLICY, useExisting: PlayerUiService },
 
     ...environment.providers,
   ],

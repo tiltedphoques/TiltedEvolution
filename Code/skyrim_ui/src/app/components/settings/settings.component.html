@@ -74,6 +74,202 @@
     </section>
 
     <section>
+      <h2>{{ 'COMPONENT.SETTINGS.PLAYER_UI.TITLE' | transloco }}</h2>
+      <div class="setting">
+        <label for="knownNames"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.KNOWN_NAMES' | transloco }}
+          <small class="hint">{{
+            'COMPONENT.SETTINGS.PLAYER_UI.KNOWN_NAMES_HINT' | transloco
+          }}</small>
+        </label>
+        <app-dropdown
+          id="knownNames"
+          [ngModel]="settings.knownNames | async"
+          (ngModelChange)="settings.knownNames.next($event)"
+        >
+          <app-dropdown-option
+            *ngFor="let option of availableKnownNames"
+            [text]="option.label"
+            [value]="option.id"
+          ></app-dropdown-option>
+        </app-dropdown>
+      </div>
+      <div class="setting">
+        <label for="partyInvites"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.PARTY_INVITES' | transloco }}
+          <small class="hint">{{
+            'COMPONENT.SETTINGS.PLAYER_UI.PARTY_INVITES_HINT' | transloco
+          }}</small>
+        </label>
+        <input
+          type="checkbox"
+          id="partyInvites"
+          [ngModel]="settings.partyInvites | async"
+          (ngModelChange)="settings.partyInvites.next($event)"
+        />
+      </div>
+      <div class="setting">
+        <label for="tradeInvites"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.TRADE_INVITES' | transloco }}
+          <small class="hint">{{
+            'COMPONENT.SETTINGS.PLAYER_UI.TRADE_INVITES_HINT' | transloco
+          }}</small>
+        </label>
+        <app-dropdown
+          id="tradeInvites"
+          [ngModel]="settings.tradeInvites | async"
+          (ngModelChange)="settings.tradeInvites.next($event)"
+        >
+          <app-dropdown-option
+            *ngFor="let option of availablePlayerUiFilters"
+            [text]="option.label"
+            [value]="option.id"
+          ></app-dropdown-option>
+        </app-dropdown>
+      </div>
+      <div class="setting">
+        <label for="miniChat"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.MINI_CHAT' | transloco }}
+          <small class="hint">{{
+            'COMPONENT.SETTINGS.PLAYER_UI.MINI_CHAT_HINT' | transloco
+          }}</small>
+        </label>
+        <app-dropdown
+          id="miniChat"
+          [ngModel]="settings.miniChat | async"
+          (ngModelChange)="settings.miniChat.next($event)"
+        >
+          <app-dropdown-option
+            *ngFor="let option of availablePlayerUiFilters"
+            [text]="option.label"
+            [value]="option.id"
+          ></app-dropdown-option>
+        </app-dropdown>
+      </div>
+      <div class="setting">
+        <label for="nameTags"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.NAME_TAGS' | transloco }}
+          <small class="hint">{{
+            'COMPONENT.SETTINGS.PLAYER_UI.NAME_TAGS_HINT' | transloco
+          }}</small>
+        </label>
+        <app-dropdown
+          id="nameTags"
+          [ngModel]="settings.nameTags | async"
+          (ngModelChange)="settings.nameTags.next($event)"
+        >
+          <app-dropdown-option
+            *ngFor="let option of availablePlayerUiFilters"
+            [text]="option.label"
+            [value]="option.id"
+          ></app-dropdown-option>
+        </app-dropdown>
+      </div>
+      <div class="setting">
+        <label for="nameBackdrop"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.NAME_TAG_BACKPLATE' | transloco }}
+          <small class="hint">{{
+            'COMPONENT.SETTINGS.PLAYER_UI.NAME_TAG_BACKPLATE_HINT' | transloco
+          }}</small>
+        </label>
+        <app-dropdown
+          id="nameBackdrop"
+          [ngModel]="settings.nameBackdrop | async"
+          (ngModelChange)="settings.nameBackdrop.next($event)"
+        >
+          <app-dropdown-option
+            *ngFor="let option of availablePlayerUiFilters"
+            [text]="option.label"
+            [value]="option.id"
+          ></app-dropdown-option>
+        </app-dropdown>
+      </div>
+      <div class="setting">
+        <label for="nameTagSize"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.NAME_TAG_SIZE' | transloco }}
+        </label>
+        <app-dropdown
+          id="nameTagSize"
+          [ngModel]="settings.nameTagSize | async"
+          (ngModelChange)="settings.nameTagSize.next($event)"
+        >
+          <app-dropdown-option
+            *ngFor="let option of availableFontSizes"
+            [text]="option.label"
+            [value]="option.id"
+          ></app-dropdown-option>
+        </app-dropdown>
+      </div>
+      <h3>{{ 'COMPONENT.SETTINGS.PLAYER_UI.DISTANCES' | transloco }}</h3>
+      <div class="setting">
+        <label for="nameFadeStart"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.NAME_FADE_START' | transloco }}
+          <small class="hint">{{
+            'COMPONENT.SETTINGS.PLAYER_UI.NAME_FADE_START_HINT' | transloco
+          }}</small>
+        </label>
+        <input
+          type="number"
+          id="nameFadeStart"
+          min="0"
+          max="20000"
+          step="100"
+          [title]="'COMPONENT.SETTINGS.PLAYER_UI.UNITS' | transloco"
+          [ngModel]="settings.nameFadeStart | async"
+          (ngModelChange)="settings.nameFadeStart.next($event)"
+        />
+      </div>
+      <div class="setting">
+        <label for="nameInvisible"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.NAME_INVISIBLE' | transloco }}
+          <small class="hint">{{
+            'COMPONENT.SETTINGS.PLAYER_UI.NAME_INVISIBLE_HINT' | transloco
+          }}</small>
+        </label>
+        <input
+          type="number"
+          id="nameInvisible"
+          min="0"
+          max="20000"
+          step="100"
+          [title]="'COMPONENT.SETTINGS.PLAYER_UI.UNITS' | transloco"
+          [ngModel]="settings.nameInvisible | async"
+          (ngModelChange)="settings.nameInvisible.next($event)"
+        />
+      </div>
+      <div class="setting">
+        <label for="partyFadeStart"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.PARTY_FADE_START' | transloco }}
+        </label>
+        <input
+          type="number"
+          id="partyFadeStart"
+          min="0"
+          max="20000"
+          step="100"
+          [title]="'COMPONENT.SETTINGS.PLAYER_UI.UNITS' | transloco"
+          [ngModel]="settings.partyFadeStart | async"
+          (ngModelChange)="settings.partyFadeStart.next($event)"
+        />
+      </div>
+      <div class="setting">
+        <label for="partyInvisible"
+          >{{ 'COMPONENT.SETTINGS.PLAYER_UI.PARTY_INVISIBLE' | transloco }}
+        </label>
+        <input
+          type="number"
+          id="partyInvisible"
+          min="0"
+          max="20000"
+          step="100"
+          [title]="'COMPONENT.SETTINGS.PLAYER_UI.UNITS' | transloco"
+          [ngModel]="settings.partyInvisible | async"
+          (ngModelChange)="settings.partyInvisible.next($event)"
+        />
+      </div>
+    </section>
+
+    <section>
       <h2>{{ 'COMPONENT.SETTINGS.PARTY' | transloco }}</h2>
       <div class="setting">
         <label for="showParty">{{

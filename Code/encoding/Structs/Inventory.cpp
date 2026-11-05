@@ -1,7 +1,52 @@
 #include <Structs/Inventory.h>
+#include <Decoding.h>
 #include <TiltedCore/Serialization.hpp>
+#include <algorithm>
+#include <cmath>
 
 using TiltedPhoques::Serialization;
+
+bool Inventory::PotionData::operator==(const PotionData& acRhs) const noexcept
+{
+    return IsPoison == acRhs.IsPoison && Effects.size() == acRhs.Effects.size() &&
+        std::is_permutation(Effects.begin(), Effects.end(), acRhs.Effects.begin());
+}
+
+bool Inventory::PotionData::IsValid() const noexcept
+{
+    if (Effects.empty() || Effects.size() > kMaxEffects)
+        return false;
+    for (const auto& effect : Effects)
+        if (!std::isfinite(effect.Magnitude) || effect.Magnitude < 0 || !std::isfinite(effect.RawCost) || effect.RawCost < 0 ||
+            effect.Area < 0 || effect.Duration < 0 || effect.EffectId.ModId == 0xFFFFFFFF || !effect.EffectId.BaseId)
+            return false;
+    return true;
+}
+
+void Inventory::PotionData::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
+{
+    // Most entries are not crafted potions, so a single bit stands in for an empty recipe.
+    const bool cPresent = IsPoison || !Effects.empty();
+    Serialization::WriteBool(aWriter, cPresent);
+    if (!cPresent)
+        return;
+
+    Serialization::WriteBool(aWriter, IsPoison);
+    Serialization::WriteVarInt(aWriter, Effects.size());
+    for (const auto& effect : Effects)
+        effect.Serialize(aWriter);
+}
+
+void Inventory::PotionData::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
+{
+    IsPoison = false;
+    Effects.clear();
+    if (!Serialization::ReadBool(aReader))
+        return;
+
+    IsPoison = Serialization::ReadBool(aReader);
+    Decoding::ReadList(aReader, Effects, kMaxEffects);
+}
 
 void Inventory::EffectItem::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 {
@@ -48,6 +93,8 @@ void Inventory::Entry::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const n
     Serialization::WriteBool(aWriter, ExtraWorn);
     Serialization::WriteBool(aWriter, ExtraWornLeft);
     Serialization::WriteBool(aWriter, IsQuestItem);
+    Potion.Serialize(aWriter);
+    PoisonData.Serialize(aWriter);
 }
 
 void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -59,13 +106,7 @@ void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexc
 
     ExtraEnchantId.Deserialize(aReader);
     ExtraEnchantCharge = Serialization::ReadVarInt(aReader) & 0xFFFF;
-    uint64_t effectCount = Serialization::ReadVarInt(aReader);
-    for (uint64_t i = 0; i < effectCount; i++)
-    {
-        EffectItem effect;
-        effect.Deserialize(aReader);
-        EnchantData.Effects.push_back(effect);
-    }
+    Decoding::ReadList(aReader, EnchantData.Effects, kMaxEffects);
 
     ExtraHealth = Serialization::ReadFloat(aReader);
 
@@ -79,6 +120,8 @@ void Inventory::Entry::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexc
     ExtraWorn = Serialization::ReadBool(aReader);
     ExtraWornLeft = Serialization::ReadBool(aReader);
     IsQuestItem = Serialization::ReadBool(aReader);
+    Potion.Deserialize(aReader);
+    PoisonData.Deserialize(aReader);
 }
 
 bool Inventory::operator==(const Inventory& acRhs) const noexcept
@@ -93,7 +136,7 @@ bool Inventory::operator!=(const Inventory& acRhs) const noexcept
 
 bool Inventory::Entry::operator==(const Inventory::Entry& acRhs) const noexcept
 {
-    return BaseId == acRhs.BaseId && Count == acRhs.Count && IsExtraDataEquals(acRhs);
+    return SameBase(acRhs) && Count == acRhs.Count && IsExtraDataEquals(acRhs);
 }
 
 bool Inventory::Entry::operator!=(const Inventory::Entry& acRhs) const noexcept
@@ -114,13 +157,7 @@ void Inventory::Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept
 
 void Inventory::Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept
 {
-    uint32_t count = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-    for (uint32_t i = 0; i < count; i++)
-    {
-        Entry entry;
-        entry.Deserialize(aReader);
-        Entries.push_back(entry);
-    }
+    Decoding::ReadList(aReader, Entries, kMaxEntries);
 
     CurrentMagicEquipment.Deserialize(aReader);
 }

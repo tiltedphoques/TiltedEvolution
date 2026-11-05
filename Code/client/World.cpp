@@ -15,12 +15,14 @@
 #include <Services/InventoryService.h>
 #include <Services/MagicService.h>
 #include <Services/CommandService.h>
+#include <Services/TradeService.h>
 #include <Services/CalendarService.h>
 #include <Services/StringCacheService.h>
 #include <Services/PlayerService.h>
 #include <Services/CombatService.h>
 #include <Services/WeatherService.h>
 #include <Services/MapService.h>
+#include <Services/NameTagService.h>
 
 #include <Events/PreUpdateEvent.h>
 #include <Events/UpdateEvent.h>
@@ -45,6 +47,7 @@ World::World()
     ctx().emplace<CalendarService>(*this, m_dispatcher, m_transport);
     ctx().emplace<QuestService>(*this, m_dispatcher);
     ctx().emplace<PartyService>(*this, m_dispatcher, m_transport);
+    ctx().emplace<TradeService>(*this, m_dispatcher, m_transport);
     ctx().emplace<ActorValueService>(*this, m_dispatcher, m_transport);
     ctx().emplace<InventoryService>(*this, m_dispatcher, m_transport);
     ctx().emplace<MagicService>(*this, m_dispatcher, m_transport);
@@ -54,6 +57,7 @@ World::World()
     ctx().emplace<CombatService>(*this, m_transport, m_dispatcher);
     ctx().emplace<WeatherService>(*this, m_transport, m_dispatcher);
     ctx().emplace<MapService>(*this, m_dispatcher, m_transport);
+    ctx().emplace<NameTagService>(*this, m_dispatcher);
 
     BehaviorVar::Get()->Init();
 }

@@ -13,7 +13,8 @@
   <div
     [@controls]="active$ | async"
     class="app-root-controls"
-    [class.background-element]="view$ | async"
+    [class.background-element]="(view$ | async) !== null && (view$ | async) !== RootView.TRADE"
+    [class.trading-controls]="tradeSession$ | async"
   >
     <app-window border="strip" class="app-root-menu">
       <button
@@ -25,6 +26,12 @@
         {{ 'COMPONENT.ROOT.CONNECT' | transloco }}
       </button>
       <ng-container *ngIf="connected$ | async">
+        <button *ngIf="tradeSession$ | async"
+          data-style-ornament="inverted"
+          [attr.data-style-active]="(view$ | async) === RootView.TRADE"
+          (click)="setView(RootView.TRADE)">
+          {{ 'COMPONENT.PARTY_LIST.TRADE' | transloco }}
+        </button>
         <button
           data-style-ornament="inverted"
           [attr.data-style-active]="(view$ | async) === RootView.DISCONNECT"
@@ -116,6 +123,9 @@
       >
         <app-player-manager (done)="closeView()"></app-player-manager>
       </app-popup>
+      <div *ngSwitchCase="RootView.TRADE" class="trade-dock" data-popup="trade">
+        <app-trade-popup></app-trade-popup>
+      </div>
     </ng-container>
 
     <app-error></app-error>

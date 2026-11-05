@@ -6,6 +6,7 @@ import { ClientService } from 'src/app/services/client.service';
 import { GroupService } from 'src/app/services/group.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { PlayerListService } from 'src/app/services/player-list.service';
+import { PlayerUiService } from 'src/app/services/player-ui.service';
 
 @Component({
   selector: 'app-party-menu',
@@ -21,12 +22,14 @@ export class PartyMenuComponent {
   isLaunchPartyDisabled$: Observable<boolean>;
   invitations$: Observable<Player[]>;
   isPartyLeader$: Observable<boolean>;
+  hiddenPlayerIds$ = this.playerUiService.hiddenPlayerIds$;
 
   constructor(
     private readonly groupService: GroupService,
     private readonly loadingService: LoadingService,
     private readonly playerListService: PlayerListService,
     private readonly clientService: ClientService,
+    private readonly playerUiService: PlayerUiService,
   ) {
     this.invitations$ = this.playerListService.playerList.asObservable().pipe(
       filter(playerlist => !!playerlist),

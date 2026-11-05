@@ -45,11 +45,38 @@
       padding: 15px;
     }
 
+    .actions-col {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
     .user-action-button {
       padding: 0.25vw;
       background-color: #292929;
       border-radius: 2px;
-      margin-left: 5%;
     }
   }
+}
+
+.eye-col {
+  width: 4em;
+  text-align: center;
+}
+
+.eye-button {
+  padding: 0.25vw 0.5vw;
+  background: none;
+  border: 0;
+  cursor: pointer;
+
+  &.hidden-name {
+    color: #e0483e;
+  }
+}
+
+.stranger-name {
+  font-style: italic;
+  opacity: 0.75;
 }

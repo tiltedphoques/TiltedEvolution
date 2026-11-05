@@ -16,6 +16,7 @@ import { Player } from '../../models/player';
 import { ClientService } from '../../services/client.service';
 import { DestroyService } from '../../services/destroy.service';
 import { GroupService } from '../../services/group.service';
+import { PlayerUiService } from '../../services/player-ui.service';
 
 interface GroupPosition {
   top?: string;
@@ -36,6 +37,7 @@ export class GroupComponent implements OnInit, OnDestroy {
 
   groupMembers$: Observable<(Player & { isOwner: boolean })[]>;
   group$: Observable<Group>;
+  hiddenPlayerIds$ = this.playerUiService.hiddenPlayerIds$;
 
   public isAutoHide = new BehaviorSubject(true);
   public isShown = new BehaviorSubject(true);
@@ -51,6 +53,7 @@ export class GroupComponent implements OnInit, OnDestroy {
     private readonly groupService: GroupService,
     private readonly clientService: ClientService,
     private readonly settingService: SettingService,
+    private readonly playerUiService: PlayerUiService,
   ) {
     this.isShown.next(this.settings.isPartyShown.getValue());
     this.isAutoHide.next(this.settings.autoHideParty.getValue());

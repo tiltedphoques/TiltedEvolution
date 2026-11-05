@@ -11,14 +11,45 @@
       <thead class="list-header">
         <tr>
           <th>{{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.LEVEL' | transloco }}</th>
+          <th class="eye-col">
+            {{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.KNOWN' | transloco }}
+          </th>
           <th>{{ 'COMPONENT.PARTY_LIST.TABLE_HEADERS.NAME' | transloco }}</th>
           <th></th>
         </tr>
       </thead>
-      <tbody class="listBody">
+      <tbody class="listBody" *ngIf="hiddenPlayerIds$ | async as hiddenIds">
         <tr *ngFor="let player of playerList$ | async">
           <td>{{ player.level }}</td>
-          <td>{{ player.name }}</td>
+          <td class="eye-col">
+            <button
+              type="button"
+              class="eye-button"
+              [class.hidden-name]="hiddenIds.has(player.id)"
+              [attr.aria-pressed]="!hiddenIds.has(player.id)"
+              [attr.aria-label]="
+                (hiddenIds.has(player.id)
+                  ? 'COMPONENT.PARTY_LIST.SHOW_NAME'
+                  : 'COMPONENT.PARTY_LIST.HIDE_NAME'
+                ) | transloco
+              "
+              (click)="toggleName(player.name, hiddenIds.has(player.id))"
+            >
+              <fa-icon
+                [icon]="hiddenIds.has(player.id) ? faEyeSlash : faEye"
+              ></fa-icon>
+            </button>
+          </td>
+          <td>
+            <span *ngIf="!hiddenIds.has(player.id); else stranger">{{
+              player.name
+            }}</span>
+            <ng-template #stranger>
+              <span class="stranger-name">{{
+                'COMPONENT.PARTY_LIST.STRANGER' | transloco
+              }}</span>
+            </ng-template>
+          </td>
           <td class="actions-col">
             <button
               [class.hidden]="player.isMember || !(isPartyLeader$ | async)"
@@ -32,6 +63,25 @@
             >
               {{ 'COMPONENT.PARTY_LIST.INVITE' | transloco }}
             </button>
+            <ng-container *ngIf="!player.pendingInvite; else pendingTrade">
+              <button
+                type="button"
+                class="user-action-button"
+                (click)="sendTradeInvite(player.id)"
+                [disabled]="player.tradeBusy"
+              >
+                {{ 'COMPONENT.PARTY_LIST.TRADE' | transloco }}
+              </button>
+            </ng-container>
+            <ng-template #pendingTrade>
+              <button
+                type="button"
+                class="user-action-button secondary"
+                (click)="cancelTradeInvite(player.id)"
+              >
+                {{ 'COMPONENT.PARTY_LIST.CANCEL_TRADE_INVITE' | transloco }}
+              </button>
+            </ng-template>
           </td>
         </tr>
       </tbody>

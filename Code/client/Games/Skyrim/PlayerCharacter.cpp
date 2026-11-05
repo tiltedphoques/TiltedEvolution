@@ -1,4 +1,5 @@
 #include <PlayerCharacter.h>
+#include <Forms/AlchemyItem.h>
 #include <Games/ActorExtension.h>
 
 #include <Structs/Skyrim/AnimationGraphDescriptor_Master_Behavior.h>
@@ -168,6 +169,7 @@ char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject
 
     Inventory::Entry item{};
     modSystem.GetServerModId(apObject->baseForm->formID, item.BaseId);
+    AlchemyItem::Capture(apObject->baseForm, item);
     item.Count = aCount;
 
     if (apObject->GetExtraDataList() && !ScopedExtraDataOverride::IsOverriden())

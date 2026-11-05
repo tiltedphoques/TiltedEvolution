@@ -13,7 +13,16 @@
       <b class="group-member-level">{{ player.level }} </b>
       <div *ngIf="player.health === 0" class="group-member-dead"></div>
       <div *ngIf="player.isOwner" class="group-member-leader"></div>
-      <span class="member-name">{{ player.name }}</span>
+      <span
+        *ngIf="!(hiddenPlayerIds$ | async)?.has(player.id); else stranger"
+        class="member-name"
+        >{{ player.name }}</span
+      >
+      <ng-template #stranger>
+        <span class="member-name stranger-name">{{
+          'COMPONENT.PARTY_LIST.STRANGER' | transloco
+        }}</span>
+      </ng-template>
       <div
         *ngIf="player.health !== undefined && player.isLoaded"
         class="group-member-health"

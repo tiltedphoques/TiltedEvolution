@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Messages/ServerMessageFactory.h>
+#include <Decoding.h>
 
 static std::function<UniquePtr<ServerMessage>(TiltedPhoques::Buffer::Reader& aReader)> s_serverMessageExtractor[kServerOpcodeMax];
 
@@ -14,10 +15,12 @@ static struct ServerMessageFactoryInit
         {
             using T = typename std::remove_reference_t<decltype(x)>::Type;
 
-            s_serverMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader)
+            s_serverMessageExtractor[T::Opcode] = [](TiltedPhoques::Buffer::Reader& aReader) -> UniquePtr<ServerMessage>
             {
                 auto ptr = TiltedPhoques::MakeUnique<T>();
                 ptr->DeserializeRaw(aReader);
+                if (Decoding::IsMalformed(aReader)) [[unlikely]]
+                    return {nullptr};
                 return TiltedPhoques::CastUnique<ServerMessage>(std::move(ptr));
             };
 
@@ -38,5 +41,9 @@ UniquePtr<ServerMessage> ServerMessageFactory::Extract(TiltedPhoques::Buffer::Re
         return {nullptr};
 
     const auto opcode = static_cast<ServerOpcode>(data);
+    // Calling an empty std::function throws, so opcodes without a registered message are dropped here.
+    if (!s_serverMessageExtractor[opcode]) [[unlikely]]
+        return {nullptr};
+
     return s_serverMessageExtractor[opcode](aReader);
 }

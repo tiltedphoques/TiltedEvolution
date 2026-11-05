@@ -22,12 +22,29 @@ ImguiService::~ImguiService() noexcept
 void ImguiService::Create(RenderSystemD3D11* apRenderSystem, HWND aHwnd)
 {
     m_imDriver.Initialize(static_cast<void*>(aHwnd));
+    LoadNameTagFont();
 
     // init platform
     if (!ImGui_ImplWin32_Init(aHwnd))
         spdlog::error("Failed to initialize Imgui-Win32");
 
     ImGui_ImplDX11_Init(apRenderSystem->GetDevice(), apRenderSystem->GetDeviceContext());
+}
+
+void ImguiService::LoadNameTagFont()
+{
+    // Same font file the overlay UI ships with. Loaded large so tags stay sharp when scaled down.
+    const auto fontPath = TiltedPhoques::GetPath() / "UI" / "assets" / "futura-condensed-medium.otf";
+    if (!std::filesystem::exists(fontPath))
+    {
+        spdlog::warn("Name tag font not found at {}, using the default ImGui font", fontPath.string());
+        return;
+    }
+
+    auto& io = ImGui::GetIO();
+    m_pNameTagFont = io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 40.f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+    if (!m_pNameTagFont)
+        spdlog::warn("Failed to load name tag font {}", fontPath.string());
 }
 
 void ImguiService::Render() const

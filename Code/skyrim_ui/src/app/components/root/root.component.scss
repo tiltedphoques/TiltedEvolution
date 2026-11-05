@@ -73,6 +73,21 @@
   opacity: 30%;
 }
 
+.trade-dock {
+  --trade-edge-gap: 1rem;
+  position: fixed;
+  box-sizing: border-box;
+  left: calc(32vw + #{4 * $-size-gap});
+  right: var(--trade-edge-gap);
+  top: 9vh;
+  bottom: var(--trade-edge-gap);
+  width: calc(68vw - #{4 * $-size-gap} - var(--trade-edge-gap));
+  height: calc(91vh - var(--trade-edge-gap));
+  min-width: 0;
+  min-height: 0;
+  pointer-events: none;
+}
+
 ::ng-deep {
   .app-root-popups {
     > app-popup > app-window {
@@ -109,6 +124,9 @@
 }
 
 .app-root-menu {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
   display: flex;
   height: 4rem;
   margin: 0 auto;
@@ -117,6 +135,38 @@
     flex: 1 1 auto;
     padding-top: 0;
     padding-bottom: 0;
+  }
+}
+
+.trading-controls .app-root-menu {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  min-height: 4rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: stretch;
+  gap: .2rem;
+
+  > button {
+    position: relative;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    padding: .2rem .45rem;
+
+    // Ornament arrows must not reserve a second label's worth of horizontal space.
+    &::before,
+    &::after {
+      position: absolute;
+      width: .5em;
+      height: .5em;
+      margin: 0;
+    }
+    &::before { left: 0; }
+    &::after { right: 0; }
   }
 }
 
