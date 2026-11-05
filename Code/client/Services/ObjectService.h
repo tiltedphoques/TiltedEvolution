@@ -13,6 +13,7 @@ struct LockChangeEvent;
 struct NotifyLockChange;
 struct CellChangeEvent;
 struct ScriptAnimationEvent;
+struct WaveCommandEvent;
 struct AssignObjectsResponse;
 struct NotifyScriptAnimation;
 
@@ -33,6 +34,7 @@ private:
     void OnLockChange(const LockChangeEvent&) noexcept;
     void OnLockChangeNotify(const NotifyLockChange&) noexcept;
     void OnScriptAnimationEvent(const ScriptAnimationEvent&) noexcept;
+    void OnWaveCommand(const WaveCommandEvent&) noexcept;
     void OnNotifyScriptAnimation(const NotifyScriptAnimation&) noexcept;
 
     BSTEventResult OnEvent(const TESActivateEvent*, const EventDispatcher<TESActivateEvent>*) override;
@@ -51,4 +53,5 @@ private:
     entt::scoped_connection m_assignObjectConnection;
     entt::scoped_connection m_scriptAnimationConnection;
     entt::scoped_connection m_scriptAnimationNotifyConnection;
+    entt::scoped_connection m_waveCommandConnection;
 };
