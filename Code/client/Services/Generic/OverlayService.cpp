@@ -12,7 +12,6 @@
 #include <World.h>
 
 #include <Services/OverlayClient.h>
-#include <Services/OverlayTextureRenderHandler.h>
 #include <Services/TransportService.h>
 
 #include <Messages/NotifyChatMessageBroadcast.h>
@@ -52,7 +51,7 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
 
     OverlayRenderHandler* Create() override
     {
-        auto* pHandler = new OverlayTextureRenderHandler(this);
+        auto* pHandler = new OverlayRenderHandlerD3D11(this);
         pHandler->SetVisible(true);
 
         return pHandler;
@@ -71,11 +70,8 @@ private:
 /**
  * @brief Makes CEF draw the UI on the CPU instead of the GPU.
  *
- * By default CEF rasterizes the UI on the GPU and copies every frame back to memory for OnPaint. When the
- * game keeps the GPU busy, as it does outdoors on big screens, that work waits behind the game's frames:
- * CEF drops UI frames ("Client rejects proposal to capture frame" in cef_debug.log), so the UI shows up half
- * drawn and reacts late to clicks. The UI is plain HTML and CSS, so drawing it on the CPU is cheap, and the
- * frames are written straight into the memory OnPaint reads.
+ * On the GPU, CEF copies every frame back to memory for OnPaint, and that waits behind the game's frames when
+ * the game keeps the GPU busy: CEF drops UI frames and the UI shows up half drawn.
  */
 struct CpuRenderedOverlayApp final : OverlayApp
 {

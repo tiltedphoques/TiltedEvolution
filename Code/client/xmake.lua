@@ -55,7 +55,6 @@ target(name)
         "discord",
         "imgui",
         "cef",
-        "directxtk",
         "minhook",
         "entt",
         "glm",
