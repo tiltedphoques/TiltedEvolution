@@ -102,6 +102,7 @@
       "SERVER_COUNT": "Показано {{filteredCount}} з {{count}} серверів",
       "TABLE_HEADERS": {
         "NAME": "Назва сервера",
+        "ADDRESS": "Адреса",
         "PLAYERS": "Гравці",
         "COUNTRY": "Країна",
         "FAVORITE": "Обране"

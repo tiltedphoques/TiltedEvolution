@@ -102,6 +102,7 @@
       "SERVER_COUNT": "Показать {{filteredCount}} серверов из {{count}}",
       "TABLE_HEADERS": {
         "NAME": "Название сервера",
+        "ADDRESS": "Айпи-адрес",
         "PLAYERS": "Игроки",
         "COUNTRY": "Страна",
         "FAVORITE": "Избранное"

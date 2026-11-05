@@ -95,6 +95,7 @@
       "HIDE_MISMATCHED_SERVER": "Verberg servers met een niet overeenkomende versie",
       "TABLE_HEADERS": {
         "NAME": "Server Naam",
+        "ADDRESS": "Adres",
         "PLAYERS": "Spelers",
         "COUNTRY": "Land",
         "FAVORITE": "Favoriet"
