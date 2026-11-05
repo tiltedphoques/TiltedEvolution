@@ -90,17 +90,25 @@ struct CpuRenderedOverlayApp final : OverlayApp
     }
 };
 
+constexpr uint8_t kChallengeRequestMsgId = 32;
+constexpr uint8_t kChallengeReplyMsgId = 33;
+constexpr uint8_t kConnectionIdKey = 0x0D;
+constexpr uint8_t kChallengeKey = 0x11;
+constexpr uint8_t kTimestampKey = 0x19;
+constexpr uint8_t kProtocolVersionKey = 0x20;
+constexpr uint8_t kProtocolVersion = 11;
+
 #pragma pack(push, 1)
 struct UdpChallengeRequest
 {
-    uint8_t MsgId = 32;
+    uint8_t MsgId = kChallengeRequestMsgId;
     uint16_t MsgLength = 16;
-    uint8_t ConnectionIdKey = 0x0D;
+    uint8_t ConnectionIdKey = kConnectionIdKey;
     uint32_t ConnectionId;
-    uint8_t MyTimestampKey = 0x19;
+    uint8_t MyTimestampKey = kTimestampKey;
     uint64_t MyTimestamp;
-    uint8_t ProtocolVersionKey = 0x20;
-    uint8_t ProtocolVersion = 11;
+    uint8_t ProtocolVersionKey = kProtocolVersionKey;
+    uint8_t ProtocolVersion = kProtocolVersion;
     uint8_t Padding[493]{};
 };
 
@@ -117,7 +125,7 @@ struct UdpChallengeReply
 #pragma pack(pop)
 
 static_assert(sizeof(UdpChallengeRequest) == 512);
-static_assert(offsetof(UdpChallengeRequest, Padding) - offsetof(UdpChallengeRequest, ConnectionIdKey) == 16);
+static_assert(offsetof(UdpChallengeRequest, Padding) - offsetof(UdpChallengeRequest, ConnectionIdKey) == UdpChallengeRequest{}.MsgLength);
 
 static uint64_t GetPingTime() noexcept
 {
@@ -616,7 +624,7 @@ void OverlayService::RunServerPingUpdates() noexcept
             continue;
 
         std::memcpy(&reply, buffer, sizeof(reply));
-        if (reply.MsgId != 33 || reply.ConnectionIdKey != 0x0D || reply.ChallengeKey != 0x11 || reply.YourTimestampKey != 0x19)
+        if (reply.MsgId != kChallengeReplyMsgId || reply.ConnectionIdKey != kConnectionIdKey || reply.ChallengeKey != kChallengeKey || reply.YourTimestampKey != kTimestampKey)
             continue;
 
         const uint64_t cNow = GetPingTime();
