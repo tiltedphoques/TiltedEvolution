@@ -101,6 +101,7 @@
         "NAME": "Sunucu ismi",
         "PLAYERS": "Oyuncular / Max.",
         "COUNTRY": "Ülke",
+        "PING": "Ping",
         "FAVORITE": "Favori"
       },
       "JOIN": "Katıl"

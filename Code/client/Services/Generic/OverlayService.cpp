@@ -7,6 +7,8 @@
 #include <D3D11Hook.hpp>
 #include <OverlayRenderHandlerD3D11.hpp>
 
+#include <ws2tcpip.h>
+
 #include <Systems/RenderSystemD3D11.h>
 
 #include <World.h>
@@ -88,6 +90,40 @@ struct CpuRenderedOverlayApp final : OverlayApp
     }
 };
 
+#pragma pack(push, 1)
+struct UdpChallengeRequest
+{
+    uint8_t MsgId = 32;
+    uint16_t MsgLength = 16;
+    uint8_t ConnectionIdKey = 0x0D;
+    uint32_t ConnectionId;
+    uint8_t MyTimestampKey = 0x19;
+    uint64_t MyTimestamp;
+    uint8_t ProtocolVersionKey = 0x20;
+    uint8_t ProtocolVersion = 11;
+    uint8_t Padding[493]{};
+};
+
+struct UdpChallengeReply
+{
+    uint8_t MsgId;
+    uint8_t ConnectionIdKey;
+    uint32_t ConnectionId;
+    uint8_t ChallengeKey;
+    uint64_t Challenge;
+    uint8_t YourTimestampKey;
+    uint64_t YourTimestamp;
+};
+#pragma pack(pop)
+
+static_assert(sizeof(UdpChallengeRequest) == 512);
+static_assert(offsetof(UdpChallengeRequest, Padding) - offsetof(UdpChallengeRequest, ConnectionIdKey) == 16);
+
+static uint64_t GetPingTime() noexcept
+{
+    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
 String GetCellName(const GameId& aWorldSpaceId, const GameId& aCellId) noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
@@ -152,6 +188,8 @@ OverlayService::OverlayService(World& aWorld, TransportService& transport, entt:
 
 OverlayService::~OverlayService() noexcept
 {
+    if (m_pingSocket != INVALID_SOCKET)
+        closesocket(m_pingSocket);
 }
 
 void OverlayService::Create(RenderSystemD3D11* apRenderSystem) noexcept
@@ -296,10 +334,41 @@ void OverlayService::SetPlayerHealthPercentage(uint32_t aFormId) const noexcept
     m_pOverlay->ExecuteAsync("setHealth", pArguments);
 }
 
+void OverlayService::PingServer(uint32_t aId, const std::string& acIp, uint16_t aPort) noexcept
+{
+    SteamNetworkingIPAddr ip{};
+    if (!ip.ParseString(acIp.c_str()))
+        return;
+
+    if (m_pingSocket == INVALID_SOCKET)
+    {
+        m_pingSocket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+        if (m_pingSocket == INVALID_SOCKET)
+            return;
+
+        DWORD v6Only = 0;
+        u_long nonBlocking = 1;
+        setsockopt(m_pingSocket, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char*>(&v6Only), sizeof(v6Only));
+        ioctlsocket(m_pingSocket, FIONBIO, &nonBlocking);
+    }
+
+    sockaddr_in6 address{};
+    address.sin6_family = AF_INET6;
+    address.sin6_port = htons(aPort);
+    std::memcpy(&address.sin6_addr, ip.m_ipv6, sizeof(ip.m_ipv6));
+
+    UdpChallengeRequest request{};
+    request.ConnectionId = aId;
+    request.MyTimestamp = GetPingTime();
+
+    sendto(m_pingSocket, reinterpret_cast<const char*>(&request), sizeof(request), 0, reinterpret_cast<const sockaddr*>(&address), sizeof(address));
+}
+
 void OverlayService::OnUpdate(const UpdateEvent&) noexcept
 {
     RunDebugDataUpdates();
     RunPlayerHealthUpdates();
+    RunServerPingUpdates();
 }
 
 void OverlayService::OnConnectedEvent(const ConnectedEvent& acEvent) noexcept
@@ -522,4 +591,41 @@ void OverlayService::RunPlayerHealthUpdates() noexcept
     request.Percentage = newPercentage;
 
     m_transport.Send(request);
+}
+
+void OverlayService::RunServerPingUpdates() noexcept
+{
+    if (m_pingSocket == INVALID_SOCKET)
+        return;
+
+    while (true)
+    {
+        uint8_t buffer[64];
+        const int cSize = recv(m_pingSocket, reinterpret_cast<char*>(buffer), sizeof(buffer), 0);
+        if (cSize == SOCKET_ERROR)
+        {
+            const int cError = WSAGetLastError();
+            if (cError == WSAECONNRESET || cError == WSAEMSGSIZE)
+                continue;
+
+            return;
+        }
+
+        UdpChallengeReply reply;
+        if (cSize < static_cast<int>(sizeof(reply)))
+            continue;
+
+        std::memcpy(&reply, buffer, sizeof(reply));
+        if (reply.MsgId != 33 || reply.ConnectionIdKey != 0x0D || reply.ChallengeKey != 0x11 || reply.YourTimestampKey != 0x19)
+            continue;
+
+        const uint64_t cNow = GetPingTime();
+        if (reply.YourTimestamp > cNow)
+            continue;
+
+        auto pArguments = CefListValue::Create();
+        pArguments->SetInt(0, reply.ConnectionId);
+        pArguments->SetInt(1, static_cast<int>((cNow - reply.YourTimestamp) / 1000));
+        m_pOverlay->ExecuteAsync("serverPing", pArguments);
+    }
 }

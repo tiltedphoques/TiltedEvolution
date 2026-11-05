@@ -82,6 +82,8 @@ bool OverlayClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefR
             ProcessToggleDebugUI();
         else if (eventName == "openPlayGuide")
             ProcessOpenPlayGuide();
+        else if (eventName == "pingServers")
+            ProcessPingServersMessage(eventArgs);
 
         return true;
     }
@@ -155,6 +157,20 @@ void OverlayClient::ProcessToggleDebugUI()
 void OverlayClient::ProcessOpenPlayGuide()
 {
     ShellExecuteW(nullptr, L"open", LR"(https://wiki.tiltedphoques.com/tilted-online/general-information/playguide)", nullptr, nullptr, SW_SHOWNORMAL);
+}
+
+void OverlayClient::ProcessPingServersMessage(CefRefPtr<CefListValue> aEventArgs)
+{
+    auto pServers = aEventArgs->GetList(0);
+    for (size_t i = 0; i < pServers->GetSize(); ++i)
+    {
+        auto pServer = pServers->GetList(i);
+        const uint32_t cId = pServer->GetInt(0);
+        std::string ip = pServer->GetString(1);
+        const uint16_t cPort = static_cast<uint16_t>(pServer->GetInt(2));
+
+        World::Get().GetRunner().Queue([cId, ip, cPort] { World::Get().GetOverlayService().PingServer(cId, ip, cPort); });
+    }
 }
 
 void OverlayClient::SetUIVisible(bool aVisible) noexcept

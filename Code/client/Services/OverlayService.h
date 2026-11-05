@@ -64,6 +64,8 @@ struct OverlayService
 
     void SetPlayerHealthPercentage(uint32_t aFormId) const noexcept;
 
+    void PingServer(uint32_t aId, const std::string& acIp, uint16_t aPort) noexcept;
+
 protected:
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnConnectedEvent(const ConnectedEvent&) noexcept;
@@ -85,6 +87,7 @@ protected:
 private:
     void RunDebugDataUpdates() noexcept;
     void RunPlayerHealthUpdates() noexcept;
+    void RunServerPingUpdates() noexcept;
 
     CefRefPtr<OverlayApp> m_pOverlay{nullptr};
     TiltedPhoques::UniquePtr<D3D11RenderProvider> m_pProvider;
@@ -94,6 +97,8 @@ private:
 
     bool m_active = false;
     bool m_inGame = false;
+
+    SOCKET m_pingSocket = INVALID_SOCKET;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_connectedConnection;

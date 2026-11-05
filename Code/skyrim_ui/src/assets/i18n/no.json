@@ -98,6 +98,7 @@
         "NAME": "Server Navn",
         "PLAYERS": "Spillere / Max.",
         "COUNTRY": "Land",
+        "PING": "Ping",
         "FAVORITE": "Favoritt"
       },
       "JOIN": "Bli med"

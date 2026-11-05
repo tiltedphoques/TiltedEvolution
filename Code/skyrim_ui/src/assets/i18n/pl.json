@@ -102,6 +102,7 @@
         "NAME": "Nazwa Serwera",
         "PLAYERS": "Gracze / Max",
         "COUNTRY": "Kraj",
+        "PING": "Ping",
         "FAVORITE": "Ulubione"
       },
       "JOIN": "dołącz"
