@@ -22,7 +22,7 @@
 #endif
 
 #if defined(TP_FALLOUT4)
-// Fallout 4 tints live in BGSCharacterTint entries; remote face tints are not applied yet.
+// Fallout 4 tints are part of the TESNPC face save data in the appearance buffer.
 void FaceGenSystem::Update(World&, Actor*, FaceGenComponent&) noexcept
 {
 }

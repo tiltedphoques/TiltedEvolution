@@ -1411,7 +1411,12 @@ void CharacterService::RequestServerAssignment(const entt::entity aEntity) const
 
     if (isPlayer)
     {
+#if defined(TP_FALLOUT4)
+        // Fallout 4 saves the sex under its own flag; without it female players load as male.
+        pNpc->MarkChanged(0x3000800);
+#else
         pNpc->MarkChanged(0x2000800);
+#endif
     }
 
     const auto changeFlags = pNpc->GetChangeFlags();
