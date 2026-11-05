@@ -12,6 +12,7 @@
 #include <World.h>
 
 #include <Services/OverlayClient.h>
+#include <Services/OverlayTextureRenderHandler.h>
 #include <Services/TransportService.h>
 
 #include <Messages/NotifyChatMessageBroadcast.h>
@@ -51,7 +52,7 @@ struct D3D11RenderProvider final : OverlayApp::RenderProvider, OverlayRenderHand
 
     OverlayRenderHandler* Create() override
     {
-        auto* pHandler = new OverlayRenderHandlerD3D11(this);
+        auto* pHandler = new OverlayTextureRenderHandler(this);
         pHandler->SetVisible(true);
 
         return pHandler;
