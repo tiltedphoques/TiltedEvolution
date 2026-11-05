@@ -13,3 +13,11 @@ void AIProcess::KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, 
     static VersionDbPtr<TKnockExplosion> knockExplosion(2232384);
     TiltedPhoques::ThisCall(knockExplosion, this, apActor, *aSourceLocation, afMagnitude);
 }
+
+// AIProcess::SetLookAt
+void AIProcess::SetHeadTrackTarget(Actor* apOwner, const NiPoint3& acTarget) noexcept
+{
+    TP_THIS_FUNCTION(TSetLookAt, void, AIProcess, Actor*, const NiPoint3&);
+    static VersionDbPtr<TSetLookAt> setLookAt(2231871);
+    TiltedPhoques::ThisCall(setLookAt, this, apOwner, acTarget);
+}

@@ -21,6 +21,7 @@
 #include <Events/InventoryChangeEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Games/Misc/MenuTopicManager.h>
+#include <Games/Misc/ActorKnowledge.h>
 #include <Forms/TESQuest.h>
 
 ActorExtension* Actor::GetExtension() noexcept
@@ -139,9 +140,20 @@ TModActorValue* s_modActorValue = nullptr;
 // victim or dealt the hit, and sent to the others, like Skyrim's DamageActor hook.
 void TP_MAKE_THISCALL(HookModActorValue, Actor, ActorValueOwner::ForceMode aMode, const ActorValueInfo* apInfo, float aDelta, TESObjectREFR* apSource)
 {
-    if (aMode != ActorValueOwner::ForceMode::DAMAGE || aDelta >= 0.f || ScopedActorValueOverride::IsOverriden() || !apInfo ||
+    if (aMode != ActorValueOwner::ForceMode::DAMAGE || aDelta == 0.f || ScopedActorValueOverride::IsOverriden() || !apInfo ||
         apInfo != ActorValueInfo::Resolve(ActorValueInfo::kHealth))
     {
+        return TiltedPhoques::ThisCall(s_modActorValue, apThis, aMode, apInfo, aDelta, apSource);
+    }
+
+    // Healing, regen included (Actor::RestoreActorValue lands here). The owner heals and sends the
+    // change, like Skyrim's RegenAttributes and ApplyActorEffect hooks.
+    if (aDelta > 0.f)
+    {
+        if (apThis->GetExtension()->IsRemote())
+            return;
+
+        World::Get().GetRunner().Trigger(HealthChangeEvent(apThis->formID, aDelta));
         return TiltedPhoques::ThisCall(s_modActorValue, apThis, aMode, apInfo, aDelta, apSource);
     }
 
@@ -317,6 +329,33 @@ void TP_MAKE_THISCALL(HookProcessResponse, AIProcess, void* apVoice, Actor* apTa
     TiltedPhoques::ThisCall(s_processResponse, apThis, apVoice, apTalkingActor, apTalkedToActor);
 }
 
+TP_THIS_FUNCTION(TProcessTracking, void, Actor, float aDelta, NiAVObject* apHead);
+TProcessTracking* s_processTracking = nullptr;
+
+// Remote players get their head track target from the owner, see InterpolationSystem.
+void TP_MAKE_THISCALL(HookProcessTracking, Actor, float aDelta, NiAVObject* apHead)
+{
+    if (apThis->GetExtension()->IsRemotePlayer())
+        return;
+
+    TiltedPhoques::ThisCall(s_processTracking, apThis, aDelta, apHead);
+}
+
+TP_THIS_FUNCTION(TUpdateDetectionState, void, ActorKnowledge, void* apState);
+TUpdateDetectionState* s_updateDetectionState = nullptr;
+
+// A remote player's copy must not detect the local player.
+void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
+{
+    auto* pOwner = Cast<Actor>(TESObjectREFR::GetByHandle(apThis->hOwner));
+    auto* pTarget = Cast<Actor>(TESObjectREFR::GetByHandle(apThis->hTarget));
+
+    if (pOwner && pTarget && pOwner->GetExtension()->IsRemotePlayer() && pTarget->GetExtension()->IsLocalPlayer())
+        return;
+
+    TiltedPhoques::ThisCall(s_updateDetectionState, apThis, apState);
+}
+
 TiltedPhoques::Initializer s_actorHooks(
     []()
     {
@@ -358,6 +397,15 @@ TiltedPhoques::Initializer s_actorHooks(
         static VersionDbPtr<TProcessResponse> processResponse(2232103);
         s_processResponse = processResponse.Get();
         TP_HOOK(&s_processResponse, HookProcessResponse);
+
+        // Actor vtable slot 301, PlayerCharacter does not override it
+        static VersionDbPtr<TProcessTracking> processTracking(2230488);
+        s_processTracking = processTracking.Get();
+        TP_HOOK(&s_processTracking, HookProcessTracking);
+
+        static VersionDbPtr<TUpdateDetectionState> updateDetectionState(2235119);
+        s_updateDetectionState = updateDetectionState.Get();
+        TP_HOOK(&s_updateDetectionState, HookUpdateDetectionState);
     });
 }
 

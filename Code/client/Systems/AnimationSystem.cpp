@@ -129,7 +129,14 @@ void AnimationSystem::SerializeMovement(World& aWorld, Actor* apActor, Movement&
     {
         aMovement.Direction = apActor->currentProcess->middleProcess->direction;
 
-#if !defined(TP_FALLOUT4)
+#if defined(TP_FALLOUT4)
+        const auto* pMiddleProcess = apActor->currentProcess->middleProcess;
+        if (apActor == PlayerCharacter::Get() && pMiddleProcess->lookAt)
+        {
+            aMovement.HasLookAt = true;
+            aMovement.LookOffset = pMiddleProcess->lookAtLocation - apActor->position;
+        }
+#else
         static BSFixedString s_targetLocation("TargetLocation");
         NiPoint3 target{};
 

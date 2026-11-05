@@ -26,10 +26,16 @@ struct MiddleProcess
     GameArray<EquippedItem> equippedItems; // 0x288
     uint8_t pad2A0[0x3B8 - 0x2A0];
     BSPointerHandle<TESObjectREFR> commandingActor; // 0x3B8
-    uint8_t pad3BC[0x4C0 - 0x3BC];
+    uint8_t pad3BC[0x408 - 0x3BC];
+    NiPoint3 lookAtLocation; // 0x408
+    uint8_t pad414[0x4AA - 0x414];
+    bool lookAt;             // 0x4AA
+    uint8_t pad4AB[0x4C0 - 0x4AB];
 };
 
 static_assert(offsetof(MiddleProcess, direction) == 0xC0);
 static_assert(offsetof(MiddleProcess, equippedItems) == 0x288);
 static_assert(offsetof(MiddleProcess, commandingActor) == 0x3B8);
+static_assert(offsetof(MiddleProcess, lookAtLocation) == 0x408);
+static_assert(offsetof(MiddleProcess, lookAt) == 0x4AA);
 static_assert(sizeof(MiddleProcess) == 0x4C0);

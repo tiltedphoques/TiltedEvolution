@@ -9,6 +9,7 @@ struct AIProcess
 {
     bhkCharacterController* GetCharController() noexcept;
     void KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, float afMagnitude) noexcept;
+    void SetHeadTrackTarget(Actor* apOwner, const NiPoint3& acTarget) noexcept;
 
     void* middleLowProcess;       // 0x00
     MiddleProcess* middleProcess; // 0x08 MiddleHighProcessData

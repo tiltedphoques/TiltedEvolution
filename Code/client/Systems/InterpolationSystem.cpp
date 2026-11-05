@@ -126,12 +126,15 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
 
     pProcess->middleProcess->pitch = -finalX;
 
-#if !defined(TP_FALLOUT4)
     if (apActor->GetExtension()->IsRemotePlayer())
     {
         if (second.HasLookAt)
         {
+#if defined(TP_FALLOUT4)
+            const NiPoint3 cTarget = apActor->position + second.LookOffset;
+#else
             const NiPoint3 cTarget = apActor->GetLookingAtLocation() + second.LookOffset;
+#endif
             pProcess->SetHeadTrackTarget(apActor, cTarget);
         }
         else
@@ -139,7 +142,6 @@ void InterpolationSystem::Update(Actor* apActor, InterpolationComponent& aInterp
             pProcess->middleProcess->lookAt = false;
         }
     }
-#endif
 }
 
 void InterpolationSystem::AddPoint(InterpolationComponent& aInterpolationComponent, InterpolationComponent::TimePoint aPoint, const double aArrivalTime) noexcept
