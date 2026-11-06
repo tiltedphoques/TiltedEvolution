@@ -110,7 +110,16 @@ export class ServerListComponent {
         ),
       ),
       switchMap(servers => {
-        this.clientService.pingServers(servers);
+        const clientVersion = this.getClientVersion(
+          this.clientService.getVersion(),
+        );
+        this.clientService.pingServers(
+          [...servers].sort(
+            (a, b) =>
+              Number(this.getServerVersion(b) === clientVersion) -
+              Number(this.getServerVersion(a) === clientVersion),
+          ),
+        );
         return this.clientService.serverPingChange.pipe(
           scan(
             (list, { address, ping }) =>
