@@ -104,6 +104,7 @@
         "NAME": "Server Name",
         "PLAYERS": "Players / Max.",
         "COUNTRY": "Country",
+        "PING": "Ping",
         "FAVORITE": "Favorite"
       },
       "JOIN": "Join"

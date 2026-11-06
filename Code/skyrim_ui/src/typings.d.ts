@@ -96,6 +96,8 @@ declare namespace SkyrimTogetherTypes {
   type PartyInviteReceivedCallback = (inviterId: number) => void;
 
   type QuestUpdatedCallback = () => void;
+
+  type ServerPingCallback = (id: number, ping: number) => void;
 }
 
 /** Global Skyrim: Together object. */
@@ -224,6 +226,12 @@ interface SkyrimTogether {
   on(
     event: 'questUpdated',
     callback: SkyrimTogetherTypes.QuestUpdatedCallback,
+  ): void;
+
+  /** Add listener to when a server answers a ping. */
+  on(
+    event: 'serverPing',
+    callback: SkyrimTogetherTypes.ServerPingCallback,
   ): void;
 
   /** Remove listener from when the application is first initialized. */
@@ -361,6 +369,12 @@ interface SkyrimTogether {
     callback?: SkyrimTogetherTypes.QuestUpdatedCallback,
   ): void;
 
+  /** Remove listener from when a server answers a ping. */
+  off(
+    event: 'serverPing',
+    callback?: SkyrimTogetherTypes.ServerPingCallback,
+  ): void;
+
   /**
    * Connect to server at given address and port.
    *
@@ -449,4 +463,11 @@ interface SkyrimTogether {
    * Open the play guide on the wiki in the default browser.
    */
   openPlayGuide(): void;
+
+  /**
+   * Ping servers. Each answer arrives as a `serverPing` event.
+   *
+   * @param servers Id, IP address and port of each server.
+   */
+  pingServers(servers: [number, string, number][]): void;
 }

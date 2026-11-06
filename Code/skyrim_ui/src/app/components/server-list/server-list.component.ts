@@ -21,7 +21,7 @@ import {
   startWith,
   throttleTime,
 } from 'rxjs';
-import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
+import { distinctUntilChanged, map, scan, switchMap } from 'rxjs/operators';
 import { Server } from '../../models/server';
 import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
@@ -64,6 +64,7 @@ export class ServerListComponent {
   countryOrdering = new BehaviorSubject(SortOrder.NONE);
   serverNameOrdering = new BehaviorSubject(SortOrder.NONE);
   favoriteOrdering = new BehaviorSubject(SortOrder.NONE);
+  pingOrdering = new BehaviorSubject(SortOrder.NONE);
   serverlist$: Observable<
     (Server & {
       isCompatible: boolean;
@@ -108,6 +109,30 @@ export class ServerListComponent {
           this.loader.serverlist.track(),
         ),
       ),
+      switchMap(servers => {
+        const clientVersion = this.getClientVersion(
+          this.clientService.getVersion(),
+        );
+        this.clientService.pingServers(
+          [...servers].sort(
+            (a, b) =>
+              Number(this.getServerVersion(b) === clientVersion) -
+              Number(this.getServerVersion(a) === clientVersion),
+          ),
+        );
+        return this.clientService.serverPingChange.pipe(
+          scan(
+            (list, { address, ping }) =>
+              list.map(server =>
+                `${server.ip}:${server.port}` === address
+                  ? { ...server, ping }
+                  : server,
+              ),
+            servers,
+          ),
+          startWith(servers),
+        );
+      }),
       combineLatestWith(this.favoriteServers, this.clientService.versionSet),
       map(([servers, favorites, clientVersion]) => {
         return servers.map(server => {
@@ -299,6 +324,16 @@ export class ServerListComponent {
     this.favoriteOrdering.next(sortOrder);
   }
 
+  public sortPing(sortOrder: SortOrder) {
+    this.setSortingFn(
+      2,
+      sortOrder,
+      ServerListComponent.sortPingAsc,
+      ServerListComponent.sortPingDesc,
+    );
+    this.pingOrdering.next(sortOrder);
+  }
+
   // private filterCountryServer(search: string): void {
   //   if (search) {
   //     search = search.toLowerCase();
@@ -410,6 +445,16 @@ export class ServerListComponent {
 
   static sortFavoriteAsc(a: Server, b: Server) {
     return b.isFavorite === a.isFavorite ? 0 : b.isFavorite ? -1 : 1;
+  }
+
+  static sortPingDesc(a: Server, b: Server) {
+    return ServerListComponent.sortPingAsc(a, b) * -1;
+  }
+
+  static sortPingAsc(a: Server, b: Server) {
+    return (
+      (a.ping ?? Number.MAX_SAFE_INTEGER) - (b.ping ?? Number.MAX_SAFE_INTEGER)
+    );
   }
 
   @HostListener('window:keydown.escape', ['$event'])

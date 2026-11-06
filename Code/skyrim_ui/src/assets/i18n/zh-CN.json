@@ -98,6 +98,7 @@
         "NAME": "服务器名称",
         "PLAYERS": "玩家数",
         "COUNTRY": "国家/地区",
+        "PING": "延迟",
         "FAVORITE": "已收藏"
       },
       "JOIN": "加入"

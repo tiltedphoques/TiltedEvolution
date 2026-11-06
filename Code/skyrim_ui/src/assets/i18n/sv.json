@@ -104,6 +104,7 @@
         "NAME": "Servernamn",
         "PLAYERS": "Spelare / Max.",
         "COUNTRY": "Land",
+        "PING": "Ping",
         "FAVORITE": "Favorit"
       },
       "JOIN": "Anslut"

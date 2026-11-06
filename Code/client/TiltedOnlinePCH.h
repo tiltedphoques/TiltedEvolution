@@ -6,6 +6,7 @@
 
 #include <TiltedCore/Platform.hpp>
 
+#include <winsock2.h>
 #include <windows.h>
 #include <intrin.h>
 #include <cstdint>
