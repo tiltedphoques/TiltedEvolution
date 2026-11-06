@@ -3,6 +3,7 @@
 #include "Events/PlayerLeaveCellEvent.h"
 
 #include <Services/PlayerService.h>
+#include <Services/GoldLoss.h>
 #include <Services/CharacterService.h>
 #include <GameServer.h>
 
@@ -21,7 +22,7 @@
 #include <Setting.h>
 namespace
 {
-Console::Setting fGoldLossFactor{"Gameplay:fGoldLossFactor", "How much of their gold players lose on death, from 0 to 1 (e.g. 0.05 loses 5%, 0 loses nothing)", 0.0f};
+Console::Setting fGoldLossFactor{"Gameplay:fGoldLossFactor", "Gold lost on death: 0.0 disables, 0.0 to 1.0 is a fraction (0.10 = 10%, 1.0 = all), above 1.0 is flat gold (10 = 10 gold); rounded down and capped at available gold", 0.0f};
 }
 
 PlayerService::PlayerService(World& aWorld, entt::dispatcher& aDispatcher) noexcept
@@ -152,7 +153,9 @@ void PlayerService::HandleInteriorCellEnter(const PacketEvent<EnterInteriorCellR
 
 void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnRequest>& acMessage) const noexcept
 {
-    float goldLossFactor = fGoldLossFactor.as_float();
+    const float cGoldLossSetting = fGoldLossFactor.as_float();
+    if (!GoldLoss::IsValid(cGoldLossSetting))
+        spdlog::warn("Ignored invalid Gameplay:fGoldLossFactor {}; expected a finite, nonnegative value", cGoldLossSetting);
 
     auto character = acMessage.pPlayer->GetCharacter();
     if (!character)
@@ -164,17 +167,18 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
 
     if (it != view.end())
     {
-        if (goldLossFactor != 0.0)
+        auto& inventoryComponent = view.get<InventoryComponent>(*it);
+        GameId goldId(0, 0xF);
+        const int32_t cGoldCount = inventoryComponent.Content.GetEntryCountById(goldId);
+        const int32_t cGoldToRemove = GoldLoss::Calculate(cGoldCount, cGoldLossSetting);
+        if (cGoldToRemove > 0)
         {
-            auto& inventoryComponent = view.get<InventoryComponent>(*it);
-
-            GameId goldId(0, 0xF);
-            int32_t goldCount = inventoryComponent.Content.GetEntryCountById(goldId);
-            int32_t goldToRemove = static_cast<int32_t>(goldCount * goldLossFactor);
+            spdlog::info("Death gold penalty for actor {:X}: setting {}, recorded balance {}, deducted {}",
+                         World::ToInteger(*character), cGoldLossSetting, cGoldCount, cGoldToRemove);
 
             Inventory::Entry entry{};
             entry.BaseId = goldId;
-            entry.Count = -goldToRemove;
+            entry.Count = -cGoldToRemove;
 
             inventoryComponent.Content.AddOrRemoveEntry(entry);
 
@@ -191,7 +195,7 @@ void PlayerService::OnPlayerRespawnRequest(const PacketEvent<PlayerRespawnReques
 
             // ...and instead, send NotifyPlayerRespawn so that the client can print a message.
             NotifyPlayerRespawn notifyPlayerRespawn{};
-            notifyPlayerRespawn.GoldLost = goldToRemove;
+            notifyPlayerRespawn.GoldLost = cGoldToRemove;
 
             acMessage.pPlayer->Send(notifyPlayerRespawn);
         }
