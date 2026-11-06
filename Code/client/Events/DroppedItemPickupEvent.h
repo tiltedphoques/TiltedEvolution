@@ -7,4 +7,5 @@ struct DroppedItemPickupEvent
 {
     uint32_t RefId{};
     uint32_t BaseId{};
+    int32_t Count{};
 };

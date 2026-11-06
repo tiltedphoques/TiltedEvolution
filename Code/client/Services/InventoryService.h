@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Structs/Inventory.h>
+
 struct World;
 struct TransportService;
 
@@ -11,6 +13,8 @@ struct EquipmentChangeEvent;
 struct NotifyEquipmentChanges;
 struct DroppedItemPickupEvent;
 struct NotifyDroppedItemPickup;
+struct NotifyDroppedItem;
+struct TESObjectREFR;
 struct DisconnectedEvent;
 
 /**
@@ -60,6 +64,10 @@ struct InventoryService
      * @brief Removes the local copy of a dropped item another client picked up.
      */
     void OnNotifyDroppedItemPickup(const NotifyDroppedItemPickup& acMessage) noexcept;
+    /**
+     * @brief Places an item another player dropped, on drop and when entering its cell.
+     */
+    void OnNotifyDroppedItem(const NotifyDroppedItem& acMessage) noexcept;
     void OnDisconnected(const DisconnectedEvent&) noexcept;
 
 private:
@@ -80,6 +88,7 @@ private:
     entt::scoped_connection m_equipmentChangeConnection;
     entt::scoped_connection m_droppedItemPickupConnection;
     entt::scoped_connection m_notifyDroppedItemPickupConnection;
+    entt::scoped_connection m_notifyDroppedItemConnection;
     entt::scoped_connection m_disconnectedConnection;
 
     struct DroppedItem
@@ -90,5 +99,11 @@ private:
     };
     // Dropped items in this client's world, keyed by the local reference form id
     TiltedPhoques::Map<uint32_t, DroppedItem> m_droppedItems;
+    // Items this client picked up, waiting for the server to confirm nobody else got them first
+    TiltedPhoques::Map<uint64_t, Inventory::Entry> m_pendingPickups;
     uint32_t m_nextDropId = 0;
+
+    static uint64_t MakeDropKey(uint32_t aDropperId, uint32_t aDropId) noexcept { return (static_cast<uint64_t>(aDropperId) << 32) | aDropId; }
+    TiltedPhoques::Map<uint32_t, DroppedItem>::iterator FindDroppedItem(uint32_t aDropperId, uint32_t aDropId) noexcept;
+    static TESObjectREFR* GetDroppedReference(const std::pair<const uint32_t, DroppedItem>& acEntry) noexcept;
 };

@@ -298,7 +298,7 @@ void QueuePickUp(Actor* apActor, TESObjectREFR* apObject, int32_t aCount)
 
     // Other clients have their own copy of a dropped item, see InventoryService
     if (updateClients && apActor->GetExtension()->IsLocal())
-        World::Get().GetRunner().Trigger(DroppedItemPickupEvent{apObject->formID, apObject->baseForm->formID});
+        World::Get().GetRunner().Trigger(DroppedItemPickupEvent{apObject->formID, apObject->baseForm->formID, aCount});
 }
 
 void TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t aCount, bool aPlaySounds)
@@ -807,7 +807,7 @@ void Actor::SetActorInventory(const Inventory& acInventory) noexcept
         SetInventory(acInventory);
 }
 
-TESObjectREFR* Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
+void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
 
@@ -815,12 +815,12 @@ TESObjectREFR* Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoin
     if (!pObject)
     {
         spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
-        return nullptr;
+        return;
     }
 
     // TODO: pick up
     if (arEntry.Count >= 0)
-        return nullptr;
+        return;
 
     RemoveItemData data{};
     *reinterpret_cast<uint32_t*>(data.stackData) = 0x80000000;
@@ -829,7 +829,7 @@ TESObjectREFR* Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoin
     data.reason = ITEM_REMOVE_REASON::kDropping;
     data.dropLoc = apLocation;
     data.rotate = apRotation;
-    return TESObjectREFR::GetByHandle(RemoveItem(data).handle.iBits);
+    RemoveItem(data);
 }
 
 Inventory Actor::GetPowerArmorInventory() const noexcept

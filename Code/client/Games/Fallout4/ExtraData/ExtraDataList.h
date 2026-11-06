@@ -19,6 +19,8 @@ struct ExtraDataList
     bool Remove(ExtraDataType aType, BSExtraData* apNewData);
 
     uint32_t GetCount() const;
+    // ExtraDataList::SetCount, 1 or less removes the count
+    void SetCount(int16_t aCount) noexcept;
 
     void SetType(ExtraDataType aType, bool aClear);
     BSExtraData* GetByType(ExtraDataType type) const;

@@ -120,5 +120,6 @@ enum ServerOpcode : unsigned char
     kNotifyActionEvents,
     kNotifySettlement,
     kNotifyDroppedItemPickup,
+    kNotifyDroppedItem,
     kServerOpcodeMax
 };

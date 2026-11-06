@@ -8,6 +8,8 @@ void RequestInventoryChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     Item.Serialize(aWriter);
     Serialization::WriteBool(aWriter, Drop);
     Serialization::WriteVarInt(aWriter, DropId);
+    if (DropId)
+        DropPosition.Serialize(aWriter);
     Serialization::WriteBool(aWriter, UpdateClients);
 }
 
@@ -20,5 +22,7 @@ void RequestInventoryChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     Item.Deserialize(aReader);
     Drop = Serialization::ReadBool(aReader);
     DropId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    if (DropId)
+        DropPosition.Deserialize(aReader);
     UpdateClients = Serialization::ReadBool(aReader);
 }

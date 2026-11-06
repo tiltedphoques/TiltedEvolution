@@ -28,3 +28,10 @@ void ExtraDataList::SetHealthPercent(float aHealth) noexcept
     static VersionDbPtr<TSetHealth> setHealth(2190124);
     setHealth.Get()(this, aHealth);
 }
+
+void ExtraDataList::SetCount(int16_t aCount) noexcept
+{
+    TP_THIS_FUNCTION(TSetCount, void, ExtraDataList, int16_t);
+    static VersionDbPtr<TSetCount> setCount(2190125);
+    TiltedPhoques::ThisCall(setCount, this, aCount);
+}

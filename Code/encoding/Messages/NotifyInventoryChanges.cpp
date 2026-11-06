@@ -7,7 +7,6 @@ void NotifyInventoryChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter
     Serialization::WriteVarInt(aWriter, OwnershipEpoch);
     Item.Serialize(aWriter);
     Serialization::WriteBool(aWriter, Drop);
-    Serialization::WriteVarInt(aWriter, DropId);
 }
 
 void NotifyInventoryChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -18,5 +17,4 @@ void NotifyInventoryChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRead
     OwnershipEpoch = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     Item.Deserialize(aReader);
     Drop = Serialization::ReadBool(aReader);
-    DropId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }
