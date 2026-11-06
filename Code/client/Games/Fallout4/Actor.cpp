@@ -221,10 +221,26 @@ TAddObjectToContainer* s_addObjectToContainer = nullptr;
 void TP_MAKE_THISCALL(HookAddObjectToContainer, Actor, TESBoundObject* apObject, ExtraDataList** apExtra, int32_t aCount, TESObjectREFR* apOldContainer,
                       ITEM_REMOVE_REASON aReason)
 {
-    if (apObject && aCount > 0 && !ScopedInventoryOverride::IsOverriden())
+    // The local player is sent from HookAddInventoryItem, which this also ends up in.
+    if (apObject && aCount > 0 && apThis != PlayerCharacter::Get() && !ScopedInventoryOverride::IsOverriden())
         QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, MakeInventoryEntry(apObject, aCount)), apOldContainer);
 
     TiltedPhoques::ThisCall(s_addObjectToContainer, apThis, apObject, apExtra, aCount, apOldContainer, aReason);
+}
+
+TP_THIS_FUNCTION(TAddInventoryItem, void, TESObjectREFR, TESBoundObject*, void* apExtra, uint32_t, TESObjectREFR*, const void* apFilter, TESObjectREFR*);
+TAddInventoryItem* s_addInventoryItem = nullptr;
+
+// TESObjectREFR::AddInventoryItem. Console and script AddItem, quest rewards and crafting add to the
+// player here directly, without going through AddObjectToContainer.
+void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apObject, void* apExtra, uint32_t aCount, TESObjectREFR* apOldContainer,
+                      const void* apFilter, TESObjectREFR* apOverrideRef)
+{
+    auto* pPlayer = PlayerCharacter::Get();
+    if (apThis == pPlayer && apObject && aCount > 0 && !ScopedInventoryOverride::IsOverriden())
+        QueueActorInventoryChange(pPlayer, InventoryChangeEvent(apThis->formID, MakeInventoryEntry(apObject, static_cast<int32_t>(aCount))), apOldContainer);
+
+    TiltedPhoques::ThisCall(s_addInventoryItem, apThis, apObject, apExtra, aCount, apOldContainer, apFilter, apOverrideRef);
 }
 
 TP_THIS_FUNCTION(TRemoveItem, BSPointerHandle<TESObjectREFR>*, Actor, BSPointerHandle<TESObjectREFR>*, RemoveItemData*);
@@ -393,6 +409,10 @@ TiltedPhoques::Initializer s_actorHooks(
         static VersionDbPtr<TAddObjectToContainer> addObjectToContainer(2229960);
         s_addObjectToContainer = addObjectToContainer.Get();
         TP_HOOK(&s_addObjectToContainer, HookAddObjectToContainer);
+
+        static VersionDbPtr<TAddInventoryItem> addInventoryItem(2200949);
+        s_addInventoryItem = addInventoryItem.Get();
+        TP_HOOK(&s_addInventoryItem, HookAddInventoryItem);
 
         static VersionDbPtr<TRemoveItem> removeItem(2230239);
         s_removeItem = removeItem.Get();
