@@ -21,3 +21,10 @@ void AIProcess::SetHeadTrackTarget(Actor* apOwner, const NiPoint3& acTarget) noe
     static VersionDbPtr<TSetLookAt> setLookAt(2231871);
     TiltedPhoques::ThisCall(setLookAt, this, apOwner, acTarget);
 }
+
+void AIProcess::SetWeaponBonesCulled(Actor* apActor, bool aCulled, WeaponCullType aType) noexcept
+{
+    TP_THIS_FUNCTION(TSetWeaponBonesCulled, bool, AIProcess, const Actor*, bool, WeaponCullType);
+    static VersionDbPtr<TSetWeaponBonesCulled> setWeaponBonesCulled(2232535);
+    TiltedPhoques::ThisCall(setWeaponBonesCulled, this, apActor, aCulled, aType);
+}

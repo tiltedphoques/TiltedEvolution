@@ -11,6 +11,14 @@ struct AIProcess
     void KnockExplosion(Actor* apActor, const NiPoint3* aSourceLocation, float afMagnitude) noexcept;
     void SetHeadTrackTarget(Actor* apOwner, const NiPoint3& acTarget) noexcept;
 
+    // WEAPON_CULL_TYPE
+    enum WeaponCullType : int32_t
+    {
+        kWeaponCullAnimation = 1,
+        kWeaponCullWeaponSwitch = 2,
+    };
+    void SetWeaponBonesCulled(Actor* apActor, bool aCulled, WeaponCullType aType) noexcept;
+
     void* middleLowProcess;       // 0x00
     MiddleProcess* middleProcess; // 0x08 MiddleHighProcessData
     void* highProcess;            // 0x10

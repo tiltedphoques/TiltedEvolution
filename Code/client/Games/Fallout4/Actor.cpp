@@ -356,6 +356,30 @@ void TP_MAKE_THISCALL(HookUpdateDetectionState, ActorKnowledge, void* apState)
     TiltedPhoques::ThisCall(s_updateDetectionState, apThis, apState);
 }
 
+// WeaponHandlerHelper, run by the weaponDraw and weaponSheathe animation events
+using TWeaponHandler = void(Actor*);
+TWeaponHandler* s_weaponDrawHandler = nullptr;
+TWeaponHandler* s_weaponSheatheHandler = nullptr;
+
+// The handlers only show or hide the weapon while the actor state is still mid draw or sheathe.
+// Remote actors get that state from their owner, usually already past it, so their weapon would
+// stay hidden after drawing and visible after sheathing.
+void HookWeaponDrawHandler(Actor* apActor)
+{
+    s_weaponDrawHandler(apActor);
+
+    if (apActor->currentProcess && apActor->GetExtension()->IsRemote())
+        apActor->currentProcess->SetWeaponBonesCulled(apActor, false, AIProcess::kWeaponCullWeaponSwitch);
+}
+
+void HookWeaponSheatheHandler(Actor* apActor)
+{
+    s_weaponSheatheHandler(apActor);
+
+    if (apActor->currentProcess && apActor->GetExtension()->IsRemote())
+        apActor->currentProcess->SetWeaponBonesCulled(apActor, true, AIProcess::kWeaponCullWeaponSwitch);
+}
+
 TiltedPhoques::Initializer s_actorHooks(
     []()
     {
@@ -406,6 +430,13 @@ TiltedPhoques::Initializer s_actorHooks(
         static VersionDbPtr<TUpdateDetectionState> updateDetectionState(2235119);
         s_updateDetectionState = updateDetectionState.Get();
         TP_HOOK(&s_updateDetectionState, HookUpdateDetectionState);
+
+        static VersionDbPtr<TWeaponHandler> weaponDrawHandler(2229545);
+        static VersionDbPtr<TWeaponHandler> weaponSheatheHandler(2229546);
+        s_weaponDrawHandler = weaponDrawHandler.Get();
+        s_weaponSheatheHandler = weaponSheatheHandler.Get();
+        TP_HOOK(&s_weaponDrawHandler, HookWeaponDrawHandler);
+        TP_HOOK(&s_weaponSheatheHandler, HookWeaponSheatheHandler);
     });
 }
 
