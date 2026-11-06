@@ -205,17 +205,30 @@ void InventoryService::OnDroppedItemPickup(const PacketEvent<RequestDroppedItemP
     const auto it = std::find_if(m_droppedItems.begin(), m_droppedItems.end(), [&message](const DroppedItem& acItem)
                                  { return acItem.DropperId == message.DropperId && acItem.DropId == message.DropId; });
 
-    // Someone else picked it up first
+    const uint64_t cKey = (static_cast<uint64_t>(message.DropperId) << 32) | message.DropId;
     if (it == m_droppedItems.end())
     {
-        notify.Result = NotifyDroppedItemPickup::kDenied;
-        acMessage.pPlayer->Send(notify);
-        spdlog::info("Denied pickup of dropped item {:X}:{:X}, already taken", message.DropperId, message.DropId);
-        return;
+        // Someone else picked it up first
+        if (std::find(m_takenDrops.begin(), m_takenDrops.end(), cKey) != m_takenDrops.end())
+        {
+            notify.Result = NotifyDroppedItemPickup::kDenied;
+            acMessage.pPlayer->Send(notify);
+            spdlog::info("Denied pickup of dropped item {:X}:{:X}, already taken", message.DropperId, message.DropId);
+            return;
+        }
+
+        // Dropped before a server restart, the clients still have it, so the pickup stands
+        spdlog::info("Dropped item {:X}:{:X} is unknown, accepting the pickup", message.DropperId, message.DropId);
+    }
+    else
+    {
+        m_droppedItems.erase(it);
+        spdlog::info("Dropped item {:X}:{:X} picked up", message.DropperId, message.DropId);
     }
 
-    m_droppedItems.erase(it);
-    spdlog::info("Dropped item {:X}:{:X} picked up", message.DropperId, message.DropId);
+    if (m_takenDrops.size() >= cMaxDroppedItems)
+        m_takenDrops.erase(m_takenDrops.begin());
+    m_takenDrops.push_back(cKey);
 
     // Clients that never saw the drop ignore it
     GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
@@ -244,7 +257,7 @@ void InventoryService::AddDroppedItem(entt::entity aDropper, const RequestInvent
     item.Position = acMessage.DropPosition;
     item.Cell = *pCell;
 
-    spdlog::info("Item {:X} x{} dropped as {:X}:{:X}, interior {}", item.Item.BaseId.BaseId, item.Item.Count, item.DropperId, item.DropId, item.Cell.IsInInteriorCell());
+    spdlog::info("Item {:X} x{} dropped as {:X}:{:X}", item.Item.BaseId.BaseId, item.Item.Count, item.DropperId, item.DropId);
 
     NotifyDroppedItem notify;
     Serialize(item, notify);
@@ -255,6 +268,7 @@ void InventoryService::AddDroppedItem(entt::entity aDropper, const RequestInvent
 
 void InventoryService::SendDroppedItems(Player* apPlayer, const CellIdComponent& acCell) const noexcept
 {
+    uint32_t sent = 0;
     for (const auto& item : m_droppedItems)
     {
         if (!acCell.IsInRange(item.Cell, false))
@@ -263,7 +277,13 @@ void InventoryService::SendDroppedItems(Player* apPlayer, const CellIdComponent&
         NotifyDroppedItem notify;
         Serialize(item, notify);
         apPlayer->Send(notify);
+        ++sent;
     }
+
+    if (sent)
+        spdlog::info("Sent {} dropped items to player {:X}", sent, apPlayer->GetId());
+    else if (!m_droppedItems.empty())
+        spdlog::debug("No dropped items in range of player {:X} at ({}, {})", apPlayer->GetId(), acCell.CenterCoords.X, acCell.CenterCoords.Y);
 }
 
 void InventoryService::Serialize(const DroppedItem& acItem, NotifyDroppedItem& aNotify) noexcept

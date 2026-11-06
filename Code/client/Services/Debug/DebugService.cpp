@@ -156,13 +156,14 @@ extern thread_local bool g_forceAnimation;
 void DebugService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
 {
 #if (!IS_MASTER)
-    // Development aid: TP_AUTOCONNECT=host:port connects once the player is in a cell.
-    static bool s_autoConnectChecked = false;
-    if (!s_autoConnectChecked && PlayerCharacter::Get() && PlayerCharacter::Get()->parentCell)
+    // Development aid: TP_AUTOCONNECT=host:port connects once the player is in a cell, and again after losing the connection.
+    static std::chrono::steady_clock::time_point s_lastAutoConnect{};
+    const auto cNow = std::chrono::steady_clock::now();
+    if (cNow - s_lastAutoConnect > std::chrono::seconds(10) && PlayerCharacter::Get() && PlayerCharacter::Get()->parentCell && !m_transport.IsOnline())
     {
-        s_autoConnectChecked = true;
+        s_lastAutoConnect = cNow;
         char address[256]{};
-        if (GetEnvironmentVariableA("TP_AUTOCONNECT", address, sizeof(address)) > 0 && !m_transport.IsOnline())
+        if (GetEnvironmentVariableA("TP_AUTOCONNECT", address, sizeof(address)) > 0)
             m_transport.Connect(address);
     }
 #endif

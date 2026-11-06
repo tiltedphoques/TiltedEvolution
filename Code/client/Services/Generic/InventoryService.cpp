@@ -435,7 +435,10 @@ void InventoryService::OnNotifyDroppedItem(const NotifyDroppedItem& acMessage) n
     if (const auto it = FindDroppedItem(acMessage.DropperId, acMessage.DropId); it != m_droppedItems.end())
     {
         if (GetDroppedReference(*it))
+        {
+            spdlog::debug("Dropped item {:X}:{:X} is already placed", acMessage.DropperId, acMessage.DropId);
             return;
+        }
         m_droppedItems.erase(it);
     }
 

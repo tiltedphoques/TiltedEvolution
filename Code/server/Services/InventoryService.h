@@ -76,4 +76,6 @@ private:
     entt::scoped_connection m_gridCellShiftConnection;
 
     Vector<DroppedItem> m_droppedItems;
+    // Recently picked up drops, to deny the second of two simultaneous pickups
+    Vector<uint64_t> m_takenDrops;
 };
