@@ -271,6 +271,13 @@ export class ClientService implements OnDestroy {
   }
 
   /**
+   * Send the name tag settings to the game client.
+   */
+  public setNameTagSettings(settings: NameTagSettings): void {
+    skyrimtogether.setNameTagSettings(settings);
+  }
+
+  /**
    * Deactivate UI and release control.
    */
   public deactivate(): void {

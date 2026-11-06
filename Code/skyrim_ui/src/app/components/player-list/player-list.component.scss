@@ -53,3 +53,24 @@
     }
   }
 }
+
+.eye-col {
+  width: 4em;
+  text-align: center;
+}
+
+.eye-button {
+  padding: 0.25vw 0.5vw;
+  background: none;
+  border: 0;
+  cursor: pointer;
+
+  &.hidden-name {
+    color: #e0483e;
+  }
+}
+
+.stranger-name {
+  font-style: italic;
+  opacity: 0.75;
+}

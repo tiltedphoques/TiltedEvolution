@@ -68,8 +68,12 @@
       "LEAVE_PARTY": "Leave party"
     },
     "PARTY_LIST": {
+      "STRANGER": "Stranger",
+      "SHOW_NAME": "Show name",
+      "HIDE_NAME": "Hide name",
       "NO_OTHER_PLAYERS": "Nobody here but us chickens",
       "TABLE_HEADERS": {
+        "KNOWN": "Known",
         "LEVEL": "Lv.",
         "NAME": "Name",
         "LOCATION": "Location"
@@ -109,6 +113,38 @@
       "JOIN": "Join"
     },
     "SETTINGS": {
+      "PLAYER_UI": {
+        "TITLE": "Player UI filters",
+        "KNOWN_NAMES": "Known names",
+        "KNOWN_NAMES_HINT": "Party: Names are known within the party, others' are not. The eye in the player list overrides this per name.",
+        "KNOWN_NAMES_OPTIONS": {
+          "ALL": "All",
+          "PARTY": "Party",
+          "NONE": "None"
+        },
+        "PARTY_INVITES": "Party invitations",
+        "PARTY_INVITES_HINT": "Off: Incoming party invites are declined silently.",
+        "MINI_CHAT": "Preview mini chat",
+        "MINI_CHAT_HINT": "Shows the latest white chat text when the F2 UI isn't open.",
+        "NAME_TAGS": "Name tags",
+        "NAME_TAGS_HINT": "Party: Show name tags only above party members.",
+        "NAME_TAG_BACKPLATE": "Name backdrop",
+        "NAME_TAG_BACKPLATE_HINT": "Dark box behind the name. Party: Show only on party members.",
+        "NAME_TAG_SIZE": "Name tag size",
+        "DISTANCES": "Distances",
+        "NAME_FADE_START": "Name fade start",
+        "NAME_FADE_START_HINT": "Closer than this: 100% opacity.",
+        "NAME_INVISIBLE": "Name is invisible",
+        "NAME_INVISIBLE_HINT": "Farther than this: 0% opacity.",
+        "PARTY_FADE_START": "Party fade start",
+        "PARTY_INVISIBLE": "Party invisible from",
+        "UNITS": "units",
+        "FILTERS": {
+          "ON": "On",
+          "PARTY": "Party",
+          "OFF": "Off"
+        }
+      },
       "VERSION": {
         "HEADER": "Version",
         "INFO": "Currently installed:",

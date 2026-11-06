@@ -5,6 +5,8 @@ import { Tag } from 'src/app/models/tag';
 import {
   autoHideTimerLengths,
   FontSize,
+  KnownNames,
+  PlayerUiFilter,
   ScreenCorner,
   SettingService,
 } from 'src/app/services/setting.service';
@@ -46,6 +48,35 @@ export class SettingsComponent {
     },
   ];
   readonly availableAutoHideTimes = autoHideTimerLengths;
+  readonly availableKnownNames: { id: KnownNames; label: string }[] = [
+    {
+      id: KnownNames.ALL,
+      label: 'COMPONENT.SETTINGS.PLAYER_UI.KNOWN_NAMES_OPTIONS.ALL',
+    },
+    {
+      id: KnownNames.PARTY,
+      label: 'COMPONENT.SETTINGS.PLAYER_UI.KNOWN_NAMES_OPTIONS.PARTY',
+    },
+    {
+      id: KnownNames.NONE,
+      label: 'COMPONENT.SETTINGS.PLAYER_UI.KNOWN_NAMES_OPTIONS.NONE',
+    },
+  ];
+  readonly availablePlayerUiFilters: { id: PlayerUiFilter; label: string }[] =
+    [
+      {
+        id: PlayerUiFilter.ON,
+        label: 'COMPONENT.SETTINGS.PLAYER_UI.FILTERS.ON',
+      },
+      {
+        id: PlayerUiFilter.PARTY,
+        label: 'COMPONENT.SETTINGS.PLAYER_UI.FILTERS.PARTY',
+      },
+      {
+        id: PlayerUiFilter.OFF,
+        label: 'COMPONENT.SETTINGS.PLAYER_UI.FILTERS.OFF',
+      },
+    ];
 
   public settings = this.settingService.settings;
   public autoHideTime: number;
