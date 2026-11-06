@@ -7,6 +7,7 @@
 #include <D3D11Hook.hpp>
 #include <OverlayRenderHandlerD3D11.hpp>
 
+#include <algorithm>
 #include <ws2tcpip.h>
 
 #include <base/threading/ThreadUtils.h>
@@ -99,6 +100,7 @@ constexpr uint8_t kChallengeKey = 0x11;
 constexpr uint8_t kTimestampKey = 0x19;
 constexpr uint8_t kProtocolVersionKey = 0x20;
 constexpr uint8_t kProtocolVersion = 11;
+constexpr uint64_t kPingSendIntervalUs = 10'000;
 
 #pragma pack(push, 1)
 struct UdpChallengeRequest
@@ -347,6 +349,9 @@ void OverlayService::PingServers(const ServerAddresses& acServers) noexcept
 {
     ClosePingSocket();
 
+    m_pendingPings = acServers;
+    std::ranges::reverse(m_pendingPings);
+
     DWORD v6Only = 0;
     sockaddr_in6 local{};
     local.sin6_family = AF_INET6;
@@ -372,11 +377,7 @@ void OverlayService::PingServers(const ServerAddresses& acServers) noexcept
     {
         spdlog::warn("Server ping thread creation failed: {}", GetLastError());
         ClosePingSocket();
-        return;
     }
-
-    for (const auto& [cId, cIp, cPort] : acServers)
-        PingServer(cId, cIp, cPort);
 }
 
 void OverlayService::PingServer(uint32_t aId, const std::string& acIp, uint16_t aPort) noexcept
@@ -630,6 +631,15 @@ void OverlayService::RunServerPingUpdates() noexcept
 {
     if (m_pingSocket == INVALID_SOCKET)
         return;
+
+    const uint64_t cNow = GetPingTime();
+    if (!m_pendingPings.empty() && cNow - m_lastPingSendTime >= kPingSendIntervalUs)
+    {
+        const auto [cId, cIp, cPort] = std::move(m_pendingPings.back());
+        m_pendingPings.pop_back();
+        PingServer(cId, cIp, cPort);
+        m_lastPingSendTime = cNow;
+    }
 
     std::scoped_lock lock(m_pingMutex);
     for (const auto& [id, ping] : m_serverPings)

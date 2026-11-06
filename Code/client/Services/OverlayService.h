@@ -105,6 +105,8 @@ private:
 
     SOCKET m_pingSocket = INVALID_SOCKET;
     HANDLE m_pingThread = nullptr;
+    uint64_t m_lastPingSendTime = 0;
+    ServerAddresses m_pendingPings;
     std::mutex m_pingMutex;
     Vector<std::pair<uint32_t, int>> m_serverPings;
 
