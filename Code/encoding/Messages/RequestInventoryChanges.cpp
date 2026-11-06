@@ -7,6 +7,7 @@ void RequestInventoryChanges::SerializeRaw(TiltedPhoques::Buffer::Writer& aWrite
     Serialization::WriteVarInt(aWriter, OwnershipEpoch);
     Item.Serialize(aWriter);
     Serialization::WriteBool(aWriter, Drop);
+    Serialization::WriteVarInt(aWriter, DropId);
     Serialization::WriteBool(aWriter, UpdateClients);
 }
 
@@ -18,5 +19,6 @@ void RequestInventoryChanges::DeserializeRaw(TiltedPhoques::Buffer::Reader& aRea
     OwnershipEpoch = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     Item.Deserialize(aReader);
     Drop = Serialization::ReadBool(aReader);
+    DropId = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
     UpdateClients = Serialization::ReadBool(aReader);
 }

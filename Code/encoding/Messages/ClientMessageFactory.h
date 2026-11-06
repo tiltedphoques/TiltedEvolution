@@ -59,6 +59,7 @@
 #include <Messages/RequestRemoveWaypoint.h>
 
 #include <Messages/SettlementRequest.h>
+#include <Messages/RequestDroppedItemPickup.h>
 
 using TiltedPhoques::UniquePtr;
 
@@ -76,7 +77,7 @@ struct ClientMessageFactory
             ProjectileLaunchRequest, InterruptCastRequest, AddTargetRequest, ScriptAnimationRequest, DrawWeaponRequest, MountRequest, NewPackageRequest, RequestRespawn,
             SyncExperienceRequest, RequestEquipmentChanges, SendChatMessageRequest, TeleportCommandRequest, PlayerRespawnRequest, DialogueRequest, SubtitleRequest,
             PlayerDialogueRequest, PlayerLevelRequest, TeleportRequest, RequestPlayerHealthUpdate, RequestWeatherChange, RequestCurrentWeather, RequestSetWaypoint,
-            RequestRemoveWaypoint, RemoveSpellRequest, SetTimeCommandRequest, PowerArmorRequest, RequestActionEvents, SettlementRequest>;
+            RequestRemoveWaypoint, RemoveSpellRequest, SetTimeCommandRequest, PowerArmorRequest, RequestActionEvents, SettlementRequest, RequestDroppedItemPickup>;
 
         return s_visitor(std::forward<T>(func));
     }

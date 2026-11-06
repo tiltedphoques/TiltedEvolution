@@ -18,11 +18,13 @@ struct NotifyInventoryChanges final : ServerMessage
 
     bool operator==(const NotifyInventoryChanges& acRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() && ServerId == acRhs.ServerId && OwnershipEpoch == acRhs.OwnershipEpoch && Item == acRhs.Item && Drop == acRhs.Drop;
+        return GetOpcode() == acRhs.GetOpcode() && ServerId == acRhs.ServerId && OwnershipEpoch == acRhs.OwnershipEpoch && Item == acRhs.Item && Drop == acRhs.Drop && DropId == acRhs.DropId;
     }
 
     uint32_t ServerId{};
     uint32_t OwnershipEpoch{};
     Inventory::Entry Item{};
     bool Drop = false;
+    // Identifies the dropped reference across clients, together with ServerId
+    uint32_t DropId{};
 };

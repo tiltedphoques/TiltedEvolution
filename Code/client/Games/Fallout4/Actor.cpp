@@ -19,6 +19,7 @@
 #include <Events/HitEvent.h>
 #include <Events/HealthChangeEvent.h>
 #include <Events/InventoryChangeEvent.h>
+#include <Events/DroppedItemPickupEvent.h>
 #include <Events/DialogueEvent.h>
 #include <Games/Misc/MenuTopicManager.h>
 #include <Games/Misc/ActorKnowledge.h>
@@ -248,18 +249,37 @@ TRemoveItem* s_removeItem = nullptr;
 
 BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveItem, Actor, BSPointerHandle<TESObjectREFR>* apResult, RemoveItemData* apData)
 {
-    if (apData && apData->object && apData->count > 0 && !ScopedInventoryOverride::IsOverriden())
+    if (!apData || !apData->object || apData->count <= 0 || ScopedInventoryOverride::IsOverriden())
     {
-        const bool drop = apData->reason == ITEM_REMOVE_REASON::kDropping;
-        // The engine asks for INT_MAX to mean "all of them".
-        const auto count = static_cast<int32_t>(std::min<int64_t>(apData->count, apThis->GetItemCountInInventory(apData->object)));
-        if (count > 0)
-            QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, MakeInventoryEntry(apData->object, -count), drop), apData->a_otherContainer);
+        ScopedEquipOverride _;
+        return TiltedPhoques::ThisCall(s_removeItem, apThis, apResult, apData);
     }
 
-    ScopedEquipOverride _;
+    const bool drop = apData->reason == ITEM_REMOVE_REASON::kDropping;
+    // The engine asks for INT_MAX to mean "all of them".
+    const auto count = static_cast<int32_t>(std::min<int64_t>(apData->count, apThis->GetItemCountInInventory(apData->object)));
+    auto* pObject = apData->object;
+    auto* pOtherContainer = apData->a_otherContainer;
 
-    return TiltedPhoques::ThisCall(s_removeItem, apThis, apResult, apData);
+    BSPointerHandle<TESObjectREFR>* pResult = nullptr;
+    {
+        ScopedEquipOverride _;
+        pResult = TiltedPhoques::ThisCall(s_removeItem, apThis, apResult, apData);
+    }
+
+    if (count > 0)
+    {
+        InventoryChangeEvent event(apThis->formID, MakeInventoryEntry(pObject, -count), drop);
+        // A drop returns the reference it put in the world
+        if (drop && pResult)
+        {
+            if (auto* pDropped = TESObjectREFR::GetByHandle(pResult->handle.iBits))
+                event.DroppedRefId = pDropped->formID;
+        }
+        QueueActorInventoryChange(apThis, std::move(event), pOtherContainer);
+    }
+
+    return pResult;
 }
 
 TP_THIS_FUNCTION(TPickUpObject, void, Actor, TESObjectREFR*, int32_t, bool);
@@ -275,6 +295,10 @@ void QueuePickUp(Actor* apActor, TESObjectREFR* apObject, int32_t aCount)
 
     const bool updateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
     QueueActorInventoryChange(apActor, InventoryChangeEvent(apActor->formID, MakeInventoryEntry(apObject->baseForm, aCount), false, updateClients), nullptr);
+
+    // Other clients have their own copy of a dropped item, see InventoryService
+    if (updateClients && apActor->GetExtension()->IsLocal())
+        World::Get().GetRunner().Trigger(DroppedItemPickupEvent{apObject->formID, apObject->baseForm->formID});
 }
 
 void TP_MAKE_THISCALL(HookPickUpObject, Actor, TESObjectREFR* apObject, int32_t aCount, bool aPlaySounds)
@@ -783,7 +807,7 @@ void Actor::SetActorInventory(const Inventory& acInventory) noexcept
         SetInventory(acInventory);
 }
 
-void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
+TESObjectREFR* Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLocation, NiPoint3* apRotation) noexcept
 {
     auto& modSystem = World::Get().GetModSystem();
 
@@ -791,12 +815,12 @@ void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLoca
     if (!pObject)
     {
         spdlog::warn("Object to drop not found, {:X}:{:X}.", arEntry.BaseId.ModId, arEntry.BaseId.BaseId);
-        return;
+        return nullptr;
     }
 
     // TODO: pick up
     if (arEntry.Count >= 0)
-        return;
+        return nullptr;
 
     RemoveItemData data{};
     *reinterpret_cast<uint32_t*>(data.stackData) = 0x80000000;
@@ -805,7 +829,7 @@ void Actor::DropOrPickUpObject(const Inventory::Entry& arEntry, NiPoint3* apLoca
     data.reason = ITEM_REMOVE_REASON::kDropping;
     data.dropLoc = apLocation;
     data.rotate = apRotation;
-    RemoveItem(data);
+    return TESObjectREFR::GetByHandle(RemoveItem(data).handle.iBits);
 }
 
 Inventory Actor::GetPowerArmorInventory() const noexcept

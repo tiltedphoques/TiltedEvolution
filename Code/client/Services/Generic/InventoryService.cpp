@@ -8,10 +8,14 @@
 #include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/DrawWeaponRequest.h>
 #include <Messages/NotifyDrawWeapon.h>
+#include <Messages/RequestDroppedItemPickup.h>
+#include <Messages/NotifyDroppedItemPickup.h>
 
 #include <Events/UpdateEvent.h>
 #include <Events/InventoryChangeEvent.h>
 #include <Events/EquipmentChangeEvent.h>
+#include <Events/DroppedItemPickupEvent.h>
+#include <Events/DisconnectedEvent.h>
 
 #include <World.h>
 #include <Interface/UI.h>
@@ -37,6 +41,9 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher,
     m_equipmentConnection = m_dispatcher.sink<EquipmentChangeEvent>().connect<&InventoryService::OnEquipmentChangeEvent>(this);
     m_inventoryChangeConnection = m_dispatcher.sink<NotifyInventoryChanges>().connect<&InventoryService::OnNotifyInventoryChanges>(this);
     m_equipmentChangeConnection = m_dispatcher.sink<NotifyEquipmentChanges>().connect<&InventoryService::OnNotifyEquipmentChanges>(this);
+    m_droppedItemPickupConnection = m_dispatcher.sink<DroppedItemPickupEvent>().connect<&InventoryService::OnDroppedItemPickupEvent>(this);
+    m_notifyDroppedItemPickupConnection = m_dispatcher.sink<NotifyDroppedItemPickup>().connect<&InventoryService::OnNotifyDroppedItemPickup>(this);
+    m_disconnectedConnection = m_dispatcher.sink<DisconnectedEvent>().connect<&InventoryService::OnDisconnected>(this);
 }
 
 void InventoryService::OnUpdate(const UpdateEvent& acUpdateEvent) noexcept
@@ -93,6 +100,16 @@ void InventoryService::OnInventoryChangeEvent(const InventoryChangeEvent& acEven
     request.Item = acEvent.Item;
     request.Drop = acEvent.Drop;
     request.UpdateClients = acEvent.UpdateClients;
+
+    if (acEvent.Drop && acEvent.DroppedRefId)
+    {
+        const auto* pDropped = Cast<TESObjectREFR>(TESForm::GetById(acEvent.DroppedRefId));
+        if (pDropped && pDropped->baseForm)
+        {
+            request.DropId = ++m_nextDropId;
+            m_droppedItems[acEvent.DroppedRefId] = {serverId, request.DropId, pDropped->baseForm->formID};
+        }
+    }
 
     m_transport.Send(request);
 
@@ -184,7 +201,15 @@ void InventoryService::OnNotifyInventoryChanges(const NotifyInventoryChanges& ac
         ScopedInventoryOverride _;
 
         if (acMessage.Drop)
+        {
+#if defined(TP_FALLOUT4)
+            const auto* pDropped = pActor->DropOrPickUpObject(acMessage.Item, nullptr, nullptr);
+            if (pDropped && pDropped->baseForm && acMessage.DropId)
+                m_droppedItems[pDropped->formID] = {acMessage.ServerId, acMessage.DropId, pDropped->baseForm->formID};
+#else
             pActor->DropOrPickUpObject(acMessage.Item, nullptr, nullptr);
+#endif
+        }
         else
             pActor->AddOrRemoveItem(acMessage.Item);
 
@@ -339,4 +364,41 @@ void InventoryService::RunWeaponStateUpdates() noexcept
             m_transport.Send(request);
         }
     }
+}
+
+void InventoryService::OnDroppedItemPickupEvent(const DroppedItemPickupEvent& acEvent) noexcept
+{
+    const auto it = m_droppedItems.find(acEvent.RefId);
+    if (it == m_droppedItems.end())
+        return;
+
+    if (it->second.BaseId == acEvent.BaseId && m_transport.IsConnected())
+    {
+        RequestDroppedItemPickup request;
+        request.DropperId = it->second.DropperId;
+        request.DropId = it->second.DropId;
+        m_transport.Send(request);
+    }
+
+    m_droppedItems.erase(it);
+}
+
+void InventoryService::OnNotifyDroppedItemPickup(const NotifyDroppedItemPickup& acMessage) noexcept
+{
+    const auto it = std::find_if(m_droppedItems.begin(), m_droppedItems.end(), [&acMessage](const auto& acPair)
+                                 { return acPair.second.DropperId == acMessage.DropperId && acPair.second.DropId == acMessage.DropId; });
+    if (it == m_droppedItems.end())
+        return;
+
+    // Temporary form ids get reused once the reference is gone, so check it is still the same item
+    auto* pDropped = Cast<TESObjectREFR>(TESForm::GetById(it->first));
+    if (pDropped && pDropped->baseForm && pDropped->baseForm->formID == it->second.BaseId)
+        pDropped->Delete();
+
+    m_droppedItems.erase(it);
+}
+
+void InventoryService::OnDisconnected(const DisconnectedEvent&) noexcept
+{
+    m_droppedItems.clear();
 }

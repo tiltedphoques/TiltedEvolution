@@ -8,6 +8,7 @@ struct RequestObjectInventoryChanges;
 struct RequestInventoryChanges;
 struct RequestEquipmentChanges;
 struct DrawWeaponRequest;
+struct RequestDroppedItemPickup;
 struct PlayerLeaveCellEvent;
 
 /**
@@ -30,6 +31,10 @@ public:
      * @brief Relays weapon draw changes to other clients and updates server side weapon draw state.
      */
     void OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>& acMessage) noexcept;
+    /**
+     * @brief Relays that a dropped item was picked up, so other clients remove their copy.
+     */
+    void OnDroppedItemPickup(const PacketEvent<RequestDroppedItemPickup>& acMessage) noexcept;
 
 private:
     World& m_world;
@@ -37,4 +42,5 @@ private:
     entt::scoped_connection m_inventoryChangeConnection;
     entt::scoped_connection m_equipmentChangeConnection;
     entt::scoped_connection m_drawWeaponConnection;
+    entt::scoped_connection m_droppedItemPickupConnection;
 };

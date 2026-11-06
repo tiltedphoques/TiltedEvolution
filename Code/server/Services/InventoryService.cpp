@@ -10,11 +10,17 @@
 #include <Messages/RequestEquipmentChanges.h>
 #include <Messages/NotifyEquipmentChanges.h>
 #include <Messages/DrawWeaponRequest.h>
+#include <Messages/RequestDroppedItemPickup.h>
+#include <Messages/NotifyDroppedItemPickup.h>
 
 #include <Setting.h>
 namespace
 {
+#if defined(TP_FALLOUT4)
+Console::Setting bEnableItemDrops{"Gameplay:bEnableItemDrops", "Syncs dropped items by players", true};
+#else
 Console::Setting bEnableItemDrops{"Gameplay:bEnableItemDrops", "(Experimental) Syncs dropped items by players", false};
+#endif
 }
 
 InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher)
@@ -23,6 +29,7 @@ InventoryService::InventoryService(World& aWorld, entt::dispatcher& aDispatcher)
     m_inventoryChangeConnection = aDispatcher.sink<PacketEvent<RequestInventoryChanges>>().connect<&InventoryService::OnInventoryChanges>(this);
     m_equipmentChangeConnection = aDispatcher.sink<PacketEvent<RequestEquipmentChanges>>().connect<&InventoryService::OnEquipmentChanges>(this);
     m_drawWeaponConnection = aDispatcher.sink<PacketEvent<DrawWeaponRequest>>().connect<&InventoryService::OnWeaponDrawnRequest>(this);
+    m_droppedItemPickupConnection = aDispatcher.sink<PacketEvent<RequestDroppedItemPickup>>().connect<&InventoryService::OnDroppedItemPickup>(this);
 }
 
 void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) noexcept
@@ -90,6 +97,7 @@ void InventoryService::OnInventoryChanges(const PacketEvent<RequestInventoryChan
     notify.Item = message.Item;
 
     notify.Drop = bEnableItemDrops && !isRemoteNpcInteraction ? message.Drop : false;
+    notify.DropId = notify.Drop ? message.DropId : 0;
 
     const entt::entity cOrigin = static_cast<entt::entity>(message.ServerId);
     if (!GameServer::Get()->SendToPlayersInRange(notify, cOrigin, acMessage.GetSender()))
@@ -167,4 +175,14 @@ void InventoryService::OnWeaponDrawnRequest(const PacketEvent<DrawWeaponRequest>
         characterComponent.SetWeaponDrawn(message.IsWeaponDrawn);
         spdlog::debug("Updating weapon drawn state {:x}:{}", message.Id, message.IsWeaponDrawn);
     }
+}
+
+void InventoryService::OnDroppedItemPickup(const PacketEvent<RequestDroppedItemPickup>& acMessage) noexcept
+{
+    NotifyDroppedItemPickup notify;
+    notify.DropperId = acMessage.Packet.DropperId;
+    notify.DropId = acMessage.Packet.DropId;
+
+    // Clients that never saw the drop ignore it
+    GameServer::Get()->SendToPlayers(notify, acMessage.pPlayer);
 }

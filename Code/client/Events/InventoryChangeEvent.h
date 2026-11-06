@@ -37,4 +37,6 @@ struct InventoryChangeEvent
     Inventory::Entry Item{};
     bool Drop = false;
     bool UpdateClients = true;
+    // Form id of the reference a drop created, if any
+    uint32_t DroppedRefId{};
 };

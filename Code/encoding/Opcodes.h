@@ -56,6 +56,7 @@ enum ClientOpcode : unsigned char
     kPowerArmorRequest,
     kRequestActionEvents,
     kSettlementRequest,
+    kRequestDroppedItemPickup,
     kClientOpcodeMax
 };
 
@@ -118,5 +119,6 @@ enum ServerOpcode : unsigned char
     kNotifyPowerArmor,
     kNotifyActionEvents,
     kNotifySettlement,
+    kNotifyDroppedItemPickup,
     kServerOpcodeMax
 };
