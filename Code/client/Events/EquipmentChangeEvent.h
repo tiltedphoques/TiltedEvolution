@@ -6,8 +6,6 @@
 struct EquipmentChangeEvent
 {
     uint32_t ActorId = 0;
-    uint32_t ServerId = 0;
-    uint32_t OwnershipEpoch = 0;
     uint32_t ItemId = 0;
     uint32_t EquipSlotId = 0;
     uint32_t Count = 0;
