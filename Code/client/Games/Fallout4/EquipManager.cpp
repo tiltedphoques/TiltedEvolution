@@ -21,17 +21,6 @@ TP_THIS_FUNCTION(TUnequipObject, bool, EquipManager, Actor*, const ObjectInstanc
 TEquipObject* RealEquipObject = nullptr;
 TUnequipObject* RealUnequipObject = nullptr;
 
-void QueueEquipmentChange(Actor* apActor, EquipmentChangeEvent aEvent)
-{
-    const auto ownershipToken = Utils::GetLocalOwnershipToken(apActor->formID);
-    if (!ownershipToken)
-        return;
-
-    aEvent.ServerId = ownershipToken->ServerId;
-    aEvent.OwnershipEpoch = ownershipToken->OwnershipEpoch;
-    World::Get().GetRunner().Trigger(std::move(aEvent));
-}
-
 bool HasItem(Actor* apActor, const TESForm* apItem)
 {
     if (!apActor->inventoryList)
@@ -132,7 +121,7 @@ bool TP_MAKE_THISCALL(HookEquipObject, EquipManager, Actor* apActor, const Objec
             evt.IsAmmo = pItem->formType == FormType::Ammo;
             evt.Mods = apActor->GetItemMods(pItem, aStackId);
 
-            QueueEquipmentChange(apActor, std::move(evt));
+            World::Get().GetRunner().Trigger(std::move(evt));
         }
     }
 
@@ -162,7 +151,7 @@ bool TP_MAKE_THISCALL(HookUnequipObject, EquipManager, Actor* apActor, const Obj
             evt.Unequip = true;
             evt.IsAmmo = pItem->formType == FormType::Ammo;
 
-            QueueEquipmentChange(apActor, std::move(evt));
+            World::Get().GetRunner().Trigger(std::move(evt));
         }
     }
 

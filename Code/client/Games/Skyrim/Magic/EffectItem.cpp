@@ -33,6 +33,11 @@ bool EffectItem::IsVampireLordEffect() const noexcept
     return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kVampireLord;
 }
 
+bool EffectItem::IsDetectLifeEffect() const noexcept
+{
+    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kDetectLife;
+}
+
 bool EffectItem::IsNightVisionEffect() const noexcept
 {
     BGSKeyword* pMagicNightEye = Cast<BGSKeyword>(TESForm::GetById(0xad7c6));

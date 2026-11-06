@@ -193,17 +193,10 @@ void TP_MAKE_THISCALL(HookModActorValue, Actor, ActorValueOwner::ForceMode aMode
     }
 }
 
-void QueueActorInventoryChange(Actor* apActor, InventoryChangeEvent aEvent, TESObjectREFR* apTransferReference)
+// AI updates run on job threads, so ownership is resolved when the runner hands the event to the main thread
+void QueueActorInventoryChange(InventoryChangeEvent aEvent, TESObjectREFR* apTransferReference)
 {
-    auto ownershipToken = Utils::GetLocalOwnershipToken(apActor->formID);
-    if (!ownershipToken && apTransferReference == PlayerCharacter::Get())
-        ownershipToken = Utils::GetRemoteOwnershipToken(apActor->formID);
-
-    if (!ownershipToken)
-        return;
-
-    aEvent.ServerId = ownershipToken->ServerId;
-    aEvent.OwnershipEpoch = ownershipToken->OwnershipEpoch;
+    aEvent.IsPlayerTransfer = apTransferReference && apTransferReference == PlayerCharacter::Get();
     World::Get().GetRunner().Trigger(std::move(aEvent));
 }
 
@@ -224,7 +217,7 @@ void TP_MAKE_THISCALL(HookAddObjectToContainer, Actor, TESBoundObject* apObject,
 {
     // The local player is sent from HookAddInventoryItem, which this also ends up in.
     if (apObject && aCount > 0 && apThis != PlayerCharacter::Get() && !ScopedInventoryOverride::IsOverriden())
-        QueueActorInventoryChange(apThis, InventoryChangeEvent(apThis->formID, MakeInventoryEntry(apObject, aCount)), apOldContainer);
+        QueueActorInventoryChange(InventoryChangeEvent(apThis->formID, MakeInventoryEntry(apObject, aCount)), apOldContainer);
 
     TiltedPhoques::ThisCall(s_addObjectToContainer, apThis, apObject, apExtra, aCount, apOldContainer, aReason);
 }
@@ -239,7 +232,7 @@ void TP_MAKE_THISCALL(HookAddInventoryItem, TESObjectREFR, TESBoundObject* apObj
 {
     auto* pPlayer = PlayerCharacter::Get();
     if (apThis == pPlayer && apObject && aCount > 0 && !ScopedInventoryOverride::IsOverriden())
-        QueueActorInventoryChange(pPlayer, InventoryChangeEvent(apThis->formID, MakeInventoryEntry(apObject, static_cast<int32_t>(aCount))), apOldContainer);
+        QueueActorInventoryChange(InventoryChangeEvent(apThis->formID, MakeInventoryEntry(apObject, static_cast<int32_t>(aCount))), apOldContainer);
 
     TiltedPhoques::ThisCall(s_addInventoryItem, apThis, apObject, apExtra, aCount, apOldContainer, apFilter, apOverrideRef);
 }
@@ -276,7 +269,7 @@ BSPointerHandle<TESObjectREFR>* TP_MAKE_THISCALL(HookRemoveItem, Actor, BSPointe
             if (auto* pDropped = TESObjectREFR::GetByHandle(pResult->handle.iBits))
                 event.DroppedRefId = pDropped->formID;
         }
-        QueueActorInventoryChange(apThis, std::move(event), pOtherContainer);
+        QueueActorInventoryChange(std::move(event), pOtherContainer);
     }
 
     return pResult;
@@ -294,7 +287,7 @@ void QueuePickUp(Actor* apActor, TESObjectREFR* apObject, int32_t aCount)
         return;
 
     const bool updateClients = apObject->IsTemporary() && !ScopedActivateOverride::IsOverriden();
-    QueueActorInventoryChange(apActor, InventoryChangeEvent(apActor->formID, MakeInventoryEntry(apObject->baseForm, aCount), false, updateClients), nullptr);
+    QueueActorInventoryChange(InventoryChangeEvent(apActor->formID, MakeInventoryEntry(apObject->baseForm, aCount), false, updateClients), nullptr);
 
     // Other clients have their own copy of a dropped item, see InventoryService
     if (updateClients && apActor->GetExtension()->IsLocal())

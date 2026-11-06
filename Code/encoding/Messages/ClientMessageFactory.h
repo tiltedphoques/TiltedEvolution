@@ -42,6 +42,7 @@
 #include <Messages/RequestRespawn.h>
 #include <Messages/SyncExperienceRequest.h>
 #include <Messages/RequestEquipmentChanges.h>
+#include <Messages/RequestInventorySnapshot.h>
 #include <Messages/SendChatMessageRequest.h>
 #include <Messages/TeleportCommandRequest.h>
 #include <Messages/SetTimeCommandRequest.h>
@@ -70,7 +71,7 @@ struct ClientMessageFactory
     template <class T> static auto Visit(T&& func)
     {
         auto s_visitor = CreateMessageVisitor<
-            AuthenticationRequest, AssignCharacterRequest, ClientReferencesMoveRequest, EnterInteriorCellRequest, RequestInventoryChanges, RequestFactionsChanges,
+            AuthenticationRequest, AssignCharacterRequest, ClientReferencesMoveRequest, EnterInteriorCellRequest, RequestInventoryChanges, RequestInventorySnapshot, RequestFactionsChanges,
             RequestQuestUpdate, PartyInviteRequest, PartyAcceptInviteRequest, PartyLeaveRequest, PartyCreateRequest, PartyChangeLeaderRequest, PartyKickRequest,
             RequestActorValueChanges, RequestActorMaxValueChanges, EnterExteriorCellRequest, RequestHealthChangeBroadcast, ActivateRequest, LockChangeRequest, AssignObjectsRequest,
             RequestDeathStateChange, ShiftGridCellRequest, RequestOwnershipTransfer, RequestOwnershipClaim, RequestObjectInventoryChanges, SpellCastRequest,

@@ -16,6 +16,9 @@ struct NotifyDroppedItemPickup;
 struct NotifyDroppedItem;
 struct TESObjectREFR;
 struct DisconnectedEvent;
+struct NotifyInventorySnapshot;
+struct Inventory;
+struct Actor;
 
 /**
  * @brief Manages inventories of actors and containers.
@@ -57,6 +60,19 @@ struct InventoryService
      */
     void OnNotifyEquipmentChanges(const NotifyEquipmentChanges& acMessage) noexcept;
     /**
+     * @brief Applies an owner's full inventory to a remote actor.
+     */
+    void OnNotifyInventorySnapshot(const NotifyInventorySnapshot& acMessage) noexcept;
+
+    /**
+     * @brief Applies a full inventory from the server to a remote actor, or to its pending spawn if its 3D isn't loaded yet.
+     */
+    static void ApplyRemoteInventory(World& aWorld, entt::entity aEntity, const Inventory& acInventory) noexcept;
+    /**
+     * @brief Applies an equipment change relayed from an actor's owner.
+     */
+    static void ApplyEquipmentChange(Actor* apActor, const NotifyEquipmentChanges& acMessage) noexcept;
+    /**
      * @brief Tells other clients to remove their copy of a dropped item the local client picked up.
      */
     void OnDroppedItemPickupEvent(const DroppedItemPickupEvent& acEvent) noexcept;
@@ -86,6 +102,7 @@ private:
     entt::scoped_connection m_equipmentConnection;
     entt::scoped_connection m_inventoryChangeConnection;
     entt::scoped_connection m_equipmentChangeConnection;
+    entt::scoped_connection m_inventorySnapshotConnection;
     entt::scoped_connection m_droppedItemPickupConnection;
     entt::scoped_connection m_notifyDroppedItemPickupConnection;
     entt::scoped_connection m_notifyDroppedItemConnection;

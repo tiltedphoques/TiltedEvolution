@@ -9,6 +9,7 @@ struct World;
 struct UpdateEvent;
 struct RequestObjectInventoryChanges;
 struct RequestInventoryChanges;
+struct RequestInventorySnapshot;
 struct RequestEquipmentChanges;
 struct DrawWeaponRequest;
 struct RequestDroppedItemPickup;
@@ -31,6 +32,10 @@ public:
      * @brief Relays inventory changes to other clients and updates server side inventories.
      */
     void OnInventoryChanges(const PacketEvent<RequestInventoryChanges>& acMessage) noexcept;
+    /**
+     * @brief Replaces an actor's server side inventory with its owner's and relays it to other clients.
+     */
+    void OnInventorySnapshot(const PacketEvent<RequestInventorySnapshot>& acMessage) noexcept;
     /**
      * @brief Relays equipment changes to other clients and updates server side equipment.
      */
@@ -68,6 +73,7 @@ private:
     World& m_world;
 
     entt::scoped_connection m_inventoryChangeConnection;
+    entt::scoped_connection m_inventorySnapshotConnection;
     entt::scoped_connection m_equipmentChangeConnection;
     entt::scoped_connection m_drawWeaponConnection;
     entt::scoped_connection m_droppedItemPickupConnection;

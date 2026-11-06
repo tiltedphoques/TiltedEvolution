@@ -60,6 +60,10 @@ bool MagicTarget::AddTarget(AddTargetData& arData, bool aApplyHealPerkBonus, boo
 
 bool MagicTarget::AddTargetData::ShouldSync()
 {
+    // Detect life is an area effect on every actor around the caster, syncing it would show them to other players too.
+    if (pEffectItem->IsDetectLifeEffect())
+        return false;
+
     // Constant effect slow time is an ability each client's scripts add and remove on their own player, so a synced
     // copy would stay on the other players for good. Fire and forget slow time (shouts) still syncs.
     if (pEffectItem->IsSlowEffect())
@@ -101,6 +105,18 @@ bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetData& ar
 
     if (arData.pEffectItem->IsVampireLordEffect())
         pTargetActorEx->GraphDescriptorHash = AnimationGraphDescriptor_VampireLordBehavior::m_key;
+
+    if (arData.pEffectItem->IsDetectLifeEffect() && arData.pCaster)
+    {
+        const ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
+
+        // The caster's copy repeats the cast on this client, but only the caster gets to see living targets.
+        if (pCasterExtension->IsRemotePlayer())
+            return false;
+
+        if (pCasterExtension->IsLocalPlayer() && pTargetActorEx->IsRemotePlayer() && World::Get().GetServerSettings().PvpEnabled)
+            return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
+    }
 
     if (ScopedSpellCastOverride::IsOverriden())
         return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
