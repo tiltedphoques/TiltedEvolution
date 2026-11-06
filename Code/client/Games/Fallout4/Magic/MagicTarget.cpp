@@ -28,6 +28,10 @@ bool MagicTarget::AddTarget(AddTargetData& arData, bool, bool) noexcept
 
 bool MagicTarget::AddTargetData::ShouldSync()
 {
+    // Detect life is an area effect on every actor around the caster, syncing it would show them to other players too
+    if (pEffectItem->IsDetectLifeEffect())
+        return false;
+
     // Constant slow time is an ability each client's scripts manage on their own player
     if (pEffectItem->IsSlowEffect())
     {
@@ -62,6 +66,18 @@ static bool TP_MAKE_THISCALL(HookAddTarget, MagicTarget, MagicTarget::AddTargetD
         return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
 
     ActorExtension* pTargetActorEx = pTargetActor->GetExtension();
+
+    if (arData.pEffectItem->IsDetectLifeEffect() && arData.pCaster)
+    {
+        const ActorExtension* pCasterExtension = arData.pCaster->GetExtension();
+
+        // The caster's copy repeats the cast on this client, but only the caster gets to see living targets
+        if (pCasterExtension->IsRemotePlayer())
+            return false;
+
+        if (pCasterExtension->IsLocalPlayer() && pTargetActorEx->IsRemotePlayer() && World::Get().GetServerSettings().PvpEnabled)
+            return TiltedPhoques::ThisCall(RealAddTarget, apThis, arData);
+    }
 
     AddTargetEvent addTargetEvent{};
     addTargetEvent.TargetID = pTargetActor->formID;

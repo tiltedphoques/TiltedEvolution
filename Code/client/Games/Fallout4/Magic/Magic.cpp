@@ -52,6 +52,11 @@ bool EffectItem::IsNightVisionEffect() const noexcept
     return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kNightEye;
 }
 
+bool EffectItem::IsDetectLifeEffect() const noexcept
+{
+    return pEffectSetting->eArchetype == EffectArchetypes::ArchetypeID::kDetectLife;
+}
+
 bool MagicItem::IsWardSpell() const noexcept
 {
     return false;
