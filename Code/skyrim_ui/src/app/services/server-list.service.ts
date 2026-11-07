@@ -20,7 +20,7 @@ export class ServerListService {
   constructor(private readonly http: HttpClient) {}
 
   public getServerList(): Observable<Server[]> {
-    // Builds without a public server list (Fallout Together) list nothing.
+    // Builds without a public server list list nothing.
     if (!environment.url) {
       return of([]);
     }

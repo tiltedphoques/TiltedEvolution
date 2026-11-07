@@ -4,7 +4,7 @@ export const environment = {
   production: true,
   game: true,
   urlProtocol: 'https',
-  url: 'skyrim-reborn-list.skyrim-together.com/fallout4',
+  url: 'list.fallout-together.com',
   // No Fallout Together releases to compare against yet.
   githubUrl: '',
   overwriteVersion: "",

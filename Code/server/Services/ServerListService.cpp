@@ -13,8 +13,12 @@
 extern Console::Setting<uint32_t> uMaxPlayerCount;
 
 static constexpr char kMasterServerEndpoint[] =
+#if defined(TP_FALLOUT4)
+    "https://list.fallout-together.com";
+#else
     //"http://127.0.0.1:8000";
     "https://skyrim-reborn-list.skyrim-together.com";
+#endif
 
 static Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer", "Whether to list the server on the public server list", false};
 
@@ -94,11 +98,7 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
     httplib::Client client(kMasterServerEndpoint);
     client.enable_server_certificate_verification(false);
     client.set_read_timeout(std::chrono::milliseconds(30000));
-#if defined(TP_FALLOUT4)
-    constexpr char kAnnouncePath[] = "/fallout4/announce";
-#else
     constexpr char kAnnouncePath[] = "/announce";
-#endif
     const auto response = client.Post(kAnnouncePath, params);
 
     // If we send a 403 it means we banned this server
