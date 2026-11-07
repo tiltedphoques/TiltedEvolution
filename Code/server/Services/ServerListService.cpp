@@ -94,7 +94,12 @@ void ServerListService::PostAnnouncement(String acName, String acDesc, String ac
     httplib::Client client(kMasterServerEndpoint);
     client.enable_server_certificate_verification(false);
     client.set_read_timeout(std::chrono::milliseconds(30000));
-    const auto response = client.Post("/announce", params);
+#if defined(TP_FALLOUT4)
+    constexpr char kAnnouncePath[] = "/fallout4/announce";
+#else
+    constexpr char kAnnouncePath[] = "/announce";
+#endif
+    const auto response = client.Post(kAnnouncePath, params);
 
     // If we send a 403 it means we banned this server
     if (response)

@@ -4,8 +4,7 @@ export const environment = {
   production: true,
   game: true,
   urlProtocol: 'https',
-  // Fallout Together has no public server list yet; connect by address.
-  url: '',
+  url: 'skyrim-reborn-list.skyrim-together.com/fallout4',
   // No Fallout Together releases to compare against yet.
   githubUrl: '',
   overwriteVersion: "",

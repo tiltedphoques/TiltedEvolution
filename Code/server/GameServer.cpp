@@ -34,7 +34,11 @@ Console::Setting bAnnounceServer{"LiveServices:bAnnounceServer", "Whether to lis
 
 // Gameplay
 // TODO: to make this easier for users, use game names for difficulty instead of int
+#if defined(TP_FALLOUT4)
+Console::Setting uDifficulty{"Gameplay:uDifficulty", "Difficulty for all players: 0 Very Easy, 1 Easy, 2 Normal, 3 Hard, 4 Very Hard, 5 Survival", 4u};
+#else
 Console::Setting uDifficulty{"Gameplay:uDifficulty", "Difficulty for all players: 0 Novice, 1 Apprentice, 2 Adept, 3 Expert, 4 Master, 5 Legendary", 4u};
+#endif
 Console::Setting bEnableGreetings{"Gameplay:bEnableGreetings", "Enables NPC greetings (disabled by default since they can be spammy with dialogue sync)", false};
 Console::Setting bEnablePvp{"Gameplay:bEnablePvp", "Enables pvp", false};
 Console::Setting bSyncPlayerHomes{"Gameplay:bSyncPlayerHomes", "Sync chests and displays in player homes and other NoResetZones", false};
@@ -89,7 +93,11 @@ Console::Command<> ToggleConsoleCommands(
     });
 
 Console::Command<int64_t> SetDifficulty(
+#if defined(TP_FALLOUT4)
+    "SetDifficulty", "Set server difficulty (0 being Very Easy and 5 being Survival; default is 4)",
+#else
     "SetDifficulty", "Set server difficulty (0 being Novice and 5 being Legendary; default is 4)",
+#endif
     [](Console::ArgStack& aStack)
     {
         auto aDiff = aStack.Pop<int64_t>();
@@ -98,7 +106,7 @@ Console::Command<int64_t> SetDifficulty(
         {
             spdlog::warn(
                 "Game difficulty is invalid (should be from 0 to 5, "
-                "current value is {}), setting difficulty to 4 (master).",
+                "current value is {}), setting difficulty to 4.",
                 aDiff);
 
             aDiff = 4;
@@ -190,8 +198,7 @@ GameServer::GameServer(Console::ConsoleRegistry& aConsole) noexcept
     if (uDifficulty.value_as<uint8_t>() > 5)
     {
         spdlog::warn(
-            "Game difficulty is invalid (should be from 0 to 5, current value is {}), setting difficulty to 4 "
-            "(master).",
+            "Game difficulty is invalid (should be from 0 to 5, current value is {}), setting difficulty to 4.",
             uDifficulty.value_as<uint8_t>());
 
         uDifficulty = 4;

@@ -64,12 +64,6 @@ static void ShowAddressLibraryError(const wchar_t* apGamePath)
 
 static void ShowIncompatibleVersionError(const char* apDetectedGameVersion, const wchar_t* apGamePath)
 {
-    constexpr wchar_t kModPageUrl[] =
-#if defined(TP_FALLOUT4)
-        LR"(https://www.nexusmods.com/fallout4/mods/69993)"; // TODO(Fallout4): proper mod page
-#else
-        LR"(https://www.nexusmods.com/skyrimspecialedition/mods/69993?tab=files)";
-#endif
     const auto [steamVer, gogVer] = kSupportedGameVersions;
 
     std::string supportedVersions = steamVer != gogVer ? fmt::format("{} (or {} if GOG)", steamVer, gogVer) : std::string{steamVer};
@@ -80,12 +74,17 @@ static void ShowIncompatibleVersionError(const char* apDetectedGameVersion, cons
     const auto optionalDetails = fmt::format(L"Installed here: {}", apGamePath);
 
     Base::TaskDialog dia(g_SharedWindowIcon, L"Error", L"Incompatible game version", wideMessage.c_str(), optionalDetails.c_str());
+#if defined(TP_FALLOUT4)
+    // Fallout Together has no mod page yet.
+    dia.Show();
+#else
     dia.AppendButton(0xBEEF, L"Visit the mod page on nexusmods.com");
 
     if (dia.Show() == 0xBEEF)
     {
-        ShellExecuteW(nullptr, L"open", kModPageUrl, nullptr, nullptr, SW_SHOWNORMAL);
+        ShellExecuteW(nullptr, L"open", LR"(https://www.nexusmods.com/skyrimspecialedition/mods/69993?tab=files)", nullptr, nullptr, SW_SHOWNORMAL);
     }
+#endif
     exit(4);
 }
 

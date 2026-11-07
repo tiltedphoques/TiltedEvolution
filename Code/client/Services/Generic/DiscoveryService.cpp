@@ -24,6 +24,28 @@
 #if (IS_MASTER)
 namespace
 {
+#if defined(TP_FALLOUT4)
+// Every 1.11 install loads some free Creations, owners of the Anniversary Edition many more, so accept any of
+// them alongside the official masters.
+bool IsDefaultModlist(GameList<Mod>& aCurrentModlist) noexcept
+{
+    static constexpr auto s_officialMasters = std::to_array<const char*>(
+        {"Fallout4.esm", "DLCRobot.esm", "DLCworkshop01.esm", "DLCCoast.esm", "DLCworkshop02.esm", "DLCworkshop03.esm",
+         "DLCNukaWorld.esm"});
+
+    for (const auto* pCurrentMod : aCurrentModlist)
+    {
+        const char* cpName = pCurrentMod->filename;
+        if (_strnicmp(cpName, "cc", 2) == 0)
+            continue;
+
+        if (std::ranges::none_of(s_officialMasters, [cpName](const char* apMaster) { return _stricmp(apMaster, cpName) == 0; }))
+            return false;
+    }
+
+    return true;
+}
+#else
 bool IsDefaultModlist(GameList<Mod>& aCurrentModlist) noexcept
 {
     static const auto s_defaultModlist = std::to_array<TiltedPhoques::String>(
@@ -45,6 +67,7 @@ bool IsDefaultModlist(GameList<Mod>& aCurrentModlist) noexcept
 
     return true;
 }
+#endif
 } // namespace
 #endif
 
