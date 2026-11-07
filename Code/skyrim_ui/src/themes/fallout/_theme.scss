@@ -29,6 +29,7 @@ $-images: map-merge(
     scrollbar-south: url('~src/themes/fallout/assets/images/scrollbar/button-south-inactive.svg'),
     scrollbar-west: url('~src/themes/fallout/assets/images/scrollbar/button-west-inactive.svg'),
     separator: url('~src/themes/fallout/assets/images/separator/single.svg'),
+    loading: url('~src/themes/fallout/assets/images/loading.svg'),
   )
 );
 
@@ -111,6 +112,7 @@ $-color-surface: pip(0.12);
 $-color-surface-alt: pip(0.06);
 $-color-surface-menu: #04170c;
 $-color-overlay: $-color-glass;
+$-color-popup-backdrop: rgba(0, 6, 3, 0.6);
 $-color-success: $-color-tint;
 $-color-error: #ff5a3c;
 $-color-offline: rgba(#ff5a3c, 0.25);
@@ -118,6 +120,7 @@ $-color-hud-text: pip(0.8);
 $-color-hud-text-strong: $-color-tint;
 $-color-notification-backdrop: transparent;
 $-size-menu-height: 2.6rem;
+$-size-password-border: 1px;
 
 @mixin notification-frame() {
   border-left: 3px solid $-color-tint;

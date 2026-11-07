@@ -9,7 +9,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: transparentize($-color-background, 0.8);
+  background: $-color-popup-backdrop;
 
   > app-window {
     flex: 0 0 auto;

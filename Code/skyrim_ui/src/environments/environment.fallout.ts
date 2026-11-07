@@ -15,8 +15,9 @@ export const environment = {
   textReplacements: [
     [
       'Skyrim.esm\nUpdate.esm\nDawnguard.esm\nHearthFires.esm\nDragonborn.esm\n_ResourcePack.esl\nSkyrimTogether.esp\nSkyrimTogetherQuestPatches.esp',
-      'Fallout4.esm\nDLCRobot.esm\nDLCworkshop01.esm\nDLCCoast.esm\nDLCworkshop02.esm\nDLCworkshop03.esm\nDLCNukaWorld.esm',
+      'Fallout4.esm\nDLCRobot.esm\nDLCworkshop01.esm\nDLCCoast.esm\nDLCworkshop02.esm\nDLCworkshop03.esm\nDLCNukaWorld.esm\nplus any official Creations',
     ],
+    ['it has Creation Club content (Anniversary Update or otherwise) or other mods', 'it has mods'],
     [
       'make sure to read the playguide on our wiki, which you can find through our website, <b>skyrim-together.com</b>.',
       'keep in mind that this is an early experimental build.',

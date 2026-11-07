@@ -50,12 +50,15 @@ $-color-surface: #292929;
 $-color-surface-alt: #151515;
 $-color-surface-menu: #0e0e0e;
 $-color-overlay: rgba(0, 0, 0, 0.7);
+$-color-popup-backdrop: transparentize($-color-background, 0.8);
 $-color-notification-backdrop: $-color-background;
 $-color-success: #008000;
 $-color-error: #f73636;
 $-color-offline: #ff9494;
 $-color-hud-text: #c0c0c0;
 $-color-hud-text-strong: #dddddd;
+
+$-size-password-border: 3px;
 
 // Height of the connection menu row.
 $-size-menu-height: 4rem;

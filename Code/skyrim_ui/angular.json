@@ -120,6 +120,14 @@
                 "input": "src/themes/fallout/index.html",
                 "output": "index.html"
               }
+            },
+            "fallout-browser": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.fallout-browser.ts"
+                }
+              ]
             }
           }
         },
@@ -143,7 +151,7 @@
               "browserTarget": "skyrim-together-ui:build:e2e"
             },
             "fallout": {
-              "browserTarget": "skyrim-together-ui:build:fallout,browser"
+              "browserTarget": "skyrim-together-ui:build:fallout,browser,fallout-browser"
             }
           }
         },

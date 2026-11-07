@@ -101,6 +101,7 @@ select {
   opacity: 1;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid pip(0.35);
+  border-radius: 0;
 
   &::placeholder {
     color: pip(0.4);
@@ -235,5 +236,23 @@ app-popup > app-window {
   100% {
     transform: scale(1, 1);
     filter: brightness(1);
+  }
+}
+
+app-loading > div {
+  filter: drop-shadow(0 0 0.3rem pip(0.6));
+}
+
+// Network stats read like a terminal status line.
+app-debug .app-debug {
+  &,
+  * {
+    font-family: $-font-mono;
+  }
+
+  span {
+    padding-right: 0.3rem;
+    border-color: pip(0.3);
+    background: $-color-glass;
   }
 }

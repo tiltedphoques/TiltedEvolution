@@ -1,3 +1,5 @@
+@import 'env';
+
 .app-debug {
   position: fixed;
   display: flex;
@@ -5,23 +7,23 @@
   justify-content: flex-start;
   height: 1.6vw;
   padding: 1px;
-  color: rgb(196, 196, 196);
+  color: $-color-hud-text;
 
   b {
-    color: white;
+    color: $-color-text-strong;
   }
 
   fa-icon {
     margin-right: 0.2vw;
     margin-left: 0.15vw;
-    color: white;
+    color: $-color-text-strong;
   }
 
   span {
     padding-top: 0.2vw;
     padding-bottom: 0.2vw;
-    border: solid grey 1px;
-    background-color: rgba($color: #000000, $alpha: 0.5);
+    border: solid $-color-text-muted 1px;
+    background-color: transparentize($-color-background, 0.5);
   }
 
   &.top-left {
