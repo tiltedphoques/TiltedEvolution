@@ -16,6 +16,8 @@ struct Inventory
         float RawCost{};
         GameId EffectId{};
 
+        bool operator==(const EffectItem& acRhs) const noexcept = default;
+
         void Serialize(TiltedPhoques::Buffer::Writer& aWriter) const noexcept;
         void Deserialize(TiltedPhoques::Buffer::Reader& aReader) noexcept;
     };
@@ -24,6 +26,8 @@ struct Inventory
     {
         bool IsWeapon{};
         Vector<EffectItem> Effects{};
+
+        bool operator==(const EnchantmentData& acRhs) const noexcept = default;
     };
 
     struct Entry
@@ -64,7 +68,7 @@ struct Inventory
             // TODO: the whole server side state thing is very flawed
             // since many of these things can and will change, like poison id or charge
             // or the fact that the enchant id can be temp
-            return ExtraCharge == acRhs.ExtraCharge && ExtraEnchantId == acRhs.ExtraEnchantId && ExtraEnchantCharge == acRhs.ExtraEnchantCharge && ExtraEnchantRemoveUnequip == acRhs.ExtraEnchantRemoveUnequip && ExtraHealth == acRhs.ExtraHealth && ExtraPoisonId == acRhs.ExtraPoisonId &&
+            return ExtraCharge == acRhs.ExtraCharge && ExtraEnchantId == acRhs.ExtraEnchantId && ExtraEnchantCharge == acRhs.ExtraEnchantCharge && EnchantData == acRhs.EnchantData && ExtraEnchantRemoveUnequip == acRhs.ExtraEnchantRemoveUnequip && ExtraHealth == acRhs.ExtraHealth && ExtraPoisonId == acRhs.ExtraPoisonId &&
                    ExtraPoisonCount == acRhs.ExtraPoisonCount && ExtraSoulLevel == acRhs.ExtraSoulLevel && ExtraWorn == acRhs.ExtraWorn && ExtraWornLeft == acRhs.ExtraWornLeft && IsQuestItem == acRhs.IsQuestItem;
         }
 
