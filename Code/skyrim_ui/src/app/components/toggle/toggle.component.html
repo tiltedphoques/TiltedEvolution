@@ -1,7 +1,12 @@
 <span (click)="clickToggle()">
-  <ng-container *ngIf="isShow; else isNotShow"> ▼ </ng-container>
-  <ng-template #isNotShow> ► </ng-template>
+  @if (isShow) {
+    ▼
+  } @else {
+    ►
+  }
   {{ title }}
 </span>
 
-<ng-content *ngIf="isShow"></ng-content>
+@if (isShow) {
+  <ng-content></ng-content>
+}

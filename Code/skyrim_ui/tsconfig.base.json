@@ -2,20 +2,23 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
     "importHelpers": true,
     "useDefineForClassFields": false,
+    "strict": false,
     "target": "es2022",
-    "module": "es2020",
+    "module": "es2022",
     "lib": [
-      "es2018",
+      "es2022",
       "dom"
-    ]
+    ],
+    "paths": {
+      "src/*": ["./src/*"]
+    }
   }
 }

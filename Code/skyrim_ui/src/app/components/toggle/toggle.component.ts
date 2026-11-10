@@ -11,6 +11,7 @@ import {
   templateUrl: './toggle.component.html',
   styleUrls: ['./toggle.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class ToggleComponent {
   @Input('isShow') public isShow = false;

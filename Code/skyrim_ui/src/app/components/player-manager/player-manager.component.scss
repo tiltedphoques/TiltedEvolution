@@ -1,6 +1,6 @@
-@import 'env';
+@use 'env';
 
-@import 'functions/rem';
+@use 'functions/rem';
 
 :host {
   position: relative;

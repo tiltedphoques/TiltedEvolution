@@ -12,6 +12,7 @@ import { PlayerListService } from 'src/app/services/player-list.service';
   templateUrl: './party-menu.component.html',
   styleUrls: ['./party-menu.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PartyMenuComponent {
   isLoading$ = this.loadingService.getLoading();

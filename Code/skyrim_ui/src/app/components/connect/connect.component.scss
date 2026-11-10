@@ -1,10 +1,10 @@
-@import 'env';
+@use 'env';
 
-@import 'functions/mod';
-@import 'mixins/gapped-vertical';
+@use 'functions/mod';
+@use 'mixins/gapped-vertical';
 
 .container {
-  @include gapped-vertical($-size-gap);
+  @include gapped-vertical.gapped-vertical(env.$size-gap);
 
   display: flex;
   flex-direction: column;
@@ -12,7 +12,7 @@
 
   ::ng-deep {
     strong {
-      color: mod($-color-background, 1);
+      color: mod.mod(env.$color-background, 1);
     }
   }
 }
@@ -33,9 +33,9 @@
   }
 
   input[type='checkbox'] {
-    flex: 0 0 $scrollbar;
-    min-width: $scrollbar;
-    min-height: $scrollbar;
+    flex: 0 0 env.$scrollbar;
+    min-width: env.$scrollbar;
+    min-height: env.$scrollbar;
   }
 
   label {
@@ -46,7 +46,7 @@
 .instructions > * {
   text-align: center;
   margin: 0.3em;
-  line-height: $-size-line;
+  line-height: env.$size-line;
 }
 
 input {

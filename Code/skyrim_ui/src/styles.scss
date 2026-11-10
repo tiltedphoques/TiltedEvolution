@@ -1,7 +1,7 @@
-@import 'functions/mod';
-@import 'functions/rem';
+@use 'functions/mod';
+@use 'functions/rem';
 
-@import 'env';
+@use 'env';
 
 @font-face {
   font-family: 'futura-condensed-medium';
@@ -9,7 +9,7 @@
 }
 
 * {
-  font-family: $-font-default;
+  font-family: env.$font-default;
 }
 
 input {
@@ -22,8 +22,8 @@ input {
 }
 
 ::selection {
-  color: $-color-background;
-  background: mod($-color-background, 1);
+  color: env.$color-background;
+  background: mod.mod(env.$color-background, 1);
 }
 
 *,
@@ -50,19 +50,19 @@ input:not([type='checkbox']),
 textarea,
 select {
   display: block;
-  padding: $-size-gap * 0.5;
+  padding: env.$size-gap * 0.5;
   background: transparent;
-  color: mod($-color-background, 1);
+  color: mod.mod(env.$color-background, 1);
 }
 
 input[type='text'] {
   border: 3px solid #808081;
   &:hover {
-    border: 3px solid mod($-color-background, 0.75);
+    border: 3px solid mod.mod(env.$color-background, 0.75);
   }
 
   &:focus-visible {
-    border: 3px solid mod($-color-background, 0.9);
+    border: 3px solid mod.mod(env.$color-background, 0.9);
   }
 }
 
@@ -78,7 +78,7 @@ textarea {
 }
 
 option {
-  background: $-color-background;
+  background: env.$color-background;
 }
 
 button {
@@ -87,8 +87,8 @@ button {
   font-size: 1rem;
   text-transform: uppercase;
   background: transparent;
-  padding: $-size-gap * 0.5;
-  color: mod($-color-background, 1);
+  padding: env.$size-gap * 0.5;
+  color: mod.mod(env.$color-background, 1);
 
   &:hover:not([disabled]),
   &[data-style-active='true'] {
@@ -146,11 +146,11 @@ button {
     }
 
     &::before {
-      margin-right: $-size-gap * 0.5;
+      margin-right: env.$size-gap * 0.5;
     }
 
     &::after {
-      margin-left: $-size-gap * 0.5;
+      margin-left: env.$size-gap * 0.5;
     }
   }
 
@@ -168,17 +168,17 @@ button {
     &::before,
     &::after {
       opacity: 0;
-      transition: all $-time-transition;
+      transition: all env.$time-transition;
     }
 
     &::before {
       background-image: url(assets/images/arrow/west.svg);
-      transform: translateX(-$-size-gap);
+      transform: translateX(-(env.$size-gap));
     }
 
     &::after {
       background-image: url(assets/images/arrow/east.svg);
-      transform: translateX($-size-gap);
+      transform: translateX(env.$size-gap);
     }
   }
 }
@@ -186,6 +186,8 @@ button {
 :root {
   font-size: 16px;
   --scrollbar-thickness: 0.7rem;
+  // Font Awesome 7 makes icons fixed width by default, keep them at their natural width.
+  --fa-width: auto;
 }
 
 ::-webkit-scrollbar {
@@ -247,10 +249,10 @@ input[type='range'] {
 }
 
 input[type='checkbox'] {
-  width: $scrollbar;
-  height: $scrollbar;
-  max-width: $scrollbar;
-  max-height: $scrollbar;
+  width: env.$scrollbar;
+  height: env.$scrollbar;
+  max-width: env.$scrollbar;
+  max-height: env.$scrollbar;
 
   margin: 0;
 
@@ -284,7 +286,7 @@ body {
   margin: 0;
   cursor: default;
   overflow: hidden;
-  color: mod($-color-background);
+  color: mod.mod(env.$color-background);
   background: transparent;
 }
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
 import { LoadingService } from '../../services/loading.service';
 
@@ -6,6 +6,8 @@ import { LoadingService } from '../../services/loading.service';
   selector: 'app-loading',
   templateUrl: './loading.component.html',
   styleUrls: ['./loading.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class LoadingComponent {
   isLoading$: Observable<boolean>;

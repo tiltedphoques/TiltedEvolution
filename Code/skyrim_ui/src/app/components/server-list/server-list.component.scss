@@ -1,7 +1,8 @@
-@import 'functions/rem';
-@import 'functions/mod';
+@use 'sass:color';
+@use 'functions/rem';
+@use 'functions/mod';
 
-@import 'env';
+@use 'env';
 
 :host {
   position: relative;
@@ -117,7 +118,10 @@
       font-size: var(--server-list-font-size);
 
       &.odd {
-        background: transparentize(mod($-color-background, 1), 0.95);
+        background: color.adjust(
+          mod.mod(env.$color-background, 1),
+          $alpha: -0.95
+        );
       }
 
       :nth-child(2) {

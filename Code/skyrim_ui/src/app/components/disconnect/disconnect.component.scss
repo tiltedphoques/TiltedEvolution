@@ -1,9 +1,9 @@
-@import 'mixins/gapped-vertical';
+@use 'mixins/gapped-vertical';
 
-@import 'env';
+@use 'env';
 
 :host {
-  @include gapped-vertical($-size-gap);
+  @include gapped-vertical.gapped-vertical(env.$size-gap);
 
   display: flex;
   flex-direction: column;
@@ -11,5 +11,5 @@
 }
 
 p {
-  line-height: $-size-line;
+  line-height: env.$size-line;
 }

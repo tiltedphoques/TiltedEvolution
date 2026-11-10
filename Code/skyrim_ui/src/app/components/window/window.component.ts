@@ -1,9 +1,16 @@
-import { Component, HostBinding, Input } from '@angular/core';
+import {
+  Component,
+  HostBinding,
+  Input,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 @Component({
   selector: 'app-window',
   templateUrl: './window.component.html',
   styleUrls: ['./window.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class WindowComponent {
   @Input()

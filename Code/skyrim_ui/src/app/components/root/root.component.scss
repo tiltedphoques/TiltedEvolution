@@ -1,8 +1,9 @@
-@import 'env';
+@use 'sass:color';
+@use 'env';
 
-@import 'mixins/gapped-vertical';
-@import 'functions/mod';
-@import 'functions/rem';
+@use 'mixins/gapped-vertical';
+@use 'functions/mod';
+@use 'functions/rem';
 
 :host {
   display: block;
@@ -20,42 +21,44 @@
 
     &.light {
       $background: white;
-      $lines: transparentize($-color-background, 0.8);
+      $lines: color.adjust(env.$color-background, $alpha: -0.8);
 
-      background: repeating-linear-gradient(
+      background:
+        repeating-linear-gradient(
           to right,
           transparent,
-          transparent #{$-size-gap},
-          $lines #{$-size-gap},
-          $lines calc(#{$-size-gap} + 1px)
+          transparent #{env.$size-gap},
+          $lines #{env.$size-gap},
+          $lines calc(#{env.$size-gap} + 1px)
         ),
         repeating-linear-gradient(
             to bottom,
             transparent,
-            transparent #{$-size-gap},
-            $lines #{$-size-gap},
-            $lines calc(#{$-size-gap} + 1px)
+            transparent #{env.$size-gap},
+            $lines #{env.$size-gap},
+            $lines calc(#{env.$size-gap} + 1px)
           )
           $background;
     }
 
     &.dark {
-      $background: mod($-color-background, 0.1);
-      $lines: mod($background, 0.1);
+      $background: mod.mod(env.$color-background, 0.1);
+      $lines: mod.mod($background, 0.1);
 
-      background: repeating-linear-gradient(
+      background:
+        repeating-linear-gradient(
           to right,
           transparent,
-          transparent #{$-size-gap},
-          $lines #{$-size-gap},
-          $lines calc(#{$-size-gap} + 1px)
+          transparent #{env.$size-gap},
+          $lines #{env.$size-gap},
+          $lines calc(#{env.$size-gap} + 1px)
         ),
         repeating-linear-gradient(
             to bottom,
             transparent,
-            transparent #{$-size-gap},
-            $lines #{$-size-gap},
-            $lines calc(#{$-size-gap} + 1px)
+            transparent #{env.$size-gap},
+            $lines #{env.$size-gap},
+            $lines calc(#{env.$size-gap} + 1px)
           )
           $background;
     }
@@ -63,8 +66,8 @@
 
   > app-notifications {
     width: 32vw;
-    left: $-size-gap;
-    bottom: $-size-gap;
+    left: env.$size-gap;
+    bottom: env.$size-gap;
     position: absolute;
   }
 }
@@ -93,14 +96,14 @@
 }
 
 .app-root-controls {
-  @include gapped-vertical($-size-gap);
+  @include gapped-vertical.gapped-vertical(env.$size-gap);
 
   position: absolute;
-  left: $-size-gap;
+  left: env.$size-gap;
   display: flex;
   flex-direction: column;
   width: 32vw;
-  bottom: $-size-gap;
+  bottom: env.$size-gap;
 }
 
 .app-root-menu,
@@ -132,24 +135,24 @@
   }
 }
 
-// Note: due to how `-webkit-background-clip` renders clipped text (that's needed for 
+// Note: due to how `-webkit-background-clip` renders clipped text (that's needed for
 // the cooldown effect), we need to apply a few workarounds to make it look just right. I'm sorry!
 
 .cooldown-supporting-text-normal {
-  color: mod($-color-background, 0.8);
+  color: mod.mod(env.$color-background, 0.8);
   transition: color 0.3s linear;
 }
 
 .cooldown-supporting-text-animating {
-  color: mod($-color-background, 0.3);
+  color: mod.mod(env.$color-background, 0.3);
 }
 
 .text-cooldown-effect {
   --cooldown-duration: 10s;
   background: linear-gradient(
-    to left, 
-    mod($-color-background, 0.3) 50%, 
-    mod($-color-background, 1) 50%
+    to left,
+    mod.mod(env.$color-background, 0.3) 50%,
+    mod.mod(env.$color-background, 1) 50%
   );
   background-clip: text;
   -webkit-background-clip: text;

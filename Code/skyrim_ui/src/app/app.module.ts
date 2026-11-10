@@ -1,6 +1,10 @@
 import { OverlayModule } from '@angular/cdk/overlay';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { HttpClientModule } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+  withXhr,
+} from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
@@ -72,18 +76,17 @@ import { TranslocoRootModule } from './transloco-root.module';
     SettingsComponent,
     ToggleComponent,
     WindowComponent,
-
     CheckboxDirective,
     HealthDirective,
     RadioDirective,
     SliderDirective,
   ],
+  bootstrap: [RootComponent],
   imports: [
     BrowserAnimationsModule,
     BrowserModule,
     FontAwesomeModule,
     FormsModule,
-    HttpClientModule,
     ReactiveFormsModule,
     ScrollingModule,
     TranslocoRootModule,
@@ -99,9 +102,8 @@ import { TranslocoRootModule } from './transloco-root.module';
     PlayerListService,
     StoreService,
     SettingService,
-
     ...environment.providers,
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
   ],
-  bootstrap: [RootComponent],
 })
 export class AppModule {}

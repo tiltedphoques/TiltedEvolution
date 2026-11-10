@@ -1,6 +1,6 @@
 import { ComponentPortal } from '@angular/cdk/portal';
 import { ApplicationRef, Injectable } from '@angular/core';
-import { TranslocoService } from '@ngneat/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { first, takeUntil, timer } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { RootComponent } from '../components/root/root.component';

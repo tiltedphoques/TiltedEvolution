@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { TranslocoService } from '@ngneat/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import {
   BehaviorSubject,
   firstValueFrom,

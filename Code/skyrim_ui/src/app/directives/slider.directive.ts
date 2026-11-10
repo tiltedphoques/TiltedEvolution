@@ -3,6 +3,7 @@ import { Sound, SoundService } from '../services/sound.service';
 
 @Directive({
   selector: 'input[type="range"]',
+  standalone: false,
 })
 // @ts-ignore
 export class SliderDirective {

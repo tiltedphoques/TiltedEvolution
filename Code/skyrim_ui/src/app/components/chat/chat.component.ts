@@ -6,8 +6,9 @@ import {
   QueryList,
   ViewChild,
   ViewChildren,
+  ChangeDetectionStrategy,
 } from '@angular/core';
-import { TranslocoService } from '@ngneat/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { takeUntil } from 'rxjs';
 import { DestroyService } from '../../services/destroy.service';
 import { Sound, SoundService } from '../../services/sound.service';
@@ -48,6 +49,8 @@ function messageTypeToClassName(type: MessageTypes): string {
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
   providers: [DestroyService],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ChatComponent implements AfterViewChecked {
   public padding = 0;

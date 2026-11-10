@@ -4,11 +4,15 @@
       <h2>{{ 'COMPONENT.SETTINGS.VERSION.HEADER' | transloco }}</h2>
       <div class="flex-item">
         {{ 'COMPONENT.SETTINGS.VERSION.INFO' | transloco }}
-        <div class="version" [class.outdated]="isVersionOutdated | async">{{ clientVersion$ | async }}</div>
+        <div class="version" [class.outdated]="isVersionOutdated | async">
+          {{ clientVersion$ | async }}
+        </div>
       </div>
-      <div *ngIf="isVersionOutdated | async" class="flex-item">
-        {{ 'COMPONENT.SETTINGS.VERSION.OUTDATED' | transloco }}
-      </div>
+      @if (isVersionOutdated | async) {
+        <div class="flex-item">
+          {{ 'COMPONENT.SETTINGS.VERSION.OUTDATED' | transloco }}
+        </div>
+      }
     </section>
 
     <section>
@@ -50,11 +54,12 @@
           [ngModel]="settings.language | async"
           (ngModelChange)="settings.language.next($event)"
         >
-          <app-dropdown-option
-            *ngFor="let lang of availableLanguages"
-            [text]="lang.label"
-            [value]="lang.id"
-          ></app-dropdown-option>
+          @for (lang of availableLanguages; track lang) {
+            <app-dropdown-option
+              [text]="lang.label"
+              [value]="lang.id"
+            ></app-dropdown-option>
+          }
         </app-dropdown>
       </div>
       <div class="setting">
@@ -64,11 +69,12 @@
           [ngModel]="settings.fontSize | async"
           (ngModelChange)="settings.fontSize.next($event)"
         >
-          <app-dropdown-option
-            *ngFor="let size of availableFontSizes"
-            [text]="size.label"
-            [value]="size.id"
-          ></app-dropdown-option>
+          @for (size of availableFontSizes; track size) {
+            <app-dropdown-option
+              [text]="size.label"
+              [value]="size.id"
+            ></app-dropdown-option>
+          }
         </app-dropdown>
       </div>
     </section>
@@ -106,11 +112,12 @@
           [ngModel]="settings.autoHideTime | async"
           (ngModelChange)="settings.autoHideTime.next($event)"
         >
-          <app-dropdown-option
-            *ngFor="let time of availableAutoHideTimes"
-            [text]="'COMPONENT.SETTINGS.LENGTH'"
-            [value]="time"
-          ></app-dropdown-option>
+          @for (time of availableAutoHideTimes; track time) {
+            <app-dropdown-option
+              [text]="'COMPONENT.SETTINGS.LENGTH'"
+              [value]="time"
+            ></app-dropdown-option>
+          }
         </app-dropdown>
       </div>
       <div class="setting">
@@ -119,11 +126,12 @@
           [ngModel]="settings.partyAnchor | async"
           (ngModelChange)="settings.partyAnchor.next($event)"
         >
-          <app-dropdown-option
-            *ngFor="let anchor of availableCorners"
-            [text]="anchor.label"
-            [value]="anchor.id"
-          ></app-dropdown-option>
+          @for (anchor of availableCorners; track anchor) {
+            <app-dropdown-option
+              [text]="anchor.label"
+              [value]="anchor.id"
+            ></app-dropdown-option>
+          }
         </app-dropdown>
       </div>
       <div class="setting">
@@ -176,11 +184,12 @@
           [ngModel]="settings.debugAnchor | async"
           (ngModelChange)="settings.debugAnchor.next($event)"
         >
-          <app-dropdown-option
-            *ngFor="let anchor of availableCorners"
-            [text]="anchor.label"
-            [value]="anchor.id"
-          ></app-dropdown-option>
+          @for (anchor of availableCorners; track anchor) {
+            <app-dropdown-option
+              [text]="anchor.label"
+              [value]="anchor.id"
+            ></app-dropdown-option>
+          }
         </app-dropdown>
       </div>
     </section>

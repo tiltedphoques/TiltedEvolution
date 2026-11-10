@@ -7,8 +7,9 @@ import {
   OnDestroy,
   Output,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
-import { TranslocoService } from '@ngneat/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
@@ -21,6 +22,8 @@ import { UiRepository } from '../../store/ui.repository';
   selector: 'app-connect',
   templateUrl: './connect.component.html',
   styleUrls: ['./connect.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ConnectComponent implements OnDestroy, AfterViewInit {
   public address = '';
