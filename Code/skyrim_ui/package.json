@@ -4,7 +4,7 @@
   "packageManager": "pnpm@12.18.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --host 0.0.0.0 --disable-host-check --configuration=browser",
+    "start": "ng serve --host 0.0.0.0 --configuration=browser",
     "build": "ng build",
     "deploy:develop": "ng build --output-hashing none --configuration=develop --base-href ./",
     "deploy:production": "ng build --output-hashing none --configuration=production --base-href ./",
