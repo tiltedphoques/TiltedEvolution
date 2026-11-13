@@ -5,22 +5,19 @@
 
 // Refuses typed console commands while connected to a server with Gameplay:bAllowConsoleCommands off.
 // Commands run by code (ConsoleUtil, Papyrus ExecuteCommand) don't go through this callback.
-//
-// 51084 is the Console menu's "ExecuteCommand" callback (registered by 51083). It queues the typed line as a
-// Script to be compiled and run later. 51109 is ConsoleLog::Print, 401203 the ConsoleLog singleton.
 
 namespace
 {
-// Commands that stay allowed while typed commands are turned off, by short and full name. They help players
-// get past things that block a playthrough without affecting other players.
-//
-// tgm and tcl stay blocked: tgm makes a player invulnerable in PvP, and tcl lets a player walk through walls
-// and breaks enemy pathing. The game already offers fair alternatives: fast travel, teleporting to a party
-// member, and the Become Ethereal shout.
+// Commands that stay allowed while typed commands are turned off, by short and full name. 'tgm' and 'tcl' stay
+// blocked: tgm makes a player invulnerable in PvP, and tcl lets a player walk through walls and breaks
+// enemy pathing. The game already offers fair alternatives like fast travel or party tp.
 constexpr std::string_view kAllowedCommands[]{
     "tfc", "ToggleFreeCamera",
     "tm",  "ToggleMenus",
     "coc", "CenterOnCell",
+    "fov", "SetCameraFOV",
+    "help",
+    "clear", "ClearConsole"
 };
 
 bool EqualsIgnoreCase(std::string_view aLhs, std::string_view aRhs) noexcept
@@ -109,6 +106,8 @@ static void HookExecuteCommand(const FxDelegateArgs* apArgs)
     PrintToConsole("Console commands are turned off on this server.");
 }
 
+// 51084 is the Console menu's "ExecuteCommand" callback (registered by 51083). It queues the typed line as a
+// Script to be compiled and run later. 51109 is ConsoleLog::Print, 401203 the ConsoleLog singleton
 static TiltedPhoques::Initializer s_consoleCommandGuardHooks(
     []()
     {
