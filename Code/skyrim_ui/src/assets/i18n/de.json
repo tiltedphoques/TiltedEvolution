@@ -102,6 +102,7 @@
         "NAME": "Servername",
         "PLAYERS": "Spieler",
         "COUNTRY": "Land",
+        "PING": "Ping",
         "FAVORITE": "Favoriten"
       },
       "JOIN": "Beitreten"

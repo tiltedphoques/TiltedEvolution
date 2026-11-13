@@ -98,6 +98,7 @@
         "NAME": "서버 이름",
         "PLAYERS": "플레이어 수 / 최대 수.",
         "COUNTRY": "지역",
+        "PING": "핑",
         "FAVORITE": "즐겨찾기"
       },
       "JOIN": "참가"

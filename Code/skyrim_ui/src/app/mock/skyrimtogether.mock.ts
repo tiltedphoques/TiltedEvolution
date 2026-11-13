@@ -317,6 +317,13 @@ export class SkyrimtogetherMock extends EventEmitter implements SkyrimTogether {
     );
   }
 
+  pingServers(servers: [number, string, number][]): void {
+    for (const [id] of servers) {
+      const ping = 20 + Math.floor(Math.random() * 280);
+      setTimeout(() => this.emit('serverPing', id, ping), ping);
+    }
+  }
+
   mockQuestUpdate() {
     this.emit('questUpdated');
   }

@@ -98,6 +98,7 @@
         "NAME": "サーバーネーム",
         "PLAYERS": "プレイヤー",
         "COUNTRY": "国",
+        "PING": "Ping",
         "FAVORITE": "お気に入り"
       },
       "JOIN": "入る"

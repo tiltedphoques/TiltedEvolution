@@ -99,6 +99,7 @@
         "NAME": "Nombre del servidor",
         "PLAYERS": "Jugadores / Máx.",
         "COUNTRY": "País",
+        "PING": "Ping",
         "FAVORITE": "Favorito"
       },
       "JOIN": "Entrar"

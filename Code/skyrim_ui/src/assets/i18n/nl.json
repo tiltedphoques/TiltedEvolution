@@ -97,6 +97,7 @@
         "NAME": "Server Naam",
         "PLAYERS": "Spelers",
         "COUNTRY": "Land",
+        "PING": "Ping",
         "FAVORITE": "Favoriet"
       },
       "JOIN": "Meedoen"

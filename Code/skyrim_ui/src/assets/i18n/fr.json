@@ -9,10 +9,10 @@
     },
     "CONNECT": {
       "INFO": {
-        "SERVER_ADDRESS": "Connectez-vous à un serveur en utilisant son adresse complète. Utilisez le format  <strong>addresse:port</strong>. Le port par défaut est : <strong>10578</strong>.",
+        "SERVER_ADDRESS": "Connectez-vous à un serveur en utilisant son adresse complète. Utilisez le format  <strong>adresse:port</strong>. Le port par défaut est : <strong>10578</strong>.",
         "HELGEN": "Ne vous connectez PAS à un serveur si vous êtes toujours dans la séquence d'introduction de Helgen. Assurez-vous d'abord d'avoir fui Helgen."
       },
-      "ADDRESS": "Addresse",
+      "ADDRESS": "Adresse",
       "PASSWORD": "Mot de passe",
       "SAVE_PASSWORD": "Enregistrer le mot de passe ?",
       "CONNECT": "Connexion",
@@ -102,6 +102,7 @@
         "NAME": "Nom du serveur",
         "PLAYERS": "Joueurs / Max.",
         "COUNTRY": "Pays",
+        "PING": "Ping",
         "FAVORITE": "Favoris"
       },
       "JOIN": "Rejoindre"
