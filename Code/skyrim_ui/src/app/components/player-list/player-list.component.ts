@@ -11,6 +11,7 @@ import { Player } from '../../models/player';
   templateUrl: './player-list.component.html',
   styleUrls: ['./player-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PlayerListComponent {
   playerList$: Observable<(Player & { isMember: boolean })[]>;

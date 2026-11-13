@@ -1,7 +1,8 @@
-@import 'env';
+@use 'sass:color';
+@use 'env';
 
-@import 'functions/mod';
-@import 'functions/rem';
+@use 'functions/mod';
+@use 'functions/rem';
 
 :host {
   display: contents;
@@ -18,12 +19,15 @@
 
   p {
     margin: 0;
-    line-height: $-size-line;
-    padding: ($-size-gap * 0.2) ($-size-gap * 0.5);
+    line-height: env.$size-line;
+    padding: (env.$size-gap * 0.2) (env.$size-gap * 0.5);
     text-align: left;
 
     &:nth-child(odd) {
-      background: transparentize(mod($-color-background, 1), 0.97);
+      background: color.adjust(
+        mod.mod(env.$color-background, 1),
+        $alpha: -0.97
+      );
     }
 
     &.system {
@@ -51,17 +55,17 @@
 }
 
 .app-chat-name {
-  color: mod($-color-background, 1);
+  color: mod.mod(env.$color-background, 1);
 }
 
 .app-chat-message {
-  color: mod($-color-background, 0.7);
+  color: mod.mod(env.$color-background, 0.7);
   user-select: text;
 }
 
 .app-chat-input {
   display: flex;
-  flex: 0 0 (1rem + $-size-gap);
+  flex: 0 0 (1rem + env.$size-gap);
   margin-top: 0.1rem;
   border-top: 0.1rem solid;
   border-image: url('../../../assets/images/separator/single.svg') 3;

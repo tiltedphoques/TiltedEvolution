@@ -5,6 +5,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { PopupNotification } from '../../models/popup-notification';
 import { DestroyService } from '../../services/destroy.service';
@@ -14,6 +15,8 @@ import { DestroyService } from '../../services/destroy.service';
   templateUrl: './notification-popup.component.html',
   styleUrls: ['./notification-popup.component.scss'],
   providers: [DestroyService],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class NotificationPopupComponent implements OnInit, OnDestroy {
   duration: number;

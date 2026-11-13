@@ -1,9 +1,15 @@
-<p *ngFor="let notification of notifications">
-  <span class="app-notifications-icon"></span>
-  <span class="app-notifications-content" *ngIf="notification.senderName"
-    >{{ notification.senderName }}: {{ notification.content }}</span
-  >
-  <span class="app-notifications-content" *ngIf="!notification.senderName">{{
-    notification.content | transloco: notification.translationParams
-  }}</span>
-</p>
+@for (notification of notifications; track notification) {
+  <p>
+    <span class="app-notifications-icon"></span>
+    @if (notification.senderName) {
+      <span class="app-notifications-content"
+        >{{ notification.senderName }}: {{ notification.content }}</span
+      >
+    }
+    @if (!notification.senderName) {
+      <span class="app-notifications-content">{{
+        notification.content | transloco: notification.translationParams
+      }}</span>
+    }
+  </p>
+}

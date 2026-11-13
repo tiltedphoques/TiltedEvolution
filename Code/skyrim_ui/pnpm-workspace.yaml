@@ -1,0 +1,14 @@
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: false
+  lmdb: false
+  msgpackr-extract: false
+
+overrides:
+  '@snuggery/architect>glob': ^14.0.4
+
+# @angular/build's optional wasm parser pins an @emnapi prerelease its own runtime does not list.
+peerDependencyRules:
+  allowedVersions:
+    '@napi-rs/wasm-runtime>@emnapi/core': 2.0.0-alpha.6
+    '@napi-rs/wasm-runtime>@emnapi/runtime': 2.0.0-alpha.6

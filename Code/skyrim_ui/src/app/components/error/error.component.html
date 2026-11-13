@@ -1,10 +1,12 @@
-<app-popup *ngIf="error$ | async as error">
-  <div class="error-content">
-    <p [innerHTML]="error"></p>
-    <app-action-buttons>
-      <button (click)="removeError()" data-style-ornament="simple">
-        {{ 'COMPONENT.ERROR.OK' | transloco }}
-      </button>
-    </app-action-buttons>
-  </div>
-</app-popup>
+@if (error$ | async; as error) {
+  <app-popup>
+    <div class="error-content">
+      <p [innerHTML]="error"></p>
+      <app-action-buttons>
+        <button (click)="removeError()" data-style-ornament="simple">
+          {{ 'COMPONENT.ERROR.OK' | transloco }}
+        </button>
+      </app-action-buttons>
+    </div>
+  </app-popup>
+}

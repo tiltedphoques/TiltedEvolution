@@ -13,7 +13,7 @@ import {
   faArrowsUpDownLeftRight,
   faCode,
 } from '@fortawesome/free-solid-svg-icons';
-import { TranslocoService } from '@ngneat/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { BehaviorSubject, of, takeUntil, timer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { fadeInOutAnimation } from '../../animations/fade-in-out.animation';

@@ -1,4 +1,5 @@
-@import 'env';
+@use 'sass:color';
+@use 'env';
 
 :host {
   position: fixed;
@@ -9,11 +10,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: transparentize($-color-background, 0.8);
+  background: color.adjust(env.$color-background, $alpha: -0.8);
 
   > app-window {
     flex: 0 0 auto;
-    max-width: calc(100vw - #{2 * $-size-gap});
-    max-height: calc(100vh - #{2 * $-size-gap});
+    max-width: calc(100vw - #{2 * env.$size-gap});
+    max-height: calc(100vh - #{2 * env.$size-gap});
   }
 }

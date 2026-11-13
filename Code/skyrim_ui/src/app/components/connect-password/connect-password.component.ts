@@ -6,8 +6,9 @@ import {
   HostListener,
   Output,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
-import { TranslocoService } from '@ngneat/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { firstValueFrom, takeUntil } from 'rxjs';
 import { View } from '../../models/view.enum';
 import { ClientService } from '../../services/client.service';
@@ -22,6 +23,8 @@ import { DestroyService } from '../../services/destroy.service';
   templateUrl: './connect-password.component.html',
   styleUrls: ['./connect-password.component.scss'],
   providers: [DestroyService],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ConnectPasswordComponent implements AfterViewInit {
   public address = '';

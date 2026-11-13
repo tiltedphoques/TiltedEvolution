@@ -21,12 +21,14 @@
 
 <hr />
 
-<ng-container [ngSwitch]="activeTab$ | async">
-  <app-player-list
-    *ngSwitchCase="PlayerManagerTab.PLAYER_LIST"
-  ></app-player-list>
-  <app-party-menu *ngSwitchCase="PlayerManagerTab.PARTY_MENU"></app-party-menu>
-</ng-container>
+@switch (activeTab$ | async) {
+  @case (PlayerManagerTab.PLAYER_LIST) {
+    <app-player-list></app-player-list>
+  }
+  @case (PlayerManagerTab.PARTY_MENU) {
+    <app-party-menu></app-party-menu>
+  }
+}
 
 <hr />
 

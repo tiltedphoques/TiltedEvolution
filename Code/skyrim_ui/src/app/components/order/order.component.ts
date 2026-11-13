@@ -23,6 +23,7 @@ export enum SortOrder {
   templateUrl: './order.component.html',
   styleUrls: ['./order.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class OrderComponent {
   /* ### ENUMS ### */

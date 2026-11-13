@@ -1,4 +1,10 @@
-import { Component, EventEmitter, HostListener, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Output,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ClientService } from '../../services/client.service';
 import { Sound, SoundService } from '../../services/sound.service';
 
@@ -6,6 +12,8 @@ import { Sound, SoundService } from '../../services/sound.service';
   selector: 'app-disconnect',
   templateUrl: './disconnect.component.html',
   styleUrls: ['./disconnect.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DisconnectComponent {
   @Output() public done = new EventEmitter<void>();

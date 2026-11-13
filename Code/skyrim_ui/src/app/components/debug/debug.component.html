@@ -1,23 +1,23 @@
-<div
-  *ngIf="isShown$ | async"
-  class="app-debug"
-  [ngClass]="cornerClass$ | async"
->
-  <div *ngIf="debugData$ | async as debugData">
-    <span>
-      <fa-icon [icon]="faWifi"></fa-icon>
-      <b>{{ debugData.RTT }}</b> ms,
-      <b>{{ debugData.packetLoss }}%</b> Loss&nbsp;
-    </span>
-    <span>
-      <fa-icon [icon]="faArrowDown"></fa-icon>
-      <b>{{ debugData.receivedBandwidth / 1024 | number: '.0-2' }}</b> kB/s,
-      <b>{{ debugData.numPacketsReceived | number: '.0-2' }}</b> p/s&nbsp;
-    </span>
-    <span>
-      <fa-icon [icon]="faArrowUp"></fa-icon>
-      <b>{{ debugData.sentBandwidth / 1024 | number: '.0-2' }}</b> kB/s,
-      <b>{{ debugData.numPacketsSent | number: '.0-2' }}</b> p/s&nbsp;
-    </span>
+@if (isShown$ | async) {
+  <div class="app-debug" [ngClass]="cornerClass$ | async">
+    @if (debugData$ | async; as debugData) {
+      <div>
+        <span>
+          <fa-icon [icon]="faWifi"></fa-icon>
+          <b>{{ debugData.RTT }}</b> ms,
+          <b>{{ debugData.packetLoss }}%</b> Loss&nbsp;
+        </span>
+        <span>
+          <fa-icon [icon]="faArrowDown"></fa-icon>
+          <b>{{ debugData.receivedBandwidth / 1024 | number: '.0-2' }}</b> kB/s,
+          <b>{{ debugData.numPacketsReceived | number: '.0-2' }}</b> p/s&nbsp;
+        </span>
+        <span>
+          <fa-icon [icon]="faArrowUp"></fa-icon>
+          <b>{{ debugData.sentBandwidth / 1024 | number: '.0-2' }}</b> kB/s,
+          <b>{{ debugData.numPacketsSent | number: '.0-2' }}</b> p/s&nbsp;
+        </span>
+      </div>
+    }
   </div>
-</div>
+}

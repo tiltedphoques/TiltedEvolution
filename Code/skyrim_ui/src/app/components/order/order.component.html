@@ -1,17 +1,13 @@
-<button class="sorting-button" (click)="sort()" [ngSwitch]="order | async">
-  <fa-icon
-    *ngSwitchCase="SortOrder.ASC"
-    class="sorting-icon"
-    [icon]="faCaretDown"
-  ></fa-icon>
-  <fa-icon
-    *ngSwitchCase="SortOrder.DESC"
-    class="sorting-icon"
-    [icon]="faCaretUp"
-  ></fa-icon>
-  <fa-icon
-    *ngSwitchCase="SortOrder.NONE"
-    class="sorting-icon"
-    [icon]="faSort"
-  ></fa-icon>
+<button class="sorting-button" (click)="sort()">
+  @switch (order | async) {
+    @case (SortOrder.ASC) {
+      <fa-icon class="sorting-icon" [icon]="faCaretDown"></fa-icon>
+    }
+    @case (SortOrder.DESC) {
+      <fa-icon class="sorting-icon" [icon]="faCaretUp"></fa-icon>
+    }
+    @case (SortOrder.NONE) {
+      <fa-icon class="sorting-icon" [icon]="faSort"></fa-icon>
+    }
+  }
 </button>

@@ -1,28 +1,30 @@
 <div [@fadeInOutActive]="isShown | async" class="group-container-wrapper">
-  <div
-    *ngIf="group$ | async"
-    class="group-container"
-    [ngStyle]="positionStyle | async"
-  >
-    <div
-      *ngFor="let player of groupMembers$ | async"
-      [title]="player.cellName"
-      class="group-member"
-      [class.not-loaded]="!player.isLoaded"
-    >
-      <b class="group-member-level">{{ player.level }} </b>
-      <div *ngIf="player.health === 0" class="group-member-dead"></div>
-      <div *ngIf="player.isOwner" class="group-member-leader"></div>
-      <span class="member-name">{{ player.name }}</span>
-      <div
-        *ngIf="player.health !== undefined && player.isLoaded"
-        class="group-member-health"
-      >
+  @if (group$ | async) {
+    <div class="group-container" [ngStyle]="positionStyle | async">
+      @for (player of groupMembers$ | async; track player) {
         <div
-          class="group-member-health-value"
-          [app-health]="player.health"
-        ></div>
-      </div>
+          [title]="player.cellName"
+          class="group-member"
+          [class.not-loaded]="!player.isLoaded"
+        >
+          <b class="group-member-level">{{ player.level }} </b>
+          @if (player.health === 0) {
+            <div class="group-member-dead"></div>
+          }
+          @if (player.isOwner) {
+            <div class="group-member-leader"></div>
+          }
+          <span class="member-name">{{ player.name }}</span>
+          @if (player.health !== undefined && player.isLoaded) {
+            <div class="group-member-health">
+              <div
+                class="group-member-health-value"
+                [app-health]="player.health"
+              ></div>
+            </div>
+          }
+        </div>
+      }
     </div>
-  </div>
+  }
 </div>

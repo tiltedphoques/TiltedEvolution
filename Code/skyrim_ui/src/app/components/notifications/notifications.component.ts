@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntil } from 'rxjs';
 import { ChatMessage, ChatService } from 'src/app/services/chat.service';
 import { DestroyService } from '../../services/destroy.service';
@@ -12,6 +12,8 @@ interface Notification extends ChatMessage {
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.scss'],
   providers: [DestroyService],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class NotificationsComponent {
   public notifications = [] as Notification[];

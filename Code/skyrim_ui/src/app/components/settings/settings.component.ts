@@ -1,5 +1,11 @@
-import { Component, EventEmitter, HostListener, Output } from '@angular/core';
-import { TranslocoService } from '@ngneat/transloco';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Output,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { lastValueFrom, map, Observable } from 'rxjs';
 import { Tag } from 'src/app/models/tag';
 import {
@@ -17,6 +23,8 @@ import { ClientService } from 'src/app/services/client.service';
   selector: 'app-settings',
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class SettingsComponent {
   readonly availableLanguages = this.translocoService.getAvailableLangs();
@@ -69,7 +77,9 @@ export class SettingsComponent {
     private readonly http: HttpClient,
     private readonly client: ClientService,
   ) {
-    this.clientVersion$ = this.client.versionSet.pipe(map(version => version.split('-')[0]));
+    this.clientVersion$ = this.client.versionSet.pipe(
+      map(version => version.split('-')[0]),
+    );
   }
 
   ngOnInit(): void {
@@ -82,9 +92,7 @@ export class SettingsComponent {
   }
 
   private getVersionTagList(): Promise<Tag[]> {
-    return lastValueFrom(
-      this.http
-        .get<Tag[]>(`${ environment.githubUrl }`));
+    return lastValueFrom(this.http.get<Tag[]>(`${environment.githubUrl}`));
   }
 
   async isGameVersionOutdated(): Promise<boolean> {

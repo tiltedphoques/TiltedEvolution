@@ -1,4 +1,8 @@
-import { Component, SecurityContext } from '@angular/core';
+import {
+  Component,
+  SecurityContext,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -8,6 +12,8 @@ import { ErrorService } from '../../services/error.service';
   selector: 'app-error',
   templateUrl: './error.component.html',
   styleUrls: ['./error.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ErrorComponent {
   error$: Observable<SafeHtml>;

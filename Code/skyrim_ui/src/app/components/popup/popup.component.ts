@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { animation } from './popup.animation';
 
 @Component({
@@ -7,5 +7,7 @@ import { animation } from './popup.animation';
   styleUrls: ['./popup.component.scss'],
   animations: [animation],
   host: { '[@popup]': 'true' },
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class PopupComponent {}

@@ -14,6 +14,7 @@ import { UiRepository } from '../../store/ui.repository';
   templateUrl: './player-manager.component.html',
   styleUrls: ['./player-manager.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class PlayerManagerComponent {
   /* ### ENUMS ### */

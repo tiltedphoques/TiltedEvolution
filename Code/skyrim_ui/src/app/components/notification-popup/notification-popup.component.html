@@ -5,24 +5,27 @@
   (mouseenter)="onEnter()"
   (mouseleave)="onLeave()"
 >
-  <img *ngIf="notification.imageUrl" [src]="notification.imageUrl" />
-  <div *ngIf="notification.icon" class="icon">
-    <fa-icon [icon]="notification.icon"></fa-icon>
-  </div>
+  @if (notification.imageUrl) {
+    <img [src]="notification.imageUrl" />
+  }
+  @if (notification.icon) {
+    <div class="icon">
+      <fa-icon [icon]="notification.icon"></fa-icon>
+    </div>
+  }
   <div class="content">
     <p>{{ t(notification.messageKey, notification.messageParams) }}</p>
-    <div *ngIf="notification.actions?.length" class="actions">
-      <button
-        *ngFor="let action of notification.actions"
-        (click)="action.callback()"
-      >
-        {{ t(action.nameKey) }}
-      </button>
-    </div>
+    @if (notification.actions?.length) {
+      <div class="actions">
+        @for (action of notification.actions; track action) {
+          <button (click)="action.callback()">
+            {{ t(action.nameKey) }}
+          </button>
+        }
+      </div>
+    }
   </div>
-  <div
-    *ngIf="duration !== 0"
-    class="expiration-line"
-    [style.animation-duration.ms]="duration"
-  ></div>
+  @if (duration !== 0) {
+    <div class="expiration-line" [style.animation-duration.ms]="duration"></div>
+  }
 </div>

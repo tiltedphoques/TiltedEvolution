@@ -1,14 +1,14 @@
-@import 'env';
+@use 'env';
 
-@import 'functions/mod';
-@import 'mixins/gapped-vertical';
+@use 'functions/mod';
+@use 'mixins/gapped-vertical';
 
 :host {
   display: block;
   margin-right: 2em;
   margin-bottom: 0.5em;
   color: white;
-  background-color: $-color-background;
+  background-color: env.$color-background;
   font-size: 1.3rem;
 
   &:last-child {

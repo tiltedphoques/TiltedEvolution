@@ -1,4 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import {
   BehaviorSubject,
   combineLatest,
@@ -30,6 +35,8 @@ interface GroupPosition {
   styleUrls: ['./group.component.scss'],
   animations: [fadeInOutActiveAnimation],
   providers: [DestroyService],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class GroupComponent implements OnInit, OnDestroy {
   timerSubscription: Subscription;
@@ -68,8 +75,8 @@ export class GroupComponent implements OnInit, OnDestroy {
             (group.owner === a.id) === (group.owner === b.id)
               ? 0
               : group.owner === a.id
-              ? -1
-              : 1,
+                ? -1
+                : 1,
           );
       }),
     );

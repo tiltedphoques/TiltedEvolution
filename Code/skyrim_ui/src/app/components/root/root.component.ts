@@ -1,6 +1,11 @@
 import { Overlay } from '@angular/cdk/overlay';
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { TranslocoService } from '@ngneat/transloco';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { fadeInOutActiveAnimation } from '../../animations/fade-in-out-active.animation';
@@ -19,7 +24,7 @@ import { controlsAnimation } from './controls.animation';
 import { notificationsAnimation } from './notifications.animation';
 import { map } from 'rxjs/operators';
 
-const REVEAL_EFFECT_DURATION_MS = 10000 // todo: pass value from C++?
+const REVEAL_EFFECT_DURATION_MS = 10000; // todo: pass value from C++?
 
 @Component({
   selector: 'app-root',
@@ -32,6 +37,8 @@ const REVEAL_EFFECT_DURATION_MS = 10000 // todo: pass value from C++?
   ],
   host: { 'data-app-root-game': environment.game.toString() },
   providers: [DestroyService],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class RootComponent implements OnInit {
   /* ### ENUMS ### */
@@ -43,7 +50,8 @@ export class RootComponent implements OnInit {
   menuOpen$ = this.client.openingMenuChange.asObservable();
   inGame$ = this.client.inGameStateChange.asObservable();
   active$ = this.client.activationStateChange.asObservable();
-  connectionInProgress$ = this.client.isConnectionInProgressChange.asObservable();
+  connectionInProgress$ =
+    this.client.isConnectionInProgressChange.asObservable();
   revealingInProgress$ = false;
 
   @ViewChild('chat') private chatComp!: ChatComponent;
@@ -126,11 +134,12 @@ export class RootComponent implements OnInit {
   }
 
   public revealPlayers(): void {
-    if (this.revealingInProgress$)
-      return;
+    if (this.revealingInProgress$) return;
 
     this.revealingInProgress$ = true;
-    setTimeout(() => { this.revealingInProgress$ = false }, REVEAL_EFFECT_DURATION_MS);
+    setTimeout(() => {
+      this.revealingInProgress$ = false;
+    }, REVEAL_EFFECT_DURATION_MS);
 
     this.sound.play(Sound.Focus);
     this.client.revealPlayers();

@@ -1,7 +1,7 @@
-<ng-container *ngFor="let notification of notifications">
+@for (notification of notifications; track notification) {
   <app-notification-popup
     @fadeInOut
     [notification]="notification"
     (remove)="remove(notification, $event)"
   ></app-notification-popup>
-</ng-container>
+}

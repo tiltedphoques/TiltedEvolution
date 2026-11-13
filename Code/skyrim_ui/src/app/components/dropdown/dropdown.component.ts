@@ -10,6 +10,7 @@ import {
   Input,
   Output,
   QueryList,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject, startWith, takeUntil } from 'rxjs';
@@ -35,6 +36,8 @@ let dropdownCounter = 1;
     },
     DestroyService,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DropdownComponent implements AfterViewInit, ControlValueAccessor {
   dropdownCounter = dropdownCounter++;

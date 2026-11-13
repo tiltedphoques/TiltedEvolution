@@ -19,6 +19,7 @@ import { PopupNotificationService } from '../../services/popup-notification.serv
   animations: [fadeInOutAnimation],
   providers: [DestroyService],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class NotificationPopupContainerComponent implements OnInit {
   notifications: PopupNotification[] = [];
