@@ -10,6 +10,12 @@ services:
       - /home/user/skyrim-together/Data:/st-server/Data
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
+    # Server settings can be overridden with environment variables: the
+    # variable is the setting's key in upper case (see STServer.ini), e.g.
+    #environment:
+    #  UDIFFICULTY: '3'
+    #  BENABLEMODCHECK: 'true'
+    #  SPASSWORD: 'supersecretpassword'
     ports:
       - 10578:10578/udp
     restart: unless-stopped
