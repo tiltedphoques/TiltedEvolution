@@ -18,7 +18,8 @@ struct ImguiService;
  *
  * Plain name text (a crown marks the party leader), scaled with distance.
  * Which tags show, and how, is set by the "Player UI filters" settings in the
- * overlay (see SetSettings). No tag shows while the player is sneaking.
+ * overlay (see SetSettings). While a player sneaks, strangers' tags hide and a
+ * party member's fades to kSneakPartyAlpha.
  */
 struct NameTagService
 {
@@ -70,6 +71,8 @@ struct NameTagService
     static constexpr float kFontSizeScale = 1.375f;
     static constexpr float kItalicShear = 0.2f;
     static constexpr float kVisibilityEpsilon = 1e-3f;
+    // Opacity of a sneaking party member's tag, on top of the distance fade.
+    static constexpr float kSneakPartyAlpha = 0.5f;
 
 private:
     struct VisibilityInfo

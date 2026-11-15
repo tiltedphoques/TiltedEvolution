@@ -247,8 +247,9 @@ void NameTagService::OnDraw() noexcept
         if (!IsEnabledFor(m_settings.NameTags, isPartyMember))
             continue;
 
-        // Sneaking players show no tag.
-        if (IsInSneak(pActor))
+        // A sneaking stranger shows no tag, whatever the viewer's settings. Sneaking party members fade instead.
+        const bool isSneaking = IsInSneak(pActor);
+        if (isSneaking && !isPartyMember)
             continue;
 
         if (!ShouldRenderTag(playerComponent.Id))
@@ -292,6 +293,8 @@ void NameTagService::OnDraw() noexcept
             alpha = 1.f - SmoothStep(0.f, 1.f, fadeT);
         }
         alpha *= Clamp01(1.f - std::max(depth - 0.95f, 0.f) * 4.f);
+        if (isSneaking)
+            alpha *= kSneakPartyAlpha;
         if (alpha <= 0.01f)
             continue;
 
