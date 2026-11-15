@@ -18,7 +18,7 @@ struct ImguiService;
  *
  * Plain name text (a crown marks the party leader), scaled with distance.
  * Which tags show, and how, is set by the "Player UI filters" settings in the
- * overlay (see SetSettings).
+ * overlay (see SetSettings). No tag shows while the player is sneaking.
  */
 struct NameTagService
 {

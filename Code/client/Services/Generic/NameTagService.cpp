@@ -36,6 +36,15 @@ float SmoothStep(float aEdge0, float aEdge1, float aValue) noexcept
     return t * t * (3.f - 2.f * t);
 }
 
+// Remote players replay the owner's behavior variables, iIsInSneak included (0_master, werewolf and vampire lord
+// graphs all have it), so this matches the sneak pose the viewer sees.
+bool IsInSneak(Actor* apActor) noexcept
+{
+    static BSFixedString s_isInSneak("iIsInSneak");
+    uint32_t isInSneak = 0;
+    return apActor->animationGraphHolder.GetVariableInt(&s_isInSneak, &isInSneak) && isInSneak != 0;
+}
+
 bool HasAllGlyphs(ImFont* apFont, const String& acText) noexcept
 {
     const char* pText = acText.c_str();
@@ -236,6 +245,10 @@ void NameTagService::OnDraw() noexcept
 
         const bool isPartyMember = std::find(partyMembers.begin(), partyMembers.end(), playerComponent.Id) != partyMembers.end();
         if (!IsEnabledFor(m_settings.NameTags, isPartyMember))
+            continue;
+
+        // Sneaking players show no tag.
+        if (IsInSneak(pActor))
             continue;
 
         if (!ShouldRenderTag(playerComponent.Id))
