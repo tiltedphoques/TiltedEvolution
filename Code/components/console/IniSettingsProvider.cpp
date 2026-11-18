@@ -10,6 +10,9 @@
 #include <console/ConsoleRegistry.h>
 
 #include <charconv>
+#include <cmath>
+#include <cstring>
+#include <type_traits>
 #include <fstream>
 
 #include <TiltedCore/Filesystem.hpp>
@@ -21,7 +24,19 @@ namespace
 template <typename T, typename TVal> static SI_Error SetIniValue(CSimpleIni& ini, const T* a_pSection, const T* a_pKey, const TVal a_nValue, const T* a_pComment = nullptr)
 {
     char szValue[64]{};
-    std::to_chars(szValue, szValue + sizeof(szValue), a_nValue);
+    const auto result = std::to_chars(szValue, szValue + sizeof(szValue) - 3, a_nValue);
+    if (result.ec != std::errc{})
+        return SI_FAIL;
+
+    // Keep floating-point defaults recognizable in generated settings (0.0, not 0).
+    if constexpr (std::is_floating_point_v<TVal>)
+    {
+        if (std::isfinite(a_nValue) && !std::strpbrk(szValue, ".eE"))
+        {
+            result.ptr[0] = '.';
+            result.ptr[1] = '0';
+        }
+    }
 
     // convert to output text
     T szOutput[256];
