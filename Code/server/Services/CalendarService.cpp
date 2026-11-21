@@ -133,15 +133,19 @@ void CalendarService::UpdateTimeSkip() noexcept
     for (const auto& [pPlayer, hours] : m_timeSkipRequests)
         notify.Hours = std::min(notify.Hours, hours);
 
+    uint32_t playerCount = 0;
     for (const Player* pPlayer : m_world.GetPlayerManager())
     {
         if (pPlayer->GetCellComponent())
-            ++notify.PlayerCount;
+            ++playerCount;
     }
+
+    // On public servers one player who never waits shouldn't block everyone, so a majority is enough.
+    notify.RequiredCount = GameServer::Get()->IsPublicServer() ? playerCount / 2 + 1 : playerCount;
 
     GameServer::Get()->SendToLoaded(notify);
 
-    if (notify.ReadyCount == 0 || notify.ReadyCount < notify.PlayerCount)
+    if (notify.ReadyCount == 0 || notify.ReadyCount < notify.RequiredCount)
         return;
 
     m_timeSkipRequests.clear();

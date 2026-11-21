@@ -71,10 +71,10 @@ void CalendarService::OnTimeSkipRequest(const TimeSkipRequestEvent& acEvent) noe
 
 void CalendarService::OnNotifyTimeSkip(const NotifyTimeSkip& acMessage) noexcept
 {
-    if (acMessage.ReadyCount < acMessage.PlayerCount)
+    if (acMessage.ReadyCount < acMessage.RequiredCount)
     {
         if (acMessage.ReadyCount > 0)
-            Utils::ShowHudMessage(String(fmt::format("Waiting for all players to sleep or wait ({}/{})", acMessage.ReadyCount, acMessage.PlayerCount)));
+            Utils::ShowHudMessage(String(fmt::format("Waiting for players to sleep or wait ({}/{})", acMessage.ReadyCount, acMessage.RequiredCount)));
         return;
     }
 

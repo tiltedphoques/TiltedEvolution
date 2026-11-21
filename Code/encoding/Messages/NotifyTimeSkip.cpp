@@ -8,7 +8,7 @@ void NotifyTimeSkip::SerializeRaw(TiltedPhoques::Buffer::Writer& aWriter) const 
 {
     Serialization::WriteFloat(aWriter, Hours);
     Serialization::WriteVarInt(aWriter, ReadyCount);
-    Serialization::WriteVarInt(aWriter, PlayerCount);
+    Serialization::WriteVarInt(aWriter, RequiredCount);
 }
 
 void NotifyTimeSkip::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noexcept
@@ -17,5 +17,5 @@ void NotifyTimeSkip::DeserializeRaw(TiltedPhoques::Buffer::Reader& aReader) noex
 
     Hours = Serialization::ReadFloat(aReader);
     ReadyCount = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
-    PlayerCount = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
+    RequiredCount = Serialization::ReadVarInt(aReader) & 0xFFFFFFFF;
 }

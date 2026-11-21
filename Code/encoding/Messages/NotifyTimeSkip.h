@@ -3,8 +3,8 @@
 #include "Message.h"
 
 /**
- * Sent when the number of players in the sleep/wait menu changes. Once all are in, the shared time
- * advances by Hours, the shortest time anyone asked for.
+ * Sent when the number of players in the sleep/wait menu changes. Once RequiredCount are in, the shared
+ * time advances by Hours, the shortest time anyone asked for.
  */
 struct NotifyTimeSkip final : ServerMessage
 {
@@ -20,10 +20,10 @@ struct NotifyTimeSkip final : ServerMessage
 
     bool operator==(const NotifyTimeSkip& acRhs) const noexcept
     {
-        return GetOpcode() == acRhs.GetOpcode() && Hours == acRhs.Hours && ReadyCount == acRhs.ReadyCount && PlayerCount == acRhs.PlayerCount;
+        return GetOpcode() == acRhs.GetOpcode() && Hours == acRhs.Hours && ReadyCount == acRhs.ReadyCount && RequiredCount == acRhs.RequiredCount;
     }
 
     float Hours{};
     uint32_t ReadyCount{};
-    uint32_t PlayerCount{};
+    uint32_t RequiredCount{};
 };

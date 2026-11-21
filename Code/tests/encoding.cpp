@@ -387,7 +387,7 @@ TEST_CASE("Packets", "[encoding.packets]")
         NotifyTimeSkip sendMessage, recvMessage;
         sendMessage.Hours = 7.5f;
         sendMessage.ReadyCount = 1;
-        sendMessage.PlayerCount = 2;
+        sendMessage.RequiredCount = 2;
 
         Buffer::Writer writer(&buff);
         sendMessage.Serialize(writer);
