@@ -48,7 +48,12 @@ void SleepWaitMenu::Confirm(float aHours) noexcept
 static TiltedPhoques::Initializer s_sleepWaitMenuInit(
     []()
     {
+        // SleepWaitMenu's "OK" callback, the one SleepWaitMenu::Accept registers first. 1.7.104 gave it a new ID.
+#ifdef TP_SKYRIM_1_6_1170
+        POINTER_SKYRIMSE(FxDelegateHandler::CallbackFn, s_confirm, 52488);
+#else
         POINTER_SKYRIMSE(FxDelegateHandler::CallbackFn, s_confirm, 524025);
+#endif
 
         RealConfirm = s_confirm.Get();
 
