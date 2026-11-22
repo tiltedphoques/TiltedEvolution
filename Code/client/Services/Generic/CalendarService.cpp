@@ -1,11 +1,15 @@
 #include <Services/CalendarService.h>
 
 #include <Events/DisconnectedEvent.h>
+#include <Events/TimeSkipRequestEvent.h>
 #include <Events/UpdateEvent.h>
+#include <Messages/NotifyTimeSkip.h>
+#include <Messages/RequestTimeSkip.h>
 #include <Messages/ServerTimeSettings.h>
 #include <World.h>
 
 #include <Forms/TESObjectCELL.h>
+#include <Interface/Menus/SleepWaitMenu.h>
 #include <PlayerCharacter.h>
 #include <TimeManager.h>
 
@@ -13,15 +17,24 @@ constexpr float kTransitionSpeed = 5.f;
 
 bool CalendarService::s_gameClockLocked = false;
 
+static bool IsPlayerSleepingOrWaiting() noexcept
+{
+    const PlayerCharacter* pPlayer = PlayerCharacter::Get();
+    return pPlayer && pPlayer->IsSleepingOrWaiting();
+}
+
+// While the player sleeps or waits the game runs its own clock, so the hourly updates see the right time.
 bool CalendarService::AllowGameTick() noexcept
 {
-    return !s_gameClockLocked;
+    return !s_gameClockLocked || IsPlayerSleepingOrWaiting();
 }
 
 CalendarService::CalendarService(World& aWorld, entt::dispatcher& aDispatcher, TransportService& aTransport)
     : m_world(aWorld), m_transport(aTransport)
 {
     m_timeUpdateConnection = aDispatcher.sink<ServerTimeSettings>().connect<&CalendarService::OnTimeUpdate>(this);
+    m_timeSkipRequestConnection = aDispatcher.sink<TimeSkipRequestEvent>().connect<&CalendarService::OnTimeSkipRequest>(this);
+    m_notifyTimeSkipConnection = aDispatcher.sink<NotifyTimeSkip>().connect<&CalendarService::OnNotifyTimeSkip>(this);
     m_updateConnection = aDispatcher.sink<UpdateEvent>().connect<&CalendarService::HandleUpdate>(this);
     m_disconnectedConnection = aDispatcher.sink<DisconnectedEvent>().connect<&CalendarService::OnDisconnected>(this);
 }
@@ -47,8 +60,38 @@ void CalendarService::OnTimeUpdate(const ServerTimeSettings& acMessage) noexcept
     }
 }
 
+void CalendarService::OnTimeSkipRequest(const TimeSkipRequestEvent& acEvent) noexcept
+{
+    m_timeSkipPending = true;
+
+    RequestTimeSkip request;
+    request.Hours = acEvent.Hours;
+    m_transport.Send(request);
+}
+
+void CalendarService::OnNotifyTimeSkip(const NotifyTimeSkip& acMessage) noexcept
+{
+    if (acMessage.ReadyCount < acMessage.RequiredCount)
+    {
+        if (acMessage.ReadyCount > 0)
+            Utils::ShowHudMessage(String(fmt::format("Waiting for players to sleep or wait ({}/{})", acMessage.ReadyCount, acMessage.RequiredCount)));
+        return;
+    }
+
+    m_timeSkipEndDays = TimeData::Get()->GameDaysPassed->f + acMessage.Hours / 24.f;
+
+    if (m_timeSkipPending)
+    {
+        m_timeSkipPending = false;
+        SleepWaitMenu::Confirm(acMessage.Hours);
+    }
+}
+
 void CalendarService::OnDisconnected(const DisconnectedEvent&) noexcept
 {
+    m_timeSkipPending = false;
+    m_timeSkipEndDays = 0.f;
+
     // signal a time transition
     m_fadeTimer = 0.f;
     ToggleGameClock(true);
@@ -83,6 +126,12 @@ void CalendarService::ToggleGameClock(bool aEnable)
 
 void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
 {
+    if (m_timeSkipPending && !SleepWaitMenu::IsOpen())
+    {
+        m_timeSkipPending = false;
+        m_transport.Send(RequestTimeSkip{});
+    }
+
     if (s_gameClockLocked)
     {
         const auto updateDelta = static_cast<float>(aEvent.Delta);
@@ -101,6 +150,17 @@ void CalendarService::HandleUpdate(const UpdateEvent& aEvent) noexcept
         m_lastTick = now;
 
         m_onlineTime.Update(delta);
+
+        if (IsPlayerSleepingOrWaiting())
+            return;
+
+        // An interrupted skip still counts in full for timers, like the shared clock that already moved on.
+        if (m_timeSkipEndDays > 0.f)
+        {
+            pGameTime->GameDaysPassed->f = std::max(pGameTime->GameDaysPassed->f, m_timeSkipEndDays);
+            m_timeSkipEndDays = 0.f;
+        }
+
         pGameTime->TimeScale->f = m_onlineTime.m_timeModel.TimeScale;
         pGameTime->GameDay->f = m_onlineTime.m_timeModel.Day;
         pGameTime->GameMonth->f = m_onlineTime.m_timeModel.Month;

@@ -162,6 +162,13 @@ void PlayerCharacter::RemoveWaypoint() noexcept
     return TiltedPhoques::ThisCall(RealRemoveWaypoint, this);
 }
 
+bool PlayerCharacter::IsSleepingOrWaiting() const noexcept
+{
+    TP_THIS_FUNCTION(TIsSleepingOrWaiting, bool, const PlayerCharacter);
+    POINTER_SKYRIMSE(TIsSleepingOrWaiting, s_isSleepingOrWaiting, 40413);
+    return TiltedPhoques::ThisCall(s_isSleepingOrWaiting, this);
+}
+
 char TP_MAKE_THISCALL(HookPickUpObject, PlayerCharacter, TESObjectREFR* apObject, int32_t aCount, bool aUnk1, bool aUnk2)
 {
     auto& modSystem = World::Get().GetModSystem();

@@ -7,6 +7,9 @@
 struct World;
 struct UpdateEvent;
 struct PlayerJoinEvent;
+struct PlayerLeaveEvent;
+struct RequestTimeSkip;
+struct Player;
 
 /**
  * @brief Manages time and date of the world.
@@ -38,14 +41,20 @@ public:
 private:
     void OnUpdate(const UpdateEvent&) noexcept;
     void OnPlayerJoin(const PlayerJoinEvent&) noexcept;
+    void OnPlayerLeave(const PlayerLeaveEvent&) noexcept;
+    void OnTimeSkipRequest(const PacketEvent<RequestTimeSkip>&) noexcept;
+    void UpdateTimeSkip() noexcept;
     void SendTimeResync() noexcept;
 
     DateTime m_dateTime;
     uint64_t m_lastTick = 0;
     bool m_timeSetFromFirstPlayer = false;
+    TiltedPhoques::Map<Player*, float> m_timeSkipRequests;
 
     World& m_world;
 
     entt::scoped_connection m_updateConnection;
     entt::scoped_connection m_joinConnection;
+    entt::scoped_connection m_leaveConnection;
+    entt::scoped_connection m_timeSkipConnection;
 };
